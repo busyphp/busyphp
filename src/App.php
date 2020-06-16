@@ -19,7 +19,7 @@ class App extends \think\App
      * 版本号
      * @var string
      */
-    public static $busyVersion = '3.0.1';
+    public static $busyVersion = '3.0.0';
     
     /**
      * 框架名称
