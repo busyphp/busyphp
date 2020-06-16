@@ -1,0 +1,81 @@
+<extend name="@admin:layout"/>
+<block name="content">
+
+    <div data-search=""
+         role-search-select-value="title,action,username,userid,content"
+         role-search-select-text="操作名称,操作路径,操作用户,用户组,用户ID,操作详情"
+         role-search-action="{$url.self}">
+        <div role-search="content-left">
+            <div class="form-group">
+                <select class="form-control" name="static[type]">
+                    <option value="-1">不限类型</option>
+                    {$type_options}
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" name="static[admin_type]">
+                    <option value="0">不限来源</option>
+                    <option value="1">后台</option>
+                    <option value="2">前台</option>
+                </select>
+            </div>
+        </div>
+        <div role-search="right">
+            <a class="btn btn-warning" href="{:url('clear_logs')}" data-get-confirm="该操作会清理三个月以前的操作记录，确认要清理吗?" role-ajax="1" role-loading="请稍候...">
+                <i class="icon icon-trash-o"></i>
+                清空操作记录
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+                <tr>
+                    <th class="text-center" width="60">ID</th>
+                    <th class="text-center">操作名称</th>
+                    <th class="text-center" width="100">IP</th>
+                    <th class="text-center" width="100">类型</th>
+                    <th class="text-center" width="100">操作台</th>
+                    <th class="text-center" width="100">用户</th>
+                    <th class="text-center" width="80">用户ID</th>
+                    <th class="text-center" width="150">操作时间</th>
+                    <th class="text-center" width="80">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <empty name="list">
+                    <tr>
+                        <td class="empty-info" colspan="10">暂无相关数据</td>
+                    </tr>
+                    <else/>
+                    <foreach name="list" item="vo">
+                        <tr class="text-center">
+                            <td>{$vo.id}</td>
+                            <td class="text-left">{$vo.title|default="--"}</td>
+                            <td>
+                                <a href="https://ip.cn/index.php?ip={$vo.ip}" target="_blank">{$vo.ip|default="--"}</a>
+                            </td>
+                            <td>{$vo.type_name}</td>
+                            <td>
+                                <eq name="vo.is_admin" value="1">
+                                    <span class="label label-primary">后台</span>
+                                    <else/>
+                                    <span class="label label-success">前台</span>
+                                </eq>
+                            </td>
+                            <td>{$vo.username|default="--"}</td>
+                            <td>{$vo.userid|default="--"}</td>
+                            <td>{$vo.format_create_time}</td>
+                            <td>
+                                <a href="{:url('view_logs?id=' . $vo['id'])}" class="btn btn-xs btn-success">
+                                    <i class="icon icon-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </foreach>
+                </empty>
+            </tbody>
+        </table>
+    </div>
+    {$page}
+</block>

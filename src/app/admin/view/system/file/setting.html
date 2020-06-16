@@ -1,0 +1,210 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel-heading-tab">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a href="#base" aria-controls="base" role="tab" data-toggle="tab">基本设置</a></li>
+            <li><a href="#watermark" aria-controls="watermark" role="tab" data-toggle="tab">水印设置</a></li>
+            <li><a href="#senior" aria-controls="senior" role="tab" data-toggle="tab">高级设置</a></li>
+        </ul>
+    </div>
+    <div class="panel panel-default panel-tab">
+        <div class="panel-body">
+            <form action="{$url.self}" method="post" class="form-horizontal" data-post="">
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="base">
+                        <div class="form-group-title">基本设置</div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">目录存放格式</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="data[format]">
+                                    <option value="">不设置目录</option>
+                                    <optgroup label="日期格式">
+                                        <option value="Ymd"<?=is_selected($info['format'] == 'Ymd')?>>年月日</option>
+                                        <option value="Y/md"<?=is_selected($info['format'] == 'Y/md')?>>年/月日</option>
+                                        <option value="Y/m/d"<?=is_selected($info['format'] == 'Y/m/d')?>>年/月/日</option>
+                                        <option value="Y/m/d/H"<?=is_selected($info['format'] == 'Y/m/d/H')?>>年/月/日/时</option>
+                                        <option value="Y/mdH"<?=is_selected($info['format'] == 'Y/mdH')?>>年/月日时</option>
+                                        <option value="YmdH"<?=is_selected($info['format'] == 'YmdH')?>>年月日时</option>
+                                    </optgroup>
+                                    <optgroup label="hash格式">
+                                        <option value="hash-1"<?=is_selected($info['format'] == 'hash-1')?>>hash目录1层</option>
+                                        <option value="hash-2"<?=is_selected($info['format'] == 'hash-2')?>>hash目录2层</option>
+                                        <option value="hash-3"<?=is_selected($info['format'] == 'hash-3')?>>hash目录3层</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-sm-6"><span class="help-block">设置目录存放格式，从附件目录算起</span></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">后台允许上传类型</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="data[admin_type]" value="{$info.admin_type}"/>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="help-block">多个请用<code>,</code>号隔开，如：jpg,png,exe，不限请留空</span></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">后台允许上传大小</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="data[admin_size]" value="{$info.admin_size}"/>
+                            </div>
+                            <div class="col-sm-6"><span class="help-block">单位<code>KB</code>，不限请填<code>0</code></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">前台允许上传类型</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="data[home_type]" value="{$info.home_type}"/>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="help-block">多个请用<code>,</code>号隔开，如：jpg,png,exe，不限请留空</span></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">前台允许上传大小</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="data[home_size]" value="{$info.home_size}"/>
+                            </div>
+                            <div class="col-sm-6"><span class="help-block">单位<code>KB</code>，不限请填<code>0</code></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">上传密匙</label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="data[token]" id="token" value="{$info.token}"/>
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-default" type="button" data-rand="32" role-target="#token">随机</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6"><span class="help-block">16-32位随机字符串</span></div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="watermark">
+                        <div class="form-group-title">水印设置</div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">水印文件</label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="data[watermark_file]" id="token" value="{$info.watermark_file}"/>
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-default" type="button">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6"><span class="help-block">设置水印图片地址</span></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">水印位置</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="data[watermark_position]">
+                                    <option value="1"<?=is_selected($info['watermark_position'] == 1)?>>左上角</option>
+                                    <option value="2"<?=is_selected($info['watermark_position'] == 2)?>>上中上</option>
+                                    <option value="3"<?=is_selected($info['watermark_position'] == 3)?>>右上角</option>
+                                    <option value="4"<?=is_selected($info['watermark_position'] == 4)?>>左中左</option>
+                                    <option value="5"<?=is_selected($info['watermark_position'] == 5)?>>中心</option>
+                                    <option value="6"<?=is_selected($info['watermark_position'] == 6)?>>右中右</option>
+                                    <option value="7"<?=is_selected($info['watermark_position'] == 7)?>>左下角</option>
+                                    <option value="8"<?=is_selected($info['watermark_position'] == 8)?>>下中下</option>
+                                    <option value="9"<?=is_selected($info['watermark_position'] == 9)?>>右下角</option>
+                                    <option value="0"<?=is_selected($info['watermark_position'] == 0)?>>随机</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6"></div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="senior">
+                        <foreach name="file_class" item="vo">
+                            <div class="form-group-title"><span class="label label-success pull-right">{$vo.var}</span>{$vo.name}
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">允许上传类型</label>
+                                <div class="col-sm-4">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">{$type[$vo['type']]}</div>
+                                        <input type="text" class="form-control" name="class[{$vo.id}][suffix]" value="{$vo.suffix}"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6"><span class="help-block">多个请用<code>,</code>号隔开，如：jpg,exe，不限请留空，-1代表调用系统基本配置</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">mimeType</label>
+                                <div class="col-sm-4">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">{$type[$vo['type']]}</div>
+                                        <input type="text" class="form-control" name="class[{$vo.id}][mimetype]" value="{$vo.mimetype}"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6"><span class="help-block">多个请用<code>,</code>号隔开，如：image/jpg,image/gif，不限请留空</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">允许上传大小</label>
+                                <div class="col-sm-4">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="class[{$vo.id}][size]" id="" value="{$vo.size}"/>
+                                        <div class="input-group-addon">KB</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6"><span class="help-block">0 为不限制，-1 则调用系统基本配置</span></div>
+                            </div>
+                            <eq name="vo.type" value="image">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">缩放设置</label>
+                                    <div class="col-sm-4">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="class[{$vo.id}][is_thumb]" value="1"<?=is_checked($vo['is_thumb'] == 1)?>/>
+                                            缩放图片
+                                        </label>
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="class[{$vo.id}][delete_source]" value="1"<?=is_checked($vo['delete_source'] == 1)?>/>
+                                            不保留原图
+                                        </label>
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="class[{$vo.id}][watermark]" value="1"<?=is_checked($vo['watermark'] == 1)?>/>
+                                            加水印
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-6"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">裁剪方式</label>
+                                    <div class="col-sm-4">
+                                        <select class="form-control" name="class[{$vo.id}][thumb_type]">
+                                            <option value="1"<?=is_selected($vo['thumb_type'] == 1);?>>按比例裁剪到指定大小</option>
+                                            <option value="5"<?=is_selected($vo['thumb_type'] == 5);?>>不按比例裁剪到指定大小</option>
+                                            <option value="3"<?=is_selected($vo['thumb_type'] == 3);?>>按比例缩放(小图不够不缩放)</option>
+                                            <option value="4"<?=is_selected($vo['thumb_type'] == 4);?>>按比例缩放(小图不够强制缩放)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">裁剪大小</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">宽</div>
+                                            <input type="text" class="form-control" name="class[{$vo.id}][width]" value="{$vo.width}"/>
+                                            <div class="input-group-addon">PX&nbsp;&nbsp;高</div>
+                                            <input type="text" class="form-control" name="class[{$vo.id}][height]" value="{$vo.height}"/>
+                                            <div class="input-group-addon">PX</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6"><span class="help-block">可以设置某一项为不限，0为不限</span></div>
+                                </div>
+                            </eq>
+                        </foreach>
+                    </div>
+                </div>
+                <div class="form-group m-b-0">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" class="btn btn-primary" value="设置"/>
+                        <input type="reset" class="btn btn-default" value="重置"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</block>

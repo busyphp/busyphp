@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>{$pagetitle} - 后台管理系统</title>
+	<include file="@admin:head" />
+	<script>
+		if (self === top) {
+			top.location.href = ADMIN_URL;
+		}
+	</script>
+	<block name="head"></block>
+</head>
+<body>
+<block name="content"></block>
+<include file="@admin:foot" />
+<block name="foot"></block>
+</body>
+</html>

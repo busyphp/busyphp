@@ -1,0 +1,70 @@
+<extend name="@admin:layout"/>
+<block name="head">
+</block>
+<block name="content">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="icon icon-user"></i>
+                    个人信息
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <td colspan="2">
+                            您好，<a class="label label-primary f12" href="{:url('System.User/personal_info')}">{$system.username}</a>
+                            &nbsp;&nbsp;&nbsp;用户组：
+                            <label class="label label-warning f12">{$system.permission.name}</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="130">上一次登录IP</td>
+                        <td>{$system.user.last_ip}</td>
+                    </tr>
+                    <tr>
+                        <td>最后一次登录时间</td>
+                        <td>
+                            <admin:date format="Y-m-d H:i:s">$system['user']['last_time']</admin:date>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>登录次数</td>
+                        <td>第&nbsp;{$system.user.login_total}&nbsp;次</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="icon icon-anchor"></i>
+                    程序/服务器信息
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <td width="130">框架版本</td>
+                        <td><a href="http://www.harter.cn" target="_blank">{$framework_name}</a></td>
+                    </tr>
+                    <tr>
+                        <td>操作系统 / 编码</td>
+                        <td>
+                            {$system_name} / {$soft_name} /
+                            <admin:date format="Y-m-d H:i:s">time()</admin:date>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>PHP / MySQL版本</td>
+                        <td>PHP {$Think.PHP_VERSION} / MySQL {$mysql_version}</td>
+                    </tr>
+                    <tr>
+                        <td>文件上传</td>
+                        <td>{$max_upload_size}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</block>
+<block name="foot">
+</block>
+

@@ -1,0 +1,118 @@
+<extend name="@admin:Iframe"/>
+<block name="head">
+    <css href="{$skin.css}file_library.css"/>
+</block>
+<block name="content">
+    <div class="navbar navbar-default navbar-fixed-top navbar-form navbar-left">
+        <form action="{$url.self}" method="get" class="form-inline">
+            <admin:hidden group="" module="" action="" pattern=""/>
+            <input type="hidden" name="field" value="name"/>
+            <input type="hidden" name="search" value="1"/>
+            <input type="hidden" name="current[mark_type]" value="{$current.mark_type}"/>
+            <input type="hidden" name="current[mark_value]" value="{$current.mark_value}"/>
+            <div class="form-group">
+                <select type="text" class="form-control" name="static[classify]">
+                    <option value="">不限类型</option>
+                    {$file_type_options}
+                </select>
+            </div>
+            <div class="form-group">
+                <select type="text" class="form-control" name="static[mark_type]">
+                    {$file_class_options}
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="关键词" size="16" name="word" value="{$_GET.word}">
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="icon icon-search"></i>
+                搜索
+            </button>
+            <a href="{$current_url}" class="btn btn-warning">
+                <i class="icon icon-map-marker"></i>
+                当前信息
+            </a>
+            <a href="{$all_url}" class="btn btn-default">全部附件</a>
+        </form>
+    </div>
+
+    <form action="{$url.self}" method="post" id="checkForm" name="form" data-queue-post-confirm="" data-table-checkbox="" <?=$list_type == 'image' ? 'role-checkbox-callback="{singleSelection: singleSelection, singleCancelled: singleCancelled, allSelected: allSelected, allCancelled: allCancelled}"' : ''?>>
+        <eq name="list_type" value="image">
+            <include file="@admin:System/File/library_image"/>
+            <else/>
+            <include file="@admin:System/File/library_list"/>
+        </eq>
+        <div>{$page}</div>
+
+        <div class="navbar navbar-default navbar-fixed-bottom navbar-form navbar-left">
+            <div class="pull-left">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" role-checkbox="control">
+                        全选&nbsp;&nbsp;&nbsp;
+                    </label>
+                </div>
+                <button class="btn btn-danger ID_DELETE" type="submit" onclick="
+                        document.form.action='<?=url('delete');?>';
+                        document.form.setAttribute('data-queue-post-confirm', '确认要为删除选中附件吗？');
+                        document.form.setAttribute('role-loading', '');
+                        document.form.setAttribute('role-empty-infos', '请选择要删除的附件！');
+                        ">
+                    <i class="icon icon-remove"></i>
+                    删除
+                </button>
+            </div>
+        </div>
+    </form>
+</block>
+<block name="foot">
+    <script>
+        function singleSelection(element) {
+            $(element).closest('td.item').addClass('selected');
+        }
+
+        function singleCancelled(element) {
+            $(element).closest('td.item').removeClass('selected');
+        }
+
+        function allSelected() {
+            $('.table-pic').find('td.item').addClass('selected');
+        }
+
+        function allCancelled() {
+            $('.table-pic').find('td.item').removeClass('selected');
+        }
+
+        $(function () {
+            var dialog = $.dialogApi();
+            if (!dialog.api) {
+                return;
+            }
+
+            dialog.api.title('文件管理器');
+            var $parent = $(parent);
+            if ($parent.width() <= 767) {
+                dialog.api.config.width = '100%';
+                dialog.api.config.height = '100%';
+            } else {
+                dialog.api.config.width = 768;
+                dialog.api.config.height = 500;
+                dialog.api.config.minWidth = 768;
+                dialog.api.config.minHeight = 500;
+                dialog.api.config.resize = false;
+            }
+
+            dialog.api.size(dialog.api.config.width, dialog.api.config.height);
+            dialog.api._reset();
+
+            $(document).on('click', '.icon-external-link', function (e) {
+                e.stopPropagation();
+            });
+
+            $(document).on('click', '.click-this', function () {
+                $.dialog.data('data', $(this).data());
+                $.dialog.close();
+            });
+        });
+    </script>
+</block>

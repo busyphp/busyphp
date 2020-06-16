@@ -1,0 +1,107 @@
+<extend name="@admin:layout"/>
+<block name="head">
+    <style>
+        .table-checkbox {}
+        .table-checkbox label { margin: 0; margin-right: 15px; white-space: nowrap; float: left; cursor: pointer; font-weight: normal;}
+        .table-checkbox .module label { margin-right: 0;}
+        .table-checkbox label.pull-right { margin: 0;}
+    </style>
+</block>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            <form action="{$url.self}" method="post" class="form-horizontal" data-post="">
+                <input type="hidden" value="{$info.id}" name="id"/>
+                <neq name="info.is_system" value="1">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label must">用户组名称</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" name="name" value="{$info.name}"/>
+                        </div>
+                        <div class="col-sm-6"><span class="help-block"></span></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label must">规则</label>
+                        <div class="col-sm-10">
+                            <div class="table-responsive">
+                                {$info.rule}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group m-b-0">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <input type="submit" class="btn btn-primary" value="{$submit_name}"/>
+                            <input type="reset" class="btn btn-default" value="重置"/>
+                        </div>
+                    </div>
+                    <else />
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">用户组名称</label>
+                        <div class="col-sm-4">
+                            <div class="form-control-static">{$info.name}</div>
+                        </div>
+                    </div>
+                </neq>
+            </form>
+        </div>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        function hasChecked($list) {
+            for (var i = 0; i < $list.length; i++) {
+                if ($($list[i]).prop('checked')) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $(function () {
+            $('[name="rule[]"]').on('change', function () {
+                var $me = $(this);
+
+                switch ($me.data('level')) {
+                    case 0:
+                        $('[data-module="' + $me.data('module') + '"]').prop('checked', $me.prop('checked'));
+                        break;
+                    case 1:
+                        $('[data-parent="' + $me.val() + '"]').prop('checked', $me.prop('checked'));
+
+                        var $parent = $('[value="' + $me.data('parent') + '"]');
+                        var $list = $('[data-parent="' + $me.data('parent') + '"]');
+                        if (!hasChecked($list)) {
+                            $parent.prop('checked', false);
+                        } else {
+                            $parent.prop('checked', true);
+                        }
+                        break;
+                    case 2:
+                        var $list = $('[data-parent="' + $me.data('parent') + '"]');
+                        var status = hasChecked($list);
+                        var $parent = $('[value="' + $me.data('parent') + '"]');
+                        if (!status) {
+                            $parent.prop('checked', false);
+                        } else {
+                            $parent.prop('checked', true);
+                        }
+
+                        var $top = $('[value="' + $parent.data('parent') + '"]');
+                        var $topList = $('[data-parent="' + $parent.data('parent') + '"]');
+                        if (!status && !hasChecked($topList)) {
+                            $top.prop('checked', false);
+                        } else {
+                            $top.prop('checked', true);
+                        }
+                        break;
+                }
+            });
+        });
+    </script>
+</block>

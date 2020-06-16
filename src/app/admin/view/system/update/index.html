@@ -1,0 +1,19 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="alert alert-warning">提示：当站点出现错误，可尝试使用该功能进行恢复</div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            <form action="{$url.self}" method="post" class="form-horizontal" data-post="">
+                <div class="form-group m-b-0">
+                    <div class="col-sm-12 text-center">
+                        <input type="submit" class="btn btn-primary" value="更新系统配置"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</block>

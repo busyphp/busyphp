@@ -1,0 +1,37 @@
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th class="text-center" width="40">
+                <input type="checkbox" role-checkbox="control"/>
+            </th>
+            <th class="text-center" width="60">ID</th>
+            <th class="text-center">文件名</th>
+            <th class="text-center" width="100">大小</th>
+            <th class="text-center" width="100">操作</th>
+        </tr>
+    </thead>
+    <tbody class="file-list">
+        <empty name="list">
+            <tr>
+                <td class="empty-info" colspan="5">暂无相关数据</td>
+            </tr>
+            <else/>
+            <foreach name="list" item="vo">
+                <tr class="text-center">
+                    <td>
+                        <input type="checkbox" value="{$vo.id}" name="id[]" role-checkbox="item"/>
+                    </td>
+                    <td>{$vo.id}</td>
+                    <td class="text-left"><a target="_blank" href="{$vo.url}" title="{$vo.name}"><?=\BusyPHP\helper\util\Str::cut($vo['name'], 30);?></a></td>
+                    <td><?=\BusyPHP\helper\util\Transform::formatBytes($vo['size']);?></td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="javascript:void(0)" class="click-this btn btn-success btn-xs" data-size="{$vo.size}" data-file-url="{$vo.url}" data-name="{$vo.name}" data-mime-type="{$vo.mime_type}" data-extension="{$vo.extension}" data-filename="{$vo.filename}" data-file-id="{$vo.id}">选择</a>
+                            <a href="{:url('delete?id=' . $vo['id'])}" data-get-confirm="确认要删除吗？" role-ajax="1" class="btn btn-danger btn-xs">删除</a>
+                        </div>
+                    </td>
+                </tr>
+            </foreach>
+        </empty>
+    </tbody>
+</table>

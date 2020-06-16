@@ -1,0 +1,84 @@
+<div id="think_page_trace" style="position: fixed;bottom:0;right:0;font-size:14px;width:100%;z-index: 999999;color: #000;text-align:left;font-family:'微软雅黑';">
+    <div id="think_page_trace_tab" style="display: none;background:#e0ebfa;;margin:0;height: 250px; box-sizing: content-box; -webkit-box-sizing:content-box;">
+        <div id="think_page_trace_tab_tit" style="height:30px;padding: 2px 12px;border-bottom:1px solid #e0ebfa;border-top:1px solid #ececec;font-size:16px; box-sizing: content-box; -webkit-box-sizing:content-box; background-color: #1262B7;">
+            <?php
+            foreach ($trace as $key => $value) {
+                ?>
+                <span style="color:#FFF;padding-right:12px;height:30px;line-height:30px;display:inline-block;margin-right:3px;cursor:pointer; box-sizing: content-box; -webkit-box-sizing:content-box;"><?=$key;?></span>
+                <?php
+            }
+            ?>
+        </div>
+        <div id="think_page_trace_tab_cont" style="overflow:auto;height:212px;padding:0;line-height: 24px">
+            <?php
+            foreach ($trace as $info) {
+                ?>
+                <div style="display:none;">
+                    <ol style="padding: 0; margin:0">
+                        <?php
+                        if (is_array($info)) {
+                            foreach ($info as $k => $val) {
+                                echo '<li style="border-bottom:1px solid #a1c7ef;font-size:14px;padding:0 12px">' . (is_numeric($k) ? '' : $k . ' : ') . htmlentities(print_r($val, true), ENT_COMPAT, 'utf-8') . '</li>';
+                            }
+                        }
+                        ?>
+                    </ol>
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+    <div id="think_page_trace_close" style="display:none;text-align:right;height:15px;position:absolute;top:10px;right:12px;cursor:pointer;">
+        <span style="font-size: 30px; position: relative; margin-top: -15px; display: inline-block; color: #FFF;">&times;</span>
+    </div>
+</div>
+<div id="think_page_trace_open" style="height:30px;float:right;text-align:right;overflow:hidden;position:fixed;bottom:0;right:0;color:#000;line-height:30px;cursor:pointer;">
+    <div style="background:#232323;color:#FFF;padding:0 6px;float:right;line-height:30px;font-size:14px"><?php
+        echo number_format(microtime(true) - \think\facade\App::getBeginTime(), 6, '.', '') . 's '; ?></div>
+    <img width="32" style="" title="ShowPageTrace" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFGmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNi4wLWMwMDIgNzkuMTY0MzUyLCAyMDIwLzAxLzMwLTE1OjUwOjM4ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjAtMDYtMDlUMTE6MjI6MjArMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIwLTA2LTA5VDExOjU0OjUwKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIwLTA2LTA5VDExOjU0OjUwKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjhjNWZiZThiLTIzODgt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">
+</div>
+
+<script type="text/javascript">
+    (function () {
+        var tab_tit = document.getElementById('think_page_trace_tab_tit').getElementsByTagName('span');
+        var tab_cont = document.getElementById('think_page_trace_tab_cont').getElementsByTagName('div');
+        var open = document.getElementById('think_page_trace_open');
+        var close = document.getElementById('think_page_trace_close').children[0];
+        var trace = document.getElementById('think_page_trace_tab');
+        var cookie = document.cookie.match(/busyphp_show_page_trace=(\d\|\d)/);
+        var history = (cookie && typeof cookie[1] != 'undefined' && cookie[1].split('|')) || [0, 0];
+        open.onclick = function () {
+            trace.style.display = 'block';
+            this.style.display = 'none';
+            close.parentNode.style.display = 'block';
+            history[0] = 1;
+            document.cookie = 'busyphp_show_page_trace=' + history.join('|')
+        }
+        close.onclick = function () {
+            trace.style.display = 'none';
+            this.parentNode.style.display = 'none';
+            open.style.display = 'block';
+            history[0] = 0;
+            document.cookie = 'busyphp_show_page_trace=' + history.join('|')
+        }
+        for (var i = 0; i < tab_tit.length; i++) {
+            tab_tit[i].onclick = (function (i) {
+                return function () {
+                    for (var j = 0; j < tab_cont.length; j++) {
+                        tab_cont[j].style.display = 'none';
+                        tab_tit[j].style.color = '#DDD';
+                        tab_tit[j].style.fontWeight = 'none';
+                    }
+                    tab_cont[i].style.display = 'block';
+                    tab_tit[i].style.color = '#FFF';
+                    tab_tit[i].style.fontWeight = '700';
+                    history[1] = i;
+                    document.cookie = 'busyphp_show_page_trace=' + history.join('|')
+                }
+            })(i)
+        }
+        parseInt(history[0]) && open.click();
+        tab_tit[history[1]].click();
+    })();
+</script>

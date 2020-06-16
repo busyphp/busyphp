@@ -1,0 +1,114 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div data-search=""
+         role-search-select-value="name,var"
+         role-search-select-text="名称,标识"
+         role-search-action="{$url.self}">
+        <div role-search="content-left">
+            <div class="form-group">
+                <select class="form-control" name="static[type]">
+                    <option value="">不限类型</option>
+                    {$type_options}
+                </select>
+            </div>
+        </div>
+        <div role-search="right">
+            <a class="btn btn-warning" href="{:url('add')}">
+                <i class="icon icon-plus"></i>
+                增加分类
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <form action="{:url('delete')}" method="post" id="check_form" name="form" onsubmit="return false;" data-queue-post-confirm="" data-table-checkbox="">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th class="text-center" width="40">
+                        <input type="checkbox" role-checkbox="control"/>
+                    </th>
+                    <th class="text-center" width="60">排序</th>
+                    <th class="text-center" width="60">ID</th>
+                    <th class="text-center">名称</th>
+                    <th class="text-center" width="200">标识</th>
+                    <th class="text-center" width="100">类型</th>
+                    <th class="text-center" width="80">操作</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <th class="text-center media-middle">
+                        <input type="checkbox" role-checkbox="control"/>
+                    </th>
+                    <td colspan="7">
+                        <button class="btn btn-danger btn-sm" type="submit" onclick="
+                                document.form.action='<?=url('delete')?>';
+                                document.form.removeAttribute('role-before');
+                                document.form.setAttribute('data-queue-post-confirm', '');
+                                document.form.setAttribute('role-loading', '')
+                                ">
+                            <i class="icon icon-remove"></i>
+                            删除
+                        </button>
+
+                        <button class="btn btn-success btn-sm" type="submit" onclick="
+                                document.form.action='<?=url('set_sort')?>';
+                                document.form.setAttribute('role-before', 'call_before');
+                                document.form.setAttribute('data-queue-post-confirm', '确认要进行排序吗？');
+                                document.form.setAttribute('role-loading', '请稍后...')
+                                ">
+                            <i class="icon icon-sort"></i>
+                            排序
+                        </button>
+                    </td>
+                </tr>
+                </tfoot>
+                <tbody>
+                <empty name="list">
+                    <tr>
+                        <td class="empty-info" colspan="8">暂无相关数据</td>
+                    </tr>
+                    <else/>
+                    <foreach name="list" item="vo">
+                        <tr class="text-center">
+                            <td>
+                                <eq name="vo.is_system" value="0">
+                                    <input type="checkbox" role-checkbox="item" name="id[]" value="{$vo.id}"/>
+                                    <else/>
+                                    <kbd title="系统分类">系</kbd>
+                                </eq>
+                            </td>
+                            <td>
+                                <input type="text" value="{$vo.sort}" name="sort[{$vo.id}]" class="form-control input-sm text-center"/>
+                            </td>
+                            <td>{$vo.id}</td>
+                            <td class="text-left">{$vo.name}</td>
+                            <td>{$vo.var}</td>
+                            <td>{$vo.type}</td>
+                            <td>
+                                <a href="{:url('edit?id=' . $vo['id'])}" class="btn btn-xs btn-success">
+                                    <i class="icon icon-pencil"></i>
+                                </a>
+                                <eq name="vo.is_system" value="0">
+                                    &nbsp;
+                                    <a href="{:url('delete?id=' . $vo['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                        <i class="icon icon-remove"></i>
+                                    </a>
+                                </eq>
+                            </td>
+                        </tr>
+                    </foreach>
+                </empty>
+                </tbody>
+            </table>
+        </form>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        function call_before() {
+            return false;
+        }
+    </script>
+</block>

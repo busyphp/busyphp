@@ -1,0 +1,217 @@
+<extend name="@admin:layout"/>
+<block name="head"></block>
+<block name="content">
+    <div class="table-responsive">
+        <form action="{:url('set_sort')}"
+              data-queue-post-confirm="确认要更新排序吗？"
+              role-before="call_before"
+              role-loading="请稍后..."
+              autocomplete="off" id="checkForm" method="post" onsubmit="return false;">
+            <table class="table table-bordered table-hover table-striped" style="min-width:700px;">
+                <thead>
+                <tr>
+                    <th class="text-center" width="60">排序</th>
+                    <th class="text-center" width="60">ID</th>
+                    <th class="text-center" width="60">图标</th>
+                    <th class="text-center">栏目名称</th>
+                    <th class="text-center" width="60">默认</th>
+                    <th class="text-center" width="60">禁用</th>
+                    <th class="text-center" width="60">隐藏</th>
+                    <th class="text-center" width="80">操作</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <td colspan="8">
+                        <button id="ID_DELETE" class="btn btn-success btn-sm" type="submit">
+                            <i class="icon icon-sort"></i>
+                            排序
+                        </button>
+                    </td>
+                </tr>
+                </tfoot>
+
+                <foreach name="list" item="vo">
+                    <tbody class="list-menu-header">
+                    <tr class="list-menu-title">
+                        <td colspan="8">{$vo.name}</td>
+                    </tr>
+                    <tr class="text-center info">
+                        <td class="sort">
+                            <input type="text" name="sort[{$vo.id}]" class="form-control input-sm text-center" value="{$vo.sort}"/>
+                        </td>
+                        <td>{$vo.id}</td>
+                        <td>
+                            <notempty name="vo.icon">
+                                <i class="icon icon-{$vo.icon}"></i>
+                            </notempty>
+                        </td>
+                        <td class="text-left classname">
+                            <div class="list-menu-bg">
+                                <div>
+                                    {$vo.name}
+                                    <code>{$vo.path}</code>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <eq name="vo.is_default" value="1">
+                                <i class="icon icon-check text-success"></i>
+                                <else/>
+                                --
+                            </eq>
+                        </td>
+                        <td>
+                            <eq name="vo.is_disabled" value="1">
+                                <i class="icon icon-check text-success"></i>
+                                <else/>
+                                --
+                            </eq>
+                        </td>
+                        <td>
+                            <eq name="vo.is_show" value="1">
+                                --
+                                <else/>
+                                <i class="icon icon-check text-success"></i>
+                            </eq>
+                        </td>
+                        <td>
+                            <a href="{:url('edit?id=' . $vo['id'])}" class="btn btn-xs btn-success">
+                                <i class="icon icon-pencil"></i>
+                            </a>
+                            <eq name="vo.is_system" value="0">
+                                &nbsp;
+                                <a href="{:url('delete?id=' . $vo['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                    <i class="icon icon-remove"></i>
+                                </a>
+                            </eq>
+                        </td>
+                    </tr>
+                    </tbody>
+
+
+                    <notempty name="vo.child">
+                        <tbody class="list-menu-body">
+                        <foreach name="vo.child" item="vo2">
+                            <tr class="text-center list-menu-top success">
+                                <td class="sort">
+                                    <input type="text" name="sort[{$vo2.id}]" class="form-control input-sm text-center" value="{$vo2.sort}"/>
+                                </td>
+                                <td>{$vo2.id}</td>
+                                <td>
+                                    <notempty name="vo2.icon">
+                                        <i class="icon icon-{$vo2.icon}"></i>
+                                    </notempty>
+                                </td>
+                                <td class="text-left classname">
+                                    <div class="list-menu-bg">
+                                        <div>
+                                            {$vo2.name}
+                                            <code>{$vo2.path}</code>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <eq name="vo2.is_default" value="1">
+                                        <i class="icon icon-check text-success"></i>
+                                        <else/>
+                                        --
+                                    </eq>
+                                </td>
+                                <td>
+                                    <eq name="vo2.is_disabled" value="1">
+                                        <i class="icon icon-check text-success"></i>
+                                        <else/>
+                                        --
+                                    </eq>
+                                </td>
+                                <td>
+                                    <eq name="vo2.is_show" value="1">
+                                        --
+                                        <else/>
+                                        <i class="icon icon-check text-success"></i>
+                                    </eq>
+                                </td>
+                                <td>
+                                    <a href="{:url('edit?id=' . $vo2['id'])}" class="btn btn-xs btn-success">
+                                        <i class="icon icon-pencil"></i>
+                                    </a>
+                                    <eq name="vo2.is_system" value="0">
+                                        &nbsp;
+                                        <a href="{:url('delete?id=' . $vo2['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                            <i class="icon icon-remove"></i>
+                                        </a>
+                                    </eq>
+                                </td>
+                            </tr>
+
+                            <foreach name="vo2.child" item="vo3">
+                                <tr class="text-center list-menu-child">
+                                    <td class="sort">
+                                        <input type="text" name="sort[{$vo3.id}]" class="form-control input-sm text-center" value="{$vo3.sort}"/>
+                                    </td>
+                                    <td>{$vo3.id}</td>
+                                    <td>
+                                        <notempty name="vo3.icon">
+                                            <i class="icon icon-{$vo3.icon}"></i>
+                                        </notempty>
+                                    </td>
+                                    <td class="text-left classname">
+                                        <div class="list-menu-bg">
+                                            <div>
+                                                {$vo3.name}
+                                                <code>{$vo3.path}</code>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <eq name="vo3.is_default" value="1">
+                                            <i class="icon icon-check text-success"></i>
+                                            <else/>
+                                            --
+                                        </eq>
+                                    </td>
+                                    <td>
+                                        <eq name="vo3.is_disabled" value="1">
+                                            <i class="icon icon-check text-success"></i>
+                                            <else/>
+                                            --
+                                        </eq>
+                                    </td>
+                                    <td>
+                                        <eq name="vo3.is_show" value="1">
+                                            --
+                                            <else/>
+                                            <i class="icon icon-check text-success"></i>
+                                        </eq>
+                                    </td>
+                                    <td>
+                                        <a href="{:url('edit?id=' . $vo3['id'])}" class="btn btn-xs btn-success">
+                                            <i class="icon icon-pencil"></i>
+                                        </a>
+                                        <eq name="vo3.is_system" value="0">
+                                            &nbsp;
+                                            <a href="{:url('delete?id=' . $vo3['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                                <i class="icon icon-remove"></i>
+                                            </a>
+                                        </eq>
+                                    </td>
+                                </tr>
+                            </foreach>
+                        </foreach>
+                        </tbody>
+                    </notempty>
+                </foreach>
+            </table>
+        </form>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        window.SAVE_SCROLL = true;
+
+        function call_before() {
+            return false;
+        }
+    </script>
+</block>

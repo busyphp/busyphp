@@ -1,0 +1,396 @@
+<extend name="@admin:layout"/>
+<block name="head">
+    <css href="{$skin.lib}fonticonpicker/css/jquery.fonticonpicker.css"/>
+    <css href="{$skin.lib}fonticonpicker/themes/bootstrap-theme/jquery.fonticonpicker.bootstrap.min.css"/>
+</block>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            <form action="__SELF__" method="post" class="form-horizontal" data-post="">
+                <input type="hidden" value="{$info.id}" name="id"/>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">菜单类型</label>
+                    <div class="col-sm-4">
+                        <foreach name="info.type_list" key="value" item="name">
+                            <div class="radio-inline">
+                                <label>
+                                    <input type="radio" name="type" value="{$value}" <?=is_checked($info['type'] == $value)?><?=is_disabled(ACTION_NAME == 'edit')?>/>
+                                    {$name}
+                                </label>
+                            </div>
+                        </foreach>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label must">菜单名称</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="name" value="{$info.name}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label must">菜单标识</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="var" value="{$info.var}"/>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">英文、数字、下划线</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">显示图标</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="icon" id="iconSelect" value="{$info.icon}">
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">选择一个对应的图标来代表该栏目</span></div>
+                </div>
+
+                <div class="form-group hide" id="isDefaultBox">
+                    <label class="col-sm-2 control-label">默认导航面板</label>
+                    <div class="col-sm-4">
+                        <label class="radio-inline">
+                            <input name="is_default" type="radio" value="0"<?=is_checked($info['is_default'] == 0)?>/>
+                            普通
+                        </label>
+                        <label class="radio-inline">
+                            <input name="is_default" type="radio" value="1"<?=is_checked($info['is_default'] == 1)?>/>
+                            默认
+                        </label>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">默认导航面板是指顶部大菜单默认显示的菜单</span></div>
+                </div>
+
+                <div class="form-group hide" id="isHasActionBox">
+                    <label class="col-sm-2 control-label">包含执行方法</label>
+                    <div class="col-sm-4">
+                        <label class="radio-inline">
+                            <input name="is_has_action" type="radio" value="1"<?=is_checked($info['is_has_action'] == 1)?>/>
+                            包含
+                        </label>
+                        <label class="radio-inline">
+                            <input name="is_has_action" type="radio" value="0"<?=is_checked($info['is_has_action'] == 0)?>/>
+                            禁用
+                        </label>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">设置禁止后将无法为该控制器创建执行方法</span></div>
+                </div>
+
+                <div class="form-group hide" id="isShowBox">
+                    <label class="col-sm-2 control-label">是否显示</label>
+                    <div class="col-sm-4">
+                        <label class="radio-inline">
+                            <input name="is_show" type="radio" value="1"<?=is_checked($info['is_show'] == 1)?>/>
+                            显示
+                        </label>
+                        <label class="radio-inline">
+                            <input name="is_show" type="radio" value="0"<?=is_checked($info['is_show'] == 0)?>/>
+                            隐藏
+                        </label>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">隐藏后在所有的菜单栏中不会显示，但并非不能使用</span></div>
+                </div>
+
+                <div class="form-group hide" id="isDisabledBox">
+                    <label class="col-sm-2 control-label">是否禁用</label>
+                    <div class="col-sm-4">
+                        <label class="radio-inline">
+                            <input name="is_disabled" type="radio" value="0"<?=is_checked($info['is_disabled'] == 0)?>/>
+                            正常
+                        </label>
+                        <label class="radio-inline">
+                            <input name="is_disabled" type="radio" value="1"<?=is_checked($info['is_disabled'] == 1)?>/>
+                            禁用
+                        </label>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">禁用后该菜单将不能使用</span></div>
+                </div>
+
+                <div class="form-group hide" id="isSystemBox">
+                    <label class="col-sm-2 control-label">是否系统菜单</label>
+                    <div class="col-sm-4">
+                        <label class="radio-inline">
+                            <input name="is_system" type="radio" value="0"<?=is_checked($info['is_system'] == 0)?>/>
+                            普通
+                        </label>
+                        <label class="radio-inline">
+                            <input name="is_system" type="radio" value="1"<?=is_checked($info['is_system'] == 1)?>/>
+                            系统
+                        </label>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="help-block">系统菜单在增加成功后禁止转为，系统菜单将禁止删除</span>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="moduleBox">
+                    <label class="col-sm-2 control-label">所属分组</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" name="module" value="{$info.module}">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="controlBox">
+                    <label class="col-sm-2 control-label">所属控制器</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" name="control" value="{$info.control}">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="actionBox">
+                    <label class="col-sm-2 control-label">所属方法</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" name="action" value="{$info.action}">
+                            <option value="">--请选择--</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="higherBox">
+                    <label class="col-sm-2 control-label">高亮附属控制器</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" name="higher" value="{$info.higher}">
+                            <option value="">--请选择--</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="paramsBox">
+                    <label class="col-sm-2 control-label">附加参数</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="params" value="{$info.params}"/>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="help-block">可用于<code>$_GET</code>接收的参数名称，多个用<code>英文逗号</code>隔开</p>
+                    </div>
+                </div>
+
+                <div class="form-group hide" id="linkBox">
+                    <label class="col-sm-2 control-label">外部链接</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="link" value="{$info.link}" placeholder="http://"/>
+                            <div class="input-group-btn">
+                                <select class="form-control" name="target" style="width: 100px;">
+                                    <option value="">打开方式</option>
+                                    {$info.target_options}
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="help-block">设置后，点击该菜单将打开对应的链接</p>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">定义排序</label>
+                    <div class="col-sm-4">
+                        <input type="number" class="form-control" name="sort" value="{$info.sort}"/>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">数值越小，排的越前面</span></div>
+                </div>
+
+
+                <div class="form-group m-b-0">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" class="btn btn-primary" value="{$submit_name}"/>
+                        <input type="reset" class="btn btn-default" value="重置"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</block>
+<block name="foot">
+    <js href="{$skin.lib}fonticonpicker/jquery.fonticonpicker.js"/>
+    <script>
+		var TREE_LIST = <?=$info['tree']?>;
+
+		/**
+		 * 绘制OPTION选项
+		 * @param $element
+		 * @param list
+		 * @param attr
+		 * @param emptyDefault
+		 * @param okDefault
+		 */
+		function adapterOptions($element, list, attr, emptyDefault, okDefault) {
+			var options, nowValue, i, value, selected, length;
+
+			okDefault = okDefault || '--请选择--';
+			list      = list || [];
+			length    = list.length;
+			options   = '<option value="" data-index="-1">' + okDefault + '</option>';
+			nowValue  = $element.attr('value') || '';
+
+			if (length) {
+				for (i = 0; i < length; i++) {
+				    console.log(list[i]);
+					if (list[i].type == <?=\BusyPHP\app\admin\model\system\menu\SystemMenu::TYPE_PATTERN;?>) {
+						continue;
+					}
+					if (!parseInt(list[i].is_has_action)) {
+						continue;
+					}
+					value    = list[i][attr];
+					selected = value == nowValue ? ' selected' : '';
+					options += '<option value="' + value + '"' + selected + ' data-index="' + i + '">' + list[i].name + '</option>';
+				}
+
+				$element.html(options).prop('disabled', false);
+			} else {
+				$element.html(options).prop('disabled', true).find('option').text(emptyDefault);
+			}
+		}
+
+		$(function () {
+			// 图标选择器
+			$('#iconSelect').fontIconPicker({
+				theme : 'fip-bootstrap'
+			});
+
+			var $isDefaultBox   = $('#isDefaultBox');
+			var $isShowBox      = $('#isShowBox');
+			var $isDisabledBox  = $('#isDisabledBox');
+			var $isHasActionBox = $('#isHasActionBox');
+			var $isSystemBox    = $('#isSystemBox');
+			var $moduleBox      = $('#moduleBox');
+			var $controlBox     = $('#controlBox');
+			var $actionBox      = $('#actionBox');
+			var $higherBox      = $('#higherBox');
+			var $linkBox        = $('#linkBox');
+			var $paramsBox      = $('#paramsBox');
+
+			// 菜单类型切换
+			$('[name="type"]').on('click', function () {
+				var $me = $(this);
+				if (!$me.is(":checked")) {
+					return;
+				}
+
+				$isDefaultBox.addClass('hide');
+				$isShowBox.addClass('hide');
+				$isDisabledBox.addClass('hide');
+				$isHasActionBox.addClass('hide');
+				$isSystemBox.addClass('hide');
+				$moduleBox.addClass('hide');
+				$controlBox.addClass('hide');
+				$actionBox.addClass('hide');
+				$higherBox.addClass('hide');
+				$linkBox.addClass('hide');
+				$paramsBox.addClass('hide');
+
+				switch (parseInt($me.val())) {
+					// 分组
+					case <?=\BusyPHP\app\admin\model\system\menu\SystemMenu::TYPE_MODULE;?>:
+						$isDefaultBox.removeClass('hide');
+						$isSystemBox.removeClass('hide');
+						$isDisabledBox.removeClass('hide');
+						$linkBox.removeClass('hide');
+						break;
+
+					// 控制器
+					case <?=\BusyPHP\app\admin\model\system\menu\SystemMenu::TYPE_CONTROL;?>:
+						$isSystemBox.removeClass('hide');
+						$isDisabledBox.removeClass('hide');
+						$moduleBox.removeClass('hide');
+						$isHasActionBox.removeClass('hide');
+						$paramsBox.removeClass('hide');
+						$('[name="is_has_action"]:checked').trigger('click');
+						break;
+
+					// 执行方法
+					case <?=\BusyPHP\app\admin\model\system\menu\SystemMenu::TYPE_ACTION;?>:
+						$isSystemBox.removeClass('hide');
+						$isDisabledBox.removeClass('hide');
+						$isShowBox.removeClass('hide');
+						$moduleBox.removeClass('hide');
+						$controlBox.removeClass('hide');
+						$paramsBox.removeClass('hide');
+						$('[name="is_show"]:checked').trigger('click');
+						break;
+
+					// 执行模式
+					case <?=\BusyPHP\app\admin\model\system\menu\SystemMenu::TYPE_PATTERN;?>:
+						$isDisabledBox.removeClass('hide');
+						$moduleBox.removeClass('hide');
+						$controlBox.removeClass('hide');
+						$actionBox.removeClass('hide');
+						$paramsBox.removeClass('hide');
+						break;
+				}
+			});
+
+			// 只有菜单选择隐藏的时候才能设置高亮选项
+			var $isShow = $('[name="is_show"]');
+			$isShow.on('click', function () {
+				console.log($(this).val(), $higherBox);
+				if ($(this).is(':checked') && $(this).val() == 0) {
+					$higherBox.removeClass('hide');
+					$linkBox.addClass('hide');
+				} else {
+					$higherBox.addClass('hide');
+					$linkBox.removeClass('hide');
+				}
+			});
+
+			// 包含执行方法
+			var $isHasAction = $('[name="is_has_action"]');
+			$isHasAction.on('click', function () {
+				if ($(this).is(':checked') && $(this).val() == 0) {
+					$linkBox.removeClass('hide');
+				} else {
+					$linkBox.addClass('hide');
+				}
+			});
+
+			$('[name="type"]:checked').trigger('click');
+
+			// select切换
+			var $module     = $('[name="module"]');
+			var $action     = $('[name="action"]');
+			var $higher     = $('[name="higher"]');
+			var $control    = $('[name="control"]');
+			var currentList = [];
+			$module.on('change', function () {
+				if (($(this).val() || '')) {
+					var item    = TREE_LIST[$(this).find('option:selected').attr('data-index')] || {};
+					currentList = item.child || [];
+					adapterOptions($control, currentList, 'control', '--请先选择所属分组--');
+					adapterOptions($action, [], 'action', '--请选择所属控制器--');
+					adapterOptions($higher, [], 'action', '--请选择所属控制器--');
+				} else {
+					currentList = [];
+					adapterOptions($control, [], 'control', '--请先选择所属分组--');
+					adapterOptions($action, [], 'action', '--请选择所属控制器--');
+					adapterOptions($higher, [], 'action', '--请选择所属控制器--');
+				}
+				console.log(currentList);
+			});
+
+			$control.on('change', function () {
+				if (($(this).val() || '') && currentList.length) {
+					var item  = currentList[$(this).find('option:selected').attr('data-index')] || {};
+					var child = item.child || [];
+					adapterOptions($action, child, 'action', '--请选择所属控制器--');
+					adapterOptions($higher, child, 'action', '--请选择所属控制器--', '自身');
+				} else {
+					adapterOptions($action, [], 'action', '--请选择所属控制器--');
+					adapterOptions($higher, [], 'action', '--请选择所属控制器--');
+				}
+			});
+
+			adapterOptions($module, TREE_LIST, 'module', '--请选择分组--');
+			$module.trigger('change');
+			$control.trigger('change');
+		});
+    </script>
+</block>

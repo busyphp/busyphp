@@ -1,0 +1,46 @@
+{
+	"name"        : "busyphp/busyphp",
+	"type"        : "library",
+	"description" : "",
+	"authors"     : [
+		{
+			"name"  : "busy^life",
+			"email" : "busy.life@qq.com"
+		}
+	],
+	"license"     : "Apache-2.0",
+	"require"     : {
+		"php"                      : ">=7.1.0",
+		"topthink/framework"       : "^6.0.2",
+		"topthink/think-orm"       : "^2.0.3",
+		"topthink/think-multi-app" : "^1.0",
+		"topthink/think-view"      : "^1.0",
+		"topthink/think-trace"     : "^1.0",
+		"james-heinrich/phpthumb"  : "^1.7",
+		"aferrandini/phpqrcode"    : "^1.0"
+	},
+	"require-dev" : {
+		"symfony/var-dumper" : "^4.2"
+	},
+	"autoload"    : {
+		"psr-4" : {
+			"BusyPHP\\" : "src"
+		}
+	},
+	"config"      : {
+		"preferred-install" : "dist"
+	},
+	"extra"       : {
+		"busyphp" : {
+			"services" : [
+			],
+			"extract"  : {
+				"src/data/app_assets.zip" : "public/assets"
+			},
+			"config"   : {
+				"thumb"  : "src/data/config_thumb.php",
+				"qrcode" : "src/data/config_qrcode.php"
+			}
+		}
+	}
+}

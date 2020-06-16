@@ -1,0 +1,164 @@
+<extend name="@app:general/view/install/layout"/>
+<block name="content">
+    <form class="form-horizontal" method="post" action="__SELF__" role="form">
+        <input type="hidden" name="action" value="install"/>
+        <div class="panel panel-default">
+            <div class="panel-heading">数据库选项</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">数据库主机</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[server]" value="localhost">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">数据库端口</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[port]" value="3306">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">数据库用户</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[username]" value="root">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">数据库密码</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[password]" value="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">表前缀</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[prefix]" value="busy_">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">数据库名称</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="db[name]" value="db_busyphp" onblur="check_dblist()">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">管理选项</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">管理员账号</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="user[username]" value="admin">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">管理员密码</label>
+                    <div class="col-sm-4">
+                        <input class="form-control user" type="password" name="user[password]" value="">
+                    </div>
+                    <p class="help-block">管理员密码不少于六个字符</p>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">确认密码</label>
+                    <div class="col-sm-4">
+                        <input class="form-control user" type="password" value="">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">站点信息</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">站点名称</label>
+                    <div class="col-sm-4">
+                        <input class="form-control" type="text" name="site[title]" value="BusyPHP">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul class="pager">
+            <li class="previous">
+                <a href="javascript:void(0);" onclick="$('#do').val('back');$('form')[0].submit();"><span class="glyphicon glyphicon-chevron-left"></span>
+                    返回
+                </a>
+            </li>
+            <li class="previous">
+                <a href="javascript:void(0);" onclick="if(check(this)){jQuery('#do').val('continue');$('form')[0].submit();}">
+                    继续
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+            </li>
+        </ul>
+    </form>
+</block>
+<block name="foot">
+    <script>
+        function check_dblist() {
+            params = "db_host=" + $("input[name='db[server]']").val() + "&" + "db_user=" + $("input[name='db[username]']").val() + "&" + "db_pass=" + $("input[name='db[password]']").val() + "&db_port=" + $("input[name='db[port]']").val();
+            $.ajax({
+                url: '__SELF__',
+                data: params,
+                type: 'get',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (typeof (result) === "object" && result["code"] === "200") {
+                        var list = result["data"].split(",");
+                        for (var i = 0; i < list.length; i++) {
+                            if ($("input[name='db[name]']").val() === list[i]) {
+                                var answer = confirm("数据库已存在，是否覆盖此数据库？");
+                                if (answer === false) {
+                                    $("input[name='db[name]']").val("");
+                                }
+                            }
+                        }
+                    } else {
+                        alert(result.msg);
+                        $("input[name='db[password]']").val("");
+                        return false;
+                    }
+                },
+            });
+        }
+
+        var lock = false;
+
+        function check(obj) {
+            if (lock) {
+                return;
+            }
+            $('.form-control').parent().parent().removeClass('has-error');
+            var error = false;
+            $('.form-control').each(function () {
+                if ($(this).attr('name') != 'db[password]') {
+
+                    if ($(this).val() == '') {
+                        $(this).parent().parent().addClass('has-error');
+                        this.focus();
+                        error = true;
+                    }
+                }
+            });
+            if (error) {
+                alert('请检查未填项');
+                return false;
+            }
+            if ($(':password').eq(0).val().length < 6) {
+                $('.user').parent().parent().addClass('has-error');
+                alert('管理员密码不少于六个字符.');
+                return false;
+            }
+            if ($(':password').eq(0).val() != $(':password').eq(1).val()) {
+                $('.user').parent().parent().addClass('has-error');
+                alert('确认密码不正确.');
+                return false;
+            }
+            lock = true;
+            $(obj).parent().addClass('disabled');
+            $(obj).html('正在执行安装');
+            return true;
+        }
+    </script>
+</block>

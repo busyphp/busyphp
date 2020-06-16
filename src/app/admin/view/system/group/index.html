@@ -1,0 +1,83 @@
+<extend name="@admin:layout"/>
+<block name="content">
+
+    <div data-search=""
+         role-search-select-value="name"
+         role-search-select-text="组名称"
+         role-search-action="{$url.self}">
+        <div role-search="content">
+        </div>
+        <div role-search="right">
+            <a class="btn btn-warning" href="{:url('add')}">
+                <i class="icon icon-plus"></i>
+                增加用户组
+            </a>
+        </div>
+    </div>
+
+
+    <div class="table-responsive">
+        <form action="{:url('delete')}" method="post" onsubmit="return false;" id="checkForm" data-queue-post-confirm="" data-table-checkbox="">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-center" width="40">
+                            <input type="checkbox" role-checkbox="control"/>
+                        </th>
+                        <th class="text-center" width="60">ID</th>
+                        <th class="text-center">组名称</th>
+                        <th class="text-center" width="120">操作</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th class="text-center media-middle">
+                            <input type="checkbox" role-checkbox="control"/>
+                        </th>
+                        <td colspan="3">
+                            <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                        </td>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    <empty name="list">
+                        <tr>
+                            <th colspan="4" class="empty-info">暂无相关数据</th>
+                        </tr>
+                        <else/>
+                        <foreach name="list" item="vo">
+                            <tr class="text-center">
+                                <td>
+                                    <eq name="vo.is_system" value="0">
+                                        <input type="checkbox" role-checkbox="item" value="{$vo.id}" name="id[]"/>
+                                    </eq>
+                                </td>
+                                <td>{$vo.id}</td>
+                                <td class="text-left">
+                                    <eq name="vo.is_system" value="1">
+                                        <kbd title="系统权限组">系统</kbd>
+                                    </eq>
+                                    {$vo.name}
+                                </td>
+                                <td>
+                                    <a href="{:url('edit?id=' . $vo['id'])}" class="btn btn-xs btn-success">
+                                    	<i class="icon icon-pencil"></i>
+                                    </a>
+                                    
+                                    <eq name="vo.is_system" value="0">
+                                        &nbsp;
+                                        <a href="{:url('delete?id=' . $vo['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                        	<i class="icon icon-remove"></i>
+                                        </a>
+                                    </eq>
+                                </td>
+                            </tr>
+                        </foreach>
+                    </empty>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    {$page}
+</block>

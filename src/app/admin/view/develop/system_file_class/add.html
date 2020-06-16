@@ -1,0 +1,117 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            <form action="__SELF__" method="post" class="form-horizontal" data-post="">
+                <input type="hidden" value="{$info.id}" name="id"/>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">分类名称</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="name" value="{$info.name}"/>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">设置附件分类的名称</span></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">分类标识</label>
+                    <div class="col-sm-4">
+                        <eq name="Think.ACTION_NAME" value="edit">
+                            <p class="form-control-static">
+                                <code>{$info.var}</code>
+                            </p>
+                            <else/>
+                            <input type="text" class="form-control" name="var" value="{$info.var}"/>
+                        </eq>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">英文字母+数字+下划线</span></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">附件类型</label>
+                    <div class="col-sm-4">
+                        <eq name="Think.ACTION_NAME" value="edit">
+                            <p class="form-control-static"><code>{$info.type_name}</code></p>
+                            <else/>
+                            <select class="form-control" name="type">
+                                <option value="">请选择附件类型</option>
+                                {$info.type_options}
+                            </select>
+                        </eq>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">显示设置</label>
+                    <div class="col-sm-4">
+                        <label class="checkbox-inline">
+                            <input type="checkbox" value="1" name="admin_show" <?=is_checked($info['admin_show'] == 1);?>/>
+                            后台显示
+                        </label>
+                        <label class="checkbox-inline">
+                            <input type="checkbox" value="1" name="home_show" <?=is_checked($info['home_show'] == 1);?>/>
+                            前台显示
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">权限设置</label>
+                    <div class="col-sm-4">
+                        <label class="checkbox-inline">
+                            <input type="checkbox" value="1" name="home_upload" <?=is_checked($info['home_upload'] == 1);?>/>
+                            允许前台上传
+                        </label>
+                        <label class="checkbox-inline">
+                            <input type="checkbox" value="1" name="home_login" <?=is_checked($info['home_login'] == 1);?>/>
+                            前台登录上传
+                        </label>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">后台必须登录才能上传所以不允许设置后台</span></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">系统配置</label>
+                    <div class="col-sm-4">
+                        <eq name="Think.ACTION_NAME" value="edit">
+                            <eq name="info.is_system" value="1">
+                                <p class="form-control-static"><code>系统配置</code></p>
+                                <else />
+                                <p class="form-control-static"><code>非系统配置</code></p>
+                            </eq>
+                            <else/>
+                            <label class="radio-inline">
+                                <input type="radio" value="1" name="is_system" <?=is_checked($info['is_system'] == 1);?>/>
+                                是
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="0" name="is_system" <?=is_checked($info['is_system'] == 0);?>/>
+                                否
+                            </label>
+                        </eq>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="help-block">
+                            <eq name="Think.ACTION_NAME" value="edit">
+                                系统配置项，无法删除及修改
+                                <else/>
+                                如果设置为<code>是</code>则不能删除和修改标识以及附件类型
+                            </eq>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">排序</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="sort" value="{$info.sort}"/>
+                    </div>
+                    <div class="col-sm-6"><span class="help-block">数字越小越靠前</span></div>
+                </div>
+                <div class="form-group m-b-0" id="formSubmit">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" class="btn btn-primary" value="{$submit_name}"/>
+                        <input type="reset" class="btn btn-default" value="重置"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</block>

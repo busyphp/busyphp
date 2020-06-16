@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{$page_title} - 后台管理系统</title>
+    <script>
+        if (window.self != window.top) {
+            window.top.location.href = document.URL;
+            document.write('');
+        }
+    </script>
+    <include file="@admin:head"/>
+    <block name="head"></block>
+</head>
+<body id="{$Think.GROUP_NAME}{$Think.MODULE_NAME}{$Think.ACTION_NAME}">
+
+<!--[if lt IE 9]>
+<div class="alert alert-danger" style="position: absolute; z-index:999; width:100%; height: 60px;">您正在使用
+    <strong>过时的</strong>
+    浏览器. 是时候
+    <a class="btn btn-success" target="_blank" href="http://browsehappy.com/">更换一个更好的浏览器</a> 来提升用户体验.
+</div>
+<![endif]-->
+
+<div id="wrap">
+    <div id="header">
+        <div id="topBar">
+            <div class="logo pull-left">
+                <img src="{$skin.images}logo_white.png"/>
+                <div>
+                    <h1>{$system.public_config.title}后台管理</h1>
+                    <p>{$_SERVER.HTTP_HOST}</p>
+                </div>
+            </div>
+            <a href="javascript:void(0)" class="m-right-menu">
+                <i class="icon icon-list"></i>
+            </a>
+            <div class="bar pull-right">
+                <a class="item" href="{:url('System.User/personal_info')}">
+                    <i class="icon icon-user"></i>
+                    <span>用户：</span>
+                    {$system.username}
+                </a>
+                <a class="item" href="javascript:void(0);">
+                    <i class="icon icon-envelope"></i>
+                    消息
+                </a>
+                <div class="item">
+                    <i class="icon icon-home"></i>
+                    <a href="{$url.root}">后台首页</a>
+                    &nbsp;·&nbsp;
+                    <a href="{$url.base_root}" target="_blank">网站首页</a>
+                </div>
+                <a class="item" href="{:url('admin_out')}" data-get-confirm="确认要退出登录吗？" role-loading="请稍候..." role-ajax="1">
+                    <i class="icon icon-off"></i>
+                    退出登录
+                </a>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div id="mobileBar">
+            <neq name="system.url_path" value="Common.Index/index">
+                <a class="pull-left" href="javascript:history.go(-1);">
+                    <i class="icon icon-angle-left"></i>
+                </a>
+            </neq>
+            <a class="pull-right">
+                <i class="icon icon-list-ul"></i>
+            </a>
+            <div class="text-center">
+                <notempty name="panel_title">
+                    {$panel_title}
+                    <else/>
+                    {$system.public_config.title}
+                </notempty>
+            </div>
+        </div>
+
+        <div id="menu">
+            <ul class="nav nav-tabs pull-left">
+                <foreach name="system.menu" item="vo">
+                    <li<?=$vo['path'] == $system['menu_active'] ? ' class="active"' : '';?>>
+                        <a href="javascript:void(0)" data-target="layoutNav{$vo.id}">
+                            <i class="icon icon-{$vo.icon}"></i>
+                            {$vo.name}
+                        </a>
+                    </li>
+                </foreach>
+            </ul>
+        </div>
+        <div id="bgLine"></div>
+    </div>
+
+
+    <div id="leftBox">
+        <div class="layout-user-info text-center">
+            <a class="layout-user-avatar" href="{$url.root}">
+                <img class="img-circle img-thumbnail" src="{$skin.images}logo.png"/>
+            </a>
+            <h5>
+                <i class="icon icon-user"></i>
+                {$system.username}
+            </h5>
+            <div class="layout-user-toolbar">
+                <a class="btn btn-default btn-xs" href="{:url('System.User/personal_info')}">
+                    <i class="icon icon-cog"></i>
+                    资料
+                </a>
+                <a class="btn btn-default btn-xs" href="{:url('System.User/personal_password')}">
+                    <i class="icon icon-lock"></i>
+                    密码
+                </a>
+                <a class="btn btn-default btn-xs" href="{:url('admin_out')}" data-get-confirm="确认要退出登录吗？" role-loading="请稍候..." role-ajax="1">
+                    <i class="icon icon-sign-out"></i>
+                    退出
+                </a>
+            </div>
+        </div>
+        <div id="nav">
+            <foreach name="system.nav" item="vo">
+                <h3 class="menu-father-title" id="layoutNav{$vo.id}">{$vo.name}</h3>
+                <ul class="nav menu-father-box <?=$vo['path'] == $system['menu_active'] ? '' : 'hide';?>">
+                    <foreach name="vo.child" item="vo2">
+                        <li id="menu_item_{$vo2.id}" class="menu-father-item <?=$vo2['path'] == $system['nav_active'] ? 'active' : ''?>" data-id="{$vo2.id}">
+                            <a href="{$vo2.url|default='javascript:void(0);'}" class="menu-father-a">
+                                <em class="icon icon-chevron-right pull-right <?=$vo2['is_has_action'] ? 'icon-rotate-90' : ''?>"></em>
+                                <i class="pull-left icon icon-{$vo2.icon}"></i>
+                                {$vo2.name}
+                            </a>
+                            <notempty name="vo2.child">
+                                <ul class="menu-children-box" data-show="1">
+                                    <foreach name="vo2.child" item="vo3">
+                                        <li class="menu-children-item <?=$vo3['path'] == $system['nav_active'] ? 'active' : ''?>">
+                                            <a class="menu-children-a" href="{$vo3.url|default='javascript:void(0);'}">
+                                                <i class="pull-left icon icon-{$vo3.icon}"></i>
+                                                <span>{$vo3.name}</span>
+                                                <div class="clearfix"></div>
+                                            </a>
+                                        </li>
+                                    </foreach>
+                                </ul>
+                            </notempty>
+                        </li>
+                    </foreach>
+                </ul>
+            </foreach>
+        </div>
+        <div class="nav-extend">
+            <block name="nav"></block>
+        </div>
+    </div>
+    <div id="contentBox">
+        <div id="currentBar">
+            <ol class="breadcrumb">
+                <li class="title">
+                    <i class="icon icon-home"></i>
+                    <span>当前位置</span>
+                </li>
+                <li><a href="{$url.root}">首页</a></li>
+                <foreach name="system.breadcrumb" item="foreachUrl" key="foreachName">
+                    <li>
+                        <eq name="foreachUrl" value="">
+                            <span>{$foreachName}</span>
+                            <else/>
+                            <a href="{$foreachUrl}">{$foreachName}</a>
+                        </eq>
+                    </li>
+                </foreach>
+            </ol>
+            <div class="clearfix"></div>
+        </div>
+        <div id="content">
+            <div class="content-padding">
+                <block name="content"></block>
+            </div>
+        </div>
+        <div id="layoutBg"></div>
+    </div>
+</div>
+<include file="@admin:foot"/>
+<!--[admin:plugin]-->
+<block name="foot"></block>
+</body>
+</html>

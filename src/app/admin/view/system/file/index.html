@@ -1,0 +1,103 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div data-search=""
+         role-search-select-value="name,extension,hash,userid"
+         role-search-select-text="附件名称,附件后缀,HASH,用户ID"
+         role-search-action="{$url.self}">
+        <div role-search="content-left">
+            <div class="form-group">
+                <select class="form-control" name="static[classify]">
+                    <option value="">不限类型</option>
+                    {$classify_options}
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" name="static[mark_type]">
+                    <option value="">不限分类</option>
+                    {$type_options}
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" name="static[admin_type]">
+                    <option value="">不限来源</option>
+                    <option value="1">后台</option>
+                    <option value="2">前台</option>
+                </select>
+            </div>
+        </div>
+        <div role-search="right">
+            <a class="btn btn-warning" href="{:url('upload')}">上传附件</a>
+        </div>
+    </div>
+
+
+    <form action="{:url('delete')}" autocomplete="off" id="checkForm" method="post" onsubmit="return false;" data-queue-post-confirm="" data-table-checkbox="">
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+                <tr>
+                    <th class="text-center" width="40">
+                        <input type="checkbox" role-checkbox="control"/>
+                    </th>
+                    <th class="text-center" width="60">ID</th>
+                    <th class="text-center">文件名</th>
+                    <th class="text-center" width="240">HASH</th>
+                    <th class="text-center" width="80">来源</th>
+                    <th class="text-center" width="80">类型</th>
+                    <th class="text-center" width="80">后缀</th>
+                    <th class="text-center" width="100">大小</th>
+                    <th class="text-center" width="150">时间</th>
+                    <th class="text-center" width="60">操作</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td class="text-center media-middle">
+                        <input type="checkbox" role-checkbox="control"/>
+                    </td>
+                    <td colspan="10">
+                        <button class="btn btn-danger btn-sm" id="ID_DELETE" type="submit">删除</button>
+                    </td>
+                </tr>
+            </tfoot>
+            <tbody>
+                <empty name="list">
+                    <tr>
+                        <td class="empty-info" colspan="15">暂无相关数据</td>
+                    </tr>
+                    <else/>
+                    <foreach name="list" item="vo">
+                        <tr class="text-center">
+                            <td>
+                                <input type="checkbox" role-checkbox="item" value="{$vo.id}" name="id[]"/>
+                            </td>
+                            <td>{$vo.id}</td>
+                            <td class="text-left">
+                                <a target="_blank" href="{$vo.url}">
+                                    {$vo.name}
+                                </a>
+                            </td>
+                            <td>{$vo.hash}</td>
+                            <td>
+                                <eq name="vo.is_admin" value="1">
+                                    <span class="label label-primary">后台</span>
+                                    <else/>
+                                    <span class="label label-success">前台</span>
+                                </eq>
+                            </td>
+                            <td>{$vo.classify_name}</td>
+                            <td>{$vo.extension}</td>
+                            <td>{$vo.format_size}</td>
+                            <td>{$vo.format_create_time}</td>
+                            <td>
+                                <a href="{:url('delete?id=' . $vo['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
+                                	<i class="icon icon-remove"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </foreach>
+                </empty>
+            </tbody>
+        </table>
+        {$page}
+    </form>
+</block>
