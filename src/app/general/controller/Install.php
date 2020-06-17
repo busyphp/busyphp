@@ -3,7 +3,7 @@
 namespace BusyPHP\app\general\controller;
 
 use BusyPHP\App;
-use BusyPHP\controller;
+use BusyPHP\Controller;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\util\Filter;

@@ -2,7 +2,7 @@
 
 namespace BusyPHP\app\general\controller;
 
-use BusyPHP\controller;
+use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\image\Verify as Captcha;
 

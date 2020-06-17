@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\controller;
 use BusyPHP\App;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\controller;
+use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\page\Page;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;

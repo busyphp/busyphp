@@ -3,7 +3,7 @@
 namespace BusyPHP\app\general\controller;
 
 use BusyPHP\App;
-use BusyPHP\controller;
+use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
 use BusyPHP\image\Image;
 use BusyPHP\image\url\ThumbUrl;

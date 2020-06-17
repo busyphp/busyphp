@@ -8,24 +8,24 @@ use think\facade\Route;
 // +----------------------------------------------------
 if (app()->http->getName() === 'admin') {
     Route::group(function() {
-        Route::rule('Develop.<control>/<action>', 'Develop\<control>@<action>')->append([
+        Route::rule('Develop.<control>/<action>', 'develop\<control>@<action>')->append([
             'group' => 'Develop'
         ]);
         
-        Route::rule('System.<control>/<action>', 'System\<control>@<action>')->append([
+        Route::rule('System.<control>/<action>', 'system\<control>@<action>')->append([
             'group' => 'System',
         ])->pattern([
             'control' => '[File|Region|Group|User|Update|Index]+'
         ]);
         
-        Route::rule('Common.<control>/<action>', 'Common\<control>@<action>')->append([
+        Route::rule('Common.<control>/<action>', 'common\<control>@<action>')->append([
             'group' => 'Common',
         ])->pattern([
             'control' => '[Passport|Ueditor|Js|Action|Index]+'
         ]);
         
         Route::group(function() {
-            $index = 'Common\Index@index';
+            $index = 'common\Index@index';
             Route::rule('/', $index);
             Route::rule('index', $index);
         })->append([
@@ -36,14 +36,14 @@ if (app()->http->getName() === 'admin') {
         
         
         // 注册登录地址
-        Route::rule('login', 'Common\Passport@login')->append([
+        Route::rule('login', 'common\Passport@login')->append([
             'group'   => 'Common',
             'control' => 'Passport',
             'action'  => 'login'
         ])->name('admin_login');
         
         // 注册退出地址
-        Route::rule('out', 'Common\Passport@out')->append([
+        Route::rule('out', 'common\Passport@out')->append([
             'group'   => 'Common',
             'control' => 'Passport',
             'action'  => 'out'
