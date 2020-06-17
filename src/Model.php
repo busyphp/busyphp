@@ -1287,7 +1287,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function buildInSql($field, $key, $value) : array
     {
-        return ['in', $this->field($field)->whereof([$key => $value])->buildSql(false), true];
+        return ['in', $this->field($field)->whereof([$key => $value])->buildSql(true), true];
     }
     
     
