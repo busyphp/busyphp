@@ -126,6 +126,7 @@ class ThumbUrl
         
         $this->url         = $this->url ?: ($this->options['empty_image_var'] ?: self::EMPTY_IMAGE_VAR);
         $info              = pathinfo($this->url);
+        $info['extension'] = $info['extension'] ?? 'jpg';
         $info['extension'] = $info['extension'] ?: 'jpg';
         if ('/' === $info['dirname'] || '.' === $info['dirname']) {
             $info['dirname'] = '';
