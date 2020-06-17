@@ -387,6 +387,9 @@ abstract class AdminCurdController extends AdminController
      */
     protected function setRedirectUrl($url = true)
     {
+        if (!is_string($url)) {
+            $url = (string) $url;
+        }
         if (true === $url) {
             $url = $_SERVER['HTTP_REFERER'];
         }
