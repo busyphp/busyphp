@@ -286,11 +286,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 设置操作前回调方法
-     * @param int     $callType 回调类型
+     * @param mixed   $callType 回调类型
      * @param Closure $callback 回调方法，具体参数由子类定义
      * @return $this
      */
-    public function setCallback(int $callType, Closure $callback) : Model
+    public function setCallback($callType, Closure $callback) : Model
     {
         $this->callback[$callType] = $callback;
         
@@ -300,11 +300,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 触发回调方法
-     * @param int   $callType 回调类型
+     * @param mixed $callType 回调类型
      * @param array $args 回调方法参数
      * @return mixed
      */
-    protected function triggerCallback(int $callType, $args = [])
+    protected function triggerCallback($callType, $args = [])
     {
         if (isset($this->callback[$callType])) {
             return call_user_func_array($this->callback[$callType], $args);
