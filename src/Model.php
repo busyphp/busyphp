@@ -1033,9 +1033,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 查找单条数据并返回数组
      * @param mixed $data
-     * @return array
+     * @return array|false
      */
-    public function findData($data = null) : array
+    public function findData($data = null)
     {
         return $this->catchException(function() use ($data) {
             $info = $this->find($data);
