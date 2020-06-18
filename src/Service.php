@@ -8,6 +8,9 @@ use BusyPHP\command\Install;
 use BusyPHP\command\Version;
 use BusyPHP\middleware\ConfigInit;
 use BusyPHP\middleware\RouteInit;
+use BusyPHP\model\Query;
+use BusyPHP\view\taglib\Cx;
+use BusyPHP\view\View;
 use think\middleware\SessionInit;
 use think\Paginator;
 
@@ -21,30 +24,7 @@ class Service extends \think\Service
 {
     public function register()
     {
-        // app
-        $config             = $this->app->config->get();
-        $app                = $config['app'];
-        $app['app_express'] = true;
-        
-        
-        // 文件方式缓存配置
-        $cache                   = $config['cache'];
-        $file                    = $cache['stores']['file'] ?? [];
-        $file['type']            = isset($file['type']) && $file['type'] ? $file['type'] : File::class;
-        $file['path']            = isset($file['path']) && $file['path'] ? $file['path'] : App::runtimeCachePath();
-        $cache['stores']['file'] = $file;
-        
-        
-        // trace
-        $trace         = $config['trace'];
-        $trace['file'] = isset($trace['file']) && $trace['file'] ? $trace['file'] : App::getBusyPath('tpl') . 'trace.html';
-        
-        
-        // 整合
-        $config['app']   = $app;
-        $config['cache'] = $cache;
-        $config['trace'] = $trace;
-        $this->app->config->set($config);
+        $this->setConfig();
     }
     
     
@@ -109,5 +89,96 @@ class Service extends \think\Service
             
             return 1;
         });
+    }
+    
+    
+    /**
+     * 设置默认配置
+     */
+    private function setConfig()
+    {
+        $config      = $this->app->config->get();
+        $app         = $this->value($config, 'app', []);
+        $view        = $this->value($config, 'view', []);
+        $database    = $this->value($config, 'database', []);
+        $connections = $this->value($database, 'connections', []);
+        $mysql       = $this->value($connections, 'mysql', []);
+        $cache       = $this->value($config, 'cache', []);
+        $route       = $this->value($config, 'route', []);
+        $trace       = $this->value($config, 'trace', []);
+        
+        
+        // 应用
+        $tplPath               = App::getBusyPath('tpl');
+        $app['exception_tmpl'] = $this->value($app, 'exception_tmpl', $tplPath . 'exception.html');
+        $app['success_tmpl']   = $this->value($app, 'success_tpl', $tplPath . 'message.html');
+        $app['error_tmpl']     = $this->value($app, 'error_tpl', $tplPath . 'message.html');
+        $app['app_express']    = true;
+        
+        
+        // 错误级别配置
+        $errorLevelExclude = $this->value($app, 'error_level_exclude', []);
+        if (is_string($errorLevelExclude) && $errorLevelExclude === 'none') {
+            $errorLevelExclude = [];
+        } else {
+            $errorLevelExclude = [E_NOTICE, E_WARNING, E_DEPRECATED];
+        }
+        $app['error_level_exclude'] = $errorLevelExclude;
+        
+        
+        // 模板配置
+        $view['type']            = $this->value($view, 'type', View::class);
+        $view['taglib_build_in'] = $this->value($view, 'taglib_build_in', Cx::class);
+        $view['taglib_begin']    = $this->value($view, 'taglib_begin', '<');
+        $view['taglib_end']      = $this->value($view, 'taglib_end', '>');
+        $view['default_filter']  = $this->value($view, 'default_filter', '');
+        
+        
+        // 数据库配置
+        $mysql['query']                   = $this->value($mysql, 'query', Query::class);
+        $mysql['prefix']                  = $this->value($mysql, 'prefix', 'busy_');
+        $mysql['schema_cache_path']       = $this->value($mysql, 'schema_cache_path', App::runtimeCachePath('schema'));
+        $database['connections']['mysql'] = $mysql;
+        
+        
+        // 文件缓存
+        $cache['stores']         = $this->value($cache, 'stores', []);
+        $file                    = $this->value($cache['stores'], 'file', []);
+        $file['type']            = $this->value($file, 'type', File::class);
+        $file['path']            = $this->value($file, 'path', App::runtimeCachePath());
+        $cache['stores']['file'] = $file;
+        
+        
+        // 路由配置
+        $route['var_redirect_url'] = $this->value($route, 'var_redirect_url', 'redirect_url');
+        $route['var_page']         = $this->value($route, 'var_page', 'page');
+        
+        
+        // trace
+        $trace['file'] = $this->value($trace, 'file', App::getBusyPath('tpl') . 'trace.html');
+        
+        
+        // 组合参数进行设置
+        $config['app']      = $app;
+        $config['view']     = $view;
+        $config['database'] = $database;
+        $config['cache']    = $cache;
+        $config['route']    = $route;
+        $config['trace']    = $trace;
+        
+        $this->app->config->set($config);
+    }
+    
+    
+    /**
+     * 获取配置值
+     * @param $array
+     * @param $key
+     * @param $default
+     * @return mixed
+     */
+    private function value($array, $key, $default)
+    {
+        return isset($array[$key]) && !empty($array[$key]) ? $array[$key] : $default;
     }
 }
