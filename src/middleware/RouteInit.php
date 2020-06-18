@@ -84,38 +84,62 @@ class RouteInit implements Middleware
             $groupName  = $arr[0];
             $controller = $arr[1];
         }
-        /**
-         * 分组名称
-         */
-        define('GROUP_NAME', ucfirst($groupName));
-        /**
-         * 控制器名称
-         */
-        define('MODULE_NAME', ucfirst($controller));
-        /**
-         * 执行方法名称
-         */
-        define('ACTION_NAME', $this->request->action());
-        /**
-         * 网站根目录地址
-         */
-        define('URL_ROOT', $this->request->getWebUrl());
-        /**
-         * 当前项目地址
-         */
-        define('URL_APP', $this->request->getAppUrl());
-        /**
-         * 静态资源URL
-         */
-        define('URL_ASSETS', $this->request->getWebAssetsUrl());
-        /**
-         * 当前URL，包含QueryString
-         */
-        define('URL_SELF', $this->request->url());
-        /**
-         * 当前域名
-         */
-        define('URL_DOMAIN', $this->request->domain());
+        
+        if (!defined('GROUP_NAME')) {
+            /**
+             * 分组名称
+             */
+            define('GROUP_NAME', ucfirst($groupName));
+        }
+        
+        if (!defined('MODULE_NAME')) {
+            /**
+             * 控制器名称
+             */
+            define('MODULE_NAME', ucfirst($controller));
+        }
+        
+        if (!defined('ACTION_NAME')) {
+            /**
+             * 执行方法名称
+             */
+            define('ACTION_NAME', $this->request->action());
+        }
+        
+        if (!defined('URL_ROOT')) {
+            /**
+             * 网站根目录地址
+             */
+            define('URL_ROOT', $this->request->getWebUrl());
+        }
+        
+        if (!defined('URL_APP')) {
+            /**
+             * 当前项目地址
+             */
+            define('URL_APP', $this->request->getAppUrl());
+        }
+        
+        if (!defined(defined('URL_ASSETS'))) {
+            /**
+             * 静态资源URL
+             */
+            define('URL_ASSETS', $this->request->getWebAssetsUrl());
+        }
+        
+        if (!defined('URL_SELF')) {
+            /**
+             * 当前URL，包含QueryString
+             */
+            define('URL_SELF', $this->request->url());
+        }
+        
+        if (!defined('URL_DOMAIN')) {
+            /**
+             * 当前域名
+             */
+            define('URL_DOMAIN', $this->request->domain());
+        }
     }
     
     
