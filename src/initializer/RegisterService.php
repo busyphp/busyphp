@@ -28,7 +28,7 @@ class RegisterService extends \think\initializer\RegisterService
         $app->register(Service::class);
         
         // 注册扩展服务类
-        $file = $app->getRootPath() . 'vendor/busy_services.php';
+        $file = $app->getRootPath() . 'vendor/busyphp_services.php';
         if (is_file($file)) {
             $services = include $file;
             foreach ($services as $service) {
