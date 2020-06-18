@@ -59,7 +59,7 @@ class Install extends Command
     {
         $this->output->writeln('<info>开始初始化 BusyPHP...</info>');
         $serviceFile = $this->app->getRootPath() . 'vendor/busyphp_services.php';
-        $services[]  = [];
+        $services    = [];
         
         // 将BusyPHP框架支持的扩展 services 放进去
         $packages = $this->getPackages();
@@ -67,7 +67,7 @@ class Install extends Command
             if (!empty($package['extra']['busyphp']['services'])) {
                 $mServices = is_array($package['extra']['busyphp']['services']) ? $package['extra']['busyphp']['services'] : [];
                 foreach ($mServices as $service) {
-                    $services[] = $services;
+                    $services[] = $service;
                 }
             }
         }
