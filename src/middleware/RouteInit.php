@@ -120,7 +120,7 @@ class RouteInit implements Middleware
             define('URL_APP', $this->request->getAppUrl());
         }
         
-        if (!defined(defined('URL_ASSETS'))) {
+        if (!defined('URL_ASSETS')) {
             /**
              * 静态资源URL
              */
