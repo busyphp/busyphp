@@ -40,6 +40,8 @@ use think\model\concern\TimeStamp;
  * @method mixed onBeforeUpdate() 更新前回调, 返回false阻止更新
  * @method mixed onBeforeDelete() 删除前回调, 返回false阻止更新
  * @method void onChanged(string $method, $id, array $options) 新增/更新/删除后回调
+ * @method void onSaveAll() 批量更新回调
+ * @method void onAddAll() 批量更新回调
  * @method void onAfterWrite($id, array $options) 新增/更新完成后回调
  * @method void onAfterInsert($id, array $options) 新增完成后回调
  * @method void onAfterUpdate($id, array $options) 更新完成后回调
@@ -1077,7 +1079,16 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         }
         
         return $this->catchException(function() use ($data) {
-            return $this->insertAll($data);
+            $result = $this->insertAll($data);
+    
+            // 触发回调
+            if (method_exists($this, 'onAddAll')) {
+                $this->catchException(function() {
+                    $this->onAddAll();
+                }, false, static::class . '::onAddAll', 'error');
+            }
+            
+            return $result;
         });
     }
     
@@ -1150,6 +1161,14 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
             if (false !== $result) {
                 $this->addHandleData($data, 'save all');
+                
+                
+                // 触发回调
+                if (method_exists($this, 'onSaveAll')) {
+                    $this->catchException(function() {
+                        $this->onSaveAll();
+                    }, false, static::class . '::onSaveAll', 'error');
+                }
             }
             
             return $result;
