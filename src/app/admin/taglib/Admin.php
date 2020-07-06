@@ -292,7 +292,7 @@ class Admin extends TagLib
         // 导入百度编辑器JS插件
         if ($this->isUEditor) {
             $bodyExtend      .= $this->createJs('__ASSETS__admin/lib/ueditor/ueditor.all.min.js');
-            $bodyExtend      .= $this->createJs('common.ueditor/runtime?js=1', true);
+            $bodyExtend      .= $this->createJs('Common.Ueditor/runtime?js=1', true);
             $this->isUEditor = false;
         }
         

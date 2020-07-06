@@ -152,8 +152,8 @@
 		}
 
 		// 上传图片配置
-		var imageConfig = fileConfig[imageType];
-		var imageSuffix = imageConfig.suffix;
+		var imageConfig = fileConfig[imageType] || {};
+		var imageSuffix = imageConfig.suffix || [];
 		for (var i = 0; i < imageSuffix.length; i++) {
 			imageSuffix[i] = '.' + imageSuffix[i];
 		}
