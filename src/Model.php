@@ -761,6 +761,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $message        = $this->errorSQL;
         }
         
+        $message .= PHP_EOL . $e->getTraceAsString();
         if ($type == 'sql') {
             if ($this->getConfig('trigger_sql')) {
                 Log::record($message, 'sql');
@@ -1303,14 +1304,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $data = $data->getDBData();
         }
         
-        // 支持 exp 写法
+        $fields = $this->getTableFields();
+        $list   = [];
+        
+        // 支持 exp 写法 及 过滤字段
         foreach ($data as $key => $value) {
-            if (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
-                $data[$key] = Db::raw($value[1]);
+            if (in_array($key, $fields)) {
+                $list[$key] = $value;
+                if (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
+                    $list[$key] = Db::raw($value[1]);
+                }
             }
         }
         
-        return $data;
+        return $list;
     }
     
     
