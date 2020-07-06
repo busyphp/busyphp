@@ -71,15 +71,11 @@ class Cache
             
             // Redis缓存方式
             case 'redis':
-                $name = self::name($dir, '');
-                if ($name) {
-                    $redis   = cache()->handler();
-                    $pattern = self::name($dir, '') . '*';
-                    $keys    = $redis->keys($pattern);
-                    $redis->del($keys);
-                } else {
-                    cache()->clear();
-                }
+                $prefix = config('cache.stores.redis.prefix');
+                $name   = $prefix . self::name($dir, '');
+                $redis  = cache()->store('redis')->handler();
+                $keys   = $redis->keys($name . '*');
+                $redis->del($keys);
             break;
             
             // 其他缓存方式

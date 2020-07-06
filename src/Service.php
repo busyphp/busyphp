@@ -11,6 +11,7 @@ use BusyPHP\middleware\RouteInit;
 use BusyPHP\model\Query;
 use BusyPHP\view\taglib\Cx;
 use BusyPHP\view\View;
+use think\cache\driver\Redis;
 use think\middleware\SessionInit;
 use think\Paginator;
 
@@ -142,11 +143,14 @@ class Service extends \think\Service
         
         
         // 文件缓存
-        $cache['stores']         = $this->value($cache, 'stores', []);
-        $file                    = $this->value($cache['stores'], 'file', []);
-        $file['type']            = $this->value($file, 'type', File::class);
-        $file['path']            = $this->value($file, 'path', App::runtimeCachePath());
-        $cache['stores']['file'] = $file;
+        $cache['stores']          = $this->value($cache, 'stores', []);
+        $file                     = $this->value($cache['stores'], 'file', []);
+        $file['type']             = $this->value($file, 'type', File::class);
+        $file['path']             = $this->value($file, 'path', App::runtimeCachePath());
+        $cache['stores']['file']  = $file;
+        $redis                    = $this->value($cache['stores'], 'redis', []);
+        $redis['type']            = $this->value($redis, 'type', Redis::class);
+        $cache['stores']['redis'] = $redis;
         
         
         // 路由配置
