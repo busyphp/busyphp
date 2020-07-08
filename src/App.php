@@ -79,26 +79,39 @@ class App extends \think\App
      */
     public function autoload($class)
     {
-        // 判断前缀不是系统核心命名空间则不解析
-        if (substr($class, 0, 7) !== 'BusyPHP') {
-            return;
-        }
-        
         // 子类规则 Class_Child
         // 判断没有包含子类则不解析
         if (false === $index = strpos($class, '_')) {
             return;
         }
         
+        
         $class = ltrim(substr($class, 0, -(strlen($class) - $index)), '\\');
-        $class = substr($class, 8);
         $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-        $class = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . $class . '.php';
-        if (!is_file($class)) {
+        
+        
+        // BusyPHP前缀解析
+        if (substr($class, 0, 7) === 'BusyPHP') {
+            $class = substr($class, 8);
+            $class = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . $class . '.php';
+        }
+        
+        // app 前缀解析
+        // core前缀解析
+        elseif (substr($class, 0, 4) === 'core' || substr($class, 0, 3) === 'app') {
+            $class = dirname(dirname(dirname(dirname(dirname(__FILE__))))) . DIRECTORY_SEPARATOR . $class . '.php';
+        }
+        
+        //
+        // 不解析
+        else {
             return;
         }
         
-        require_once $class;
+        
+        if (is_file($class)) {
+            require_once $class;
+        }
     }
     
     
