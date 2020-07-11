@@ -12,6 +12,8 @@ use think\initializer\BootService;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/16 下午11:29 上午 App.php $
+ * @property Request $request
+ * @property Db      $db
  */
 class App extends \think\App
 {
