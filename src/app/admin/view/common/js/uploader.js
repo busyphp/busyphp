@@ -4,7 +4,7 @@ window.UPLOADIFY_SID     = '{$sid}';
 window.UPLOADIFY_URL     = '{:url("Common.Action/upload")}';
 window.UPLOADIFY_SWF_URL = '{$skin.lib}webuploader/Uploader.swf';
 window.FILE_CLASS        = eval('({:json_encode($file_class)})');
-window.FILE_LIBRARY_URL  = '{:url("Cx.File/library?mark_type=__MARK_TYPE__&mark_value=__MARK_VALUE__")}';
+window.FILE_LIBRARY_URL  = '{:url("System.File/library?mark_type=__MARK_TYPE__&mark_value=__MARK_VALUE__")}';
 
 (function ($, window) {
 

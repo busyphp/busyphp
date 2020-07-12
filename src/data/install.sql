@@ -153,7 +153,7 @@ INSERT INTO `#__table__#system_file_class` (`id`, `name`, `var`, `type`, `home_s
 
 INSERT INTO `#__table__#admin_group` (`id`, `name`, `rule`, `is_system`, `default_group`) VALUES
 (1, '超级管理员', '', 1, 'system'),
-(2, '普通权限', 'Cx,Cx.Update,Cx.Update/cache,Cx.Update/index,Cx.User,Cx.User/password,Cx.User/personal_info,Cx.User/personal_password', 0, 'system');
+(2, '普通权限', 'System,System.Update,System.Update/cache,System.Update/index,System.User,System.User/password,System.User/personal_info,System.User/personal_password', 0, 'system');
 
 INSERT INTO `#__table__#admin_user` (`id`, `username`, `password`, `email`, `phone`, `qq`, `login_ip`, `login_time`, `last_ip`, `last_time`, `create_time`, `update_time`, `group_id`, `section_id`, `checked`, `login_total`, `is_system`, `token`) VALUES
 (1, '#__username__#', '#__password__#', '', '', '', '', 0, '', 0, #__create_time__#, #__create_time__#, 1, 0, 1, 0, 1, '');

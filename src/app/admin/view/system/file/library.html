@@ -1,4 +1,4 @@
-<extend name="@admin:Iframe"/>
+<extend name="@admin:iframe"/>
 <block name="head">
     <css href="{$skin.css}file_library.css"/>
 </block>
@@ -38,9 +38,9 @@
 
     <form action="{$url.self}" method="post" id="checkForm" name="form" data-queue-post-confirm="" data-table-checkbox="" <?=$list_type == 'image' ? 'role-checkbox-callback="{singleSelection: singleSelection, singleCancelled: singleCancelled, allSelected: allSelected, allCancelled: allCancelled}"' : ''?>>
         <eq name="list_type" value="image">
-            <include file="@admin:System/File/library_image"/>
+            <include file="@admin:system/file/library_image"/>
             <else/>
-            <include file="@admin:System/File/library_list"/>
+            <include file="@admin:system/file/library_list"/>
         </eq>
         <div>{$page}</div>
 
