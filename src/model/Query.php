@@ -35,6 +35,26 @@ class Query extends \think\db\Query
     
     
     /**
+     * Limit操作
+     * @param mixed $limit 支持传 start,length 格式的字符串
+     * @param int   $length
+     * @return $this
+     */
+    public function limiting($limit, int $length = null)
+    {
+        if (false !== strpos("{$limit}", ',')) {
+            [$limit, $length] = explode(',', $limit, 2);
+            $length = intval($length);
+        }
+        
+        $limit = intval($limit);
+        $this->limit($limit, $length);
+        
+        return $this;
+    }
+    
+    
+    /**
      * 单个条件查询
      * @param string|int|array $key 条件字段
      * @param mixed            $value 条件值
