@@ -34,11 +34,11 @@ use think\Validate;
  * @method bool isMobile 是否在手机端运行
  * @method bool isAndroid 是否在安卓端运行
  * @method bool isIos 是否在苹果上运行
- * @method mixed iGet(string $key = "", string $filterCall = "", string $default = "") 获取$_GET参数
- * @method mixed iRequest(string $key = "", string $filterCall = "", string $default = "") 获取$_POST参数
- * @method mixed iPost(string $key = "", string $filterCall = "", string $default = "") 获取$_REQUEST参数
- * @method mixed iPut(string $key = "", string $filterCall = "", string $default = "") 获取$_PUT参数
- * @method mixed iParam(string $key = "", string $filterCall = "", string $default = "") 获取参数
+ * @method mixed iGet(string $key = "", callable $filterCall = "", string $default = "") 获取$_GET参数
+ * @method mixed iRequest(string $key = "", callable $filterCall = "", string $default = "") 获取$_POST参数
+ * @method mixed iPost(string $key = "", callable $filterCall = "", string $default = "") 获取$_REQUEST参数
+ * @method mixed iPut(string $key = "", callable $filterCall = "", string $default = "") 获取$_PUT参数
+ * @method mixed iParam(string $key = "", callable $filterCall = "", string $default = "") 获取参数
  * @method Json json(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSON数据
  * @method Jsonp jsonp(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSONP数据
  * @method Xml xml(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出XML数据
