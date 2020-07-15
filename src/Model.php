@@ -970,6 +970,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
+     * 生成查询语句
+     * @param bool $sub
+     * @return string
+     */
+    public function buildSql(bool $sub = true) : string
+    {
+        $result = parent::buildSql($sub);
+        $this->removeOption();
+        
+        return $result;
+    }
+    
+    
+    /**
      * 得到某个字段的值
      * @param string $field 字段名
      * @param mixed  $default 默认值
@@ -1080,7 +1094,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         return $this->catchException(function() use ($data) {
             $result = $this->insertAll($data);
-    
+            
             // 触发回调
             if (method_exists($this, 'onAddAll')) {
                 $this->catchException(function() {
