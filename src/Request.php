@@ -58,13 +58,35 @@ class Request extends \think\Request
     
     /**
      * 设置$_GET
-     * @param string $name
-     * @param string $value
+     * @param string       $name
+     * @param string|array $value
      * @return $this
      */
     public function setGet($name, $value = '') : self
     {
-        $this->get[$name] = $value;
+        if (isset($this->get[$name]) && is_array($this->get[$name])) {
+            $this->get[$name] = array_merge($this->get[$name], $value);
+        } else {
+            $this->get[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置$_PUT
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setPut($name, $value = '') : self
+    {
+        if (isset($this->put[$name]) && is_array($this->put[$name])) {
+            $this->put[$name] = array_merge($this->put[$name], $value);
+        } else {
+            $this->put[$name] = $value;
+        }
         
         return $this;
     }
@@ -72,13 +94,17 @@ class Request extends \think\Request
     
     /**
      * 设置param
-     * @param string $name
-     * @param string $value
+     * @param string       $name
+     * @param string|array $value
      * @return $this
      */
     public function setParam($name, $value = '') : self
     {
-        $this->param[$name] = $value;
+        if (isset($this->param[$name]) && is_array($this->param[$name])) {
+            $this->param[$name] = array_merge($this->param[$name], $value);
+        } else {
+            $this->param[$name] = $value;
+        }
         
         return $this;
     }
@@ -86,13 +112,17 @@ class Request extends \think\Request
     
     /**
      * 设置$_POST
-     * @param string $name
-     * @param string $value
+     * @param string       $name
+     * @param string|array $value
      * @return $this
      */
     public function setPost($name, $value = '') : self
     {
-        $this->post[$name] = $value;
+        if (isset($this->post[$name]) && is_array($this->post[$name])) {
+            $this->post[$name] = array_merge($this->post[$name], $value);
+        } else {
+            $this->post[$name] = $value;
+        }
         
         return $this;
     }
@@ -100,13 +130,17 @@ class Request extends \think\Request
     
     /**
      * 设置$_REQUEST
-     * @param string $name
-     * @param string $value
+     * @param string       $name
+     * @param string|array $value
      * @return $this
      */
     public function setRequest($name, $value = '') : self
     {
-        $this->request[$name] = $value;
+        if (isset($this->request[$name]) && is_array($this->request[$name])) {
+            $this->request[$name] = array_merge($this->request[$name], $value);
+        } else {
+            $this->request[$name] = $value;
+        }
         
         return $this;
     }

@@ -88,12 +88,12 @@ abstract class AdminCurdController extends AdminController
      */
     protected function parseSelectWhere()
     {
-        $field    = $this->iRequest('field', 'trim');       // 搜索字段
-        $word     = $this->iRequest('word', 'trim');        // 搜索词
-        $accurate = $this->iRequest('accurate', 'intval');  // 是否精确搜索
+        $field    = $this->iParam('field', 'trim');       // 搜索字段
+        $word     = $this->iParam('word', 'trim');        // 搜索词
+        $accurate = $this->iParam('accurate', 'intval');  // 是否精确搜索
         
         // 条件
-        $where = $this->iRequest('static');
+        $where = $this->iParam('static');
         $where = is_array($where) ? $where : [];  // 固定条件
         $where = array_map('trim', $where);
         
@@ -289,11 +289,11 @@ abstract class AdminCurdController extends AdminController
             $message = '';
             $method  = strtoupper($method);
             if ('AJAX' === $method && $this->isAjax()) {
-                $message = call_user_func_array($callback, [$this->iRequest()]);
+                $message = call_user_func_array($callback, [$this->iParam()]);
             } elseif ('POST' === $method && $this->isPost()) {
                 $message = call_user_func_array($callback, [$this->iPost()]);
             } elseif ('REQUEST' === $method) {
-                $message = call_user_func_array($callback, [$this->iRequest()]);
+                $message = call_user_func_array($callback, [$this->iParam()]);
             } else {
                 $status = false;
             }
@@ -332,7 +332,7 @@ abstract class AdminCurdController extends AdminController
     {
         try {
             $key   = $key ?: 'id';
-            $value = $this->iRequest($key);
+            $value = $this->iParam($key);
             if (!is_array($value)) {
                 if (false === strpos($value, ',')) {
                     $params = [$value];
