@@ -89,21 +89,26 @@ class Cache
      * 获取缓存名称
      * @param mixed  $dir 缓存路径
      * @param string $name 缓存名称
+     * @param string $driver 驱动名称，设置后通过该驱动获取前缀配置并加上前缀
      * @return string
      */
-    public static function name($dir, $name)
+    public static function name($dir, $name, $driver = '')
     {
+        static $prefix;
+        
+        if (!isset($prefix) && $driver) {
+            $driver = strtolower($driver);
+            $prefix = config("cache.stores.{$driver}.prefix");
+        }
+        
         if (is_object($dir)) {
             $dir = get_class($dir);
         }
         
-        if (substr($dir, 0, 7) === 'BusyPHP') {
-            $dir = 'core/' . trim(str_replace('\\', '/', substr($dir, 7)), '/');
-        } elseif (substr($dir, 0, 3) === 'app') {
-            $dir = 'app/' . trim(str_replace('\\', '/', substr($dir, 3)), '/');
-        }
+        $dir  = trim(str_replace('\\', '/', $dir), '/');
+        $name = $dir ? $dir . '/' . $name : $name;
         
-        return (!empty($dir) ? trim($dir, '/') . '/' : '') . $name;
+        return ($prefix ?? '') . $name;
     }
     
     
