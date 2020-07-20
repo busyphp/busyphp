@@ -77,7 +77,8 @@ class Url extends \think\app\Url
             }
             
             if (!$this->app->http->isBind()) {
-                $url = $this->app->http->getName() . '/' . $url;
+                $app = $this->getAppName();
+                $url = $app . '/' . $url;
             }
         } elseif (!empty($rule) && isset($name)) {
             throw new \InvalidArgumentException('route name not exists:' . $name);
@@ -150,7 +151,7 @@ class Url extends \think\app\Url
             $url .= $suffix . $anchor;
         }
         
-        // 移出默认应用名称
+        // 移除默认应用名称
         $name     = $this->app->config->get('app.default_app');
         $nameSize = strlen($name) + 1;
         if (substr($url, 0, $nameSize) === '/' . $name) {
