@@ -11,9 +11,9 @@
 	"license"     : "Apache-2.0",
 	"require"     : {
 		"php"                      : ">=7.1.0",
-		"topthink/framework"       : "^6.0.2",
-		"topthink/think-orm"       : "^2.0.3",
-		"topthink/think-multi-app" : "^1.0",
+		"topthink/framework"       : "^6.0.3",
+		"topthink/think-orm"       : "^2.0.33",
+		"topthink/think-multi-app" : "^1.0.14",
 		"topthink/think-view"      : "^1.0",
 		"topthink/think-trace"     : "^1.0",
 		"james-heinrich/phpthumb"  : "^1.7",
