@@ -1172,7 +1172,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
                 $item[$key] .= ' END ' . PHP_EOL;
             }
             
-            $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
+            $result = $this->connection->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
             if (false !== $result) {
                 $this->addHandleData($data, 'save all');
                 
@@ -1359,7 +1359,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     final public function optimize()
     {
-        $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
+        $this->catchException(function() {
+            $this->connection->execute("OPTIMIZE TABLE `{$this->getTable()}`");
+        });
     }
     
     
