@@ -14,6 +14,7 @@ use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use think\Collection;
 use think\Exception;
+use think\facade\Cache;
 use think\Response;
 
 // 前端收到通知后直接跳转
@@ -536,6 +537,9 @@ abstract class AdminController extends Controller
         File::deleteDir(App::runtimeConfigPath());
         // 清理临时日志
         File::deleteDir(App::runtimePath('log'));
+        // 清理基本缓存
+        Cache::clear();
+        
         // 生成配置
         $this->updateCache();
     }
