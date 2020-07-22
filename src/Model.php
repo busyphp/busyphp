@@ -17,6 +17,7 @@ use JsonSerializable;
 use think\Collection;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
+use think\db\exception\BindParamException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -1172,7 +1173,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
                 $item[$key] .= ' END ' . PHP_EOL;
             }
             
-            $result = $this->connection->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
+            $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
             if (false !== $result) {
                 $this->addHandleData($data, 'save all');
                 
@@ -1187,6 +1188,35 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             
             return $result;
         });
+    }
+    
+    
+    /**
+     * 执行语句
+     * @param string $sql sql指令
+     * @param array  $bind 参数绑定
+     * @return int
+     * @throws BindParamException
+     * @throws \PDOException
+     */
+    public function execute(string $sql, array $bind = [])
+    {
+        return $this->connection->execute($sql, $bind);
+    }
+    
+    
+    /**
+     * @param string $sql
+     * @param string $sql sql指令
+     * @param array  $bind 参数绑定
+     * @param bool   $master 主库读取
+     * @return array
+     * @throws BindParamException
+     * @throws \PDOException
+     */
+    public function query(string $sql, array $bind = [], bool $master = false)
+    {
+        return $this->connection->query($sql, $bind, $master);
     }
     
     
@@ -1360,7 +1390,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     final public function optimize()
     {
         $this->catchException(function() {
-            $this->connection->execute("OPTIMIZE TABLE `{$this->getTable()}`");
+            $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
         });
     }
     
