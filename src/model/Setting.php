@@ -85,9 +85,10 @@ abstract class Setting
     /**
      * 获取数据
      * @param string $name 数据名称
+     * @param mixed  $default 默认值
      * @return mixed|null
      */
-    final public function get($name = '')
+    final public function get($name = '', $default = null)
     {
         static $_data;
         
@@ -99,7 +100,7 @@ abstract class Setting
             return $_data;
         }
         
-        return $_data[$name] ?? null;
+        return $_data[$name] ?? $default;
     }
     
     
