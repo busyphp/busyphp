@@ -19,7 +19,7 @@ class Http
     const REQUEST_TIMEOUT = 30;
     
     /** @var array 请求参数 */
-    protected $options = array();
+    protected $options = [];
     
     
     /**
@@ -37,7 +37,7 @@ class Http
         // 浏览器Ua
         $this->setUserAgent(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Mozilla/5.0');
         // 基本设置
-        $options = array(
+        $options = [
             // SSL验证, 禁止验证对等证书
             CURLOPT_SSL_VERIFYPEER => false,
             // SSL验证，禁止检测域名
@@ -48,7 +48,7 @@ class Http
             CURLOPT_RETURNTRANSFER => true,
             // 返回响应头
             CURLOPT_HEADER         => true
-        );
+        ];
         
         // safe_mode：PHP安全模式，当开启时一些PHP函数将被禁用
         // open_basedir: 将用户访问文件的活动范围限制在指定的区域
@@ -72,7 +72,7 @@ class Http
     public function setOpt($name, $value = null)
     {
         if (!isset($this->options['curl_options'])) {
-            $this->options['curl_options'] = array();
+            $this->options['curl_options'] = [];
         }
         
         if (is_array($name)) {
@@ -107,7 +107,7 @@ class Http
      * @return $this
      * @throws AppException
      */
-    public function setUrl($url, $params = array())
+    public function setUrl($url, $params = [])
     {
         $this->options['url'] = trim($url);
         $this->parseUrl($this->options['url'], $params);
@@ -176,7 +176,7 @@ class Http
     public function addParam($name, $value = '')
     {
         if (!isset($this->options['params'])) {
-            $this->options['params'] = array();
+            $this->options['params'] = [];
         }
         
         if (is_array($name)) {
@@ -213,7 +213,7 @@ class Http
     public function addHeader($name, $value = '')
     {
         if (!isset($this->options['headers'])) {
-            $this->options['headers'] = array();
+            $this->options['headers'] = [];
         }
         
         if (is_array($name)) {
@@ -250,7 +250,7 @@ class Http
     public function addCookie($name, $value = '')
     {
         if (!isset($this->options['cookies'])) {
-            $this->options['cookies'] = array();
+            $this->options['cookies'] = [];
         }
         
         if (is_array($name)) {
@@ -288,7 +288,7 @@ class Http
     public function addFile($name, $filename = '')
     {
         if (!isset($this->options['files'])) {
-            $this->options['files'] = array();
+            $this->options['files'] = [];
         }
         
         if (is_array($name)) {
@@ -326,7 +326,7 @@ class Http
      * @return string
      * @throws AppException
      */
-    protected function parseUrl($url, $query = array())
+    protected function parseUrl($url, $query = [])
     {
         // 地址
         $url = $url ? $url : $this->options['url'];
@@ -365,7 +365,7 @@ class Http
         $urlTemp .= isset($array['path']) ? $array['path'] : '';
         
         // QUERY
-        $params = array();
+        $params = [];
         if (isset($array['query'])) {
             parse_str($array['query'], $params);
         }
@@ -403,7 +403,7 @@ class Http
         // 请求头
         if (isset($this->options['headers'])) {
             if (is_array($this->options['headers'])) {
-                $headers = array();
+                $headers = [];
                 foreach ($this->options['headers'] as $key => $value) {
                     $headers[] = "{$key}: {$value}";
                 }
@@ -416,12 +416,12 @@ class Http
         // COOKIE
         if (isset($this->options['cookies'])) {
             if (is_array($this->options['cookies'])) {
-                $cookies = array();
+                $cookies = [];
                 foreach ($this->options['cookies'] as $key => $value) {
                     $value     = rawurlencode($value);
                     $cookies[] = "{$key}={$value}";
                 }
-                $this->setOpt(CURLOPT_COOKIE, import('; ', $cookies));
+                $this->setOpt(CURLOPT_COOKIE, implode('; ', $cookies));
             } else {
                 $this->setOpt(CURLOPT_COOKIE, $this->options['cookies']);
             }
@@ -430,7 +430,7 @@ class Http
         // 提交参数
         // 包含附件需要数组提交
         if (isset($this->options['files'])) {
-            $this->setOpt(CURLOPT_POSTFIELDS, array_merge(isset($this->options['params']) && is_array($this->options['params']) ? $this->options['params'] : array(), $this->options['files']));
+            $this->setOpt(CURLOPT_POSTFIELDS, array_merge(isset($this->options['params']) && is_array($this->options['params']) ? $this->options['params'] : [], $this->options['files']));
         }
         
         // 不包含附件
@@ -543,7 +543,7 @@ class Http
      * @return string
      * @throws AppException
      */
-    public static function get($url, $params = array(), $http = null)
+    public static function get($url, $params = [], $http = null)
     {
         if (is_null($http)) {
             $http = new Http();
@@ -563,7 +563,7 @@ class Http
      * @return string
      * @throws AppException
      */
-    public static function post($url, $params = array(), $http = null)
+    public static function post($url, $params = [], $http = null)
     {
         if (is_null($http)) {
             $http = new Http();
@@ -659,10 +659,9 @@ class Http
      * @param string $filename 保存路径
      * @param array  $params 附件参数
      * @param Http   $http Http实例
-     * @return string 不带域名的URL地址
      * @throws AppException
      */
-    public static function download($url, $filename, $params = array(), $http = null)
+    public static function download($url, $filename, $params = [], $http = null)
     {
         $resource = null;
         try {
@@ -693,8 +692,6 @@ class Http
             if (!is_file($filename)) {
                 throw new AppException('下载失败[' . $filename . ']');
             }
-            
-            return '/' . str_replace('\\', '/', substr($filename, strlen(BUSY_PHP_PATH)));
         } catch (AppException $e) {
             if ($resource != null) {
                 fclose($resource);
