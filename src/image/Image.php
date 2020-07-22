@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image;
 
+use BusyPHP\App;
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\file\File;
 use phpthumb;
@@ -174,8 +175,19 @@ class Image
      */
     public function __construct(string $src = null)
     {
-        $this->phpThumb                       = new phpthumb();
-        $this->phpThumb->config_disable_debug = false;
+        $cacheDir = rtrim(App::runtimeUploadPath('phpthumb'), DIRECTORY_SEPARATOR);
+        
+        $this->phpThumb                               = new phpthumb();
+        $this->phpThumb->config_disable_debug         = false;
+        $this->phpThumb->config_cache_directory_depth = 3;
+        $this->phpThumb->config_temp_directory        = $cacheDir;
+        $this->phpThumb->config_cache_directory       = $cacheDir;
+        $this->phpThumb->config_document_root         = App::getInstance()->getRootPath();
+    
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0775, true);
+        }
+        
         $this->src($src);
     }
     
