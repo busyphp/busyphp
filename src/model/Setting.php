@@ -86,9 +86,10 @@ abstract class Setting
      * 获取数据
      * @param string $name 数据名称
      * @param mixed  $default 默认值
+     * @param bool   $checkEmpty 是否检测为空
      * @return mixed|null
      */
-    final public function get($name = '', $default = null)
+    final public function get($name = '', $default = null, $checkEmpty = false)
     {
         static $_data;
         
@@ -100,7 +101,15 @@ abstract class Setting
             return $_data;
         }
         
-        return $_data[$name] ?? $default;
+        if (!isset($_data[$name])) {
+            return $default;
+        }
+        
+        if ($checkEmpty && empty($_data[$name])) {
+            return $default;
+        }
+        
+        return $_data[$name];
     }
     
     
