@@ -442,8 +442,6 @@ class Http
         // 设置CURL选项
         curl_setopt_array($curl, $this->options['curl_options']);
         
-        trace($this->options);
-        
         // 执行请求
         $result                     = curl_exec($curl);
         $this->options['curl_info'] = curl_getinfo($curl);
