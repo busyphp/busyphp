@@ -657,10 +657,10 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         // 记录数据
         $this->addHandleData($method, 'method');
-        if ($options['where']) {
+        if (isset($options['where']) && $options['where']) {
             $this->addHandleData($options['where'], 'where');
         }
-        if ($options['data']) {
+        if (isset($options['data']) && $options['data']) {
             $this->addHandleData($options['data'], 'data');
         }
         
