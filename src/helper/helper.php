@@ -10,11 +10,14 @@ use BusyPHP\image\url\facade\ThumbUrl;
 if (!function_exists('is_android')) {
     /**
      * 是否安卓端
+     * @param string $ua 自定义UA
      * @return bool
      */
-    function is_android() : bool
+    function is_android($ua = '') : bool
     {
-        return stripos($_SERVER['HTTP_USER_AGENT'], 'android') !== false;
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        
+        return stripos($ua, 'android') !== false;
     }
 }
 
@@ -22,11 +25,14 @@ if (!function_exists('is_android')) {
 if (!function_exists('is_ios')) {
     /**
      * 是否苹果端
+     * @param string $ua 自定义UA
      * @return bool
      */
-    function is_ios() : bool
+    function is_ios($ua = '') : bool
     {
-        return stripos($_SERVER['HTTP_USER_AGENT'], 'iphone') !== false || stripos($_SERVER['HTTP_USER_AGENT'], 'ipad');
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        
+        return stripos($ua, 'iphone') !== false || stripos($_SERVER['HTTP_USER_AGENT'], 'ipad');
     }
 }
 
@@ -34,10 +40,13 @@ if (!function_exists('is_ios')) {
 if (!function_exists('is_wechat_client')) {
     /**
      * 判断是否微信端
+     * @param string $ua 自定义UA
      * @return bool
      */
-    function is_wechat_client() : bool
+    function is_wechat_client($ua = '') : bool
     {
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        
         return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false;
     }
 }
