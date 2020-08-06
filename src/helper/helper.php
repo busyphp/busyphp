@@ -47,7 +47,7 @@ if (!function_exists('is_wechat_client')) {
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
         
-        return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false;
+        return strpos($ua, 'MicroMessenger') !== false;
     }
 }
 
