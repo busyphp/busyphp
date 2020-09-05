@@ -71,7 +71,7 @@ class App extends \think\App
         parent::load();
         
         // 加载自定义全局配置文件
-        $this->app->config->load(self::runtimeConfigPath() . 'config.php', 'user');
+        $this->config->load(self::runtimeConfigPath() . 'config.php', 'user');
     }
     
     
