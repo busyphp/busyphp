@@ -53,6 +53,10 @@ class InsideController extends AdminCurdController
         if (!$template) {
             return $this->getTemplatePath() . ACTION_NAME . '.html';
         } else {
+            if (is_file($template)) {
+                return $template;
+            }
+            
             if (false === strpos($template, '/')) {
                 return $this->getTemplatePath() . $template . '.html';
             } elseif (false === strpos($template, '.')) {
