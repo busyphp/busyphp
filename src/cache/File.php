@@ -18,7 +18,7 @@ class File extends \think\cache\driver\File
      */
     public function getCacheKey(string $name) : string
     {
-        if (substr($name, 0, 5) === 'core/' || substr($name, 0, 4) === 'app/') {
+        if (substr($name, 0, 5) === 'core/' || substr($name, 0, 4) === 'app/' || substr($name, 0, 8) === 'BusyPHP/') {
             if ($this->options['prefix']) {
                 $name = $this->options['prefix'] . DIRECTORY_SEPARATOR . $name;
             }
