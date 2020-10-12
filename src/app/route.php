@@ -12,10 +12,39 @@ if (app()->http->getName() === 'admin') {
             'group' => 'Develop'
         ]);
         
-        Route::rule('System.<control>/<action>', 'system\<control>@<action>')->append([
-            'group' => 'System',
+        Route::rule('System.Update/<action>', 'system\Update@<action>')->append([
+            'group'   => 'System',
+            'control' => 'Update',
         ])->pattern([
-            'control' => '[File|Region|Group|User|Update|Index]+'
+            'action' => '[cache|index]+'
+        ]);
+        
+        Route::rule('System.Index/<action>', 'system\Index@<action>')->append([
+            'group'   => 'System',
+            'control' => 'Index',
+        ])->pattern([
+            'action' => '[index|admin|logs|view_logs|clear_logs]+'
+        ]);
+        
+        Route::rule('System.User/<action>', 'system\User@<action>')->append([
+            'group'   => 'System',
+            'control' => 'User',
+        ])->pattern([
+            'action' => '[index|add|edit|delete|personal_info|personal_password|password]+'
+        ]);
+        
+        Route::rule('System.Group/<action>', 'system\Group@<action>')->append([
+            'group'   => 'System',
+            'control' => 'Group',
+        ])->pattern([
+            'action' => '[index|add|edit|delete]+'
+        ]);
+        
+        Route::rule('System.File/<action>', 'system\File@<action>')->append([
+            'group'   => 'System',
+            'control' => 'File',
+        ])->pattern([
+            'action' => '[setting|index|delete|upload|library]+'
         ]);
         
         Route::rule('Common.<control>/<action>', 'common\<control>@<action>')->append([
