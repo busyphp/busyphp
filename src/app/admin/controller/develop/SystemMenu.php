@@ -103,7 +103,7 @@ class SystemMenu extends InsideController
             
             $this->model->insertData($insert);
             $this->log('增加系统菜单', $this->model->getHandleData(), self::LOG_INSERT);
-            $this->model->updateCache();
+            $this->updateCache();
             
             return '添加成功';
         }, function() {
@@ -188,7 +188,7 @@ class SystemMenu extends InsideController
             
             $this->model->updateData($update);
             $this->log('修改系统菜单', $this->model->getHandleData(), self::LOG_UPDATE);
-            $this->model->updateCache();
+            $this->updateCache();
             
             return '修改成功';
         }, function() {
@@ -219,7 +219,7 @@ class SystemMenu extends InsideController
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             $this->log('排序系统菜单', $params, self::LOG_DELETE);
-            $this->model->updateCache();
+            $this->updateCache();
             
             return '排序成功';
         });
@@ -238,7 +238,7 @@ class SystemMenu extends InsideController
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             $this->log('删除系统菜单', ['id' => $params], self::LOG_DELETE);
-            $this->model->updateCache();
+            $this->updateCache();
             
             return '删除成功';
         });
