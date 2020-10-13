@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 
 /**
@@ -27,6 +28,7 @@ class Index extends InsideController
         $this->assign('system_name', php_uname('s'));
         $this->assign('soft_name', $softNames[0]);
         $this->assign('framework_name', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
+        $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
         
         return $this->display();
     }

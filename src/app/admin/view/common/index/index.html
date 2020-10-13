@@ -1,5 +1,6 @@
 <extend name="@admin:layout"/>
 <block name="head">
+    {$extend_template.head}
 </block>
 <block name="content">
     <div class="row">
@@ -64,7 +65,9 @@
             </div>
         </div>
     </div>
+    {$extend_template.content}
 </block>
 <block name="foot">
+    {$extend_template.foot}
 </block>
 

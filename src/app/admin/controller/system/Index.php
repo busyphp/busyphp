@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
@@ -28,7 +29,11 @@ class Index extends InsideController
             return '设置成功';
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
-                return PublicSetting::init()->get();
+                $info = PublicSetting::init()->get();
+                
+                $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('System.Index/index', $info));
+                
+                return $info;
             });
             
             $this->setRedirectUrl(null);
