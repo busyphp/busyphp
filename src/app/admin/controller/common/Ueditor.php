@@ -283,11 +283,12 @@ class Ueditor extends InsideController
     
     /**
      * 编辑器运行JS
-     * @throws AppException
      */
     public function runtime()
     {
-        $uEditorConfig = include App::getBusyPath('app' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'config') . 'ueditor.php';
+        $this->app->config->load(App::getBusyPath('app' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'config') . 'ueditor.php', 'ueditor');
+        $uEditorConfig = $this->app->config->get('ueditor');
+        
         foreach ($uEditorConfig as $key => $config) {
             // 工具栏解析
             $config['toolbars'] = [array_map('trim', explode(',', $config['toolbars']))];
