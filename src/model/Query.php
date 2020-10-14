@@ -101,20 +101,6 @@ class Query extends \think\db\Query
     
     
     /**
-     * 原生查询语句
-     * @param string $query
-     * @return $this
-     * @deprecated 兼容BusyPHP老版本，请使用最新方法 whereRaw();
-     */
-    public function whereString(string $query)
-    {
-        $this->whereRaw($query);
-        
-        return $this;
-    }
-    
-    
-    /**
      * TP6 JOIN方法 扩展
      * 支持别名通过参数传入
      * @param mixed  $join 关联的表名
