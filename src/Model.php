@@ -1038,12 +1038,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     public function selecting()
     {
         return $this->catchException(function() {
-            $result = $this->select();
-            if ($result->isEmpty()) {
-                return [];
-            }
-            
-            return $result->toArray();
+            return $this->select()->toArray();
         });
     }
     
@@ -1299,6 +1294,38 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     public function selectExtendList()
     {
         return static::parseExtendList($this->selectList());
+    }
+    
+    
+    /**
+     * 分批查询解析数据
+     * @param int          $count 每一批查询多少条
+     * @param callable     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
+     * @param string|array $column 排序依据字段，默认是主键字段
+     * @param string       $order 排序方式
+     * @return bool 处理回调方法是否全部处理成功
+     */
+    public function chunkList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
+    {
+        return parent::chunk($count, function(Collection $result) use ($callback) {
+            return call_user_func($callback, static::parseList($result->toArray()), $result);
+        }, $column, $order);
+    }
+    
+    
+    /**
+     * 分批查询扩展数据
+     * @param int          $count 每一批查询多少条
+     * @param callable     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
+     * @param string|array $column 排序依据字段，默认是主键字段
+     * @param string       $order 排序方式
+     * @return bool 处理回调方法是否全部处理成功
+     */
+    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
+    {
+        return parent::chunk($count, function(Collection $result) use ($callback) {
+            return call_user_func($callback, static::parseExtendList(static::parseList($result->toArray())), $result);
+        }, $column, $order);
     }
     
     
