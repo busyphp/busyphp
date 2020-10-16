@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\model;
 
 use BusyPHP\Model;
+use PDOStatement;
 use think\facade\Db;
 
 /**
@@ -244,5 +245,27 @@ class Query extends \think\db\Query
         }
         
         return $value;
+    }
+    
+    
+    /**
+     * 执行查询但只返回PDOStatement对象
+     * todo 目前使用where指定条件不会解析参数
+     * @return PDOStatement
+     */
+    public function getPdo() : PDOStatement
+    {
+        $this->options['distinct'] = $this->options['distinct'] ?? false;
+        $this->options['extra']    = $this->options['extra'] ?? '';
+        $this->options['join']     = $this->options['join'] ?? [];
+        $this->options['where']    = $this->options['where'] ?? [];
+        $this->options['having']   = $this->options['having'] ?? '';
+        $this->options['order']    = $this->options['order'] ?? [];
+        $this->options['limit']    = $this->options['limit'] ?? '';
+        $this->options['union']    = $this->options['union'] ?? [];
+        $this->options['comment']  = $this->options['comment'] ?? '';
+        $this->options['table']    = $this->options['table'] ?? $this->getTable();
+        
+        return parent::getPdo();
     }
 }
