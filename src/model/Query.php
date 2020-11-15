@@ -102,6 +102,25 @@ class Query extends \think\db\Query
     
     
     /**
+     * 枚举查询条件
+     * @param array $enum
+     * @return $this
+     */
+    public function whereEnum(...$enum)
+    {
+        foreach ($enum as $item) {
+            if (!is_array($item) || count($item) != 3) {
+                continue;
+            }
+            
+            $this->where($item[0], $item[1], $item[2]);
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
      * TP6 JOIN方法 扩展
      * 支持别名通过参数传入
      * @param mixed  $join 关联的表名
