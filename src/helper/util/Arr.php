@@ -3,6 +3,7 @@
 namespace BusyPHP\helper\util;
 
 use BusyPHP\model\Field;
+use think\Collection;
 
 /**
  * 数组操作类
@@ -137,15 +138,15 @@ class Arr extends \think\helper\Arr
     
     /**
      * 将列表数据通过某字段值作为主键重新整理
-     * @param array  $list 列表
-     * @param string $key 字段名称
+     * @param array|Collection $list 列表
+     * @param string           $key 字段名称
      * @return array
      */
     public static function listByKey($list, $key)
     {
-        $list    = is_array($list) ? $list : [];
+        $list    = is_array($list) || $list instanceof Collection ? $list : [];
         $newList = [];
-        foreach ($list as $i => $r) {
+        foreach ($list as $r) {
             if (is_object($r)) {
                 $newList[$r->{$key}] = $r;
             } else {
