@@ -2,6 +2,8 @@
 
 namespace BusyPHP\helper\util;
 
+use BusyPHP\model\Field;
+
 /**
  * 数组操作类
  * @author busy^life <busy.life@qq.com>
@@ -141,9 +143,17 @@ class Arr extends \think\helper\Arr
      */
     public static function listByKey($list, $key)
     {
-        $list = is_array($list) ? $list : [];
+        $list    = is_array($list) ? $list : [];
+        $newList = [];
+        foreach ($list as $i => $r) {
+            if (is_object($r)) {
+                $newList[$r->{$key}] = $r;
+            } else {
+                $newList[$r[$key]] = $r;
+            }
+        }
         
-        return array_column($list, null, $key);
+        return $newList;
     }
     
     
