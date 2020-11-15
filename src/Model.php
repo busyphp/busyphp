@@ -50,6 +50,8 @@ use think\model\concern\TimeStamp;
  * @method mixed getField(string $name, $default = null) 获取单个字段的值
  * @method mixed setField(string $name, $value) 设置单个字段
  * @method $this lockShare(boolean $isLock) 是否加共享锁，允许其它对象读不允许写
+ * @method string onBindParseListClass() 绑定parseList解析器
+ * @method string onBindParseExtendListClass() 绑定parseExtendList解析器
  */
 abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
 {
@@ -225,7 +227,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function getTableWithoutPrefix() : string
     {
-        return parse_name($this->name, 0);
+        return Str::snake($this->name);
     }
     
     
@@ -616,12 +618,14 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 获取单条信息
      * @param mixed $id 信息ID
-     * @return array
+     * @return array|Field
      * @throws SQLException
      */
     public function getInfo($id)
     {
-        $info = $this->where($this->getPk(), '=', $id)->findData();
+        $noParseBind = $this->options['no_parse_bind_get_info'] ?? false;
+        $parseBind   = $this->options['parse_to_bind_class'] ?? true;
+        $info        = $this->where($this->getPk(), '=', $id)->findData();
         if (!$info) {
             $message = '信息不存在';
             if (func_num_args() === 2) {
@@ -632,7 +636,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             throw new SQLException($message, $this);
         }
         
-        return static::parseInfo($info);
+        $info = static::parseInfo($info);
+        
+        return $noParseBind ? $info : $this->parseBindList($parseBind, $info, true);
     }
     
     
@@ -644,7 +650,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function getAllInfo($id)
     {
-        return static::parseExtendList($this->getInfo($id), true);
+        $this->options['no_parse_bind_get_info'] = true;
+        
+        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->getInfo($id), true), true);
     }
     
     
@@ -1201,7 +1209,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * @param string $sql
      * @param string $sql sql指令
      * @param array  $bind 参数绑定
      * @param bool   $master 主库读取
@@ -1279,21 +1286,88 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 查询解析后的数据
-     * @return array
+     * @return array|Field[]
      */
     public function selectList()
     {
-        return static::parseList($this->selecting());
+        $parseBind   = $this->options['parse_to_bind_class'] ?? true;
+        $noParseBind = isset($this->options['no_parse_bind_select_list']);
+        $list        = static::parseList($this->selecting());
+        
+        return $noParseBind ? $list : $this->parseBindList($parseBind, $list);
     }
     
     
     /**
      * 查询解析后(包含扩展信息)的数据
-     * @return array
+     * @return array|Field[]
      */
     public function selectExtendList()
     {
-        return static::parseExtendList($this->selectList());
+        $this->options['no_parse_bind_select_list'] = true;
+        
+        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->selectList()));
+    }
+    
+    
+    /**
+     * 设置是否解析数据为绑定的对象
+     * @param bool $parseBind 默认解析
+     * @return $this
+     */
+    public function parseBind($parseBind = true)
+    {
+        $this->options['parse_to_bind_class'] = $parseBind;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 解析为绑定的对象集合
+     * @param bool          $status 是否解析
+     * @param array[]|array $data 数据
+     * @param bool          $only 是否单条
+     * @return array|Field[]
+     */
+    private function parseBindList($status, $data, $only = false)
+    {
+        if ($status && method_exists($this, 'onBindParseListClass')) {
+            $class = $this->onBindParseListClass();
+            if (is_subclass_of($class, Field::class)) {
+                if ($only) {
+                    return call_user_func_array([$class, 'parse'], [$data]);
+                } else {
+                    return array_map([$class, 'parse'], $data);
+                }
+            }
+        }
+        
+        return $data;
+    }
+    
+    
+    /**
+     * 解析为绑定的对象集合(包含扩展数据)
+     * @param bool          $status 是否解析
+     * @param array[]|array $data 数据
+     * @param bool          $only 是否单条
+     * @return array|Field[]
+     */
+    private function parseBindExtendList($status, $data, $only = false)
+    {
+        if ($status && method_exists($this, 'onBindParseExtendListClass')) {
+            $class = $this->onBindParseExtendListClass();
+            if (is_subclass_of($class, Field::class)) {
+                if ($only) {
+                    return call_user_func_array([$class, 'parse'], [$data]);
+                } else {
+                    return array_map([$class, 'parse'], $data);
+                }
+            }
+        }
+        
+        return $data;
     }
     
     
@@ -1307,8 +1381,10 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function chunkList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
     {
-        return parent::chunk($count, function(Collection $result) use ($callback) {
-            return call_user_func($callback, static::parseList($result->toArray()), $result);
+        $parseBind = $this->options['parse_to_bind_class'] ?? true;
+        
+        return parent::chunk($count, function(Collection $result) use ($callback, $parseBind) {
+            return call_user_func($callback, $this->parseBindList($parseBind, static::parseList($result->toArray())), $result);
         }, $column, $order);
     }
     
@@ -1319,12 +1395,15 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param callable     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
      * @param string|array $column 排序依据字段，默认是主键字段
      * @param string       $order 排序方式
+     * @param bool         $parseBind 是否解析为绑定的对象集合
      * @return bool 处理回调方法是否全部处理成功
      */
-    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
+    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc', $parseBind = true) : bool
     {
-        return parent::chunk($count, function(Collection $result) use ($callback) {
-            return call_user_func($callback, static::parseExtendList(static::parseList($result->toArray())), $result);
+        $parseBind = $this->options['parse_to_bind_class'] ?? true;
+        
+        return parent::chunk($count, function(Collection $result) use ($callback, $parseBind) {
+            return call_user_func($callback, $this->parseBindExtendList($parseBind, static::parseExtendList(static::parseList($result->toArray()))), $result);
         }, $column, $order);
     }
     
@@ -1361,7 +1440,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         $values = Filter::trimArray($values);
         if ($values) {
             $this->whereof([$key => ['in', $values]]);
-            $list = $isExtends ? $this->selectExtendList() : $this->selectList();
+            $list = $isExtends ? $this->selectExtendList(false) : $this->selectList(false);
             $list = Arr::listByKey($list, $field);
         }
         
@@ -1474,20 +1553,30 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 打印DI结构
+     * 打印结构
+     * @deprecated 该方法以过期，请使用新方法{@see Model::printField()}
      */
     final public function __printField()
     {
-        $list = $this->getFields();
-        
-        $string = "";
+        $this->printField();
+    }
+    
+    
+    /**
+     * 打印结构
+     */
+    final public function printField()
+    {
+        $list   = $this->getFields();
+        $br     = PHP_EOL;
+        $string = '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
         foreach ($list as $i => $r) {
             $r['type']    = explode('(', $r['type']);
             $r['type']    = strtoupper($r['type'][0]);
             $r['comment'] = trim($r['comment']);
             
             $type      = 'string';
-            $r['name'] = lcfirst(parse_name($r['name'], 1));
+            $r['name'] = Str::camel($r['name']);
             if (in_array($r['type'], [
                 'TINYINT',
                 'SMALLINT',
@@ -1502,32 +1591,41 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             }
             $r['type'] = $type;
             
-            $string .= "/**<br />";
-            if ($r['comment']) {
-                $string .= "* {$r['comment']}<br />";
-            }
-            $string   .= "* @var {$r['type']} <br />";
-            $string   .= "*/<br />";
-            $string   .= "public \${$r['name']};<br />";
+            $string   .= "* @method static mixed {$r['name']}(\$op = null, \$value = null) {$r['comment']}{$br}";
             $list[$i] = $r;
         }
+        $string .= '</pre>';
         
+        $string .= '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
         foreach ($list as $i => $r) {
-            $string .= "/**<br />";
-            $string .= "* 设置{$r['comment']}<br />";
-            $string .= "* @param {$r['type']} \${$r['name']}<br />";
-            $string .= "* @return \$this<br />";
-            $string .= "*/<br />";
-            
-            $string .= "public function set" . ucfirst($r['name']) . "(\${$r['name']}) {<br />";
-            if ($r['type'] == 'string') {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = trim(\${$r['name']});<br />";
-            } else {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = floatval(\${$r['name']});<br />";
+            $string .= "/**{$br}";
+            if ($r['comment']) {
+                $string .= " * {$r['comment']}{$br}";
             }
-            $string .= "&nbsp;&nbsp;&nbsp;&nbsp;return \$this;<br />";
+            $string .= " * @var {$r['type']} {$br}";
+            $string .= " */{$br}";
+            $string .= "public \${$r['name']};{$br}";
+        }
+        $string .= '</pre>';
+        
+        $string .= '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
+        foreach ($list as $i => $r) {
+            $string .= "/**{$br}";
+            $string .= " * 设置{$r['comment']}{$br}";
+            $string .= " * @param {$r['type']} \${$r['name']}{$br}";
+            $string .= " * @return \$this{$br}";
+            $string .= " */{$br}";
+            
+            $string .= "public function set" . ucfirst($r['name']) . "(\${$r['name']}) {{$br}";
+            if ($r['type'] == 'string') {
+                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = trim(\${$r['name']});{$br}";
+            } else {
+                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = floatval(\${$r['name']});{$br}";
+            }
+            $string .= "&nbsp;&nbsp;&nbsp;&nbsp;return \$this;{$br}";
             $string .= "}<br />";
         }
+        $string .= '</pre>';
         
         echo $string;
     }
