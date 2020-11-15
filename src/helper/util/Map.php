@@ -7,6 +7,7 @@ namespace BusyPHP\helper\util;
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-08-14 下午10:26 Map.php busy^life $
+ * @deprecated 不建议使用，请在注释中使用 @return 类名[] 比这个更好
  */
 class Map
 {
