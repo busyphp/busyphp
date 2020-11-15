@@ -140,12 +140,13 @@ class Arr extends \think\helper\Arr
      * 将列表数据通过某字段值作为主键重新整理
      * @param array|Collection $list 列表
      * @param string           $key 字段名称
-     * @return array
+     * @return array|Collection
      */
     public static function listByKey($list, $key)
     {
-        $list    = is_array($list) || $list instanceof Collection ? $list : [];
-        $newList = [];
+        $isCollection = $list instanceof Collection;
+        $list         = is_array($list) || $isCollection ? $list : [];
+        $newList      = [];
         foreach ($list as $r) {
             if (is_object($r)) {
                 $newList[$r->{$key}] = $r;
@@ -154,7 +155,7 @@ class Arr extends \think\helper\Arr
             }
         }
         
-        return $newList;
+        return $isCollection ? $list::make($newList) : $newList;
     }
     
     
