@@ -2,48 +2,48 @@
 
 namespace BusyPHP\model;
 
-use BusyPHP\exception\AppException;
+use ArrayAccess;
+use BusyPHP\exception\MethodNotFoundException;
+use BusyPHP\helper\util\Str;
+use JsonSerializable;
+use think\contract\Arrayable;
+use think\contract\Jsonable;
 
 /**
  * 模型字段基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午3:07 下午 Field.php $
+ * @method void onParseAfter() 将数据转为对象后的后置方法
  */
-abstract class Field
+class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
 {
-    /** @var string where字符串查询字段 */
-    public $_string = null;
-    
-    
     /**
      * 快速实例化
      * @return $this
      */
     public static function init()
     {
-        $className = get_called_class();
-        
-        return new $className();
+        return new static();
     }
     
     
     /**
-     * 解析器
+     * 数据转对象
      * @param array $array 数据
-     * @param bool  $isParseName 是否将下划线名称转成驼峰格式
      * @return $this
      */
-    public static function parse($array, $isParseName = true)
+    public static function parse($array)
     {
         $obj = static::init();
         foreach ($array as $key => $value) {
-            $name       = $isParseName ? lcfirst(parse_name($key, 1)) : $key;
-            $obj->$name = $value;
+            $obj->{Str::camel($key)} = $value;
         }
         
         // 后置操作
-        $obj->_parseAfter();
+        if (method_exists($obj, 'onParseAfter')) {
+            $obj->onParseAfter();
+        }
         
         return $obj;
     }
@@ -51,13 +51,47 @@ abstract class Field
     
     public function __get($name)
     {
-        return $this->$name;
+        return $this->{Str::camel($name)};
     }
     
     
     public function __set($name, $value)
     {
-        $this->$name = $value;
+        $this->{Str::camel($name)} = $value;
+    }
+    
+    
+    /**
+     * @param $name
+     * @param $arguments
+     * @return array|string
+     * @throws MethodNotFoundException
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        static $fields = [];
+        
+        $key = static::class;
+        if (!isset($fields[$key])) {
+            $fields[$key] = array_keys(get_object_vars(new $key()));
+        }
+        
+        // 静态方法名称存在属性中，则返回属性名称
+        if (in_array(Str::camel($name), $fields[$key])) {
+            $value = Str::snake($name);
+            switch (count($arguments)) {
+                case 1:
+                    return [$value, '=', $arguments[0]];
+                break;
+                case 2:
+                    return [$value, $arguments[0], $arguments[1]];
+                break;
+            }
+            
+            return $value;
+        }
+        
+        throw new MethodNotFoundException(static::class, $name, 'static');
     }
     
     
@@ -65,22 +99,19 @@ abstract class Field
      * @param $name
      * @param $arguments
      * @return $this
-     * @throws AppException
+     * @throws MethodNotFoundException
      */
     public function __call($name, $arguments)
     {
         if (substr($name, 0, 3) == 'set') {
-            $attr        = lcfirst(substr($name, 3));
-            $this->$attr = $arguments[0];
+            $this->{Str::camel(substr($name, 3))} = $arguments[0];
             
             return $this;
         } elseif (substr($name, 0, 3) == 'get') {
-            $attr = lcfirst(substr($name, 3));
-            
-            return $this->$attr;
+            return $this->{Str::camel(substr($name, 3))};
         }
         
-        throw new AppException("method {$name} is not Found.");
+        throw new MethodNotFoundException($this, $name);
     }
     
     
@@ -99,7 +130,7 @@ abstract class Field
                 continue;
             }
             
-            $key = parse_name($key);
+            $key = Str::snake($key);
             
             // 布尔类型转 1 0
             $value = is_bool($value) ? ($value ? 1 : 0) : $value;
@@ -135,10 +166,7 @@ abstract class Field
                 continue;
             }
             
-            // 转换键
-            if ($key !== '_string') {
-                $key = parse_name($key);
-            }
+            $key = Str::snake($key);
             
             // 布尔类型转 1 0
             $value        = is_bool($value) ? ($value ? 1 : 0) : $value;
@@ -152,20 +180,26 @@ abstract class Field
     /**
      * 获取数据
      * @return array
+     * @deprecated 该方法以过期，新方法参考{@see Field::toArray()}
      */
     public function getData()
+    {
+        return $this->toArray();
+    }
+    
+    
+    public function toArray() : array
     {
         $vars   = get_object_vars($this);
         $params = [];
         foreach ($vars as $key => $value) {
             // 下划线开头的被认为是私有变量，过滤
-            // 为NULL类型则过滤
-            if (substr($key, 0, 1) == '_' || is_null($value)) {
+            if (substr($key, 0, 1) == '_') {
                 continue;
             }
             
             // 转换键
-            $key = parse_name($key);
+            $key = Str::snake($key);
             
             $params[$key] = $value;
         }
@@ -174,10 +208,44 @@ abstract class Field
     }
     
     
-    /**
-     * 解析变量的后置操作
-     */
-    protected function _parseAfter()
+    public function toJson(int $options = JSON_UNESCAPED_UNICODE) : string
     {
+        return json_encode($this->toArray(), $options);
+    }
+    
+    
+    public function __toString()
+    {
+        return $this->toJson();
+    }
+    
+    
+    public function offsetExists($offset)
+    {
+        return isset($this->{Str::camel($offset)});
+    }
+    
+    
+    public function offsetGet($offset)
+    {
+        return $this->{Str::camel($offset)};
+    }
+    
+    
+    public function offsetSet($offset, $value)
+    {
+        $this->{Str::camel($offset)} = $value;
+    }
+    
+    
+    public function offsetUnset($offset)
+    {
+        $this->{Str::camel($offset)} = null;
+    }
+    
+    
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 }
