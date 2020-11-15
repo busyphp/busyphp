@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
@@ -99,7 +100,7 @@ class SystemConfigField extends Field
         }
         
         // 只能是英文开头
-        $this->type = parse_name($this->type, 0, false);
+        $this->type = Str::snake($this->type);
         if (!Regex::english(substr($this->type, 0, 1))) {
             throw new VerifyException('配置标识不能为数字或下划线开头', 'type');
         }

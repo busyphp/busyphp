@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
@@ -159,7 +160,7 @@ class SystemMenuField extends Field
         }
         
         $groups = explode(',', SystemMenu::RETAIN_GROUP);
-        $groups = array_map('parse_name', $groups);
+        $groups = array_map([Str::class, 'snake'], $groups);
         if (in_array($this->module, $groups)) {
             throw new VerifyException($module . '为系统保留值，请勿使用', 'module');
         }
@@ -332,7 +333,7 @@ class SystemMenuField extends Field
      */
     public function setVar($var)
     {
-        $var = parse_name(trim($var), 0, false);
+        $var = Str::snake(trim($var));
         if (!$var) {
             throw new VerifyException('请输入菜单标识', 'var');
         }

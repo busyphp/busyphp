@@ -4,6 +4,7 @@ namespace BusyPHP\app\admin\taglib;
 
 use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use BusyPHP\helper\util\Str;
 use think\template\TagLib;
 
 /**
@@ -79,7 +80,7 @@ class Admin extends TagLib
         $id = str_replace('[', '_', $tag['name']);
         $id = str_replace(']', '_', $id);
         $id = str_replace('__', '_', $id);
-        $id = parse_name($id, 1) . 'File';
+        $id = ucfirst(Str::camel($id)) . 'File';
         
         // 显示触发容器对象
         $target = ["#{$id}"];
@@ -141,7 +142,7 @@ class Admin extends TagLib
         $id         = str_replace('[', '_', $tag['name']);
         $id         = str_replace(']', '_', $id);
         $id         = str_replace('__', '_', $id);
-        $id         = parse_name($id, 1) . 'Pics';
+        $id         = ucfirst(Str::camel($id)) . 'Pics';
         $type       = isset($tag['type']) ? trim($tag['type']) : '';
         $type       = !empty($type) ? $type : SystemFile::FILE_TYPE_IMAGE;
         $mark       = isset($tag['mark']) ? $tag['mark'] : '';

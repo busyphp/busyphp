@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\Controller;
@@ -326,7 +327,7 @@ abstract class AdminController extends Controller
         $keys       = isset($menuArray['keys']) ? $menuArray['keys'] : [];
         if (!in_array($menuActive, $keys)) {
             if ($this->adminPermission['default_group']) {
-                $menuActive = parse_name($this->adminPermission['default_group'], 1, true);
+                $menuActive = ucfirst(Str::camel($this->adminPermission['default_group']));
             }
             
             $menuActive = $menuActive ?: (isset($menuArray['default']) ? $menuArray['default'] : '');

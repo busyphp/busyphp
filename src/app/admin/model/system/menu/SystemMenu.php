@@ -4,6 +4,7 @@ namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\exception\VerifyException;
 use BusyPHP\exception\SQLException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
@@ -780,8 +781,8 @@ class SystemMenu extends Model
     public static function parseList($list)
     {
         foreach ($list as $i => $info) {
-            $module  = parse_name($info['module'], true, true);
-            $control = parse_name($info['control'], true, true);
+            $module  = ucfirst(Str::camel($info['module']));
+            $control = ucfirst(Str::camel($info['control']));
             $isUrl   = false;
             
             // 层级解析

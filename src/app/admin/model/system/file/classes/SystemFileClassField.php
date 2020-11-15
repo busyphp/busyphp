@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\model\system\file\classes;
 
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
@@ -128,7 +129,7 @@ class SystemFileClassField extends Field
         
         
         // 只能是英文开头
-        $this->var = parse_name($this->var, 0, false);
+        $this->var = Str::snake($this->var);
         if (!Regex::english(substr($this->var, 0, 1))) {
             throw new VerifyException('分类标识不能为数字或下划线开头', 'var');
         }
