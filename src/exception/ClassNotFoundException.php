@@ -28,7 +28,7 @@ class ClassNotFoundException extends AppException
         }
         
         $this->class = $class;
-        $message     = (!empty($message) ? "{$message} " : '') . "not found {$class}";
+        $message     = (!empty($message) ? "{$message} " : '') . "class not found {$class}";
         
         $this->setData('CLASS NOT FOUND', [
             'class' => $class,
