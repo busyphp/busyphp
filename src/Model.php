@@ -50,8 +50,6 @@ use think\model\concern\TimeStamp;
  * @method mixed getField(string $name, $default = null) 获取单个字段的值
  * @method mixed setField(string $name, $value) 设置单个字段
  * @method $this lockShare(boolean $isLock) 是否加共享锁，允许其它对象读不允许写
- * @method string onBindParseListClass() 绑定parseList解析器
- * @method string onBindParseExtendListClass() 绑定parseExtendList解析器
  */
 abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
 {
@@ -59,6 +57,24 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     use ModelEvent;
     use TimeStamp;
     use Conversion;
+    
+    /**
+     * 绑定parseList解析器类名
+     * @var string
+     */
+    protected $bindParseListClass;
+    
+    /**
+     * 绑定parseExtendList解析器类名
+     * @var string
+     */
+    protected $bindParseExtendListClass;
+    
+    /**
+     * 指定查找单条数据不存在时的错误信息
+     * @var string
+     */
+    protected $findInfoEmptyMessage = '信息不存在';
     
     /**
      * @var App
@@ -617,23 +633,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 获取单条信息
-     * @param mixed $id 信息ID
-     * @return array|Field
+     * @param int|string|array $pkValue 主键数据，支持字符、数值、数字索引数组
+     * @param string           $emptyMessage 找不到数据异常消息
+     * @return array|Field[]
      * @throws SQLException
      */
-    public function getInfo($id)
+    public function findInfo($pkValue = null, $emptyMessage = '')
     {
         $noParseBind = $this->options['no_parse_bind_get_info'] ?? false;
         $parseBind   = $this->options['parse_to_bind_class'] ?? true;
-        $info        = $this->findData($id);
+        $info        = $this->findData($pkValue);
         if (!$info) {
-            $message = '信息不存在';
-            if (func_num_args() === 2) {
-                if ($msg = func_get_arg(1)) {
-                    $message = $msg;
-                }
-            }
-            throw new SQLException($message, $this);
+            $emptyMessage = $emptyMessage ?: $this->findInfoEmptyMessage;
+            $emptyMessage = trim($emptyMessage);
+            throw new SQLException($emptyMessage ?: '信息不存在', $this);
         }
         
         $info = static::parseInfo($info);
@@ -643,10 +656,41 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
+     * 获取单条包含扩展数据的信息
+     * @param int|string|array $pkValue 主键数据，支持字符、数值、数字索引数组
+     * @param string           $emptyMessage 找不到数据异常消息
+     * @return array|Field[]
+     * @throws SQLException
+     */
+    public function findExtendInfo($pkValue = null, $emptyMessage = '')
+    {
+        $this->options['no_parse_bind_get_info'] = true;
+        
+        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->findInfo($pkValue, $emptyMessage), true), true);
+    }
+    
+    
+    /**
+     * 获取单条信息
+     * @param mixed $id 信息ID
+     * @return array|Field
+     * @throws SQLException
+     * @deprecated 该方法已被{@see Model::findInfo()} 替代，建议不使用，未来某一个版本会被移除
+     */
+    public function getInfo($id)
+    {
+        $args = func_get_args();
+        
+        return $this->findInfo($id, $args[1] ?? '');
+    }
+    
+    
+    /**
      * 获取单条信息(包含扩展信息)
      * @param mixed $id
      * @return array
      * @throws AppException
+     * @deprecated 该方法已被{@see Model::findExtendInfo()} 替代，建议不使用，未来某一个版本会被移除
      */
     public function getAllInfo($id)
     {
@@ -1332,14 +1376,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     private function parseBindList($status, $data, $only = false)
     {
-        if ($status && method_exists($this, 'onBindParseListClass')) {
-            $class = $this->onBindParseListClass();
-            if (is_subclass_of($class, Field::class)) {
-                if ($only) {
-                    return call_user_func_array([$class, 'parse'], [$data]);
-                } else {
-                    return array_map([$class, 'parse'], $data);
-                }
+        if ($status && $this->bindParseListClass && is_subclass_of($this->bindParseListClass, Field::class)) {
+            if ($only) {
+                return call_user_func_array([$this->bindParseListClass, 'parse'], [$data]);
+            } else {
+                return array_map([$this->bindParseListClass, 'parse'], $data);
             }
         }
         
@@ -1356,14 +1397,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     private function parseBindExtendList($status, $data, $only = false)
     {
-        if ($status && method_exists($this, 'onBindParseExtendListClass')) {
-            $class = $this->onBindParseExtendListClass();
-            if (is_subclass_of($class, Field::class)) {
-                if ($only) {
-                    return call_user_func_array([$class, 'parse'], [$data]);
-                } else {
-                    return array_map([$class, 'parse'], $data);
-                }
+        if ($status && $this->bindParseExtendListClass && is_subclass_of($this->bindParseExtendListClass, Field::class)) {
+            if ($only) {
+                return call_user_func_array([$this->bindParseExtendListClass, 'parse'], [$data]);
+            } else {
+                return array_map([$this->bindParseExtendListClass, 'parse'], $data);
             }
         }
         
@@ -1440,7 +1478,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         $values = Filter::trimArray($values);
         if ($values) {
             $this->whereof([$key => ['in', $values]]);
-            $list = $isExtends ? $this->selectExtendList(false) : $this->selectList(false);
+            $list = $isExtends ? $this->selectExtendList() : $this->selectList();
             $list = Arr::listByKey($list, $field);
         }
         
