@@ -625,7 +625,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $noParseBind = $this->options['no_parse_bind_get_info'] ?? false;
         $parseBind   = $this->options['parse_to_bind_class'] ?? true;
-        $info        = $this->where($this->getPk(), '=', $id)->findData();
+        $info        = $this->findData($id);
         if (!$info) {
             $message = '信息不存在';
             if (func_num_args() === 2) {
