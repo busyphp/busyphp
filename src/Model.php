@@ -59,16 +59,16 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     use Conversion;
     
     /**
-     * 绑定parseList解析器类名
+     * 绑定通用信息解析类
      * @var string
      */
-    protected $bindParseListClass;
+    protected $bindParseClass;
     
     /**
-     * 绑定parseExtendList解析器类名
+     * 绑定包含扩展信息的解析类
      * @var string
      */
-    protected $bindParseExtendListClass;
+    protected $bindParseExtendClass;
     
     /**
      * 指定查找单条数据不存在时的错误信息
@@ -633,9 +633,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 获取单条信息
-     * @param int|string|array $pkValue 主键数据，支持字符、数值、数字索引数组
-     * @param string           $emptyMessage 找不到数据异常消息
-     * @return array|Field[]
+     * @param mixed  $pkValue 主键数据，支持字符、数值、数字索引数组
+     * @param string $emptyMessage 找不到数据异常消息
+     * @return array|Field
      * @throws SQLException
      */
     public function findInfo($pkValue = null, $emptyMessage = '')
@@ -657,9 +657,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 获取单条包含扩展数据的信息
-     * @param int|string|array $pkValue 主键数据，支持字符、数值、数字索引数组
-     * @param string           $emptyMessage 找不到数据异常消息
-     * @return array|Field[]
+     * @param mixed  $pkValue 主键数据，支持字符、数值、数字索引数组
+     * @param string $emptyMessage 找不到数据异常消息
+     * @return array|Field
      * @throws SQLException
      */
     public function findExtendInfo($pkValue = null, $emptyMessage = '')
@@ -671,17 +671,32 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 获取单条信息
+     * 强制获取单条信息
      * @param mixed $id 信息ID
      * @return array|Field
      * @throws SQLException
-     * @deprecated 该方法已被{@see Model::findInfo()} 替代，建议不使用，未来某一个版本会被移除
      */
     public function getInfo($id)
     {
         $args = func_get_args();
+        $id   = is_null($id) ? '' : $id;
         
         return $this->findInfo($id, $args[1] ?? '');
+    }
+    
+    
+    /**
+     * 强制获取单条信息(包含扩展信息)
+     * @param mixed $id
+     * @return array
+     * @throws SQLException
+     */
+    public function getExtendInfo($id)
+    {
+        $args = func_get_args();
+        $id   = is_null($id) ? '' : $id;
+        
+        return $this->findExtendInfo($id, $args[1] ?? '');
     }
     
     
@@ -690,7 +705,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param mixed $id
      * @return array
      * @throws AppException
-     * @deprecated 该方法已被{@see Model::findExtendInfo()} 替代，建议不使用，未来某一个版本会被移除
+     * @deprecated 该方法已过期，请使用新方法{@see Model::getExtendInfo()} 未来某一个版本会移除该方法
      */
     public function getAllInfo($id)
     {
@@ -1376,11 +1391,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     private function parseBindList($status, $data, $only = false)
     {
-        if ($status && $this->bindParseListClass && is_subclass_of($this->bindParseListClass, Field::class)) {
+        if ($status && $this->bindParseClass && is_subclass_of($this->bindParseClass, Field::class)) {
             if ($only) {
-                return call_user_func_array([$this->bindParseListClass, 'parse'], [$data]);
+                return call_user_func_array([$this->bindParseClass, 'parse'], [$data]);
             } else {
-                return array_map([$this->bindParseListClass, 'parse'], $data);
+                return array_map([$this->bindParseClass, 'parse'], $data);
             }
         }
         
@@ -1397,11 +1412,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     private function parseBindExtendList($status, $data, $only = false)
     {
-        if ($status && $this->bindParseExtendListClass && is_subclass_of($this->bindParseExtendListClass, Field::class)) {
+        if ($status && $this->bindParseExtendClass && is_subclass_of($this->bindParseExtendClass, Field::class)) {
             if ($only) {
-                return call_user_func_array([$this->bindParseExtendListClass, 'parse'], [$data]);
+                return call_user_func_array([$this->bindParseExtendClass, 'parse'], [$data]);
             } else {
-                return array_map([$this->bindParseExtendListClass, 'parse'], $data);
+                return array_map([$this->bindParseExtendClass, 'parse'], $data);
             }
         }
         
