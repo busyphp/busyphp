@@ -58,12 +58,7 @@ class Cache
      */
     public static function clear($dir) : void
     {
-        static $type;
-        if (!isset($type)) {
-            $type = strtolower(config('cache.default'));
-        }
-        
-        switch ($type) {
+        switch (strtolower(config('cache.default'))) {
             // 文件缓存方式
             case 'file':
                 self::rmdir(App::runtimeCachePath() . self::name($dir, ''));
@@ -92,15 +87,8 @@ class Cache
      * @param string $driver 驱动名称，设置后通过该驱动获取前缀配置并加上前缀
      * @return string
      */
-    public static function name($dir, $name, $driver = '')
+    protected static function name($dir, $name, $driver = null)
     {
-        static $prefix;
-        
-        if (!isset($prefix) && $driver) {
-            $driver = strtolower($driver);
-            $prefix = config("cache.stores.{$driver}.prefix");
-        }
-        
         if (is_object($dir)) {
             $dir = get_class($dir);
         }
@@ -108,7 +96,11 @@ class Cache
         $dir  = trim(str_replace('\\', '/', $dir), '/');
         $name = $dir ? $dir . '/' . $name : $name;
         
-        return ($prefix ?? '') . $name;
+        if ($driver) {
+            return config("cache.stores.{$driver}.prefix") . $name;
+        }
+        
+        return $name;
     }
     
     
@@ -117,7 +109,7 @@ class Cache
      * @param $dirname
      * @return bool
      */
-    private static function rmdir($dirname)
+    protected static function rmdir($dirname)
     {
         if (!is_dir($dirname)) {
             return false;
@@ -145,7 +137,7 @@ class Cache
      * @param string $path
      * @return bool
      */
-    private static function unlink(string $path) : bool
+    protected static function unlink(string $path) : bool
     {
         try {
             return is_file($path) && unlink($path);
