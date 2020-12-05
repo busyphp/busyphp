@@ -87,7 +87,7 @@ class Cache
      * @param string $driver 驱动名称，设置后通过该驱动获取前缀配置并加上前缀
      * @return string
      */
-    protected static function name($dir, $name, $driver = null)
+    public static function name($dir, $name, $driver = null)
     {
         if (is_object($dir)) {
             $dir = get_class($dir);
