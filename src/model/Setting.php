@@ -7,7 +7,6 @@ use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\file\File;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
-use BusyPHP\helper\util\Str;
 
 /**
  * Config基本类
@@ -61,7 +60,7 @@ abstract class Setting
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
-            $this->key = Str::snake($name);
+            $this->key = parse_name($name);
         }
         
         return $this->key;
@@ -87,30 +86,17 @@ abstract class Setting
      * 获取数据
      * @param string $name 数据名称
      * @param mixed  $default 默认值
-     * @param bool   $checkEmpty 是否检测为空
      * @return mixed|null
      */
-    final public function get($name = '', $default = null, $checkEmpty = false)
+    final public function get($name = '', $default = null)
     {
-        static $_data;
-        
-        if (!isset($_data)) {
-            $_data = $this->parseGet(SystemConfig::init()->get($this->key));
-        }
+        $data = $this->parseGet(SystemConfig::init()->get($this->key));
         
         if (!$name) {
-            return $_data;
+            return $data;
         }
         
-        if (!isset($_data[$name])) {
-            return $default;
-        }
-        
-        if ($checkEmpty && empty($_data[$name])) {
-            return $default;
-        }
-        
-        return $_data[$name];
+        return $data[$name] ?? $default;
     }
     
     
@@ -122,7 +108,7 @@ abstract class Setting
         $data   = $this->get();
         $string = '';
         foreach ($data as $k => $v) {
-            $name = ucfirst(Str::camel($k));
+            $name = parse_name($k, 1);
             if (is_bool($v)) {
                 $type = 'bool';
             } elseif (is_array($v)) {
@@ -185,7 +171,7 @@ abstract class Setting
     protected static function parseNamespace($list, $namespace, &$config)
     {
         foreach ($list as $i => $r) {
-            $name         = ucfirst(Str::camel($r['type']));
+            $name         = parse_name($r['type'], 1);
             $class        = $namespace . $name;
             $classSetting = $class . 'Setting';
             if (class_exists($class)) {
