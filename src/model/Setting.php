@@ -7,6 +7,7 @@ use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\file\File;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
+use BusyPHP\helper\util\Str;
 
 /**
  * Config基本类
@@ -60,7 +61,7 @@ abstract class Setting
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
-            $this->key = parse_name($name);
+            $this->key = Str::snake($name);
         }
         
         return $this->key;
@@ -108,7 +109,7 @@ abstract class Setting
         $data   = $this->get();
         $string = '';
         foreach ($data as $k => $v) {
-            $name = parse_name($k, 1);
+            $name = ucfirst(Str::camel($k));
             if (is_bool($v)) {
                 $type = 'bool';
             } elseif (is_array($v)) {
@@ -171,7 +172,7 @@ abstract class Setting
     protected static function parseNamespace($list, $namespace, &$config)
     {
         foreach ($list as $i => $r) {
-            $name         = parse_name($r['type'], 1);
+            $name         = ucfirst(Str::camel($r['type']));
             $class        = $namespace . $name;
             $classSetting = $class . 'Setting';
             if (class_exists($class)) {
