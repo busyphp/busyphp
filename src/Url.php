@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP;
 
+use InvalidArgumentException;
+
 /**
  * URL基本类
  * @author busy^life <busy.life@qq.com>
@@ -81,7 +83,7 @@ class Url extends \think\app\Url
                 $url = $app . '/' . $url;
             }
         } elseif (!empty($rule) && isset($name)) {
-            throw new \InvalidArgumentException('route name not exists:' . $name);
+            throw new InvalidArgumentException('route name not exists:' . $name);
         } else {
             // 检测URL绑定
             $bind = $this->route->getDomainBind($domain && is_string($domain) ? $domain : null);
