@@ -222,6 +222,11 @@ class Install extends Command
         if (is_file($path = $this->app->getRootPath() . 'vendor/composer/installed.json')) {
             $packages = json_decode(@file_get_contents($path), true);
         }
+    
+        // Compatibility with Composer 2.0
+        if (isset($packages['packages'])) {
+            $packages = $packages['packages'];
+        }
         
         return $packages;
     }
