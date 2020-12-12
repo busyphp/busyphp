@@ -14,6 +14,8 @@ use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Query;
 use Closure;
 use JsonSerializable;
+use ReflectionClass;
+use ReflectionException;
 use think\Collection;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
@@ -1474,6 +1476,75 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         }
         
         return isset($array[$var]) ? $array[$var] : null;
+    }
+    
+    
+    /**
+     * 解析类常量
+     * @param string|true $class 类，传入true则代表本类
+     * @param string      $prefix 常量前缀
+     * @param array       $annotations 其他注解
+     * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
+     * @return array
+     */
+    public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
+    {
+        try {
+            $reflect = new ReflectionClass($class === true ? static::class : $class);
+        } catch (ReflectionException $e) {
+            return [];
+        }
+        
+        $list = [];
+        foreach ($reflect->getConstants() as $key => $value) {
+            if (0 !== strpos($key, $prefix)) {
+                continue;
+            }
+            
+            $constant = $reflect->getReflectionConstant($key);
+            $doc      = $constant->getDocComment();
+            $name     = '';
+            $item     = [];
+            if (false === strpos($doc, PHP_EOL)) {
+                if (preg_match('/\/\*\*\s@.*?\s[int|float|string|bool|boolean|null]+(.*?)\*\//i', $doc, $match)) {
+                    $name = trim($match[1] ?? '');
+                } else {
+                    preg_match('/\/\*\*(.*?)\*\//i', $doc, $match);
+                    $name = trim($match[1] ?? '');
+                }
+            } else {
+                if (preg_match('/\/\*\*(.*?)(@.*?)\*\//is', $doc, $match)) {
+                    $name = preg_replace('/\n.*?\*/', '', $match[1] ?? '');
+                    $name = trim($name);
+                    
+                    if ($annotations) {
+                        $extendRegex = implode('|', $annotations);
+                        preg_match_all('/@([' . $extendRegex . ']+)(.*?)\*+/is', $match[2] . '*', $extendMatch);
+                        foreach ($extendMatch[1] ?? [] as $i => $extendKey) {
+                            $item[$extendKey] = trim($extendMatch[2][$i] ?? '');
+                        }
+                    }
+                }
+            }
+            
+            foreach ($annotations as $extendKey) {
+                $item[$extendKey] = $item[$extendKey] ?? '';
+            }
+            $item['name']  = $name;
+            $item['key']   = $key;
+            $item['value'] = $value;
+            
+            
+            if (is_callable($mapping)) {
+                $item = call_user_func_array($mapping, [$item]);
+            } elseif (is_string($mapping) && !empty($mapping)) {
+                $item = $item[$mapping];
+            }
+            
+            $list[$value] = $item;
+        }
+        
+        return $list;
     }
     
     
