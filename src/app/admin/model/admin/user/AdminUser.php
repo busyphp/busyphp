@@ -10,6 +10,8 @@ use BusyPHP\helper\crypt\TripleDES;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\setting\AdminSetting;
+use think\facade\Cookie;
+use think\facade\Session;
 use think\helper\Str;
 
 /**
@@ -245,8 +247,8 @@ class AdminUser extends Model
      */
     public function checkLogin()
     {
-        $cookieUserId  = floatval(cookie(AdminUser::COOKIE_USER_ID));
-        $cookieAuthKey = trim(cookie(AdminUser::COOKIE_AUTH_KEY));
+        $cookieUserId  = floatval(Cookie::get(AdminUser::COOKIE_USER_ID));
+        $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY));
         if (!$cookieUserId || !$cookieAuthKey) {
             throw new VerifyException('缺少COOKIE', 'cookie');
         }
@@ -260,7 +262,7 @@ class AdminUser extends Model
         
         // 验证登录时常
         if ($often = AdminSetting::init()->getOften()) {
-            $operateTime = session(self::SESSION_OPERATE_TIME);
+            $operateTime = Session::get(self::SESSION_OPERATE_TIME);
             if ($operateTime > 0 && time() - ($often * 60) > $operateTime) {
                 throw new VerifyException('登录超时', 'timeout');
             }
@@ -300,8 +302,8 @@ class AdminUser extends Model
         $cookieUserId  = $userInfo['id'];
         
         // 设置COOKIE和SESSION
-        cookie(self::COOKIE_AUTH_KEY, $cookieAuthKey);
-        cookie(self::COOKIE_USER_ID, $cookieUserId);
+        Cookie::set(self::COOKIE_AUTH_KEY, $cookieAuthKey);
+        Cookie::set(self::COOKIE_USER_ID, $cookieUserId);
         $this->setOperateTime();
         
         return $userInfo;
@@ -314,7 +316,7 @@ class AdminUser extends Model
     private function setOperateTime()
     {
         if (AdminSetting::init()->getOften()) {
-            session(self::SESSION_OPERATE_TIME, time());
+            Session::set(self::SESSION_OPERATE_TIME, time());
         }
     }
     
@@ -324,8 +326,8 @@ class AdminUser extends Model
      */
     public static function outLogin()
     {
-        cookie(self::COOKIE_AUTH_KEY, null);
-        cookie(self::COOKIE_USER_ID, null);
+        Cookie::delete(self::COOKIE_AUTH_KEY);
+        Cookie::delete(self::COOKIE_USER_ID);
     }
     
     

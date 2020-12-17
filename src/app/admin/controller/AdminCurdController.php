@@ -8,6 +8,7 @@ use BusyPHP\helper\page\Page;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\exception\AppException;
 use Closure;
+use think\facade\Session;
 use think\Response;
 use think\response\View;
 use think\route\Url;
@@ -374,8 +375,8 @@ abstract class AdminCurdController extends AdminController
      */
     protected function getRedirectUrl()
     {
-        $redirectUrl = session('admin_curd_redirect');
-        session('admin_curd_redirect', null);
+        $redirectUrl = Session::get('admin_curd_redirect');
+        Session::delete('admin_curd_redirect');
         
         return $redirectUrl ?: $_SERVER['HTTP_REFERER'];
     }
@@ -395,7 +396,7 @@ abstract class AdminCurdController extends AdminController
             $url = (string) $url;
         }
         
-        session('admin_curd_redirect', $url);
+        Session::set('admin_curd_redirect', $url);
     }
     
     

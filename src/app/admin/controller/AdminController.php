@@ -16,6 +16,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use think\Collection;
 use think\Exception;
 use think\facade\Cache;
+use think\facade\Session;
 use think\Response;
 
 // 前端收到通知后直接跳转
@@ -168,9 +169,9 @@ abstract class AdminController extends Controller
                 // 记录返回地址
                 // POST/AJAX 记录来源操作地址为返回地址
                 if ($this->isPost() || $this->isAjax()) {
-                    session(self::ADMIN_LOGIN_REDIRECT_URL, $this->request->getRedirectUrl());
+                    Session::set(self::ADMIN_LOGIN_REDIRECT_URL, $this->request->getRedirectUrl());
                 } else {
-                    session(self::ADMIN_LOGIN_REDIRECT_URL, URL_SELF);
+                    Session::set(self::ADMIN_LOGIN_REDIRECT_URL, URL_SELF);
                 }
                 
                 $message     = '请登录后操作';

@@ -9,6 +9,7 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
+use think\facade\Session;
 
 /**
  * 登录
@@ -61,7 +62,7 @@ class Passport extends InsideController
                 if ($isVerify) {
                     Verify::clear('admin_login');
                 }
-                $redirectUrl = session(self::ADMIN_LOGIN_REDIRECT_URL);
+                $redirectUrl = Session::get(self::ADMIN_LOGIN_REDIRECT_URL);
                 $redirectUrl = $redirectUrl ?: URL_APP;
                 
                 return $this->success('登录成功', $redirectUrl, MESSAGE_SUCCESS_GOTO);
