@@ -48,6 +48,7 @@ class Passport extends InsideController
                     if ($isVerify) {
                         try {
                             Verify::check('admin_login', $verify);
+                            Verify::clear('admin_login');
                         } catch (AppException $e) {
                             throw new VerifyException($e->getMessage(), 'verify');
                         }
@@ -58,10 +59,6 @@ class Passport extends InsideController
                 $this->adminUserId   = $user['id'];
                 $this->adminUsername = $user['username'];
                 $this->log('登录成功');
-                
-                if ($isVerify) {
-                    Verify::clear('admin_login');
-                }
                 $redirectUrl = Session::get(self::ADMIN_LOGIN_REDIRECT_URL);
                 $redirectUrl = $redirectUrl ?: URL_APP;
                 
