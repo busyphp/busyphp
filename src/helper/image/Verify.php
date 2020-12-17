@@ -14,6 +14,7 @@ namespace BusyPHP\helper\image;
 
 
 use BusyPHP\exception\AppException;
+use think\facade\Session;
 use think\Response;
 
 /**
@@ -24,7 +25,7 @@ use think\Response;
  */
 class Verify
 {
-    protected $config = array(
+    protected $config = [
         // 验证码加密密钥
         'seKey'    => 'ThinkPHP.CN',
         // 验证码字符集合
@@ -52,10 +53,10 @@ class Verify
         // 验证码字体，不设置随机获取
         'fontttf'  => '',
         // 背景颜色
-        'bg'       => array(243, 251, 254),
+        'bg'       => [243, 251, 254],
         // 验证成功后是否重置
         'reset'    => true,
-    );
+    ];
     
     private   $_image = null; // 验证码图片实例
     
@@ -67,7 +68,7 @@ class Verify
      * @access public
      * @param array $config 配置参数
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         $this->config = array_merge($this->config, $config);
     }
@@ -125,7 +126,7 @@ class Verify
         $key = $this->authcode($this->seKey) . $id;
         
         // 验证码不能为空
-        $secode = session($key);
+        $secode = Session::get($key);
         if (empty($code)) {
             throw new AppException('图片验证码不能为空', 0);
         }
@@ -135,12 +136,13 @@ class Verify
         
         // session 过期
         if (time() - $secode['verify_time'] > $this->expire) {
-            session($key, null);
+            Session::delete($key);
+            
             throw new AppException('图片验证码已过期', 1);
         }
         
         if ($this->authcode(strtoupper($code)) == $secode['verify_code']) {
-            $this->reset && session($key, null);
+            $this->reset && Session::delete($key);
             
             return true;
         }
@@ -156,8 +158,7 @@ class Verify
      */
     public function clear($id = '')
     {
-        $key = $this->authcode($this->seKey) . $id;
-        session($key, null);
+        Session::delete($this->authcode($this->seKey) . $id);
     }
     
     
@@ -186,7 +187,7 @@ class Verify
         
         if (empty($this->fontttf)) {
             $dir  = dir($ttfPath);
-            $ttfs = array();
+            $ttfs = [];
             while (false !== ($file = $dir->read())) {
                 if ($file[0] != '.' && substr($file, -4) == '.ttf') {
                     $ttfs[] = $file;
@@ -211,7 +212,7 @@ class Verify
         }
         
         // 绘验证码
-        $code   = array(); // 验证码
+        $code   = [];      // 验证码
         $codeNX = 0;       // 验证码第N个字符的左边距
         if ($this->useZh) {
             // 中文验证码
@@ -230,10 +231,10 @@ class Verify
         // 保存验证码
         $key                   = $this->authcode($this->seKey);
         $code                  = $this->authcode(strtoupper(implode('', $code)));
-        $secode                = array();
+        $secode                = [];
         $secode['verify_code'] = $code;  // 把校验码保存到session
         $secode['verify_time'] = time(); // 验证码创建时间
-        session($key . $id, $secode);
+        Session::set($key . $id, $secode);
         
         header('Cache-Control: private, max-age=0, no-store, no-cache, must-revalidate');
         header('Cache-Control: post-check=0, pre-check=0', false);
@@ -246,7 +247,7 @@ class Verify
         $content = ob_get_clean();
         imagedestroy($this->_image);
         
-        return response($content, 200, ['Content-Length' => strlen($content)])->contentType('image/png');
+        return Response::create($content, 'html', 200)->header(['Content-Length' => strlen($content)])->contentType('image/png');
     }
     
     
@@ -265,14 +266,13 @@ class Verify
         $px = $py = 0;
         
         // 曲线前部分
-        $A = mt_rand(1, $this->imageH / 2);                  // 振幅
-        $b = mt_rand(-$this->imageH / 4, $this->imageH / 4); // Y轴方向偏移量
-        $f = mt_rand(-$this->imageH / 4, $this->imageH / 4); // X轴方向偏移量
-        $T = mt_rand($this->imageH, $this->imageW * 2);      // 周期
-        $w = (2 * M_PI) / $T;
-        
-        $px1 = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // 曲线横坐标起始位置
-        $px2 = mt_rand($this->imageW / 2, $this->imageW * 0.8);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // 曲线横坐标结束位置
+        $A   = mt_rand(1, $this->imageH / 2);                  // 振幅
+        $b   = mt_rand(-$this->imageH / 4, $this->imageH / 4); // Y轴方向偏移量
+        $f   = mt_rand(-$this->imageH / 4, $this->imageH / 4); // X轴方向偏移量
+        $T   = mt_rand($this->imageH, $this->imageW * 2);      // 周期
+        $w   = (2 * M_PI) / $T;
+        $px1 = 0;  // 曲线横坐标起始位置
+        $px2 = mt_rand($this->imageW / 2, $this->imageW * 0.8); // 曲线横坐标结束位置
         
         for ($px = $px1; $px <= $px2; $px = $px + 1) {
             if ($w != 0) {
@@ -286,11 +286,11 @@ class Verify
         }
         
         // 曲线后部分
-        $A   = mt_rand(1, $this->imageH / 2);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // 振幅
-        $f   = mt_rand(-$this->imageH / 4, $this->imageH / 4);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // X轴方向偏移量
-        $T   = mt_rand($this->imageH, $this->imageW * 2);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // 周期
-        $w   = (2 * M_PI) / $T;
-        $b   = $py - $A * sin($w * $px + $f) - $this->imageH / 2;
+        $A = mt_rand(1, $this->imageH / 2);    // 振幅
+        $f = mt_rand(-$this->imageH / 4, $this->imageH / 4);  // X轴方向偏移量
+        $T = mt_rand($this->imageH, $this->imageW * 2);  // 周期
+        $w = (2 * M_PI) / $T;
+        $b = $py - $A * sin($w * $px + $f) - $this->imageH / 2;
         $px1 = $px2;
         $px2 = $this->imageW;
         
@@ -334,7 +334,7 @@ class Verify
         $path = dirname(__FILE__) . '/verify/bgs/';
         $dir  = dir($path);
         
-        $bgs = array();
+        $bgs = [];
         while (false !== ($file = $dir->read())) {
             if ($file[0] != '.' && substr($file, -4) == '.jpg') {
                 $bgs[] = $path . $file;
@@ -344,11 +344,11 @@ class Verify
         
         $gb = $bgs[array_rand($bgs)];
         
-        list($width, $height) = @getimagesize($gb);
+        [$width, $height] = getimagesize($gb);
         // Resample
-        $bgImage = @imagecreatefromjpeg($gb);
-        @imagecopyresampled($this->_image, $bgImage, 0, 0, 0, 0, $this->imageW, $this->imageH, $width, $height);
-        @imagedestroy($bgImage);
+        $bgImage = imagecreatefromjpeg($gb);
+        imagecopyresampled($this->_image, $bgImage, 0, 0, 0, 0, $this->imageW, $this->imageH, $width, $height);
+        imagedestroy($bgImage);
     }
     
     
