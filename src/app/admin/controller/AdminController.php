@@ -556,7 +556,7 @@ abstract class AdminController extends Controller
         
         if (!isset($apps)) {
             $path = base_path();
-            $apps = ['admin' => '后台', 'home' => '前台', 'crontab' => '任务'];
+            $apps = ['admin' => '后台', $this->app->config->get('app.default_app') => '前台'];
             $keys = array_keys($apps);
             foreach (scandir($path) as $value) {
                 if (!is_dir($app = $path . $value) || $value === '.' || $value === '..' || in_array($value, $keys)) {
