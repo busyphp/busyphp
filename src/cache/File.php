@@ -29,18 +29,30 @@ class File extends \think\cache\driver\File
             
             $name = $this->options['path'] . $name . '.php';
         } else {
-            $name = hash($this->options['hash_type'], $name);
-            
-            // 使用子目录
-            if ($this->options['cache_subdir']) {
-                $name = substr($name, 0, 2) . DIRECTORY_SEPARATOR . substr($name, 2);
+            // 针对数据库字段缓存进行路径转换
+            if (false !== strpos($name, '@') && false !== strpos($name, ':') && 1 === preg_match('/^([a-z0-9_\-\.]+):(\d+)@([a-z0-9_\-]+)\.([a-z0-9_\-]+)$/i', $name, $match)) {
+                $name = str_replace(['@', ':'], '_', $name);
+                $name = 'schema' . DIRECTORY_SEPARATOR . $name ;
+                
+                if ($this->options['prefix']) {
+                    $name = $this->options['prefix'] . DIRECTORY_SEPARATOR . $name;
+                }
+                
+                $name = $this->options['path'] . $name . '.php';
+            } else {
+                $name = hash($this->options['hash_type'], $name);
+                
+                // 使用子目录
+                if ($this->options['cache_subdir']) {
+                    $name = substr($name, 0, 2) . DIRECTORY_SEPARATOR . substr($name, 2);
+                }
+                
+                if ($this->options['prefix']) {
+                    $name = $this->options['prefix'] . DIRECTORY_SEPARATOR . $name;
+                }
+                
+                $name = $this->options['path'] . 'common' . DIRECTORY_SEPARATOR . $name . '.php';
             }
-            
-            if ($this->options['prefix']) {
-                $name = $this->options['prefix'] . DIRECTORY_SEPARATOR . $name;
-            }
-            
-            $name = $this->options['path'] . 'common' . DIRECTORY_SEPARATOR . $name . '.php';
         }
         
         return $name;
