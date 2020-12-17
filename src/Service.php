@@ -107,6 +107,7 @@ class Service extends \think\Service
         $cache       = $this->value($config, 'cache', []);
         $route       = $this->value($config, 'route', []);
         $trace       = $this->value($config, 'trace', []);
+        $session     = $this->value($config, 'session', []);
         
         
         // 应用
@@ -161,6 +162,9 @@ class Service extends \think\Service
         // trace
         $trace['file'] = $this->value($trace, 'file', App::getBusyPath('tpl') . 'trace.html');
         
+        // session
+        $session['path'] = $this->value($session, 'path', App::runtimeCachePath('session'));
+        
         
         // 组合参数进行设置
         $config['app']      = $app;
@@ -169,6 +173,7 @@ class Service extends \think\Service
         $config['cache']    = $cache;
         $config['route']    = $route;
         $config['trace']    = $trace;
+        $config['session']  = $session;
         
         $this->app->config->set($config);
     }
