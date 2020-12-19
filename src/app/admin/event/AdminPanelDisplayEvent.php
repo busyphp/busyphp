@@ -97,8 +97,14 @@ abstract class AdminPanelDisplayEvent
      * @param mixed|null $params
      * @return AdminPanelDisplayEventResult
      */
-    public static function triggerEvent($event, $params = null)
+    public static function triggerEvent($event, $params = null) : AdminPanelDisplayEventResult
     {
-        return Event::trigger($event, $params, true);
+        $result = Event::trigger($event, $params, true);
+        
+        if (!$result instanceof AdminPanelDisplayEventResult) {
+            $result = new AdminPanelDisplayEventResult();
+        }
+        
+        return $result;
     }
 }
