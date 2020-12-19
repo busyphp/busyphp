@@ -2,9 +2,9 @@
 
 namespace BusyPHP\app\admin\subscribe;
 
-use BusyPHP\app\admin\model\message\MessageAgencyItem;
-use BusyPHP\app\admin\model\message\MessageParams;
-use BusyPHP\app\admin\model\message\MessageUpdateParams;
+use BusyPHP\app\admin\model\admin\message\provide\MessageAgencyItem;
+use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
+use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
 use BusyPHP\contract\abstracts\Subscribe;
 
 /**

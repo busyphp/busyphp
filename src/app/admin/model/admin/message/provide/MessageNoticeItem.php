@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\app\admin\model\message;
+namespace BusyPHP\app\admin\model\admin\message\provide;
 
 /**
  * 消息通知item规定

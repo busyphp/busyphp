@@ -3,10 +3,10 @@
 namespace BusyPHP\app\admin\subscribe;
 
 use BusyPHP\app\admin\model\admin\message\AdminMessage;
-use BusyPHP\app\admin\model\message\MessageNoticeItem;
-use BusyPHP\app\admin\model\message\MessageListParams;
-use BusyPHP\app\admin\model\message\MessageUpdateParams;
-use BusyPHP\app\admin\model\message\MessageParams;
+use BusyPHP\app\admin\model\admin\message\provide\MessageNoticeItem;
+use BusyPHP\app\admin\model\admin\message\provide\MessageListParams;
+use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
+use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
 use BusyPHP\contract\abstracts\Subscribe;
 use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
