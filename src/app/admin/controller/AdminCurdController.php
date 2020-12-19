@@ -231,7 +231,7 @@ abstract class AdminCurdController extends AdminController
         
         // 条数统计
         $total = null;
-        if (!$this->options['select']['simple']) {
+        if (!$simple) {
             $totalModel->removeOption('limit');
             $totalModel->removeOption('order');
             $totalModel->removeOption('field');
@@ -241,7 +241,8 @@ abstract class AdminCurdController extends AdminController
         
         // 实例化分页
         $limit     = is_numeric($limit) ? $limit : 0;
-        $paginator = $this->page($list, $limit, $page, $total, $simple);
+        $showPage  = $this->options['select']['limit'] !== false;
+        $paginator = $showPage ? $this->page($list, $limit, $page, $total, $simple) : null;
         
         // 查询回调
         if (isset($this->callback[self::CALL_SELECT_LIST])) {
@@ -263,13 +264,13 @@ abstract class AdminCurdController extends AdminController
             return $this->success('', '', [
                 'list'       => $this->fetch($this->templateName),
                 'total'      => $total,
-                'page'       => $paginator->render(),
+                'page'       => $paginator != null ? $paginator->render() : '',
                 'total_page' => $limit > 0 ? ($simple ? 0 : $paginator->lastPage()) : 0
             ]);
         } else {
             $this->assign('list', $list);
             $this->assign('total', $total);
-            $this->assign('page', $paginator->render());
+            $this->assign('page', $paginator != null ? $paginator->render() : '');
             
             return $this->display();
         }
