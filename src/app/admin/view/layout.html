@@ -22,49 +22,52 @@
 <![endif]-->
 
 <div id="wrap">
-    <div id="header">
-        <div id="topBar">
-            <div class="logo pull-left">
+    <div class="busy-admin-header" data-toggle="busy-admin-header">
+        <div class="busy-admin-header-top">
+            
+            <div class="busy-admin-header-logo">
                 <img src="{$skin.images}logo_white.png"/>
                 <div>
                     <h1>{$system.public_config.title}后台管理</h1>
                     <p>{$_SERVER.HTTP_HOST}</p>
                 </div>
             </div>
-            <a href="javascript:void(0)" class="m-right-menu">
-                <i class="icon icon-list"></i>
-            </a>
-            <div class="bar pull-right">
-                <a class="item" href="{:url('System.User/personal_info')}">
+            
+            <div class="busy-admin-header-bar clearfix">
+                <a class="busy-admin-header-bar-item" href="{:url('System.User/personal_info')}">
                     <i class="icon icon-user"></i>
                     <span>用户：</span>
                     {$system.username}
                 </a>
+                
                 <eq name="system.message_notice_status" value="1">
-                    <a class="item message" data-toggle="busy-admin-bar-notice" href="javascript:void(0);">
+                    <a class="busy-admin-header-bar-item busy-admin-header-bar-item-message" data-toggle="busy-admin-bar-notice" href="javascript:void(0);">
                         <i class="icon icon-envelope"></i>
                         <span class="badge hide">0</span>
                     </a>
                 </eq>
+                
                 <eq name="system.message_agency_status" value="1">
-                    <a class="item message" data-toggle="busy-admin-bar-agency" href="javascript:void(0);">
+                    <a class="busy-admin-header-bar-item busy-admin-header-bar-item-message" data-toggle="busy-admin-bar-agency" href="javascript:void(0);">
                         <i class="icon icon-tasks"></i>
                         <span class="badge hide">0</span>
                     </a>
                 </eq>
-                <div class="item">
+                
+                <div class="busy-admin-header-bar-item">
                     <i class="icon icon-home"></i>
                     <a href="{$url.root}">后台首页</a>
                     &nbsp;·&nbsp;
                     <a href="{$url.base_root}" target="_blank">网站首页</a>
                 </div>
-                <a class="item" href="{:url('admin_out')}" data-get-confirm="确认要退出登录吗？" role-loading="请稍候..." role-ajax="1">
+                
+                <a class="busy-admin-header-bar-item" href="{:url('admin_out')}" data-get-confirm="确认要退出登录吗？" role-loading="请稍候..." role-ajax="1">
                     <i class="icon icon-off"></i>
                     退出登录
                 </a>
             </div>
-            <div class="clearfix"></div>
         </div>
+        
         <div class="busy-admin-mobile-bar">
             <neq name="system.url_path" value="Common.Index/index">
                 <a class="busy-admin-mobile-bar-left" href="javascript:history.go(-1);">
@@ -98,11 +101,11 @@
             </div>
         </div>
 
-        <div id="menu">
-            <ul class="nav nav-tabs pull-left">
+        <div class="busy-admin-menu" data-toggle="busy-admin-menu">
+            <ul class="nav nav-tabs">
                 <foreach name="system.menu" item="vo">
                     <li<?=$vo['path'] == $system['menu_active'] ? ' class="active"' : '';?>>
-                        <a href="javascript:void(0)" data-target="layoutNav{$vo.id}">
+                        <a href="javascript:void(0)" data-target="busyAdminNav{$vo.id}">
                             <i class="icon icon-{$vo.icon}"></i>
                             {$vo.name}
                         </a>
@@ -110,19 +113,19 @@
                 </foreach>
             </ul>
         </div>
-        <div id="bgLine"></div>
+        <div class="busy-admin-menu-line"></div>
     </div>
 
-    <div id="leftBox">
-        <div class="layout-user-info text-center">
-            <a class="layout-user-avatar" href="{$url.root}">
+    <div class="busy-admin-left" data-toggle="busy-admin-left">
+        <div class="busy-admin-user-info text-center">
+            <a class="busy-admin-user-info-avatar" href="{$url.root}">
                 <img class="img-circle img-thumbnail" src="{$skin.images}logo.png"/>
             </a>
             <h5>
                 <i class="icon icon-user"></i>
                 {$system.username}
             </h5>
-            <div class="layout-user-toolbar">
+            <div class="busy-admin-user-info-toolbar">
                 <a class="btn btn-default btn-xs" href="{:url('System.User/personal_info')}">
                     <i class="icon icon-cog"></i>
                     资料
@@ -137,25 +140,25 @@
                 </a>
             </div>
         </div>
-        <div id="nav">
+        
+        <div class="busy-admin-nav" data-toggle="busy-admin-nav">
             <foreach name="system.nav" item="vo">
-                <h3 class="menu-father-title" id="layoutNav{$vo.id}">{$vo.name}</h3>
-                <ul class="nav menu-father-box <?=$vo['path'] == $system['menu_active'] ? '' : 'hide';?>">
+                <h3 class="busy-admin-nav-title" id="busyAdminNav{$vo.id}">{$vo.name}</h3>
+                <ul class="nav busy-admin-nav-child <?=$vo['path'] == $system['menu_active'] ? '' : 'hide';?>" data-toggle="busy-admin-nav-child">
                     <foreach name="vo.child" item="vo2">
-                        <li id="menu_item_{$vo2.id}" class="menu-father-item <?=$vo2['path'] == $system['nav_active'] ? 'active' : ''?>" data-id="{$vo2.id}">
-                            <a href="{$vo2.url|default='javascript:void(0);'}" class="menu-father-a">
+                        <li id="busyAdminNavItem{$vo2.id}" class="busy-admin-nav-item <?=$vo2['path'] == $system['nav_active'] ? 'active' : ''?>" data-id="{$vo2.id}">
+                            <a href="{$vo2.url|default='javascript:void(0);'}" class="busy-admin-nav-item-title" data-toggle="busy-admin-nav-item-title">
                                 <em class="icon icon-chevron-right pull-right <?=$vo2['is_has_action'] ? 'icon-rotate-90' : ''?>"></em>
                                 <i class="pull-left icon icon-{$vo2.icon}"></i>
                                 {$vo2.name}
                             </a>
                             <notempty name="vo2.child">
-                                <ul class="menu-children-box" data-show="1">
+                                <ul class="busy-admin-nav-item-child" data-show="1">
                                     <foreach name="vo2.child" item="vo3">
-                                        <li class="menu-children-item <?=$vo3['path'] == $system['nav_active'] ? 'active' : ''?>">
-                                            <a class="menu-children-a" href="{$vo3.url|default='javascript:void(0);'}">
+                                        <li class="busy-admin-nav-item-child-item <?=$vo3['path'] == $system['nav_active'] ? 'active' : ''?>">
+                                            <a class="busy-admin-nav-item-child-item-title clearfix" href="{$vo3.url|default='javascript:void(0);'}">
                                                 <i class="pull-left icon icon-{$vo3.icon}"></i>
                                                 <span>{$vo3.name}</span>
-                                                <div class="clearfix"></div>
                                             </a>
                                         </li>
                                     </foreach>
@@ -166,13 +169,14 @@
                 </ul>
             </foreach>
         </div>
-        <div class="nav-extend">
+        
+        <div class="busy-admin-nav-extend">
             <block name="nav"></block>
         </div>
     </div>
 
-    <div id="contentBox">
-        <div id="currentBar">
+    <div class="busy-admin-content" data-toggle="busy-admin-content">
+        <div class="busy-admin-content-bar clearfix">
             <ol class="breadcrumb">
                 <li class="title">
                     <i class="icon icon-home"></i>
@@ -189,14 +193,15 @@
                     </li>
                 </foreach>
             </ol>
-            <div class="clearfix"></div>
         </div>
-        <div id="content">
-            <div class="content-padding">
+        
+        <div class="busy-admin-content-box" data-toggle="busy-admin-content-box">
+            <div class="busy-admin-content-pending">
                 <block name="content"></block>
             </div>
         </div>
-        <div id="layoutBg"></div>
+        
+        <div class="busy-admin-content-bg" data-toggle="busy-admin-content-bg"></div>
     </div>
 
     <script type="text/html" id="busyAdminNoticePanelTemplate">
