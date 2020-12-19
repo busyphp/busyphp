@@ -122,7 +122,7 @@ class Install extends Command
     {
         $sourceFile = $this->app->getRootPath() . 'vendor/' . $source;
         $toDir      = trim($toDir, '/');
-        $lockFile   = $toDir . DIRECTORY_SEPARATOR . md5($source) . '.lock';
+        $lockFile   = $toDir . DIRECTORY_SEPARATOR . md5(str_replace('\\', '/', $source)) . '.lock';
         if (is_file($lockFile)) {
             $this->output->warning("文件: {$source} 已存在, 不进行解压");
             
