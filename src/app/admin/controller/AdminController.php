@@ -3,6 +3,8 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
+use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
@@ -16,6 +18,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use think\Collection;
 use think\Exception;
 use think\facade\Cache;
+use think\facade\Event;
 use think\facade\Session;
 use think\Response;
 
@@ -181,7 +184,7 @@ abstract class AdminController extends Controller
             
             // 抛出错误
             if ($this->isAjax()) {
-                $result = $this->error($message, (string)$redirectUrl, MESSAGE_WARING_GOTO);
+                $result = $this->error($message, (string) $redirectUrl, MESSAGE_WARING_GOTO);
             } else {
                 if ($isRedirect) {
                     $result = $this->redirect($redirectUrl);
@@ -375,19 +378,21 @@ abstract class AdminController extends Controller
         
         // 系统变量
         $this->assign('system', [
-            'menu'          => isset($menuArray['menu_list']) ? $menuArray['menu_list'] : [],
-            'menu_active'   => $menuActive,
-            'nav'           => $menuModel->getAdminNav($this->adminPermissionId),
-            'nav_active'    => $this->layoutLeftNavActive ? $this->layoutLeftNavActive : $navActive,
-            'user'          => $this->adminUser,
-            'user_id'       => $this->adminUserId,
-            'username'      => $this->adminUsername,
-            'url_path'      => $this->urlPath,
-            'url_pattern'   => $this->urlPattern,
-            'public_config' => $this->publicConfig,
-            'breadcrumb'    => $this->breadcrumb,
-            'permission'    => $this->adminPermission,
-            'message_url'   => url('Common.Index/message'),
+            'menu'                  => isset($menuArray['menu_list']) ? $menuArray['menu_list'] : [],
+            'menu_active'           => $menuActive,
+            'nav'                   => $menuModel->getAdminNav($this->adminPermissionId),
+            'nav_active'            => $this->layoutLeftNavActive ? $this->layoutLeftNavActive : $navActive,
+            'user'                  => $this->adminUser,
+            'user_id'               => $this->adminUserId,
+            'username'              => $this->adminUsername,
+            'url_path'              => $this->urlPath,
+            'url_pattern'           => $this->urlPattern,
+            'public_config'         => $this->publicConfig,
+            'breadcrumb'            => $this->breadcrumb,
+            'permission'            => $this->adminPermission,
+            'message_url'           => url('Common.Index/message'),
+            'message_notice_status' => MessageNoticeSubscribe::hasSubscribe(),
+            'message_agency_status' => MessageAgencySubscribe::hasSubscribe(),
         ]);
         
         // 页面名称

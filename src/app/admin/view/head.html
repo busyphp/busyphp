@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
 <css href="{$skin.lib}bootstrap/css/bootstrap.css"/>
 <css href="{$skin.css}theme.css"/>
+<link id="layuicss-layer" rel="stylesheet" href="{$skin.lib}layer/theme/default/layer.css">
 <script>
     window.ADMIN_URL = '{$url.root}';
     window.GLOBALS_URL = '{$url.base_root}';
@@ -19,12 +20,15 @@
     window.URL_MODULE_VALUE = '{$Think.MODULE_NAME}';
     window.URL_ACTION_VALUE = '{$Think.ACTION_NAME}';
     window.URL_PAGE_KEY = '{$Think.config.route.var_page}';
-    window.URL_PATTERN_KEY = '<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::PATTERN?>';
+    window.URL_PATTERN_KEY = '<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::PATTERN;?>';
     window.URL_PATTERN_VALUE = '{$system.url_pattern}';
+    window.MESSAGE_URL = '{$system.message_url}';
 </script>
 <!--[if lt IE 9]>
 <js href="{$skin.lib}bootstrap/js/respond.min.js"/>
 <![endif]-->
 <js href="{$skin.js}jquery.min.js"/>
+<js href="{$skin.lib}vue/vue.js"/>
 <js href="{$skin.lib}bootstrap/js/bootstrap.min.js"/>
 <js href="{$skin.lib}dialog/jquery.artDialog.js"/>
+<js href="{$skin.lib}layer/layer.js"/>

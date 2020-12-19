@@ -40,10 +40,18 @@
                     <span>用户：</span>
                     {$system.username}
                 </a>
-                <a class="item" href="javascript:void(0);">
-                    <i class="icon icon-envelope"></i>
-                    消息
-                </a>
+                <eq name="system.message_notice_status" value="1">
+                    <a class="item message" data-toggle="busy-admin-bar-notice" href="javascript:void(0);">
+                        <i class="icon icon-envelope"></i>
+                        <span class="badge hide">0</span>
+                    </a>
+                </eq>
+                <eq name="system.message_agency_status" value="1">
+                    <a class="item message" data-toggle="busy-admin-bar-agency" href="javascript:void(0);">
+                        <i class="icon icon-tasks"></i>
+                        <span class="badge hide">0</span>
+                    </a>
+                </eq>
                 <div class="item">
                     <i class="icon icon-home"></i>
                     <a href="{$url.root}">后台首页</a>
@@ -57,16 +65,31 @@
             </div>
             <div class="clearfix"></div>
         </div>
-        <div id="mobileBar">
+        <div class="busy-admin-mobile-bar">
             <neq name="system.url_path" value="Common.Index/index">
-                <a class="pull-left" href="javascript:history.go(-1);">
+                <a class="busy-admin-mobile-bar-left" href="javascript:history.go(-1);">
                     <i class="icon icon-angle-left"></i>
                 </a>
             </neq>
-            <a class="pull-right">
-                <i class="icon icon-list-ul"></i>
-            </a>
-            <div class="text-center">
+            <div class="busy-admin-mobile-bar-right">
+                <eq name="system.message_notice_status" value="1">
+                    <a data-toggle="busy-admin-bar-notice" class="busy-admin-mobile-bar-notice">
+                        <i class="icon icon-envelope"></i>
+                        <span class="badge hide">0</span>
+                    </a>
+                </eq>
+                <eq name="system.message_agency_status" value="1">
+                    <a data-toggle="busy-admin-bar-agency"  class="busy-admin-mobile-bar-agency">
+                        <i class="icon icon-tasks"></i>
+                        <span class="badge hide">0</span>
+                    </a>
+                </eq>
+                <a data-toggle="busy-admin-mobile-bar" class="busy-admin-mobile-bar-menu">
+                    <i class="icon icon-list-ul"></i>
+                </a>
+            </div>
+            
+            <div class="busy-admin-mobile-bar-title">
                 <notempty name="panel_title">
                     {$panel_title}
                     <else/>
@@ -89,7 +112,6 @@
         </div>
         <div id="bgLine"></div>
     </div>
-
 
     <div id="leftBox">
         <div class="layout-user-info text-center">
@@ -148,6 +170,7 @@
             <block name="nav"></block>
         </div>
     </div>
+
     <div id="contentBox">
         <div id="currentBar">
             <ol class="breadcrumb">
@@ -175,6 +198,70 @@
         </div>
         <div id="layoutBg"></div>
     </div>
+
+    <script type="text/html" id="topBarNoticePanelTemplate">
+        <div class="busy-admin-right-panel" id="topBarNoticeVueApp">
+            <div class="busy-admin-right-panel-head">通知</div>
+            <div class="busy-admin-right-panel-body" v-on:scroll="onScroll">
+                <template v-if="list.length > 0">
+                    <a class="media" v-for="(item, index) in list" v-bind:class="item.is_read ? 'read' : ''" :data-index="index" v-on:click="onItemClick(index)" :href="item.url.length > 0 ? item.url : 'javascript:void(0)'" :target="item.url.length > 0 ? '_blank' : ''">
+                        <div class="media-left" v-if="item.icon.value.length > 0">
+                            <i class="media-object icon" :class="item.icon.value" :style="{backgroundColor: item.icon.color}" v-if="item.icon.is_class"></i>
+                            <img class="media-object" :src="item.icon.value" v-else>
+                        </div>
+                        <div class="media-body">
+                            <h5 class="media-heading">
+                                <span v-if="!item.is_read"></span>
+                                {{item.title}}
+                            </h5>
+                            <p class="text-muted size-12" v-if="item.desc.length > 0">{{item.desc}}</p>
+                            <p class="text-gray size-12">{{item.create_time}}</p>
+                        </div>
+                    </a>
+
+                    <div class="media text-muted text-center size-12" v-if="showLast">没有消息了</div>
+                </template>
+                <template v-else>
+                    <div class="empty-info" v-if="load">
+                        <i class="icon icon-spinner icon-spin size-30"></i><br/><br/>加载中...
+                    </div>
+                    <div class="empty-info" v-else>暂无通知</div>
+                </template>
+            </div>
+            <div class="busy-admin-right-panel-foot">
+                <div class="btn-group">
+                    <a class="btn btn-warning" v-on:click="onAllRead"><i class="icon icon-trash"></i> 全部已读</a>
+                    <a class="btn btn-danger" v-on:click="onClear"><i class="icon icon-trash"></i> 清空</a>
+                    <a class="btn btn-default" v-on:click="onClose"><i class="icon icon-close"></i> 关闭</a>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="topBarAgencyPanelTemplate">
+        <div class="busy-admin-right-panel" id="topBarAgencyVueApp">
+            <div class="busy-admin-right-panel-head">待办</div>
+            <div class="busy-admin-right-panel-body">
+                <template v-if="list.length > 0">
+                    <a class="media" v-for="(vo, index) in list" :href="vo.url.length > 0 ? vo.url : ''" :data-index="index" v-on:click="onItemClick(index)" :target="vo.url.length > 0 ? '_blank' : ''">
+                        <div class="media-body">
+                            <h5 class="media-heading">{{vo.title}}</h5>
+                            <p class="text-muted size-12" v-if="vo.desc.length > 0">{{vo.desc}}</p>
+                        </div>
+                    </a>
+                </template>
+                <template v-else>
+                    <div class="empty-info" v-if="load">
+                        <i class="icon icon-spinner icon-spin size-30"></i><br/><br/>加载中...
+                    </div>
+                    <div class="empty-info" v-else>暂无待办</div>
+                </template>
+            </div>
+            <div class="busy-admin-right-panel-foot">
+                <a class="btn btn-default btn-block" v-on:click="onClose"><i class="icon icon-close"></i> 关闭</a>
+            </div>
+        </div>
+    </script>
 </div>
 <include file="@admin:foot"/>
 <!--[admin:plugin]-->
