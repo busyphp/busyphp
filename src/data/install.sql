@@ -34,6 +34,22 @@ CREATE TABLE `#__table__#admin_user` (
   KEY `phone` (`phone`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台用户';
 
+DROP TABLE IF EXISTS `#__table__#admin_message`;
+CREATE TABLE `#__table__#admin_message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` int(11) NOT NULL DEFAULT '0' COMMENT '管理员ID',
+  `create_time` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `is_read` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已读',
+  `read_time` int(11) NOT NULL DEFAULT '0' COMMENT '阅读时间',
+  `content` varchar(255) NOT NULL DEFAULT '' COMMENT '消息内容',
+  `description` varchar(255) NOT NULL DEFAULT '' COMMENT '消息备注',
+  `url` varchar(255) NOT NULL DEFAULT '' COMMENT '操作链接',
+  `icon` varchar(255) NOT NULL DEFAULT '' COMMENT '图标',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `is_read` (`is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台系统消息表';
+
 DROP TABLE IF EXISTS `#__table__#system_config`;
 CREATE TABLE `#__table__#system_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
