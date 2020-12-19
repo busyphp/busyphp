@@ -6,8 +6,8 @@ namespace BusyPHP;
 use BusyPHP\cache\File;
 use BusyPHP\command\Install;
 use BusyPHP\command\Version;
-use BusyPHP\middleware\ConfigInit;
-use BusyPHP\middleware\RouteInit;
+use BusyPHP\middleware\ConfigMiddleware;
+use BusyPHP\middleware\RouteMiddleware;
 use BusyPHP\model\Query;
 use BusyPHP\view\taglib\Cx;
 use BusyPHP\view\View;
@@ -60,13 +60,13 @@ class Service extends \think\Service
         
         // 监听HttpRun
         $this->app->event->listen('HttpRun', function() {
-            $this->app->middleware->add(ConfigInit::class);
+            $this->app->middleware->add(ConfigMiddleware::class);
         });
         
         
         // 添加路由中间件
         $this->app->middleware->import([
-            RouteInit::class,
+            RouteMiddleware::class,
             SessionInit::class
         ], 'route');
         

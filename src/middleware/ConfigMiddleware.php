@@ -15,7 +15,7 @@ use think\Response;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/5 下午3:40 下午 ConfigInit.php $
  */
-class ConfigInit implements Middleware
+class ConfigMiddleware implements Middleware
 {
     /**
      * @var App
