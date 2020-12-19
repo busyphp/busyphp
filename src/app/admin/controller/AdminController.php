@@ -181,7 +181,7 @@ abstract class AdminController extends Controller
             
             // 抛出错误
             if ($this->isAjax()) {
-                $result = $this->error($message, $redirectUrl, MESSAGE_WARING_GOTO);
+                $result = $this->error($message, (string)$redirectUrl, MESSAGE_WARING_GOTO);
             } else {
                 if ($isRedirect) {
                     $result = $this->redirect($redirectUrl);
@@ -386,7 +386,8 @@ abstract class AdminController extends Controller
             'url_pattern'   => $this->urlPattern,
             'public_config' => $this->publicConfig,
             'breadcrumb'    => $this->breadcrumb,
-            'permission'    => $this->adminPermission
+            'permission'    => $this->adminPermission,
+            'message_url'   => url('Common.Index/message'),
         ]);
         
         // 页面名称
