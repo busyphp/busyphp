@@ -25,6 +25,10 @@ class Admin extends TagLib
     
     protected $headExtend = '';
     
+    protected $trimStart  = '<busy-admin-trim>';
+    
+    protected $trimEnd    = '</busy-admin-trim>';
+    
     /**
      * 标签配置
      * @var array
@@ -109,7 +113,7 @@ class Admin extends TagLib
             $uIcon = "<i class='{$tag['upload-icon']}'></i> ";
         }
         
-        $temp = '<div class="input-group"><input type="text" id="' . $id . '" name="' . $tag['name'] . '" class="form-control" data-init="' . $tag['init'] . '" data-auto="file" data-mark-type="' . $tag['type'] . '" data-mark-value="' . $tag['mark'] . '" value="' . $content . '" data-desc-target="' . implode(',', $descTarget) . '" data-target="' . implode(',', $target) . '" ' . ($tag['readonly'] ? 'readonly="readonly"' : '') . ' disabled/><div class="input-group-btn">';
+        $temp = '<div class="input-group"><input type="text" id="' . $id . '" name="' . $tag['name'] . '" class="form-control" data-init="' . $tag['init'] . '" data-auto="file" data-mark-type="' . $tag['type'] . '" data-mark-value="' . $tag['mark'] . '" value="' . $this->trimStart . $content . $this->trimEnd . '" data-desc-target="' . implode(',', $descTarget) . '" data-target="' . implode(',', $target) . '" ' . ($tag['readonly'] ? 'readonly="readonly"' : '') . ' disabled/><div class="input-group-btn">';
         
         // 上传功能
         if ($tag['upload-name'] != 'none') {
@@ -262,7 +266,7 @@ class Admin extends TagLib
         
         $this->isUEditor = true;
         
-        return '<textarea data-ueditor="' . $config . '" role-image-mark="' . $image . '" role-file-mark="' . $file . '" role-video-mark="' . $video . '" role-mark="' . $mark . '" class="form-control ' . $class . '" name="' . $name . '" style="height:' . $height . '; width:' . $width . ';">' . $content . '</textarea>';
+        return '<textarea data-ueditor="' . $config . '" role-image-mark="' . $image . '" role-file-mark="' . $file . '" role-video-mark="' . $video . '" role-mark="' . $mark . '" class="form-control ' . $class . '" name="' . $name . '" style="height:' . $height . '; width:' . $width . ';">' . $this->trimStart . $content . $this->trimEnd . '</textarea>';
     }
     
     
@@ -319,6 +323,13 @@ class Admin extends TagLib
                 return PHP_EOL . $bodyExtend . PHP_EOL . $array[0];
             }, $content);
         }
+        
+        // 移除由于标签换行造成的空格
+        $trimStart = $this->trimStart;
+        $trimEnd   = str_replace('/', '\/', $this->trimEnd);
+        $content   = preg_replace_callback("/{$trimStart}(.*?){$trimEnd}/is", function($array) {
+            return trim($array[1]);
+        }, $content);
     }
     
     
