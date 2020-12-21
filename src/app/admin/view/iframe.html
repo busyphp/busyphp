@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title>{$pagetitle} - 后台管理系统</title>
+	<title>{$page_title} - 后台管理系统</title>
 	<include file="@admin:head" />
 	<script>
 		if (self === top) {
@@ -10,7 +10,7 @@
 	</script>
 	<block name="head"></block>
 </head>
-<body>
+<body data-title="{$page_title}">
 <block name="content"></block>
 <include file="@admin:foot" />
 <block name="foot"></block>
