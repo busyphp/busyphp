@@ -166,8 +166,8 @@ class File extends InsideController
             $where['mark_type']    = $markType;
         } else {
             $static   = $this->iRequest('static');
-            $markType = trim($static['mark_type']);
-            $classify = trim($static['classify']);
+            $markType = trim($static['mark_type'] ?? '');
+            $classify = trim($static['classify'] ?? '');
         }
         
         
@@ -187,9 +187,8 @@ class File extends InsideController
         
         
         $this->setSelectWhere($where, function($where) {
-            if (!$where['classify']) {
-                unset($where['classify']);
-            }
+            $where['classify']  = $where['classify'] ?? '';
+            $where['mark_type'] = $where['mark_type'] ?? '';
             
             if (!$where['mark_type']) {
                 unset($where['mark_type']);
@@ -199,6 +198,8 @@ class File extends InsideController
                 unset($where['classify']);
                 $where['extension'] = ['in', ['jpg', 'jpeg', 'png', 'gif', 'bmp']];
             }
+            
+            unset($where['classify']);
             
             return $where;
         });
