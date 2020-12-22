@@ -8,6 +8,7 @@ use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use think\Exception;
 use think\exception\ValidateException;
+use think\Response;
 use think\response\Json;
 use think\response\Jsonp;
 use think\response\Redirect;
@@ -89,7 +90,7 @@ abstract class Controller
     {
         $this->app     = $app;
         $this->request = $this->app->request;
-        $this->view    = \view();
+        $this->view    = Response::create('', 'view', 200);
         
         // 控制器初始化
         $this->initialize();
