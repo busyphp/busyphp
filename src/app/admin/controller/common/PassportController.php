@@ -4,7 +4,7 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\general\controller\Verify;
+use BusyPHP\app\general\controller\VerifyController;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
@@ -17,7 +17,7 @@ use think\facade\Session;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午10:51 上午 Passport.php $
  */
-class Passport extends InsideController
+class PassportController extends InsideController
 {
     public function initialize($checkLogin = false)
     {
@@ -47,8 +47,8 @@ class Passport extends InsideController
                 $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify, $isVerify) {
                     if ($isVerify) {
                         try {
-                            Verify::check('admin_login', $verify);
-                            Verify::clear('admin_login');
+                            VerifyController::check('admin_login', $verify);
+                            VerifyController::clear('admin_login');
                         } catch (AppException $e) {
                             throw new VerifyException($e->getMessage(), 'verify');
                         }
@@ -83,7 +83,7 @@ class Passport extends InsideController
             $this->assign('is_verify', AdminSetting::init()->isVerify());
             $this->assign('bg', $array[rand(0, count($array) - 1)]);
             $this->assign('page_title', $this->publicConfig['title']);
-            $this->assign('verify_url', Verify::url('admin_login'));
+            $this->assign('verify_url', VerifyController::url('admin_login'));
             $this->assign('year', date('Y'));
             $this->assign('version', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
         });

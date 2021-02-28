@@ -16,7 +16,7 @@ use BusyPHP\app\admin\setting\FileSetting;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午2:17 下午 File.php $
  */
-class File extends InsideController
+class FileController extends InsideController
 {
     /**
      * @var SystemFile

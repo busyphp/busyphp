@@ -16,7 +16,7 @@ use ZipArchive;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午9:49 下午 Install.php $
  */
-class Install extends Command
+class InstallCommand extends Command
 {
     protected function configure()
     {

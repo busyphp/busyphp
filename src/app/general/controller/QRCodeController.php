@@ -6,6 +6,7 @@ use BusyPHP\App;
 use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Transform;
+use BusyPHP\image\QRCode;
 
 /**
  * 动态二维码生成
@@ -13,7 +14,7 @@ use BusyPHP\helper\util\Transform;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/12 下午7:34 下午 QrCodeController.php $
  */
-class QRCode extends Controller
+class QRCodeController extends Controller
 {
     public function index()
     {
@@ -33,7 +34,7 @@ class QRCode extends Controller
         $margin  = $list[2] ?? null;
         
         try {
-            $qrCode = new \BusyPHP\image\QRCode();
+            $qrCode = new QRCode();
             $config = $qrCode->getConfig()->get('qrcode');
             $qrCode->text($text);
             

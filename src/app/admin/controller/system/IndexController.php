@@ -15,7 +15,7 @@ use BusyPHP\app\admin\setting\PublicSetting;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午2:21 下午 Index.php $
  */
-class Index extends InsideController
+class IndexController extends InsideController
 {
     /**
      * 系统基本设置

@@ -16,7 +16,7 @@ use think\Exception;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/11 下午6:09 下午 ThumbController.php $
  */
-class Thumb extends Controller
+class ThumbController extends Controller
 {
     /**
      * 动态缩图

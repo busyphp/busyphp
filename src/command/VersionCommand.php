@@ -13,7 +13,7 @@ use think\console\Output;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/12 下午6:43 下午 Version.php $
  */
-class Version extends Command
+class VersionCommand extends Command
 {
     protected function configure()
     {

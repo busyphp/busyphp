@@ -14,7 +14,7 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass as Model;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:34 下午 SystemFileClass.php $
  */
-class SystemFileClass extends InsideController
+class SystemFileClassController extends InsideController
 {
     /**
      * @var Model

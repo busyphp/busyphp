@@ -12,7 +12,7 @@ use BusyPHP\helper\image\Verify as Captcha;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午9:16 上午 VerifyController.php $
  */
-class Verify extends Controller
+class VerifyController extends Controller
 {
     /** 英文验证码 */
     const TYPE_DEFAULT = 0;

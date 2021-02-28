@@ -14,7 +14,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUserField;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午12:02 下午 User.php $
  */
-class User extends InsideController
+class UserController extends InsideController
 {
     /**
      * @var AdminUser

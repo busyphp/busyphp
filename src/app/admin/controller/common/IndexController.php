@@ -18,7 +18,7 @@ use BusyPHP\helper\util\Transform;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:37 下午 Index.php $
  */
-class Index extends InsideController
+class IndexController extends InsideController
 {
     /**
      * 后台首页
@@ -91,18 +91,24 @@ class Index extends InsideController
                     
                     if ($action == 'delete') {
                         MessageNoticeSubscribe::triggerDelete($updateParams);
+                        $message = '删除成功';
                     } else {
                         MessageNoticeSubscribe::triggerRead($updateParams);
+                        $message = '消息已读';
                     }
                 } elseif ($action == 'clear' || $action == 'all_read') {
                     if ($action == 'clear') {
                         MessageNoticeSubscribe::triggerClear($params);
+                        $message = '清空成功';
                     } else {
                         MessageNoticeSubscribe::triggerAllRead($params);
+                        $message = '操作成功';
                     }
+                } else {
+                    $message = '';
                 }
                 
-                return $this->success('', '', []);
+                return $this->success($message, '', []);
             } elseif ($type == 'agency') {
                 if ($action == 'list') {
                     $list = [];

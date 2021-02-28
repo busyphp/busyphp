@@ -18,7 +18,7 @@ use think\Exception;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午10:31 下午 Install.php $
  */
-class Install extends Controller
+class InstallController extends Controller
 {
     protected $lockFile;
     

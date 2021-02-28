@@ -10,7 +10,7 @@ use BusyPHP\app\admin\controller\AdminController;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:36 下午 Error.php $
  */
-class Error extends AdminController
+class ErrorController extends AdminController
 {
     public function initialize($checkLogin = false)
     {

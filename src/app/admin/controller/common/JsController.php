@@ -12,7 +12,7 @@ use BusyPHP\app\admin\setting\FileSetting;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/2 下午10:58 上午 Js.php $
  */
-class Js extends InsideController
+class JsController extends InsideController
 {
     public function initialize($checkLogin = false)
     {

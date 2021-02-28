@@ -19,7 +19,7 @@ use stdClass;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/16 下午2:58 下午 Ueditor.php $
  */
-class Ueditor extends InsideController
+class UeditorController extends InsideController
 {
     public function initialize($checkLogin = false)
     {

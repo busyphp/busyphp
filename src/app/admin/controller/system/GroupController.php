@@ -13,7 +13,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午12:11 下午 Group.php $
  */
-class Group extends InsideController
+class GroupController extends InsideController
 {
     /**
      * @var AdminGroup

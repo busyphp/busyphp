@@ -13,7 +13,7 @@ use think\helper\Str;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:36 下午 Action.php $
  */
-class Action extends InsideController
+class ActionController extends InsideController
 {
     public function initialize($checkLogin = false)
     {

@@ -10,7 +10,7 @@ use BusyPHP\app\admin\controller\InsideController;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/2 下午12:10 下午 Update.php $
  */
-class Update extends InsideController
+class UpdateController extends InsideController
 {
     /**
      * 更新系统配置
