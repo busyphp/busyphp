@@ -88,6 +88,11 @@ class Request extends \think\Request
      */
     public function group(bool $convert = false) : string
     {
+        if (!$this->group && false !== strpos($this->controller, '.')) {
+            $array       = explode('.', $this->controller);
+            $this->group = array_shift($array);
+        }
+        
         $name = $this->group ?: '';
         
         return $convert ? strtolower($name) : $name;
