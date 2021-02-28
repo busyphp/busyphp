@@ -49,6 +49,26 @@ class Request extends \think\Request
     
     
     /**
+     * 获取控制器名称
+     * @param bool $convert 是否转换为小写
+     * @param bool $real 是否输出真实的控制器名称
+     * @return string
+     */
+    public function controller(bool $convert = false, $real = false) : string
+    {
+        $controller = parent::controller($convert);
+        
+        if (!$real || false === strpos($controller, '.')) {
+            return $controller;
+        }
+        
+        $array = explode('.', $controller);
+        
+        return array_pop($array);
+    }
+    
+    
+    /**
      * 设置分组
      * @param string $group
      * @return Request
