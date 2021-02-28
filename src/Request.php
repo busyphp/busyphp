@@ -41,6 +41,38 @@ class Request extends \think\Request
      */
     protected $webUrl;
     
+    /**
+     * 分组
+     * @var string
+     */
+    protected $group;
+    
+    
+    /**
+     * 设置分组
+     * @param string $group
+     * @return Request
+     */
+    public function setGroup(string $group) : self
+    {
+        $this->group = $group;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取分组
+     * @param bool $convert
+     * @return string
+     */
+    public function group(bool $convert = false) : string
+    {
+        $name = $this->group ?: '';
+        
+        return $convert ? strtolower($name) : $name;
+    }
+    
     
     /**
      * 设置$_SERVER
