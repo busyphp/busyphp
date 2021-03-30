@@ -138,7 +138,7 @@ class Url extends \think\app\Url
             // 添加参数
             if ($this->route->config('url_common_param')) {
                 $vars = http_build_query($vars);
-                $url  .= $suffix . '?' . $vars . $anchor;
+                $url .= $suffix . ($vars ? '?' . $vars : '') . $anchor;
             } else {
                 foreach ($vars as $var => $val) {
                     $val = (string) $val;
