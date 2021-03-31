@@ -1074,7 +1074,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $key 索引
      * @return array
      */
-    public function column(string $field, string $key = '') : array
+    public function column($field, string $key = '') : array
     {
         $result = parent::column($field, $key);
         $this->removeOption();
