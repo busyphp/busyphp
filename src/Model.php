@@ -1329,7 +1329,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function setInc($field, $step = 1)
     {
-        return $this->inc($field, $step)->saveData();
+        return $this->inc($field, floatval($step))->saveData();
     }
     
     
@@ -1341,7 +1341,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function setDec($field, $step = 1)
     {
-        return $this->dec($field, $step)->saveData();
+        return $this->dec($field, floatval($step))->saveData();
     }
     
     
