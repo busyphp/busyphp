@@ -88,8 +88,9 @@ class Request extends \think\Request
      */
     public function group(bool $convert = false) : string
     {
-        if (!$this->group && false !== strpos($this->controller, '.')) {
-            $array       = explode('.', $this->controller);
+        $controller = $this->controller ?: '';
+        if (!$this->group && false !== strpos($controller, '.')) {
+            $array       = explode('.', $controller);
             $this->group = array_shift($array);
         }
         

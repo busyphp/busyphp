@@ -344,7 +344,7 @@ class Service extends ThinkService
         // 通过插件方式引入
         if ($request->route('type') === 'plugin') {
             $group = $request->route('group');
-            $request->setGroup($group);
+            $request->setGroup($group ?? '');
             $request->setController(($group ? $group . '.' : '') . $request->route('control'));
             $request->setAction($request->route('action'));
         }
