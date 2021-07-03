@@ -61,7 +61,8 @@ class SystemConfigController extends InsideController
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
                 return [
-                    'is_system' => 0
+                    'is_system' => 0,
+                    'type'      => ''
                 ];
             });
             
@@ -103,7 +104,7 @@ class SystemConfigController extends InsideController
     public function delete()
     {
         $this->bind(self::CALL_BATCH_EACH, function($id) {
-            $this->model->del($id);
+            $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             $this->log('删除系统配置', ['id' => $params], self::LOG_DELETE);

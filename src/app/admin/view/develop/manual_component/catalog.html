@@ -1,0 +1,95 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件需要引用后使用，组件名称：`busyAdmin.ext.catalog`
+
+```js
+require([busyAdmin.ext.catalog], function() {
+    // 执行目录实例化
+    $('#demo').busyCatalog(options);
+});
+```
+
+### 使用
+
+通过在标签上加上自定义属性 `data-busy-catalog` 来触发
+
+```html
+<div data-busy-catalog="">
+    <h1>标题1</h1>
+    <h2>标题2</h2>
+    <h3>标题3</h3>
+    ...
+</div>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-busy-catalog | string | `是` | - | 初始化组件属性，指定内容文本则为目录的标题 |
+| data-busy-container | string | 否 | - | 指定存放目录容器的 `jQuery选择器`，不指定则生成到当前容器中 |
+| data-busy-scroll | string,boolean | 否 | - | 开启滚动监听，设置字符串则为滚动监听容器的 `jQuery选择器`，设为 `true` 则默认为 `body` |
+| data-busy-sticky | boolean | 否 | - | 是否要将目录钉住，滚动兼容容器必须是 `body` 有效 |
+| data-busy-top | number | 否 | 0 | 设置滚动监听开始上偏移值 |
+| data-busy-bottom | number | 否 | 0 | 设置滚动监听结束下偏移值 |
+
+### jQuery扩展
+
+`$.fn.busyCatalog(options)`;
+
+```js
+$(function(){
+    $('#demo').busyCatalog({
+        title: string, //参考 data-busy-catalog
+        container: string|Node|jQuery, //参考 data-busy-container
+        scroll: string|true|Node|jQuery, //参考 data-busy-scroll
+        sticky: boolean, //参考 data-busy-sticky
+        top: number, //参考 data-busy-top
+        bottom: number, //参考 data-busy-bottom
+    });
+});
+```
+
+### 使用示例
+
+> 注意：滚动容器不是 `body` 的情况下，无法钉住目录
+
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<div class="row" style="height: 400px; overflow-y: auto;" id="catalogScroll" data-busy-catalog="菜单目录" data-busy-container="#catalogContainer" data-busy-scroll="#catalogScroll">
+    <div class="col-sm-8" id="catalogDemo">
+        <h1>万年历</h1>
+        <p>万年历是中国古代传说中最古老的一部太阳历。万年历是记录一定时间范围内（比如100年或更多）的具体阳历与阴历的日期的年历，方便有需要的人查询使用。万年只是一种象征，表示时间跨度大。</p>
+        <p>所使用的万年历，即包括若干年或适用于若干年的历书 [2]  。现代的万年历能同时显示公历、农历和干支历等多套历法，更能包含黄历相关吉凶宜忌、节假日、提醒等多种功能信息，极为方便人们查询使用。</p>
+        <h2>历史传说</h2>
+        <p>相传，在很久以前，有个名叫万年的青年，看到当时节令很乱，想把节令定准。一天，他上山砍柴，坐在树阴下休息，树影的移动启发了他，他设计了一个测日影计天时的晷仪。可是，天阴雨雾，影响测量。后来，山崖上的滴泉引起了他的兴趣，他又动手做了一个五层漏壶。天长日久，他发现每隔三百六十多天，天时的长短就会重复一遍。</p>
+        <p>当时的国君叫祖乙，天气风云的不测，使他很苦恼。一个名叫阿衡的大臣，为讨好皇上，奏称要设天台敬祭天神。祖乙认为有理，便带领百官去祭天，却无济于事。万年知道后，忍不住就带着日晷和漏壶去见皇上，对祖乙讲清了日月运行的道理。祖乙听后龙颜大悦，感到有道理。于是把万年留下，在天坛前修建日月阁，筑起日晷台和漏壶亭。并派了十二个童子服侍万年。祖乙对万年说："希望你能测准日月规律，推算出准确的晨夕时间，创建历法，为天下的黎民百姓造福。"</p>
+        <h2>择日宜忌</h2>
+        <p>黄历之中一般人看的最多的，应是每日宜做什么、不宜做什么的那一项，命理师、择日师也由此栏所记，加上每日吉时凶时之参考，来替人决定日期。待读者了解之后，以后就不用去找择日师了。不过，若涉及个人八字项目，还是要找人排一排好。如果自己查询吉日，不找算命师，可以翻开万年历查询当日的宜忌。举例：</p>
+        <p>以八十五年一月一日为例，写有：</p>
+        <p>宜：安床、纳财、栽种、结网、扫舍宇、祭祀、沐浴、裁衣、进人、整手足。</p>
+        <h2>阳历与阴历</h2>
+        <p>汉族历史上使用过的历法，有阳历、阴历和阴阳合历，“盲年”是阴阳合历某种“置正”安排的结果。</p>
+        <p>阳历，可能是我们的祖先最早使用的历法，它根据太阳运行规律制定。古人以为太阳绕地球运行，转动一周为一年——今日我们知道是地球绕太阳公转的周期，但古人的认识却相反。据学者考证，战国时还有太阳历，一年十个月，以天干为名，每月三十六日，分三旬，旬以地支为名，如此十个月三百六十日，加上五至六天不入干支的“废日”，一年就是三百六十五日或三百六十六日。在那种情况下，节气的安排首先有“夏至”、“冬至”，继而又有“春分”、“秋分”，季节上的回归年先分春秋二季，后来再分出春夏秋冬四季，以至二十四节气。</p>
+        <p>此外，春秋战国时期有采用十二辰（地支）纪月，而十二辰加时制度至迟西汉时已被采用。西汉末至今，一直用干支来纪年。这就是干支历。它以立春为岁首，交节日为月首。年长即回归年，一个月含两个节气。在干支历中，年月日全由太阳视运动决定而与太阴月相无关，所以这是一种阳历。</p>
+    </div>
+    <div class="col-sm-4" id="catalogContainer"></div>
+</div>
+    </textarea>
+</block>
+<block name="foot">
+</block>

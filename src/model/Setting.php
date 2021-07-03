@@ -3,11 +3,14 @@
 namespace BusyPHP\model;
 
 use BusyPHP\App;
-use BusyPHP\exception\SQLException;
-use BusyPHP\exception\VerifyException;
+use BusyPHP\app\admin\model\system\config\SystemConfigField;
+use BusyPHP\app\admin\model\system\config\SystemConfigInfo;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\file\File;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\util\Str;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * Config基本类
@@ -71,8 +74,9 @@ abstract class Setting
     /**
      * 设置数据
      * @param mixed $data
-     * @throws SQLException
-     * @throws VerifyException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     final public function set($data)
     {
@@ -88,6 +92,8 @@ abstract class Setting
      * @param string $name 数据名称
      * @param mixed  $default 默认值
      * @return mixed|null
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     final public function get($name = '', $default = null)
     {
@@ -155,10 +161,16 @@ abstract class Setting
     
     /**
      * 生成全局配置
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public static function createConfig()
     {
-        $list   = SystemConfig::init()->field('type')->whereRaw("is_append=1 OR type='public'")->selecting();
+        $list = SystemConfig::init()->where(function(SystemConfig $query) {
+            $query->whereOr(SystemConfigField::isAppend(), 1);
+            $query->whereOr(SystemConfigField::type(), 'public');
+        })->selectList();
+        
         $config = [];
         static::parseNamespace($list, 'BusyPHP\\app\\admin\\setting\\', $config);
         static::parseNamespace($list, 'core\\setting\\', $config);
@@ -169,10 +181,15 @@ abstract class Setting
     }
     
     
+    /**
+     * @param SystemConfigInfo[] $list
+     * @param string             $namespace
+     * @param array              $config
+     */
     protected static function parseNamespace($list, $namespace, &$config)
     {
-        foreach ($list as $i => $r) {
-            $name         = ucfirst(Str::camel($r['type']));
+        foreach ($list as $item) {
+            $name         = ucfirst(Str::camel($item->type));
             $class        = $namespace . $name;
             $classSetting = $class . 'Setting';
             if (class_exists($class)) {
@@ -183,7 +200,7 @@ abstract class Setting
                 continue;
             }
             
-            $config[$r['type']] = $setting->get();
+            $config[$item->type] = $setting->get();
         }
     }
 }

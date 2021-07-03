@@ -140,12 +140,7 @@ class Service extends ThinkService
         
         
         // 错误级别配置
-        $errorLevelExclude = $this->value($app, 'error_level_exclude', []);
-        if (is_string($errorLevelExclude) && $errorLevelExclude === 'none') {
-            $errorLevelExclude = [];
-        } else {
-            $errorLevelExclude = [E_NOTICE, E_WARNING, E_DEPRECATED];
-        }
+        $errorLevelExclude          = $this->value($app, 'error_level_exclude', []);
         $app['error_level_exclude'] = $errorLevelExclude;
         
         
@@ -372,64 +367,6 @@ class Service extends ThinkService
         }
         $appUrl = rtrim($appUrl, '/') . '/';
         $request->setAppUrl($appUrl);
-        
-        
-        // 定义常量
-        if (!defined('GROUP_NAME')) {
-            /**
-             * 分组名称
-             */
-            define('GROUP_NAME', $request->group());
-        }
-        
-        if (!defined('MODULE_NAME')) {
-            /**
-             * 控制器名称
-             */
-            define('MODULE_NAME', $request->controller(false, true));
-        }
-        
-        if (!defined('ACTION_NAME')) {
-            /**
-             * 执行方法名称
-             */
-            define('ACTION_NAME', $request->action());
-        }
-        
-        if (!defined('URL_ROOT')) {
-            /**
-             * 网站根目录地址
-             */
-            define('URL_ROOT', $request->getWebUrl());
-        }
-        
-        if (!defined('URL_APP')) {
-            /**
-             * 当前项目地址
-             */
-            define('URL_APP', $request->getAppUrl());
-        }
-        
-        if (!defined('URL_ASSETS')) {
-            /**
-             * 静态资源URL
-             */
-            define('URL_ASSETS', $request->getWebAssetsUrl());
-        }
-        
-        if (!defined('URL_SELF')) {
-            /**
-             * 当前URL，包含QueryString
-             */
-            define('URL_SELF', $request->url());
-        }
-        
-        if (!defined('URL_DOMAIN')) {
-            /**
-             * 当前域名
-             */
-            define('URL_DOMAIN', $request->domain());
-        }
     }
     
     

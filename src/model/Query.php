@@ -5,7 +5,9 @@ namespace BusyPHP\model;
 
 use BusyPHP\Model;
 use PDOStatement;
-use think\facade\Db;
+use think\db\exception\DbException;
+use think\db\Raw;
+use think\Paginator;
 
 /**
  * 扩展查询方法，主要用于兼容TP3.1语法
@@ -36,30 +38,11 @@ class Query extends \think\db\Query
     
     
     /**
-     * Limit操作
-     * @param mixed $limit 支持传 start,length 格式的字符串
-     * @param int   $length
-     * @return $this
-     */
-    public function limiting($limit, int $length = null)
-    {
-        if (false !== strpos("{$limit}", ',')) {
-            [$limit, $length] = explode(',', $limit, 2);
-            $length = intval($length);
-        }
-        
-        $limit = intval($limit);
-        $this->limit($limit, $length);
-        
-        return $this;
-    }
-    
-    
-    /**
      * 单个条件查询
      * @param string|int|array $key 条件字段
      * @param mixed            $value 条件值
      * @return $this
+     * @deprecated
      */
     public function one($key, $value = null)
     {
@@ -77,6 +60,7 @@ class Query extends \think\db\Query
      * 查询条件兼容TP3.1的查询语句
      * @param mixed|Field $where
      * @return $this
+     * @deprecated
      */
     public function whereof($where)
     {
@@ -102,18 +86,16 @@ class Query extends \think\db\Query
     
     
     /**
-     * 枚举查询条件
-     * @param array $enum
+     * 模型字段实体条件
+     * @param mixed ...$entity
      * @return $this
      */
-    public function whereEnum(...$enum)
+    public function whereEntity(...$entity) : self
     {
-        foreach ($enum as $item) {
-            if (!is_array($item) || count($item) != 3) {
-                continue;
+        foreach ($entity as $item) {
+            if ($item instanceof Entity) {
+                $this->where($item->field(), $item->op(), $item->value());
             }
-            
-            $this->where($item[0], $item[1], $item[2]);
         }
         
         return $this;
@@ -121,29 +103,54 @@ class Query extends \think\db\Query
     
     
     /**
-     * TP6 JOIN方法 扩展
-     * 支持别名通过参数传入
-     * @param mixed  $join 关联的表名
-     * @param string $alias 别名
-     * @param string $condition 条件
-     * @param string $type JOIN类型
-     * @param array  $bind 参数绑定
+     * @inheritDoc
+     */
+    protected function parseWhereExp(string $logic, $field, $op, $condition, array $param = [], bool $strict = false)
+    {
+        return parent::parseWhereExp($logic, Entity::parse($field), $op, $condition, $param, $strict);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function join($join, string $condition = null, string $type = 'INNER', array $bind = []) : self
+    {
+        if ($join instanceof Model) {
+            $model = $join;
+            $join  = [$model->getTable() => $model->getJoinAlias()];
+            $model->removeOption();
+        } elseif (is_string($join) && is_subclass_of($join, Model::class)) {
+            /** @var Model $model */
+            $model = call_user_func([$join, 'init']);
+            $join  = [$model->getTable() => $model->getJoinAlias()];
+            $model->removeOption();
+        }
+        
+        return parent::join($join, $condition, $type, $bind);
+    }
+    
+    
+    /**
+     * 指定排序 order('id','desc') 或者 order(['id'=>'desc','create_time'=>'desc'])
+     * @param mixed  $field 排序字段
+     * @param string $order 排序
      * @return $this
      */
-    public function joining($join, string $alias = '', string $condition = '', string $type = 'INNER', array $bind = [])
+    public function order($field, string $order = '')
     {
-        // 传入的是模型
-        if ($join instanceof Model) {
-            $join = $join->getTableWithoutPrefix();
-        }
-        
-        if ($alias) {
-            $join .= ' ' . $alias;
-        }
-        
-        $this->join($join, $condition, $type, $bind);
-        
-        return $this;
+        return parent::order(Entity::parse($field), $order);
+    }
+    
+    
+    /**
+     * 指定查询字段
+     * @param mixed $field 字段信息
+     * @return $this
+     */
+    public function field($field)
+    {
+        return parent::field(Entity::parse($field));
     }
     
     
@@ -254,7 +261,7 @@ class Query extends \think\db\Query
     protected function parseWhereOfItemValue($value)
     {
         if (isset($value[0]) && is_string($value[0]) && strtolower($value[0]) == 'exp') {
-            $value = Db::raw($value[1]);
+            $value = new Raw($value[1]);
         } elseif (is_array($value)) {
             $value = array_map([$this, 'parseWhereOfItemValue'], $value);
         } elseif (is_bool($value)) {

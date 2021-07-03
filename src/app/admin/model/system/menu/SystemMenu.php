@@ -2,302 +2,291 @@
 
 namespace BusyPHP\app\admin\model\system\menu;
 
+use BusyPHP\app\admin\model\system\menu\provide\AdminMenuStruct;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\exception\SQLException;
+use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
+use BusyPHP\Request;
+use Exception;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 后台菜单模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午2:45 下午 SystemMenu.php $
+ * @method SystemMenuInfo findInfo($data = null, $notFoundMessage = null)
+ * @method SystemMenuInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemMenuInfo[] selectList()
  */
 class SystemMenu extends Model
 {
     //+--------------------------------------
     //| 外部链接打开方式
     //+--------------------------------------
-    /** 本窗口 */
+    /** @var string 当前窗口 */
     const TARGET_SELF = '_self';
     
-    /** 新建窗口 */
+    /** @var string 新建窗口 */
     const TARGET_BLANK = '_blank';
     
-    /** Iframe窗口 */
+    /** @var string Iframe窗口 */
     const TARGET_IFRAME = 'iframe';
     
     //+--------------------------------------
     //| 类型
     //+--------------------------------------
     /** 分组 */
-    const TYPE_MODULE = 0;
+    const TYPE_GROUP = 0;
     
-    /** 控制器 */
-    const TYPE_CONTROL = 1;
-    
-    /** 执行方法 */
-    const TYPE_ACTION = 2;
-    
-    /** 执行模式 */
-    const TYPE_PATTERN = 3;
+    /** 菜单 */
+    const TYPE_NAV = 1;
     
     //+--------------------------------------
     //| 其它
     //+--------------------------------------
-    /** PATH 分隔符 */
-    const DIVISION = '/';
-    
-    /** URL pattern name */
-    const PATTERN = 'pattern';
-    
     /** 开发模式分组 */
     const DEVELOP = 'Develop';
     
     /** 保留分组 */
     const RETAIN_GROUP = 'Develop,Common';
     
+    /** @var bool 开发模式 */
+    const DEBUG = true;
     
-    /**
-     * 获取菜单信息
-     * @param int $id
-     * @return array
-     * @throws SQLException
-     */
-    public function getInfo($id)
-    {
-        return parent::getInfo(floatval($id), '菜单不存在');
-    }
+    protected $dataNotFoundMessage = '菜单不存在';
+    
+    protected $findInfoFilter      = 'intval';
+    
+    protected $bindParseClass      = SystemMenuInfo::class;
     
     
     /**
      * 添加菜单
-     * @param SystemMenuField $insert
+     * @param SystemMenuField $data
      * @return int
-     * @throws SQLException
+     * @throws DbException
      * @throws VerifyException
      */
-    public function insertData($insert)
+    public function createMenu(SystemMenuField $data)
     {
-        if ($insert->isDefault) {
-            $this->setFieldByIsDefault(true);
-        }
+        $this->buildData($data);
         
-        $data = $insert->getDBData();
-        
-        $this->startTrans();
-        try {
-            if (!$result = $this->addData($data)) {
-                throw new SQLException('添加菜单失败', $this);
-            }
-            
-            $this->commit();
-            
-            return $result;
-        } catch (SQLException $e) {
-            $this->rollback();
-            
-            throw new SQLException($e, $this);
-        }
+        return $this->addData($data);
     }
     
     
     /**
      * 修改菜单
-     * @param SystemMenuField $update
-     * @throws SQLException
-     * @throws VerifyException
+     * @param SystemMenuField $data
+     * @throws Exception
      */
-    public function updateData($update)
+    public function updateMenu(SystemMenuField $data)
     {
-        // 默认导航面板
-        if ($update->isDefault) {
-            $this->setFieldByIsDefault(true);
+        if ($data->id < 1) {
+            throw new ParamInvalidException('id');
         }
-        $data = $update->getDBData();
         
+        $this->buildData($data);
         
         $this->startTrans();
         try {
-            $info = $this->getInfo($update->id);
+            $info = $this->lock(true)->getInfo($data->id);
             
-            // 执行修改
-            if (false === $this->saveData($data)) {
-                throw new SQLException('修改菜单失败', $this);
+            if (!self::DEBUG) {
+                if ($info->isSystem) {
+                    throw new VerifyException('禁止修改系统菜单');
+                }
+            }
+            
+            // 找到该分类下的所有下级ID
+            $list  = $this->getChildList($info->id);
+            $inIds = array_keys(Arr::listByKey($list, SystemMenuField::id()));
+            
+            // 有下级菜单的无法转为菜单
+            if ($data->type == self::TYPE_NAV && $inIds) {
+                throw new VerifyException('该菜单包涵子菜单，无法从分组转为菜单');
+            }
+            
+            // 不能选下级为上级
+            if (in_array($data->parentId, $inIds)) {
+                throw new VerifyException('不能选择下级做为上级');
+            }
+            
+            // 分组则更新下级
+            if ($data->type == self::TYPE_GROUP && $inIds) {
+                // 1. 原来不是顶级，现在是顶级
+                // 2. 原来是顶级，现在不是顶级
+                if ($data->parentId == 0 || $info->parentId == 0) {
+                    $this->whereEntity(SystemMenuField::id('in', $inIds))
+                        ->setField(SystemMenuField::module(), $data->module);
+                }
+                
+                // 1. 现在不是顶级
+                // 2. 原来不是顶级
+                elseif ($data->parentId > 0 || $info->parentId > 0) {
+                    $save          = SystemMenuField::init();
+                    $save->module  = $data->module;
+                    $save->control = $data->control;
+                    $this->whereEntity(SystemMenuField::id('in', $inIds))->saveData($save);
+                }
             }
             
             
-            // 移动子菜单
-            switch ($info['type']) {
-                // 分组变更
-                case self::TYPE_MODULE:
-                    $where         = SystemMenuField::init();
-                    $where->module = $info['module'];
-                    
-                    $save         = SystemMenuField::init();
-                    $save->module = $update->module;
-                    $save->setIsCheckData(false);
-                    if (false === $this->whereof($where)->saveData($save)) {
-                        throw new SQLException('所属分组变更失败', $this);
-                    }
-                break;
-                
-                
-                // 控制器变更
-                case self::TYPE_CONTROL:
-                    $where          = SystemMenuField::init();
-                    $where->module  = $info['module'];
-                    $where->control = $info['control'];
-                    
-                    $save          = SystemMenuField::init();
-                    $save->module  = $update->module;
-                    $save->control = $update->control;
-                    $save->setIsCheckData(false);
-                    if (false === $this->whereof($where)->saveData($save)) {
-                        throw new SQLException('所属分组和控制器变更失败', $this);
-                    }
-                break;
-                
-                // 执行方法变更
-                case self::TYPE_ACTION:
-                    $where          = SystemMenuField::init();
-                    $where->module  = $info['module'];
-                    $where->control = $info['control'];
-                    $where->action  = $info['action'];
-                    
-                    $save          = SystemMenuField::init();
-                    $save->module  = $update->module;
-                    $save->control = $update->control;
-                    $save->action  = $update->action;
-                    $save->setIsCheckData(false);
-                    if (false === $this->whereof($where)->saveData($save)) {
-                        throw new SQLException('所属执行方法变更失败', $this);
-                    }
-                break;
-            }
+            $this->whereEntity(SystemMenuField::id($data->id))->saveData($data);
             
             $this->commit();
-        } catch (SQLException $e) {
+        } catch (Exception $e) {
             $this->rollback();
-            throw new SQLException($e, $this);
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 过滤数据
+     * @param SystemMenuField $data
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws VerifyException
+     */
+    private function buildData(SystemMenuField $data)
+    {
+        // 面板
+        if ($data->parentId < 1) {
+            $data->module  = self::verify($data->module, 'module', '面板分组');
+            $data->type    = self::TYPE_GROUP;
+            $data->control = '';
+            $data->action  = '';
+            $data->params  = '';
+            $data->isHide  = false;
+            
+            if (!$data->icon) {
+                throw new VerifyException('请选择面板分组图标', 'icon');
+            }
+        } else {
+            $parentInfo = $this->getInfo($data->parentId);
+            if ($parentInfo->type == self::TYPE_NAV) {
+                throw new VerifyException('上级菜单必须是分组', 'parent_id');
+            }
+            
+            // 菜单
+            if ($data->type == self::TYPE_NAV) {
+                $data->module = Str::studly($parentInfo->module);
+                
+                if ($parentInfo->control) {
+                    $data->control = Str::studly($parentInfo->control);
+                } else {
+                    $data->control = self::verify($data->control, 'control', '控制器');
+                }
+                
+                $data->action = trim($data->action);
+                self::verify($data->action, 'action', '执行方法');
+                
+                if (!$data->isHide && !$data->icon) {
+                    throw new VerifyException('请选择菜单图标', 'icon');
+                }
+            }
+            
+            //
+            // 分组
+            else {
+                $data->module  = Str::studly($parentInfo->module);
+                $data->control = self::verify($data->control, 'control', '控制器');
+                $data->action  = '';
+                
+                if (!$data->icon) {
+                    throw new VerifyException('请选择分组图标', 'icon');
+                }
+            }
+        }
+        
+        // 新增校验保留面板
+        if ($data->id < 1 && $data->parentId == 0) {
+            if (in_array($data->module, array_map(function($item) {
+                return Str::studly($item);
+            }, explode(',', self::RETAIN_GROUP)))) {
+                throw new VerifyException("{$data->module}为系统保留面板，请勿使用", 'module');
+            }
+        }
+        
+        // 查重
+        $this->whereEntity(SystemMenuField::module($data->module), SystemMenuField::control($data->control), SystemMenuField::action($data->action));
+        if ($data->id > 0) {
+            $this->whereEntity(SystemMenuField::id('<>', $data->id));
+        }
+        if ($this->findInfo()) {
+            throw new VerifyException('该菜单已存在，请勿重复添加');
         }
     }
     
     
     /**
      * 删除菜单
-     * @param int $id
-     * @throws SQLException
-     * @throws VerifyException
+     * @param int $data 菜单ID
+     * @return int
+     * @throws Exception
      */
-    public function del($id)
+    public function deleteInfo($data) : int
     {
         $this->startTrans();
         try {
-            $info = $this->lock(true)->getInfo($id);
+            $info = $this->lock(true)->getInfo($data);
             
             // 系统菜单不能删除
-            if ($info['is_system']) {
+            if ($info->isSystem) {
                 throw new VerifyException('系统菜单禁止删除');
             }
             
-            switch ($info['type']) {
-                // 删除分组下的所有子类
-                case self::TYPE_MODULE:
-                    $where         = SystemMenuField::init();
-                    $where->module = $info['module'];
-                    $where->id     = ['neq', $info['id']];
-                    if (false === $this->whereof($where)->deleteData()) {
-                        throw new SQLException('删除分组下的所有菜单失败', $this);
-                    }
-                break;
-                
-                // 删除控制器下的所有子类
-                case self::TYPE_CONTROL:
-                    $where          = SystemMenuField::init();
-                    $where->module  = $info['module'];
-                    $where->control = $info['control'];
-                    $where->id      = ['neq', $info['id']];
-                    if (false === $this->whereof($where)->deleteData()) {
-                        throw new SQLException('删除控制器下的所有菜单失败', $this);
-                    }
-                break;
-                
-                // 删除方法下的所有子类
-                case self::TYPE_ACTION:
-                    $where          = SystemMenuField::init();
-                    $where->module  = $info['module'];
-                    $where->control = $info['control'];
-                    $where->action  = $info['action'];
-                    $where->id      = ['neq', $info['id']];
-                    if (false === $this->whereof($where)->deleteData()) {
-                        throw new SQLException('删除方法下的所有菜单失败', $this);
-                    }
-                break;
+            // 删除子菜单
+            $childIds = array_keys(Arr::listByKey($this->getChildList($info->id), SystemMenuField::id()));
+            if ($childIds) {
+                $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
             }
             
-            $result = $this->deleteData($id);
-            if (false === $result) {
-                throw new SQLException('删除菜单失败', $this);
-            }
-            
+            $result = parent::deleteInfo($info->id);
             $this->commit();
-        } catch (VerifyException $e) {
+            
+            return $result;
+        } catch (Exception $e) {
             $this->rollback();
             
-            throw new VerifyException($e);
-        } catch (SQLException $e) {
-            $this->rollback();
-            
-            throw new SQLException($e, $this);
+            throw $e;
         }
     }
     
     
     /**
-     * 设置默认导航面板
-     * @param int|true $id 如果是true则只清理
-     * @throws SQLException
+     * 获取某菜单的所有子菜单
+     * @param int $id 菜单ID
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function setFieldByIsDefault($id)
+    public function getChildList($id) : array
     {
-        // 如果是true则清理已有的默认导航面板
-        if ($id === true) {
-            $where            = SystemMenuField::init();
-            $where->isDefault = 1;
-            $save             = SystemMenuField::init();
-            $save->setIsCheckData(false);
-            $save->isDefault = 0;
-            if (false === $this->whereof($where)->saveData($save)) {
-                throw new SQLException('清理默认面板失败', $this);
-            }
-            
-            return;
-        }
+        $list = Arr::listToTree($this->selectList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), $id);
+        $list = Arr::treeToList($list, SystemMenuInfo::child());
         
-        $this->setFieldByIsDefault(true);
-        $where     = SystemMenuField::init();
-        $where->id = floatval($id);
-        
-        
-        $save = SystemMenuField::init();
-        $save->setIsCheckData(false);
-        $save->isDefault = 1;
-        $result          = $this->whereof($where)->saveData($save);
-        if (false === $result) {
-            throw new SQLException('设置默认面板失败', $this);
-        }
+        return $list;
     }
     
     
     /**
      * 更新缓存
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function updateCache()
     {
         $this->clearCache();
+        $this->getList(true);
         $this->getTreeList(true);
         $this->getSafeTree(true);
         $this->getPathList(true);
@@ -305,89 +294,38 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取模块分组列表
-     * @return array
+     * 获取所有菜单数据
+     * @param bool $must
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getModuleList()
+    public function getList(bool $must = false) : array
     {
-        $where          = SystemMenuField::init();
-        $where->action  = '';
-        $where->control = '';
-        $where->module  = ['neq', ''];
-        $list           = $this->whereof($where)->order('sort ASC')->selecting();
-        
-        return $list ? $list : [];
-    }
-    
-    
-    /**
-     * 获取控制器列表
-     * @param string $moduleName 分组标识
-     * @return array
-     */
-    public function getControlList($moduleName = '')
-    {
-        $moduleName     = trim($moduleName);
-        $where          = SystemMenuField::init();
-        $where->action  = '';
-        $where->control = ['neq', ''];
-        
-        if ($moduleName) {
-            $where->module = $moduleName;
-        } else {
-            $where->module = ['neq', $moduleName];
+        $cacheName = 'list';
+        $list      = $this->getCache($cacheName);
+        if (!$list || $must) {
+            $list = $this->order(SystemMenuField::sort(), 'asc')->order(SystemMenuField::id(), 'desc')->selectList();
+            $this->setCache($cacheName, $list);
         }
         
-        $list = $this->whereof($where)->order('sort ASC')->selecting();
-        
-        return $list ? $list : [];
-    }
-    
-    
-    /**
-     * 获取执行方法列表
-     * @param string $moduleName 分组标识
-     * @param string $controlName 控制器标识
-     * @return array
-     */
-    public function getActionList($moduleName = '', $controlName = '')
-    {
-        $moduleName    = trim($moduleName);
-        $controlName   = trim($controlName);
-        $where         = SystemMenuField::init();
-        $where->action = ['neq', ''];
-        
-        if ($moduleName) {
-            $where->module = $moduleName;
-        } else {
-            $where->module = ['neq', ''];
-        }
-        
-        if ($controlName) {
-            $where->control = $controlName;
-        } else {
-            $where->control = ['neq', $controlName];
-        }
-        
-        $list = $this->whereof($where)->order('sort ASC')->selecting();
-        
-        return $list ? $list : [];
+        return $list;
     }
     
     
     /**
      * 获取按照path为下标的列表
      * @param bool $must 是否强制更新缓存
-     * @return array
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getPathList($must = false)
+    public function getPathList(bool $must = false) : array
     {
         $cacheName = 'path';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list = $this->order('sort ASC')->selecting();
-            $list = self::parseList($list);
-            $list = Arr::listByKey($list, 'path');
+            $list = Arr::listByKey($this->getList(), SystemMenuInfo::path());
             $this->setCache($cacheName, $list);
         }
         
@@ -398,43 +336,16 @@ class SystemMenu extends Model
     /**
      * 获取菜单的树状结构
      * @param bool $must 强制更新缓存
-     * @return array
+     * @return SystemMenuInfo[]
+     * @throws DbException
+     * @throws DataNotFoundException
      */
-    public function getTreeList($must = false)
+    public function getTreeList(bool $must = false) : array
     {
         $cacheName = 'tree';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list  = $this->getModuleList();
-            $total = count($list);
-            foreach ($list as $one => $oneArray) {
-                $oneArray          = self::parseFirstLast($oneArray, $one, $total);
-                $oneArray          = self::parseInfo($oneArray);
-                $oneArray['child'] = $this->getControlList($oneArray['module']);
-                $twoTotal          = count($oneArray['child']);
-                
-                
-                // 遍历二级菜单
-                foreach ($oneArray['child'] as $two => $twoArray) {
-                    $twoArray          = self::parseFirstLast($twoArray, $two, $twoTotal);
-                    $twoArray          = self::parseInfo($twoArray);
-                    $twoArray['child'] = $this->getActionList($twoArray['module'], $twoArray['control']);
-                    $threeTotal        = count($twoArray['child']);
-                    
-                    // 遍历三级菜单
-                    foreach ($twoArray['child'] as $three => $threeArray) {
-                        $threeArray                = self::parseFirstLast($threeArray, $three, $threeTotal);
-                        $threeArray                = self::parseInfo($threeArray);
-                        $twoArray['child'][$three] = $threeArray;
-                    }
-                    $oneArray['child'][$two] = $twoArray;
-                }
-                $list[$one] = $oneArray;
-            }
-            
-            if (!$list) {
-                return [];
-            }
+            $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child());
             $this->setCache($cacheName, $list);
         }
         
@@ -444,29 +355,23 @@ class SystemMenu extends Model
     
     /**
      * 获取安全的权限树
-     * @param bool  $must 是否强制更新缓存
-     * @param array $list
-     * @return array
+     * @param bool $must 是否强制更新缓存
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getSafeTree($must = false, $list = [])
+    public function getSafeTree(bool $must = false) : array
     {
         $cacheName = 'safe_tree';
         $tree      = $this->getCache($cacheName);
         if (!$tree || $must) {
-            $list = $list ?: $this->getTreeList();
-            $tree = [];
-            
-            foreach ($list as $i => $r) {
-                if (intval($r['is_disabled']) || $r['path'] == self::DEVELOP) {
-                    continue;
+            $tree = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $item) {
+                if ($item->isDisabled || $item->path == self::DEVELOP) {
+                    return false;
                 }
                 
-                if ($r['child']) {
-                    $r['child'] = $this->getSafeTree(true, $r['child']);
-                }
-                
-                $tree[$i] = $r;
-            }
+                return true;
+            });
             $this->setCache($cacheName, $tree);
         }
         
@@ -478,85 +383,73 @@ class SystemMenu extends Model
      * 获取后台管理顶级菜单
      * @param int  $groupId 用户组ID
      * @param bool $must 是否强制更新缓存
-     * @return array
+     * @return AdminMenuStruct
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getAdminMenu($groupId, $must = true)
+    public function getAdminMenu($groupId, bool $must = true) : AdminMenuStruct
     {
-        try {
-            $groupInfo = AdminGroup::init()->getInfo($groupId);
-            $cacheName = "admin_menu_{$groupId}";
-            $list      = $this->getCache($cacheName);
+        $groupInfo = AdminGroup::init()->getInfo($groupId);
+        $cacheName = "admin_menu_{$groupId}";
+        $struct    = $this->getCache($cacheName);
+        
+        if (!$struct || $must) {
+            $treeList = $this->getTreeList();
+            $struct   = AdminMenuStruct::init();
             
-            if (!$list || $must) {
-                $treeList    = $this->getTreeList();
-                $list        = [];
-                $defaultPath = '';
-                $pathArray   = [];
-                
-                // 系统用户组则输出所有菜单
-                if ($groupInfo['is_system']) {
-                    foreach ($treeList as $i => $r) {
-                        // 禁用的
-                        if (intval($r['is_disabled'])) {
-                            continue;
-                        }
-                        
-                        if ($r['is_default']) {
-                            $defaultPath = $r['path'];
-                        }
-                        
-                        unset($r['child']);
-                        $pathArray[] = $r['path'];
-                        $list[]      = $r;
+            // 系统用户组则输出所有菜单
+            if ($groupInfo->isSystem) {
+                foreach ($treeList as $item) {
+                    // 禁用的
+                    if ($item->isDisabled) {
+                        continue;
                     }
-                } else {
-                    foreach ($treeList as $i => $r) {
-                        if (intval($r['is_disabled']) || !in_array($r['path'], $groupInfo['rule_array'])) {
-                            continue;
-                        }
-                        
-                        if ($r['is_default']) {
-                            $defaultPath = $r['path'];
-                        }
-                        
-                        unset($r['child']);
-                        $pathArray[] = $r['path'];
-                        $list[]      = $r;
+                    
+                    if ($item->isDefault) {
+                        $struct->defaultPath = $item->path;
                     }
+                    
+                    $item->child        = [];
+                    $struct->paths[]    = $item->path;
+                    $struct->menuList[] = $item;
                 }
-                
-                if (!$defaultPath) {
-                    $endArray    = end($list);
-                    $defaultPath = $endArray['path'];
-                }
-                
-                $list = [
-                    'menu_list' => $list,
-                    'keys'      => $pathArray,
-                    'default'   => $defaultPath
-                ];
-                $this->setCache($cacheName, $list);
-            }
-            
-            // 非调试禁止输出开发模式
-            if ($groupInfo['is_system']) {
-                if (!$this->app->isDebug()) {
-                    $array = [];
-                    foreach ($list['menu_list'] as $i => $r) {
-                        if ($r['path'] == self::DEVELOP) {
-                            continue;
-                        }
-                        $array[] = $r;
+            } else {
+                foreach ($treeList as $i => $item) {
+                    // 禁用的，不包含在群组规则的
+                    if ($item->isDisabled || !in_array($item->path, $groupInfo->ruleArray)) {
+                        continue;
                     }
-                    $list['menu_list'] = $array;
-                    unset($array);
+                    
+                    if ($item->isDefault) {
+                        $struct->defaultPath = $item->path;
+                    }
+                    
+                    $item->child        = [];
+                    $struct->paths[]    = $item->path;
+                    $struct->menuList[] = $item;
                 }
             }
             
-            return $list;
-        } catch (SQLException $e) {
-            return [];
+            if (!$struct->defaultPath) {
+                $struct->defaultPath = end($struct->paths);
+            }
+            
+            $this->setCache($cacheName, $struct);
         }
+        
+        // 不是系统管理员则不输出开发模式
+        if (!$groupInfo->isSystem || ($groupInfo->isSystem && !app()->isDebug())) {
+            $list = [];
+            foreach ($struct->menuList as $item) {
+                if ($item->path == self::DEVELOP) {
+                    continue;
+                }
+                $list[] = $item;
+            }
+            $struct->menuList = $list;
+        }
+        
+        return $struct;
     }
     
     
@@ -564,129 +457,72 @@ class SystemMenu extends Model
      * 获取后台管理左侧菜单
      * @param int  $groupId 权限组ID
      * @param bool $must 是否强制更新缓存
-     * @return array
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getAdminNav($groupId, $must = false)
+    public function getAdminNav($groupId, bool $must = false) : array
     {
-        try {
-            $groupInfo = AdminGroup::init()->getInfo($groupId);
-            $cacheName = "admin_nav_{$groupId}";
-            $list      = $this->getCache($cacheName);
-            if (!$list || $must) {
-                $treeList = $this->getTreeList();
-                $list     = [];
-                
-                // 系统用户组则输出所有菜单
-                if ($groupInfo['is_system']) {
-                    // 一级遍历
-                    foreach ($treeList as $one => $oneArray) {
-                        // 禁用的
-                        if (intval($oneArray['is_disabled'])) {
-                            continue;
-                        }
-                        
-                        
-                        // 二级遍历
-                        $oneChild = [];
-                        foreach ($oneArray['child'] as $two => $twoArray) {
-                            // 禁用的
-                            if (intval($twoArray['is_disabled'])) {
-                                continue;
-                            }
-                            
-                            // 三级遍历
-                            $twoChild = [];
-                            foreach ($twoArray['child'] as $three => $threeArray) {
-                                // 隐藏的，禁用的
-                                if (!intval($threeArray['is_show']) || intval($threeArray['is_disabled'])) {
-                                    continue;
-                                }
-                                $twoChild[] = $threeArray;
-                            }
-                            
-                            $twoArray['child'] = $twoChild;
-                            $oneChild[]        = $twoArray;
-                        }
-                        
-                        $oneArray['child'] = $oneChild;
-                        $list[]            = $oneArray;
+        $groupInfo = AdminGroup::init()->getInfo($groupId);
+        $cacheName = "admin_nav_{$groupId}";
+        
+        /** @var SystemMenuInfo[] $list */
+        $list = $this->getCache($cacheName);
+        if (!$list || $must) {
+            // 系统用户组则输出所有菜单
+            if ($groupInfo->isSystem) {
+                $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $info) {
+                    if ($info->isDisabled || $info->isHide) {
+                        return false;
                     }
-                } else {
-                    // 一级遍历
-                    foreach ($treeList as $one => $oneArray) {
-                        // 禁用的
-                        if (intval($oneArray['is_disabled']) || !in_array($oneArray['path'], $groupInfo['rule_array'])) {
-                            continue;
-                        }
-                        
-                        
-                        // 二级遍历
-                        $oneChild = [];
-                        foreach ($oneArray['child'] as $two => $twoArray) {
-                            // 禁用的
-                            if (intval($twoArray['is_disabled']) || !in_array($twoArray['path'], $groupInfo['rule_array'])) {
-                                continue;
-                            }
-                            
-                            // 三级遍历
-                            $twoChild = [];
-                            foreach ($twoArray['child'] as $three => $threeArray) {
-                                // 隐藏的，禁用的
-                                if (!intval($threeArray['is_show']) || intval($threeArray['is_disabled']) || !in_array($threeArray['path'], $groupInfo['rule_array'])) {
-                                    continue;
-                                }
-                                $twoChild[] = $threeArray;
-                            }
-                            
-                            $twoArray['child'] = $twoChild;
-                            $oneChild[]        = $twoArray;
-                        }
-                        
-                        $oneArray['child'] = $oneChild;
-                        $list[]            = $oneArray;
+                    
+                    return true;
+                });
+            } else {
+                $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $info) use ($groupInfo) {
+                    if ($info->isDisabled || !in_array($info->path, $groupInfo->ruleArray) || $info->isHide) {
+                        return false;
                     }
-                }
-                
-                
-                $this->setCache($cacheName, $list);
+                    
+                    return true;
+                });
             }
             
-            // 非调试禁止输出开发模式
-            if ($groupInfo['is_system']) {
-                if (!$this->app->isDebug()) {
-                    $array = [];
-                    foreach ($list as $i => $r) {
-                        if ($r['path'] == self::DEVELOP) {
-                            continue;
-                        }
-                        $array[] = $r;
-                    }
-                    $list = $array;
-                    unset($array);
-                }
-            }
-            
-            return $list;
-        } catch (SQLException $e) {
-            return [];
+            $this->setCache($cacheName, $list);
         }
+        
+        // 不是系统管理员则不输出开发模式
+        if (!$groupInfo->isSystem || ($groupInfo->isSystem && !app()->isDebug())) {
+            $temp = [];
+            foreach ($list as $item) {
+                if ($item->path == self::DEVELOP) {
+                    continue;
+                }
+                $temp[] = $item;
+            }
+            
+            $list = $temp;
+        }
+        
+        return $list;
     }
     
     
     /**
      * 获取后台分组
-     * @return string
+     * @return string[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getAdminGroups()
+    public function getGroups() : array
     {
-        $list  = $this->getTreeList();
-        $array = explode(',', self::RETAIN_GROUP);
-        foreach ($list as $i => $r) {
-            $array[] = $r['path'];
+        $list   = $this->getTreeList();
+        $groups = explode(',', self::RETAIN_GROUP);
+        foreach ($list as $item) {
+            $groups[] = $item->path;
         }
-        $array = array_unique($array);
         
-        return implode(',', $array);
+        return array_values(array_unique($groups));
     }
     
     
@@ -694,209 +530,136 @@ class SystemMenu extends Model
      * 依据 URL PATH 校验该菜单是否被禁用
      * @param $path
      * @return bool
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function checkIsDisabledByPath($path)
+    public function checkDisabledByPath($path) : bool
     {
-        $array = $this->getPathList();
-        $info  = $array[$path];
+        $list = $this->getPathList();
+        $info = $list[$path] ?? false;
         if (!$info) {
             return true;
         }
         
-        return $info['is_disabled'] == 1;
+        return $info->isDisabled;
     }
     
     
     /**
      * 获取打开方式
-     * @param null $var
-     * @return array|mixed
+     * @param string $var
+     * @return array|string
      */
     public static function getTargets($var = null)
     {
-        $array = [
-            self::TARGET_SELF   => '当前窗口',
-            self::TARGET_BLANK  => '新建窗口',
-            self::TARGET_IFRAME => 'iframe 窗口',
-        ];
-        if (is_null($var)) {
-            return $array;
-        }
-        
-        return $array[$var];
-    }
-    
-    
-    /**
-     * 获取菜单类型
-     * @param null|int $var
-     * @return array|mixed
-     */
-    public static function getTypes($var = null)
-    {
-        $array = [
-            self::TYPE_MODULE  => '分组',
-            self::TYPE_CONTROL => '控制器',
-            self::TYPE_ACTION  => '执行方法',
-            self::TYPE_PATTERN => '执行模式',
-        ];
-        if (is_null($var)) {
-            return $array;
-        }
-        
-        return $array[$var];
-    }
-    
-    
-    /**
-     * 解析开始和结束标记
-     * @param array $info
-     * @param int   $index
-     * @param int   $total
-     * @return array
-     */
-    public static function parseFirstLast($info, $index, $total)
-    {
-        if ($index === 0) {
-            $info['is_first'] = 1;
-        } else {
-            $info['is_first'] = 0;
-        }
-        
-        if ($index == $total - 1) {
-            $info['is_last'] = 1;
-        } else {
-            $info['is_last'] = 0;
-        }
-        
-        return $info;
-    }
-    
-    
-    /**
-     * 解析菜单数据
-     * @param array $list
-     * @return array
-     */
-    public static function parseList($list)
-    {
-        foreach ($list as $i => $info) {
-            $module  = ucfirst(Str::camel($info['module']));
-            $control = ucfirst(Str::camel($info['control']));
-            $isUrl   = false;
-            
-            // 层级解析
-            $info['path'] = '';
-            if ($info['pattern'] && $info['action'] && $info['control'] && $info['module']) {
-                $info['path']  .= $module;
-                $info['path']  .= '.';
-                $info['path']  .= $control;
-                $info['path']  .= self::DIVISION;
-                $info['path']  .= $info['action'];
-                $info['path']  .= '?' . self::PATTERN;
-                $info['path']  .= '=' . $info['pattern'];
-                $info['level'] = 2;
-                $info['type']  = self::TYPE_PATTERN;
-                $info['var']   = $info['pattern'];
-                $isUrl         = true;
-            } elseif ($info['action'] && $info['control'] && $info['module']) {
-                $info['path']  .= $module;
-                $info['path']  .= '.';
-                $info['path']  .= $control;
-                $info['path']  .= self::DIVISION;
-                $info['path']  .= $info['action'];
-                $info['level'] = 2;
-                $info['type']  = self::TYPE_ACTION;
-                $info['var']   = $info['action'];
-                $isUrl         = true;
-            } elseif ($info['control'] && $info['module']) {
-                $info['path'] .= $module;
-                $info['path'] .= '.';
-                $info['path'] .= $control;
-                if (!intval($info['is_has_action'])) {
-                    $info['path'] .= self::DIVISION;
-                    $info['path'] .= 'index';
-                    $isUrl        = true;
-                }
-                $info['level'] = 1;
-                $info['type']  = self::TYPE_CONTROL;
-                $info['var']   = $info['control'];
-            } else {
-                $info['path']  .= $module;
-                $info['level'] = 0;
-                $info['type']  = self::TYPE_MODULE;
-                $info['var']   = $info['module'];
-            }
-            
-            // 解析打开URL
-            $info['url'] = '';
-            if ($isUrl) {
-                if ($info['link']) {
-                    if ($info['target'] == self::TARGET_IFRAME) {
-                        $info['url'] = (string) url($info['path'], ['iframe' => 1]);
-                    } else {
-                        $info['url'] = $info['link'];
-                    }
-                } else {
-                    $info['target'] = '';
-                    $info['url']    = (string) url($info['path']);
-                }
-            }
-            
-            $info['is_system'] = intval($info['is_system']) > 0;
-            $list[$i]          = $info;
-        }
-        
-        return parent::parseList($list);
+        return self::parseVars(self::parseConst(self::class, 'TARGET_', [], function($item) {
+            return $item['name'];
+        }), $var);
     }
     
     
     /**
      * 获取当前网址的URL PATH
-     * @return array|string
+     * @return string
      */
     public static function getUrlPath()
     {
-        $path = '';
-        if ('' !== GROUP_NAME) {
-            $path .= GROUP_NAME . '.';
-        }
-        $path    .= MODULE_NAME . self::DIVISION . ACTION_NAME;
-        $pattern = self::getUrlPattern();
-        if ($pattern) {
-            $path .= '?' . self::PATTERN . '=' . $pattern;
-        }
+        /** @var Request $request */
+        $request = request();
         
-        return $path;
+        return "{$request->controller()}/{$request->action()}";
     }
     
     
     /**
-     * 获取当前网址 URL Pattern
+     * 生成URL PATH
+     * @param SystemMenuInfo $info
      * @return string
      */
-    public static function getUrlPattern()
+    public static function createUrlPath(SystemMenuInfo $info)
     {
-        if (isset($_REQUEST[self::PATTERN])) {
-            return rawurldecode(trim($_REQUEST[self::PATTERN]));
+        if ($info->module && $info->control && $info->action) {
+            return "{$info->module}.{$info->control}/{$info->action}";
+        } elseif ($info->module && $info->control) {
+            return "{$info->module}.{$info->control}";
+        } else {
+            return $info->module;
+        }
+    }
+    
+    
+    /**
+     * 校验输入值是否正确
+     * @param $value
+     * @param $field
+     * @param $name
+     * @return string
+     * @throws VerifyException
+     */
+    public static function verify($value, $field, $name)
+    {
+        $value = Str::studly(trim($value));
+        if (!$value) {
+            throw new VerifyException("请输入{$name}", $field);
         }
         
-        return '';
+        if (!Regex::account($value)) {
+            throw new VerifyException("{$name}只能包含字母、数字及下划线", $field);
+        }
+        
+        if (!Regex::english(substr($value, 0, 1))) {
+            throw new VerifyException("{$name}开始只能是英文", $field);
+        }
+        
+        return $value;
     }
     
     
     /**
      * 排序菜单
-     * @param $id
-     * @param $value
-     * @throws VerifyException
+     * @param int $id
+     * @param int $value
+     * @throws DbException
      */
     public function setSort($id, $value)
     {
-        $save = SystemMenuField::init();
-        $save->setId($id);
-        $save->setSort($value);
-        $save->setIsCheckData(false);
-        $this->saveData($save);
+        $this->whereEntity(SystemMenuField::id(intval($id)))->setField(SystemMenuField::sort(), intval($value));
+    }
+    
+    
+    /**
+     * 获取菜单选项
+     * @param string $selectedValue
+     * @param array  $list
+     * @param string $space
+     * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getTreeOptions($selectedValue = '', $list = [], $space = '')
+    {
+        $push = '├';
+        if (!$list) {
+            $list = $this->getTreeList();
+            $push = '';
+        }
+        
+        $options = '';
+        foreach ($list as $item) {
+            if ($item->type == self::TYPE_NAV || (!self::DEBUG && $item->module == self::DEVELOP)) {
+                continue;
+            }
+            
+            $selected = '';
+            if ($item->id == $selectedValue) {
+                $selected = ' selected="selected"';
+            }
+            $options .= '<option value="' . $item['id'] . '"' . $selected . '>' . $space . $push . $item->name . ' - [' . $item->path . ']</option>';
+            if ($item->child) {
+                $options .= $this->getTreeOptions($selectedValue, $item->child, '┊　' . $space);
+            }
+        }
+        
+        return $options;
     }
 }

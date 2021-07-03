@@ -45,14 +45,14 @@ class UeditorController extends InsideController
     public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
         // 插件路径
-        $this->assignUrl('plugin', URL_ASSETS . 'admin/lib/ueditor/');
+        $this->assignUrl('plugin', $this->request->getWebAssetsUrl() . 'admin/lib/ueditor/');
         
         // 是否输出JS
         $isJs = $this->iGet('js', 'intval');
         if ($isJs) {
             $charset     = 'utf-8';
             $contentType = 'application/x-javascript';
-            $template    = $this->getTemplatePath() . ACTION_NAME . '.js';
+            $template    = $this->getTemplatePath() . $this->request->action() . '.js';
         }
         
         return parent::display($template, $charset, $contentType, $content);

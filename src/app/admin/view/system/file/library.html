@@ -22,7 +22,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="关键词" size="16" name="word" value="{$_GET.word}">
+                <input type="text" class="form-control" placeholder="关键词" size="16" name="word" value="{$_GET.word|default=''}">
             </div>
             <button type="submit" class="btn btn-success">
                 <i class="icon icon-search"></i>
@@ -67,6 +67,7 @@
 </block>
 <block name="foot">
     <script>
+
         function singleSelection(element) {
             $(element).closest('td.item').addClass('selected');
         }
@@ -83,36 +84,19 @@
             $('.table-pic').find('td.item').removeClass('selected');
         }
 
-        $(function () {
-            var dialog = $.dialogApi();
-            if (!dialog.api) {
-                return;
-            }
-
-            dialog.api.title('文件管理器');
-            var $parent = $(parent);
-            if ($parent.width() <= 767) {
-                dialog.api.config.width = '100%';
-                dialog.api.config.height = '100%';
-            } else {
-                dialog.api.config.width = 768;
-                dialog.api.config.height = 500;
-                dialog.api.config.minWidth = 768;
-                dialog.api.config.minHeight = 500;
-                dialog.api.config.resize = false;
-            }
-
-            dialog.api.size(dialog.api.config.width, dialog.api.config.height);
-            dialog.api._reset();
+        busyAdmin.dialogIframeReady = function (index) {
+            var me = this;
+            me.setSize(768, 500);
+            me.setTitle('文件管理器');
 
             $(document).on('click', '.icon-external-link', function (e) {
                 e.stopPropagation();
             });
 
             $(document).on('click', '.click-this', function () {
-                $.dialog.data('data', $(this).data());
-                $.dialog.close();
+                me.setData($(this).data())
+                me.close();
             });
-        });
+        };
     </script>
 </block>

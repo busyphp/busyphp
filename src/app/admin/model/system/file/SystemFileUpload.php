@@ -57,11 +57,10 @@ namespace BusyPHP\app\admin\model\system\file {
         
         /** @var FileSetting 上传配置 */
         protected $fileSetting = null;
-        
-        
+    
+    
         /**
          * SystemFileUpload constructor.
-         * @throws AppException
          */
         public function __construct()
         {

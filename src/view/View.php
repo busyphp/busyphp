@@ -3,10 +3,11 @@ declare(strict_types = 1);
 
 namespace BusyPHP\view;
 
+use BusyPHP\Request;
 use think\App;
+use think\Container;
 use think\contract\TemplateHandlerInterface;
 use think\helper\Str;
-use think\Request;
 use think\template\exception\TemplateNotFoundException;
 
 /**
@@ -121,19 +122,19 @@ class View implements TemplateHandlerInterface
         $this->config['tpl_replace_string'] = isset($this->config['tpl_replace_string']) ? $this->config['tpl_replace_string'] : [];
         
         // 网站根目录地址
-        $this->config['tpl_replace_string']['__ROOT__'] = URL_ROOT;
+        $this->config['tpl_replace_string']['__ROOT__'] = $this->request->getWebUrl();
         
         // 网站根目录地址
-        $this->config['tpl_replace_string']['__APP__'] = URL_APP;
+        $this->config['tpl_replace_string']['__APP__'] = $this->request->getAppUrl();
         
         // 当前URL，包含QueryString
-        $this->config['tpl_replace_string']['__SELF__'] = URL_SELF;
+        $this->config['tpl_replace_string']['__SELF__'] = $this->request->url();
         
         // 静态资源URL
-        $this->config['tpl_replace_string']['__ASSETS__'] = URL_ASSETS;
+        $this->config['tpl_replace_string']['__ASSETS__'] = $this->request->getWebAssetsUrl();
         
         // 当前域名
-        $this->config['tpl_replace_string']['__DOMAIN__'] = URL_DOMAIN;
+        $this->config['tpl_replace_string']['__DOMAIN__'] = $this->request->domain();
     }
     
     

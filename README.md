@@ -60,7 +60,7 @@ class Test extends Model {
             // 通过$id删除其他关联数据
             // ...            
 
-            parent::del($id);
+            parent::deleteInfo($id);
 
             $this->commit();
         } catch (\Exception $e) {

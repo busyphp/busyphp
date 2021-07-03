@@ -60,7 +60,7 @@ class PassportController extends InsideController
                 $this->adminUsername = $user['username'];
                 $this->log('登录成功');
                 $redirectUrl = Session::get(self::ADMIN_LOGIN_REDIRECT_URL);
-                $redirectUrl = $redirectUrl ?: URL_APP;
+                $redirectUrl = $redirectUrl ?: $this->request->getAppUrl();
                 
                 return $this->success('登录成功', $redirectUrl, MESSAGE_SUCCESS_GOTO);
             } catch (VerifyException $e) {
@@ -77,7 +77,7 @@ class PassportController extends InsideController
             $list  = glob(App::getPublicPath('assets/admin/images/login') . '*.*');
             $array = [];
             foreach ($list as $item) {
-                $array[] = URL_ASSETS . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
+                $array[] = $this->request->getWebAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
             }
             
             $this->assign('is_verify', AdminSetting::init()->isVerify());

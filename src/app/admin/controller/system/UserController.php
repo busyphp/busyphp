@@ -62,7 +62,7 @@ class UserController extends InsideController
             $this->bind(self::CALL_DISPLAY, function() {
                 $info                  = array();
                 $info['checked']       = 1;
-                $info['group_options'] = AdminGroup::init()->getSelectOptions($info['group_id']);
+                $info['group_options'] = AdminGroup::init()->getSelectOptions($info['group_id'] ?? 0);
                 
                 return $info;
             });
@@ -133,7 +133,7 @@ class UserController extends InsideController
     public function delete()
     {
         $this->bind(self::CALL_BATCH_EACH, function($id) {
-            $this->model->del($id);
+            $this->model->deleteInfo($id);
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {

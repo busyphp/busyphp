@@ -8,12 +8,12 @@
             <div class="clearfix"></div>
         </div>
         <div class="panel-body">
-            <form action="__SELF__" method="post" class="form-horizontal" data-post="">
-                <input type="hidden" value="{$info.id}" name="id"/>
+            <form action="__SELF__" method="post" class="form-horizontal" data-busy-form="">
+                <input type="hidden" value="{$info.id|default=''}" name="id"/>
                 <div class="form-group">
                     <label class="col-sm-2 control-label must">配置名称</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" name="name" value="{$info.name}"/>
+                        <input type="text" class="form-control" name="name" value="{$info.name|default=''}"/>
                     </div>
                     <div class="col-sm-6"><span class="help-block">配置名称</span></div>
                 </div>
@@ -25,7 +25,7 @@
                         </div>
                         <else/>
                         <div class="col-sm-4">
-                            <input type="text" class="form-control" name="type" value="{$info.type}"/>
+                            <input type="text" class="form-control" name="type" value="{$info.type|default=''}"/>
                         </div>
                         <div class="col-sm-6"><span class="help-block">英文字母数字下划线，不能重复</span></div>
                     </eq>
@@ -38,11 +38,11 @@
 
                         <div class="col-sm-4">
                             <label class="radio-inline">
-                                <input name="is_append" type="radio" value="1" <?=is_checked($info['is_append'] == 1)?>/>
+                                <input name="is_append" type="radio" value="1" <?=is_checked($info['is_append'] ?? 0 == 1)?>/>
                                 是
                             </label>
                             <label class="radio-inline">
-                                <input name="is_append" type="radio" value="0" <?=is_checked($info['is_append'] == 0)?>/>
+                                <input name="is_append" type="radio" value="0" <?=is_checked($info['is_append'] ?? 0 == 0)?>/>
                                 否
                             </label>
                         </div>
@@ -57,11 +57,11 @@
 
                         <div class="col-sm-4">
                             <label class="radio-inline">
-                                <input name="is_system" type="radio" value="1" <?=is_checked($info['is_system'] == 1)?>/>
+                                <input name="is_system" type="radio" value="1" <?=is_checked($info['is_system'] ?? 0 == 1)?>/>
                                 是
                             </label>
                             <label class="radio-inline">
-                                <input name="is_system" type="radio" value="0" <?=is_checked($info['is_system'] == 0)?>/>
+                                <input name="is_system" type="radio" value="0" <?=is_checked($info['is_system'] ?? 0 == 0)?>/>
                                 否
                             </label>
                         </div>

@@ -67,11 +67,11 @@ class IndexController extends InsideController
     public function logs()
     {
         $this->setSelectWhere(function($where) {
-            if (floatval($where['type']) < 0) {
+            if (floatval($where['type'] ?? -1) < 0) {
                 unset($where['type']);
             }
             
-            switch (intval($where['admin_type'])) {
+            switch (intval($where['admin_type'] ?? 0)) {
                 case 1:
                     $where['is_admin'] = 0;
                 break;

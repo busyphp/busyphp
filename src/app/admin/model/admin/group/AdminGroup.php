@@ -2,62 +2,64 @@
 
 namespace BusyPHP\app\admin\model\admin\group;
 
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\model;
-use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 用户组模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:56 下午 AdminGroup.php $
+ * @method AdminGroupInfo findInfo($data = null, $notFoundMessage = null)
+ * @method AdminGroupInfo getInfo($data, $notFoundMessage = null)
+ * @method AdminGroupInfo[] selectList()
  */
 class AdminGroup extends Model
 {
-    /**
-     * 获取用户组权限
-     * @param int $id
-     * @return array
-     * @throws SQLException
-     */
-    public function getInfo($id)
-    {
-        return parent::getInfo($id, '用户组权限不存在');
-    }
+    protected $dataNotFoundMessage = '用户组权限不存在';
+    
+    protected $findInfoFilter      = 'intval';
+    
+    protected $bindParseClass      = AdminGroupInfo::class;
     
     
     /**
      * 获取用户组缓存
-     * @param int $groupId
-     * @return array
-     * @throws SQLException
+     * @param int $id
+     * @return AdminGroupInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getInfoByCache($groupId)
+    public function getInfoByCache($id)
     {
         $groupList = $this->getList();
-        if (!isset($groupList[$groupId]) || !$groupList[$groupId]) {
-            throw new SQLException('用户组权限不存在', $this);
+        if ($info = $groupList[$id] ?? false) {
+            throw new DataNotFoundException($this->dataNotFoundMessage);
         }
         
-        return $groupList[$groupId];
+        return $info;
     }
     
     
     /**
      * 获取会员组缓存列表
      * @param bool $must
-     * @return array
+     * @return AdminGroupInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getList($must = false)
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
-            $list = $this->order('id ASC')->selecting();
-            $list = self::parseList($list);
-            $list = Arr::listByKey($list, 'id');
+            $list = $this->order(AdminGroupField::id(), 'asc')->selectList();
+            $list = Arr::listByKey($list, AdminGroupField::id()->field());
             $this->setCache('list', $list);
         }
         
@@ -69,46 +71,46 @@ class AdminGroup extends Model
      * 添加用户组
      * @param AdminGroupField $insert
      * @return int
-     * @throws SQLException
+     * @throws DbException
      */
     public function insertData($insert)
     {
-        $groupId = $this->addData($insert);
-        if (!$groupId) {
-            throw new SQLException('添加失败', $this);
-        }
-        
-        return $groupId;
+        return $this->addData($insert);
     }
     
     
     /**
      * 修改用户组
      * @param AdminGroupField $update $id
-     * @throws SQLException
+     * @throws ParamInvalidException
+     * @throws DbException
      */
     public function updateData($update)
     {
-        if (false === $result = $this->saveData($update)) {
-            throw new SQLException('修改失败', $this);
+        if ($update->id < 1) {
+            throw new ParamInvalidException('id');
         }
+        
+        $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
     }
     
     
     /**
      * 删除用户组
-     * @param int $id
+     * @param int $data
+     * @return int
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws VerifyException
-     * @throws SQLException
      */
-    public function del($id)
+    public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($id);
-        if ($info['is_system']) {
+        $info = $this->getInfo($data);
+        if ($info->isSystem) {
             throw new VerifyException('系统管理权限组禁止删除');
         }
         
-        parent::del($id, '删除管理权限组失败');
+        return parent::deleteInfo($data);
     }
     
     
@@ -118,10 +120,12 @@ class AdminGroup extends Model
      * @param bool|string $defaultText 默认选项名称 true或者不为空则输出选项
      * @param int         $defaultValue 模型选项值
      * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getSelectOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
     {
-        $options = Transform::arrayToOption($this->order('id ASC')->selecting(), 'id', 'name', $selectedValue);
+        $options = Transform::arrayToOption($this->getList(), AdminGroupField::id(), AdminGroupField::name(), $selectedValue);
         if ($defaultText) {
             if (true === $defaultText) {
                 $defaultText = '请选择';
@@ -135,6 +139,8 @@ class AdminGroup extends Model
     
     /**
      * 更新缓存
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function updateCache()
     {
@@ -145,23 +151,5 @@ class AdminGroup extends Model
             $menuModel->getAdminMenu($r['id'], true);
             $menuModel->getAdminNav($r['id'], true);
         }
-    }
-    
-    
-    /**
-     * 解析数据列表
-     * @param array $list
-     * @return array
-     */
-    public static function parseList($list)
-    {
-        foreach ($list as $i => $r) {
-            $r['is_system']  = Transform::dataToBool($r['is_system']);
-            $r['rule_array'] = explode(',', $r['rule']);
-            $r['rule_array'] = is_array($r['rule_array']) ? $r['rule_array'] : [];
-            $list[$i]        = $r;
-        }
-        
-        return parent::parseList($list);
     }
 }

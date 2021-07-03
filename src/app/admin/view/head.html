@@ -1,34 +1,29 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
-<css href="{$skin.lib}bootstrap/css/bootstrap.css"/>
-<css href="{$skin.css}theme.css?v306"/>
 <link id="layuicss-layer" rel="stylesheet" href="{$skin.lib}layer/theme/default/layer.css">
+<css href="{$skin.css}theme.css?{:time()}"/>
+<css href="{$skin.css}admin.css?{:time()}"/>
 <script>
-    window.ADMIN_URL = '{$url.root}';
-    window.GLOBALS_URL = '{$url.base_root}';
-    window.USER_ID = '{$system.user_id}';
-    window.USER_NAME = '{$system.username}';
-    window.USER_GROUP_NAME = '{$system.permission.name}';
-    window.LOGIN_URL = '{$url.login}';
-    window.SELF_URL = '{$url.self}';
-    window.SKIN_URL = '{$skin.root}';
-    window.SKIN_CSS = '{$skin.css}';
-    window.SKIN_JS = '{$skin.js}';
-    window.SKIN_LIB = '{$skin.lib}';
-    window.URL_GROUP_VALUE = '{$Think.GROUP_NAME}';
-    window.URL_MODULE_VALUE = '{$Think.MODULE_NAME}';
-    window.URL_ACTION_VALUE = '{$Think.ACTION_NAME}';
-    window.URL_PAGE_KEY = '{$Think.config.route.var_page}';
-    window.URL_PATTERN_KEY = '<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::PATTERN;?>';
-    window.URL_PATTERN_VALUE = '{$system.url_pattern}';
-    window.MESSAGE_URL = '{$system.message_url}';
+    window.ADMIN_URL         = '{$url.root}';
+    window.GLOBALS_URL       = '{$url.base_root}';
+    window.USER_ID           = '{$system.user_id|default="0"}';
+    window.USER_NAME         = '{$system.username|default=""}';
+    window.USER_GROUP_NAME   = '{$system.permission.name|default=""}';
+    window.LOGIN_URL         = '{$url.login}';
+    window.SELF_URL          = '{$url.self}';
+    window.SKIN_URL          = '{$skin.root}';
+    window.SKIN_CSS          = '{$skin.css}';
+    window.SKIN_JS           = '{$skin.js}';
+    window.SKIN_LIB          = '{$skin.lib}';
+    window.URL_GROUP_VALUE   = '{$url.group}';
+    window.URL_MODULE_VALUE  = '{$url.controller}';
+    window.URL_ACTION_VALUE  = '{$url.action}';
+    window.URL_PAGE_KEY      = '{$Think.config.route.var_page}';
+    window.MESSAGE_URL       = '{$system.message_url|default=""}';
 </script>
 <!--[if lt IE 9]>
 <js href="{$skin.lib}bootstrap/js/respond.min.js"/>
 <![endif]-->
-<js href="{$skin.js}jquery.min.js"/>
-<js href="{$skin.lib}vue/vue.js"/>
-<js href="{$skin.lib}bootstrap/js/bootstrap.min.js"/>
-<js href="{$skin.lib}dialog/jquery.artDialog.js"/>
-<js href="{$skin.lib}layer/layer.js"/>
+<script type="text/javascript" src="{$skin.js}admin.js?{:time()}"></script>
+<script>busyAdmin.data = <?=json_encode($system ?? []);?>;</script>

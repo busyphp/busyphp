@@ -1,24 +1,19 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div data-search=""
-         role-search-select-value="name,var"
-         role-search-select-text="名称,标识"
-         role-search-action="{$url.self}">
-        <div role-search="content-left">
-            <div class="form-group">
+    <busy-search url="{$url.self}" fields="name:名称,var:标识">
+        <busy-tpl type="search-left">
+            <busy-form-group>
                 <select class="form-control" name="static[type]">
                     <option value="">不限类型</option>
                     {$type_options}
                 </select>
-            </div>
-        </div>
-        <div role-search="right">
-            <a class="btn btn-warning" href="{:url('add')}">
-                <i class="icon icon-plus"></i>
-                增加分类
-            </a>
-        </div>
-    </div>
+            </busy-form-group>
+        </busy-tpl>
+        <busy-tpl type="search-toolbar">
+            <busy-btn url="add" style="warning" icon="plus">增加分类</busy-btn>
+        </busy-tpl>
+    </busy-search>
+
 
     <div class="table-responsive">
         <form action="{:url('delete')}" method="post" id="check_form" name="form" onsubmit="return false;" data-queue-post-confirm="" data-table-checkbox="">

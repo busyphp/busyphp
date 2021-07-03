@@ -4,36 +4,63 @@ namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Str;
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 
 /**
  * 系统键值对配置数据模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-18 上午10:11 SystemConfigField.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/6/25 下午下午3:06 SystemConfigField.php $
+ * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity content($op = null, $value = null)
+ * @method static Entity name($op = null, $value = null) 备注
+ * @method static Entity type($op = null, $value = null) 类型
+ * @method static Entity isSystem($op = null, $value = null) 系统配置
+ * @method static Entity isAppend($op = null, $value = null) 是否加入全局配置
  */
 class SystemConfigField extends Field
 {
-    /** @var int */
-    public $id = null;
+    /**
+     * ID
+     * @var int
+     */
+    public $id;
     
-    /** @var string */
-    public $content = null;
+    /**
+     * @var string
+     */
+    public $content;
     
-    /** @var string 备注 */
-    public $name = null;
+    /**
+     * 备注
+     * @var string
+     */
+    public $name;
     
-    /** @var string 类型 */
-    public $type = null;
+    /**
+     * 类型
+     * @var string
+     */
+    public $type;
     
-    /** @var int 是否系统配置 */
-    public $isSystem = null;
+    /**
+     * 系统配置
+     * @var int
+     */
+    public $isSystem;
     
-    /** @var int 是否加入全局配置 */
-    public $isAppend = null;
+    /**
+     * 是否加入全局配置
+     * @var int
+     */
+    public $isAppend;
     
     
     /**
@@ -88,6 +115,9 @@ class SystemConfigField extends Field
      * @param string $type
      * @return $this
      * @throws VerifyException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function setType($type)
     {
@@ -106,13 +136,12 @@ class SystemConfigField extends Field
         }
         
         // 查重
-        $model       = SystemConfig::init();
-        $where       = new self();
-        $where->type = $this->type;
+        $model = SystemConfig::init();
+        $model->whereEntity(self::type($type));
         if ($this->id > 0) {
-            $where->id = array('neq', $this->id);
+            $model->whereEntity(self::id('<>', $this->id));
         }
-        if ($model->whereof($where)->findData()) {
+        if ($model->findInfo()) {
             throw new VerifyException('配置标识不能重复', 'type');
         }
         

@@ -356,7 +356,7 @@ abstract class Controller
         $this->assign('wait_second', $status ? 1 : 3);
         $this->assign('message', $message);
         if ($status) {
-            $this->assign('jump_url', $jumpUrl ?: ($_SERVER['HTTP_REFERER'] ?: URL_APP));
+            $this->assign('jump_url', $jumpUrl ?: ($_SERVER['HTTP_REFERER'] ?: $this->request->getAppUrl()));
             $template = config('app.success_tmpl');
         } else {
             $this->assign('jump_url', $jumpUrl ?: 'javascript:history.back(-1);');
@@ -374,6 +374,11 @@ abstract class Controller
      */
     protected function parseMessage($message)
     {
+        $debug = '';
+        if ($message instanceof \Exception) {
+            $debug = ' : ' . $message->getFile() . ' : ' . $message->getLine();;
+        }
+        
         // SQLException
         if ($message instanceof SQLException) {
             $errorSQL = $message->getErrorSQL();
@@ -400,6 +405,10 @@ abstract class Controller
         // \Exception
         elseif ($message instanceof \Exception) {
             $message = $message->getMessage();
+        }
+        
+        if ($this->app->isDebug()) {
+            $message .= $debug;
         }
         
         return $message;

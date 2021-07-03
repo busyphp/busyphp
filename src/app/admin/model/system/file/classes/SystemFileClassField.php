@@ -4,76 +4,152 @@ namespace BusyPHP\app\admin\model\system\file\classes;
 
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Str;
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 
-
 /**
  * 附件分类模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-18 下午12:53 SystemFileClassField.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/6/25 下午下午4:32 SystemFileClassField.php $
+ * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity name($op = null, $value = null) 分类名称
+ * @method static Entity var($op = null, $value = null) 分类标识
+ * @method static Entity type($op = null, $value = null) 附件类型
+ * @method static Entity homeShow($op = null, $value = null) 前台显示
+ * @method static Entity adminShow($op = null, $value = null) 后台显示
+ * @method static Entity sort($op = null, $value = null) 自定义排序
+ * @method static Entity suffix($op = null, $value = null) 允许的后缀
+ * @method static Entity size($op = null, $value = null) 允许的大小 -1 继承基本设置 0 不限
+ * @method static Entity homeUpload($op = null, $value = null) 允许前台上传
+ * @method static Entity homeLogin($op = null, $value = null) 前台必须登录上传
+ * @method static Entity mimetype($op = null, $value = null) 允许的mimetype
+ * @method static Entity isThumb($op = null, $value = null) 是否缩放图片
+ * @method static Entity thumbType($op = null, $value = null) 缩放方式
+ * @method static Entity width($op = null, $value = null) 缩图宽度
+ * @method static Entity height($op = null, $value = null) 缩图高度
+ * @method static Entity deleteSource($op = null, $value = null) 缩图后是否删除原图
+ * @method static Entity watermark($op = null, $value = null) 是否加水印
+ * @method static Entity isSystem($op = null, $value = null) 系统
  */
 class SystemFileClassField extends Field
 {
-    /** @var int */
-    public $id = null;
+    /**
+     * ID
+     * @var int
+     */
+    public $id;
     
-    /** @var string 分类名称 */
-    public $name = null;
+    /**
+     * 分类名称
+     * @var string
+     */
+    public $name;
     
-    /** @var string 分类标识 */
-    public $var = null;
+    /**
+     * 分类标识
+     * @var string
+     */
+    public $var;
     
-    /** @var string 附件类型 */
-    public $type = null;
+    /**
+     * 附件类型
+     * @var string
+     */
+    public $type;
     
-    /** @var int 前台显示 */
-    public $homeShow = null;
+    /**
+     * 前台显示
+     * @var int
+     */
+    public $homeShow;
     
-    /** @var int 后台显示 */
-    public $adminShow = null;
+    /**
+     * 后台显示
+     * @var int
+     */
+    public $adminShow;
     
-    /** @var int 自定义排序 */
-    public $sort = null;
+    /**
+     * 自定义排序
+     * @var int
+     */
+    public $sort;
     
-    /** @var string 允许的后缀 */
-    public $suffix = null;
+    /**
+     * 允许的后缀
+     * @var string
+     */
+    public $suffix;
     
-    /** @var int 允许的大小 -1 继承基本设置 0 不限 */
-    public $size = null;
+    /**
+     * 允许的大小 -1 继承基本设置 0 不限
+     * @var int
+     */
+    public $size;
     
-    /** @var int 允许前台上传 */
-    public $homeUpload = null;
+    /**
+     * 允许前台上传
+     * @var int
+     */
+    public $homeUpload;
     
-    /** @var int 前台必须登录上传 */
-    public $homeLogin = null;
+    /**
+     * 前台必须登录上传
+     * @var int
+     */
+    public $homeLogin;
     
-    /** @var string 允许的mimetype */
-    public $mimetype = null;
+    /**
+     * 允许的mimetype
+     * @var string
+     */
+    public $mimetype;
     
-    /** @var int 是否缩放图片 */
-    public $isThumb = null;
+    /**
+     * 是否缩放图片
+     * @var int
+     */
+    public $isThumb;
     
-    /** @var int 缩放方式 */
-    public $thumbType = null;
+    /**
+     * 缩放方式
+     * @var int
+     */
+    public $thumbType;
     
-    /** @var int 缩图宽度 */
-    public $width = null;
+    /**
+     * 缩图宽度
+     * @var int
+     */
+    public $width;
     
-    /** @var int 缩图高度 */
-    public $height = null;
+    /**
+     * 缩图高度
+     * @var int
+     */
+    public $height;
     
-    /** @var int 缩图后是否删除原图 */
-    public $deleteSource = null;
+    /**
+     * 缩图后是否删除原图
+     * @var int
+     */
+    public $deleteSource;
     
-    /** @var int 是否加水印 */
-    public $watermark = null;
+    /**
+     * 是否加水印
+     * @var int
+     */
+    public $watermark;
     
-    /** @var int 系统 */
-    public $isSystem = null;
+    /**
+     * 系统
+     * @var int
+     */
+    public $isSystem;
     
     
     /**
@@ -140,7 +216,7 @@ class SystemFileClassField extends Field
         $where      = new self();
         $where->var = $this->var;
         if ($this->id > 0) {
-            $where->id = array('neq', $this->id);
+            $where->id = ['neq', $this->id];
         }
         if ($model->whereof($where)->findData()) {
             throw new VerifyException('分类标识不能重复', 'var');

@@ -6,7 +6,9 @@ namespace BusyPHP\image\url;
 use BusyPHP\App;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\image\QRCode;
+use BusyPHP\Request;
 use think\Config;
+use think\Container;
 
 /**
  * 动态二维码URL生成
@@ -153,8 +155,11 @@ class QRCodeUrl
         $path     .= '/' . substr($hash, 8, 1);
         $path     .= '/' . substr($hash, 12, 1);
         
+        /** @var Request $request */
+        $request = Container::getInstance()->make(Request::class);
+        
         // 绑定域名
-        $domain = $this->options['domain'] ?: URL_ROOT;
+        $domain = $this->options['domain'] ?: $request->getWebUrl();
         $domain = rtrim($domain, '/') . '/';
         
         return "{$domain}qrcodes/{$path}/{$filename}";

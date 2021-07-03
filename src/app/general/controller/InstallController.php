@@ -32,7 +32,7 @@ class InstallController extends Controller
         $this->assign('finish', false);
         
         // 检测是否安装完毕
-        if (is_file($this->lockFile) && !in_array(ACTION_NAME, ['index', 'finish'])) {
+        if (is_file($this->lockFile) && !in_array($this->request->action(), ['index', 'finish'])) {
             $this->redirect(url('general/install/index'))->send();
             exit;
         }
@@ -41,10 +41,10 @@ class InstallController extends Controller
     
     protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
-        $template = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . ACTION_NAME . '.html';
+        $template = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . $this->request->action() . '.html';
         
         // 步进值
-        $step  = array_search(ACTION_NAME, ['index', 'env', 'db', 'finish']);
+        $step  = array_search($this->request->action(), ['index', 'env', 'db', 'finish']);
         $steps = [];
         for ($i = 0; $i <= $step; $i++) {
             if ($i == $step) {

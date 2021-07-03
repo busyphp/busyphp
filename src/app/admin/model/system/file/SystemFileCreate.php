@@ -9,8 +9,8 @@ use BusyPHP\helper\util\Transform;
 /**
  * 上传附件容器
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-18 下午12:24 SystemFileCreate.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/6/25 下午下午3:24 SystemFileCreate.php $
  */
 class SystemFileCreate extends SystemFileField
 {

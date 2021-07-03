@@ -1,0 +1,87 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件需要引用后使用，组件名称：`busyAdmin.ext.highCode`
+
+```js
+require([busyAdmin.ext.highCode], function() {
+    // 执行代码高亮
+    $('#demo').busyHighCode(options);
+});
+```
+
+### 使用
+
+通过在标签上加上自定义属性 `data-busy-high-code` 来触发
+
+```html
+<textarea data-busy-high-code="html">
+    <div></div>
+    <a></a>
+</textarea>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-busy-high-code | string | `是` | - | 初始化组件属性，指定内容则为对应的语言，指定`auto`或空则自动识别 |
+
+### jQuery扩展
+
+`$.fn.busyHighCode(options)`;
+
+```js
+$(function(){
+    $('#demo').busyHighCode({
+        type: string, //参考 data-busy-high-code
+    });
+});
+```
+
+### 使用示例
+
+#### 自动识别
+```demo:实例
+#demo1
+```
+
+#### 指定语言为PHP
+```demo:实例
+#demo2
+```
+
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1"><script type="text/html" data-busy-high-code="">
+<div>
+    <a>测试</a>
+</div>
+</script></textarea>
+    
+
+    <textarea class="hide" id="demo2">
+<script type="text/html" data-busy-high-code="php">
+/**
+ * @param $a
+ * @param $b
+ */
+function ($a, $b) {
+    return 'OK';
+}
+
+$res = new stdClass();
+</script>
+    </textarea>
+
+
+</block>

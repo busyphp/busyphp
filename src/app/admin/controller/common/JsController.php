@@ -23,7 +23,7 @@ class JsController extends InsideController
     protected function display($template = '', $charset = '', $contentType = '', $content = '', $prefix = '')
     {
         if (!$template) {
-            $template = $this->getTemplatePath() . ACTION_NAME . '.js';
+            $template = $this->getTemplatePath() . $this->request->action() . '.js';
         }
         
         return parent::display($template, 'utf-8', 'application/x-javascript');
@@ -32,7 +32,7 @@ class JsController extends InsideController
     
     public function index()
     {
-        return $this->redirect(URL_APP);
+        return $this->redirect($this->request->getAppUrl());
     }
     
     

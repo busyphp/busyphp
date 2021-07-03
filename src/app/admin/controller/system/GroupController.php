@@ -54,8 +54,9 @@ class GroupController extends InsideController
             return '添加成功';
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
-                $info         = [];
-                $info['rule'] = $this->createCheckbox(SystemMenu::init()->getSafeTree());
+                $info              = [];
+                $info['rule']      = $this->createCheckbox(SystemMenu::init()->getSafeTree());
+                $info['is_system'] = 0;
                 
                 return $info;
             });
@@ -104,7 +105,7 @@ class GroupController extends InsideController
     public function delete()
     {
         $this->bind(self::CALL_BATCH_EACH, function($id) {
-            $this->model->del($id);
+            $this->model->deleteInfo($id);
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {

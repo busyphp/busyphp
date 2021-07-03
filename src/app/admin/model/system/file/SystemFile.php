@@ -8,25 +8,30 @@ use BusyPHP\exception\SQLException;
 use BusyPHP\helper\file\File;
 use BusyPHP\model;
 use BusyPHP\helper\util\Transform;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 文件管理模型
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-05-30 下午7:38 SystemFile.php busy^life $
+ * @method SystemFileInfo findInfo($data = null, $notFoundMessage = null)
+ * @method SystemFileInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemFileInfo[] selectList()
  */
 class SystemFile extends Model
 {
     //+--------------------------------------
     //| 文件类型
     //+--------------------------------------
-    /** 图片 */
+    /** @var string 图片 */
     const FILE_TYPE_IMAGE = 'image';
     
-    /** 视频 */
+    /** @var string 视频 */
     const FILE_TYPE_VIDEO = 'video';
     
-    /** 附件 */
+    /** @var string 附件 */
     const FILE_TYPE_FILE = 'file';
     
     //+--------------------------------------
@@ -35,34 +40,25 @@ class SystemFile extends Model
     /** 临时附件前缀 */
     const MARK_VALUE_TMP_PREFIX = 'tmp_';
     
+    protected $dataNotFoundMessage = '附件不存在';
     
-    /**
-     * 获取附件信息
-     * @param int $id
-     * @return array
-     * @throws SQLException
-     */
-    public function getInfo($id)
-    {
-        return parent::getInfo(floatval($id), '附件不存在');
-    }
+    protected $findInfoFilter      = 'intval';
+    
+    protected $bindParseClass      = SystemFileInfo::class;
     
     
     /**
      * 执行添加
      * @param SystemFileField $insert
      * @return int
-     * @throws SQLException
+     * @throws DbException
      */
     public function insertData($insert)
     {
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
-        if (!$insertId = $this->addData($insert)) {
-            throw new SQLException('插入附件记录失败', $this);
-        }
         
-        return $insertId;
+        return $this->addData($insert);
     }
     
     
@@ -71,19 +67,15 @@ class SystemFile extends Model
      * @param string $type 文件分类
      * @param string $tmp 临时文件分类值
      * @param string $value 新文件分类值
-     * @throws SQLException
+     * @throws DbException
      */
     public function updateMarkValueByTmp($type, $tmp, $value)
     {
-        $where            = SystemFileField::init();
-        $where->markType  = trim($type);
-        $where->markValue = trim($tmp);
-        
         $save            = SystemFileField::init();
         $save->markValue = trim($value);
-        if (false === $result = $this->whereof($where)->saveData($save)) {
-            throw new SQLException('修正附件标识失败', $this);
-        }
+        
+        $this->whereEntity(SystemFileField::markType(trim($type)), SystemFileField::markValue(trim($tmp)))
+            ->saveData($save);
     }
     
     
@@ -92,20 +84,15 @@ class SystemFile extends Model
      * @param string $type 文件分类
      * @param int    $id 附件ID
      * @param string $value 新文件分类值
-     * @throws SQLException
+     * @throws DbException
      */
     public function updateMarkValueById($type, $id, $value)
     {
-        $where           = SystemFileField::init();
-        $where->markType = trim($type);
-        $where->id       = floatval($id);
-        
-        
         $save            = SystemFileField::init();
         $save->markValue = trim($value);
-        if (false === $this->whereof($where)->saveData($save)) {
-            throw new SQLException('修正附件标识失败', $this);
-        }
+        
+        $this->whereEntity(SystemFileField::id(floatval($id)), SystemFileField::markValue(trim($type)))
+            ->saveData($save);
     }
     
     
@@ -114,19 +101,18 @@ class SystemFile extends Model
      * @param string $markType
      * @param string $markValue
      * @return string
-     * @throws SQLException
+     * @throws DbException
      */
     public function getUrlByMark($markType, $markValue)
     {
         $where            = SystemFileField::init();
         $where->markType  = trim($markType);
         $where->markValue = trim($markValue);
-        $url              = $this->whereof($where)->getField('url');
-        if (!$url) {
-            throw new SQLException('附件不存在', $this);
-        }
         
-        return $url;
+        return $this->whereEntity(SystemFileField::markType(trim($markType)))
+            ->whereEntity(SystemFileField::markValue(trim($markValue)))
+            ->failException(true)
+            ->value(SystemFileField::url());
     }
     
     
@@ -134,31 +120,27 @@ class SystemFile extends Model
      * 通过ID获取文件地址
      * @param $id
      * @return string
-     * @throws SQLException
+     * @throws DbException
      */
     public function getUrlById($id)
     {
-        $url = $this->one($id)->getField('url');
-        if (!$url) {
-            throw new SQLException('附件不存在', $this);
-        }
-        
-        return $url;
+        return $this->whereEntity(SystemFileField::id($id))->value(SystemFileField::url());
     }
     
     
     /**
      * 执行删除
-     * @param int $id
+     * @param int $data
      * @return int
+     * @throws DbException
      * @throws VerifyException
-     * @throws SQLException
+     * @throws DataNotFoundException
      */
-    public function del($id)
+    public function deleteInfo($data) : int
     {
-        $fileInfo = $this->getInfo($id);
+        $fileInfo = $this->getInfo($data);
         $filePath = App::urlToPath($fileInfo['url']);
-        $res      = parent::del($id);
+        $res      = parent::deleteInfo($data);
         
         if (is_file($filePath) && !unlink($filePath)) {
             throw new VerifyException('无法删除附件', $filePath);
@@ -171,8 +153,8 @@ class SystemFile extends Model
     /**
      * 通过附件地址删除附件
      * @param string $url 附件地址
+     * @throws DbException
      * @throws VerifyException
-     * @throws SQLException
      */
     public function delByUrl($url)
     {
@@ -180,13 +162,7 @@ class SystemFile extends Model
             return;
         }
         
-        $where          = SystemFileField::init();
-        $where->urlHash = md5(trim($url));
-        if (false === $this->whereof($where)->deleteData()) {
-            throw new SQLException('删除附件记录失败', $this);
-        }
-        
-        
+        $this->whereEntity(SystemFileField::urlHash(md5(trim($url))))->delete();
         $filePath = App::urlToPath($url);
         if (is_file($filePath) && !unlink($filePath)) {
             throw new VerifyException('无法删除附件', $filePath);
@@ -198,27 +174,25 @@ class SystemFile extends Model
      * 通过附件标识删除附件
      * @param string      $markType 标识类型
      * @param string|null $markValue 标识值
-     * @throws SQLException
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws VerifyException
      */
     public function delByMark($markType, $markValue = null)
     {
-        $where           = SystemFileField::init();
+        $where = SystemFileField::init();
+        $this->whereEntity(SystemFileField::markType(trim($markType)));
         $where->markType = trim($markType);
         if ($markValue) {
-            $where->markValue = trim($markValue);
+            $where->markValue = SystemFileField::markValue(trim($markValue));
         }
         
-        $fileInfo = $this->whereof($where)->findData();
+        $fileInfo = $this->findInfo();
         if (!$fileInfo) {
             return;
         }
         
-        
-        if (false === $this->deleteData($fileInfo['id'])) {
-            throw new SQLException('删除附件记录失败', $this);
-        }
-        
+        $this->deleteInfo($fileInfo->id);
         $filePath = App::urlToPath($fileInfo['url']);
         if (is_file($filePath) && !unlink($filePath)) {
             throw new VerifyException('无法删除附件', $filePath);
@@ -228,21 +202,14 @@ class SystemFile extends Model
     
     /**
      * 获取附件类型
-     * @param null|string $var
+     * @param string $var
      * @return array|mixed
      */
     public static function getTypes($var = null)
     {
-        $array = [
-            self::FILE_TYPE_IMAGE => '图片',
-            self::FILE_TYPE_VIDEO => '视频',
-            self::FILE_TYPE_FILE  => '附件',
-        ];
-        if (is_null($var)) {
-            return $array;
-        }
-        
-        return $array[$var];
+        return self::parseVars(self::parseConst(self::class, 'TYPE_', [], function($item) {
+            return $item['name'];
+        }), $var);
     }
     
     
@@ -254,30 +221,5 @@ class SystemFile extends Model
     public static function createTmpMarkValue($value = null)
     {
         return self::MARK_VALUE_TMP_PREFIX . md5(($value ? $value : uniqid()) . $_SERVER['HTTP_USER_AGENT'] . request()->ip() . rand(1000000, 9999999));
-    }
-    
-    
-    /**
-     * 解析数据列表
-     * @param array $list
-     * @return array
-     */
-    public static function parseList($list)
-    {
-        return parent::parseList($list, function($list) {
-            foreach ($list as $i => $r) {
-                $r['classify_name']      = self::getTypes($r['classify']);
-                $r['format_create_time'] = Transform::date($r['create_time']);
-                $r['is_admin']           = Transform::dataToBool($r['is_admin']);
-                $sizes                   = Transform::formatBytes($r['size'], true);
-                $r['size_unit']          = $sizes['unit'];
-                $r['size_num']           = $sizes['number'];
-                $r['format_size']        = "{$r['size_num']} {$r['size_unit']}";
-                $r['filename']           = File::pathInfo($r['url'], PATHINFO_BASENAME);
-                $list[$i]                = $r;
-            }
-            
-            return $list;
-        });
     }
 }

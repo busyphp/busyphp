@@ -2,6 +2,7 @@
 
 namespace BusyPHP\app\admin\model\system\file;
 
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 
 /**
@@ -9,60 +10,131 @@ use BusyPHP\model\Field;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午2:54 下午 SystemFileField.php $
+ * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity createTime($op = null, $value = null) 上传时间
+ * @method static Entity url($op = null, $value = null) 文件名
+ * @method static Entity urlHash($op = null, $value = null) URL HASH
+ * @method static Entity size($op = null, $value = null) 文件大小（bytes）
+ * @method static Entity mimeType($op = null, $value = null)
+ * @method static Entity extension($op = null, $value = null) 文件类型
+ * @method static Entity name($op = null, $value = null) 文件原名
+ * @method static Entity markType($op = null, $value = null) 标记类型
+ * @method static Entity markValue($op = null, $value = null) 标识值
+ * @method static Entity hash($op = null, $value = null) 文件的哈希验证字符串
+ * @method static Entity userid($op = null, $value = null) 会员ID
+ * @method static Entity isAdmin($op = null, $value = null) 后台上传
+ * @method static Entity classify($op = null, $value = null) 文件分类
+ * @method static Entity isThumb($op = null, $value = null) 是否缩放资源
+ * @method static Entity thumbId($op = null, $value = null) 缩放资源源文件ID
+ * @method static Entity thumbWidth($op = null, $value = null) 缩放宽度
+ * @method static Entity thumbHeight($op = null, $value = null) 缩放资源高度
  */
 class SystemFileField extends Field
 {
-    /** @var int */
-    public $id = null;
+    /**
+     * ID
+     * @var int
+     */
+    public $id;
     
-    /** @var int 上传时间 */
-    public $createTime = null;
+    /**
+     * 上传时间
+     * @var int
+     */
+    public $createTime;
     
-    /** @var string 文件名 */
-    public $url = null;
+    /**
+     * 文件名
+     * @var string
+     */
+    public $url;
     
-    /** @var string URL HASH */
-    public $urlHash = null;
+    /**
+     * URL HASH
+     * @var string
+     */
+    public $urlHash;
     
-    /** @var int 文件大小（bytes） */
-    public $size = null;
+    /**
+     * 文件大小（bytes）
+     * @var int
+     */
+    public $size;
     
-    /** @var string */
-    public $mimeType = null;
+    /**
+     * @var string
+     */
+    public $mimeType;
     
-    /** @var string 文件类型 */
-    public $extension = null;
+    /**
+     * 文件类型
+     * @var string
+     */
+    public $extension;
     
-    /** @var string 文件原名 */
-    public $name = null;
+    /**
+     * 文件原名
+     * @var string
+     */
+    public $name;
     
-    /** @var string 标记类型 */
-    public $markType = null;
+    /**
+     * 标记类型
+     * @var string
+     */
+    public $markType;
     
-    /** @var string 标识值 */
-    public $markValue = null;
+    /**
+     * 标识值
+     * @var string
+     */
+    public $markValue;
     
-    /** @var string 文件的哈希验证字符串 */
-    public $hash = null;
+    /**
+     * 文件的哈希验证字符串
+     * @var string
+     */
+    public $hash;
     
-    /** @var int 会员ID */
-    public $userid = null;
+    /**
+     * 会员ID
+     * @var int
+     */
+    public $userid;
     
-    /** @var int 后台上传 */
-    public $isAdmin = null;
+    /**
+     * 后台上传
+     * @var int
+     */
+    public $isAdmin;
     
-    /** @var string 文件分类 */
-    public $classify = null;
+    /**
+     * 文件分类
+     * @var string
+     */
+    public $classify;
     
-    /** @var int 是否缩放资源 */
-    public $isThumb = null;
+    /**
+     * 是否缩放资源
+     * @var int
+     */
+    public $isThumb;
     
-    /** @var int 缩放资源源文件ID */
-    public $thumbId = null;
+    /**
+     * 缩放资源源文件ID
+     * @var int
+     */
+    public $thumbId;
     
-    /** @var int 缩放资源宽度 */
-    public $thumbWidth = null;
+    /**
+     * 缩放宽度
+     * @var int
+     */
+    public $thumbWidth;
     
-    /** @var int 缩放资源高度 */
-    public $thumbHeight = null;
+    /**
+     * 缩放资源高度
+     * @var int
+     */
+    public $thumbHeight;
 }

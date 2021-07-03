@@ -2,83 +2,76 @@
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\exception\SQLException;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 附件分类模型
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
- * @version $Id: 2017-06-06 下午2:14 FileClassModels.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/6/25 下午下午4:56 SystemFileClass.php $
+ * @method SystemFileClassInfo findInfo($data = null, $notFoundMessage = null)
+ * @method SystemFileClassInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemFileClassInfo[] selectList()
  */
 class SystemFileClass extends Model
 {
-    /**
-     * 获取附件分类信息
-     * @param int $id
-     * @return array
-     * @throws SQLException
-     */
-    public function getInfo($id)
-    {
-        return parent::getInfo(floatval($id), '附件分类不存在');
-    }
+    protected $dataNotFoundMessage = '附件分类不存在';
+    
+    protected $findInfoFilter      = 'intval';
+    
+    protected $bindParseClass      = SystemFileClassInfo::class;
     
     
     /**
      * 添加分类
      * @param SystemFileClassField $insert
      * @return int
-     * @throws SQLException
+     * @throws DbException
      */
     public function insertData($insert)
     {
-        if (false === $result = $this->addData($insert)) {
-            throw new SQLException('添加分类失败', $this);
-        }
-        
-        return $result;
+        return $this->addData($insert);
     }
     
     
     /**
      * 修改分类
      * @param SystemFileClassField $update
-     * @throws VerifyException
-     * @throws SQLException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function updateData($update)
     {
         if ($update->id < 1) {
-            throw new VerifyException('缺少参数id', 'id');
+            throw new ParamInvalidException('id');
         }
         
-        if (false === $result = $this->saveData($update)) {
-            throw new SQLException('修改分类失败', $this);
-        }
+        $this->saveData($update);
     }
     
     
     /**
      * 删除分类
-     * @param int $id
+     * @param int $data
      * @return int
-     * @throws SQLException
      * @throws VerifyException
+     * @throws DbException
      */
-    public function del($id)
+    public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($id);
-        if ($info['is_system']) {
+        $info = $this->getInfo($data);
+        if ($info->isSystem) {
             throw new VerifyException('系统分类组禁止删除');
         }
         
-        return parent::del($id, '删除附件分类失败');
+        return parent::deleteInfo($info->id);
     }
     
     
@@ -154,65 +147,20 @@ class SystemFileClass extends Model
     
     
     /**
-     * 解析数据
-     * @param array $list
-     * @return array
-     */
-    public static function parseList($list)
-    {
-        return parent::parseList($list, function($list) {
-            foreach ($list as $i => $r) {
-                // 是否系统分类
-                $r['is_system'] = intval($r['is_system']) > 0;
-                // 前端是否显示
-                $r['home_show'] = intval($r['home_show']) > 0;
-                // 前端允许上传
-                $r['home_upload'] = intval($r['home_upload']) > 0;
-                // 前端允许登录上传
-                $r['home_login'] = intval($r['home_login']) > 0;
-                // 后端显示
-                $r['admin_show'] = intval($r['admin_show']) > 0;
-                // KB
-                $r['size'] = Filter::min(intval($r['size']), -1);
-                // 允许后缀是否继承系统设置
-                $r['suffix_is_inherit'] = $r['suffix'] <= -1;
-                // 允许上传大小是否继承系统设置
-                $r['size_is_inherit'] = $r['size'] <= -1;
-                // 类型
-                $r['type_name'] = SystemFile::getTypes($r['type']);
-                // 是否附件
-                $r['is_file'] = $r['type'] == SystemFile::FILE_TYPE_FILE;
-                // 是否图片
-                $r['is_image'] = $r['type'] == SystemFile::FILE_TYPE_IMAGE;
-                // 是否视频
-                $r['is_video'] = $r['type'] == SystemFile::FILE_TYPE_VIDEO;
-                // 是否缩放图片
-                $r['is_thumb'] = $r['is_image'] && intval($r['is_thumb']) > 0;
-                // 是否加水印
-                $r['watermark'] = $r['is_image'] && intval($r['watermark']) > 0;
-                // 缩图后是否删除源文件
-                $r['delete_source'] = $r['is_image'] && intval($r['delete_source']) > 0;
-                
-                $list[$i] = $r;
-            }
-            
-            return $list;
-        });
-    }
-    
-    
-    /**
      * 获取分类缓存
      * @param bool $must
-     * @return array
+     * @return SystemFileClassInfo[]
+     * @throws DbException
+     * @throws DataNotFoundException
      */
     public function getListByCache($must = false)
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
-            $list = $this->order('sort ASC,id DESC')->selecting();
-            $list = self::parseList($list);
-            $list = Arr::listByKey($list, 'var');
+            $list = $this->order(SystemFileClassField::sort(), 'asc')
+                ->order(SystemFileClassField::id(), 'desc')
+                ->selectList();
+            $list = Arr::listByKey($list, SystemFileClassField::var());
             $this->setCache('list', $list);
         }
         
@@ -223,17 +171,16 @@ class SystemFileClass extends Model
     /**
      * 通过key获取信息
      * @param $key
-     * @return array
-     * @throws VerifyException
+     * @return SystemFileClassInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getInfoByKey($key)
     {
-        $list = SystemFileClass::init()->getListByCache();
-        $list = Arr::listByKey($list, 'var');
-        
-        $info = isset($list[$key]) ? $list[$key] : [];
+        $list = $this->getListByCache();
+        $info = $list[$key] ?? null;
         if (!$info) {
-            throw new VerifyException('附件类型[' . $key . ']不存在', $key);
+            throw new DataNotFoundException('附件类型[' . $key . ']不存在');
         }
         
         return $info;
@@ -244,15 +191,21 @@ class SystemFileClass extends Model
      * 设置分类排序
      * @param int $id
      * @param int $value
+     * @throws DbException
      */
     public function setSort($id, $value)
     {
-        $save       = SystemFileClassField::init();
-        $save->sort = floatval($value);
-        $this->one(floatval($id))->saveData($save);
+        $this->whereEntity(SystemFileClassField::id($id))->setField(SystemFileClassField::sort(), $value);
     }
     
     
+    /**
+     * @param string $method
+     * @param        $id
+     * @param array  $options
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
     protected function onChanged($method, $id, $options)
     {
         $this->getListByCache(true);

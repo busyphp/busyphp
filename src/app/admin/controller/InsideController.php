@@ -35,11 +35,11 @@ class InsideController extends AdminCurdController
     protected function getTemplatePath()
     {
         $group = '';
-        if (defined('GROUP_NAME') && GROUP_NAME) {
-            $group = Str::snake(GROUP_NAME) . DIRECTORY_SEPARATOR;
+        if ($groupName = $this->request->group()) {
+            $group = Str::snake($groupName) . DIRECTORY_SEPARATOR;
         }
         
-        return $this->getViewPath() . $group . Str::snake(MODULE_NAME) . DIRECTORY_SEPARATOR;
+        return $this->getViewPath() . $group . Str::snake($this->request->controller(false, true)) . DIRECTORY_SEPARATOR;
     }
     
     
@@ -51,7 +51,7 @@ class InsideController extends AdminCurdController
     protected function parseTemplate($template = '')
     {
         if (!$template) {
-            return $this->getTemplatePath() . ACTION_NAME . '.html';
+            return $this->getTemplatePath() . $this->request->action() . '.html';
         } else {
             if (is_file($template)) {
                 return $template;

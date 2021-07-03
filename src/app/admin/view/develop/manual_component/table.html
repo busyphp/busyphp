@@ -1,0 +1,185 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用，本组件只介绍常用方法及本组件定制的方法，其他方法及事件请参考：[官方手册](https://bootstrap-table.com/docs/getting-started/introduction/)
+
+### 使用
+
+通过在`table`标签上加上自定义属性 `data-busy-table` 来触发
+
+```html
+<table data-busy-table=""></table>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-busy-table | string | `是` | `ajax` | 初始化组件属性 |
+| data-height | number,string | 否 | - | 设置表高度，设置后表头和表尾将固定，设置`auto`则自动计算高度 |
+| 搜索:title |  |  |  |  |
+| data-search | boolean | 否 | `true` | 是否显示表格搜索 |
+| data-search-type | string | 否 | `busy-admin` | 搜索框类型，支持：`busy-admin`：BusyAdmin类型搜索框，留空则为默认搜索框 |
+| data-show-search-button | boolean | 否 | `true` | 默认搜索框是否显示搜索按钮 |
+| data-show-search-clear-button | boolean | 否 | `true` | 默认搜索框是否显示清空按钮 |
+| 工具栏:title |  |  |  |  |
+| data-show-columns | boolean | 否 | `true` | 是否显示列筛选 |
+| data-show-print | boolean | 否 | `false` | 是否显示打印选项 |
+| data-show-fullscreen | boolean | 否 | `false` | 是否显示全屏按钮，`目前不兼容，谨慎使用` |
+| data-show-toggle | boolean | 否 | `false` | 是否显示列切换视图按钮 |
+| data-show-export | boolean | 否 | `false` | 是否显示导出选项 |
+| data-export-types | string | 否 | `excel` | 导出类型，多个用英文逗号分割，支持：`excel`, `csv`, `xml`, `json`, `txt` |
+| data-show-button-text | boolean | 否 | `false` | 是否显示工具栏按钮文本 |
+| 拖拽:title |  |  |  |  |
+| data-resizable | boolean | 否 | `false` | 是否启用列宽度拖拽，`目前不兼容，谨慎使用` |
+| data-reorderable-rows | boolean | 否 | `false` | 是否启用表格行拖拽排序，`该功能 与 固定列功能不兼容` |
+| data-reorderable-columns | boolean | 否 | `false` | 是否启用表格列位置拖拽排序，`目前不兼容，谨慎使用`  |
+| 单选/多选:title |  |  |  |  |
+| data-checkbox-header | boolean | 否 | `true` | 是否在表头显示checkbox |
+| data-click-to-select | boolean | 否 | `false` | 点击行是否选中checkbox |
+| data-id-field | string | 否 | `id` | 指定checkbox或radio的value取值字段 |
+| data-select-item-name | string | 否 | `id[]` | 指定checkbox或radio的name属性 |
+| 树结构:title |  |  |  |  |
+| data-tree-show-field | string | 否 | - | 指定树结构显示的字段，设置后表格将展示树状结构 |
+| data-parent-id-field | string | 否 | `parent_id` | 指定树结构依赖字段名称 |
+| 固定表头:title |  |  |  |  |
+| data-sticky-header | boolean | 否 | `false` | 是否启用滚动固定表头 |
+| data-sticky-header-offset-y | number | 否 | 0 | 滚动固定表头的上偏移 |
+| data-sticky-header-offset-left | number,string | 否 | 0 | 滚动固定表头的左偏移，可以携带单位 |
+| data-sticky-header-offset-right | number,string | 否 | 0 | 滚动固定表头的右偏移，可以携带单位 |
+| 固定列:title |  |  |  |  |
+| data-fixed-columns | boolean | 否 | `false` | 是否启用固定列功能 |
+| data-fixed-number | number | 否 | 0 | 设置固定左侧的多少列 |
+| data-fixed-right-number | number | 否 | 0 | 设置固定右侧的多少列 |
+
+### 列属性
+
+通过在`thead th`标签上加上自定属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-title | string | 否 | - | 指定列名称 |
+| data-field | string | 否 | - | 指定列字段 |
+| data-width | number | 否 | - | 设置该列的宽度 |
+| data-width-unit | string | 否 | `px` | 设置列宽度单位，支持各种css单位 |
+| 单选/多选:title |  |  |  |  |
+| data-checkbox | boolean | 否 | - | 指定列是否checkbox复选框 |
+| data-checkbox-enabled | boolean | 否 | `true` | 是否启用checkbox复选框 |
+| data-radio | boolean | 否 | `false` | 指定列是否radio单选框 |
+| data-show-select-title | boolean | 否 | `false` | 是否在表头显示单选的名称，`data-radio`为`true`有效 |
+| 对齐方式:title |  |  |  |  |
+| data-halign | string | 否 | `left` | 设置表头对齐方式，支持：`left`, `center`, `right` |
+| data-align | string | 否 | `left` | 设置数据对齐方式，支持：`left`, `center`, `right` |
+| data-falign | string | 否 | `left` | 设置表尾 对齐方式，支持：`left`, `center`, `right` |
+| 隐藏/显示:title |  |  |  |  |
+| data-visible | boolean | 否 | `true` | 设置是否显示该列 |
+| data-show-columns | boolean | 否 | `true` | 是否允许列隐藏显示控制 |
+| data-switchable | boolean | 否 | `true` | 是否允许该列被用户自定义显示隐藏 |
+| 排序:title |  |  |  |  |
+| data-sortable | boolean | 否 | `false` | 指定是否启用列排序 |
+| data-sort-order | string | 否 | `asc` | 指定列排序的默认排序方式，支持：`asc`, `desc` |
+| 搜索:title |  |  |  |  |
+| data-searchable | boolean | 否 | `true` | 是否允许搜索 |
+| busyAdmin搜索类型:title |  |
+| data-search-type | string | 否 | - | 指定字段搜索类型，支持：`select`, `input` |
+| data-search-value | any | 否 | - | 指定字段搜索类型时的值配置，分别为：<br />**select**：支持格式：<br />1: `[{'name':'string','value':'string','selected':boolean}]` <br /> 2: `['string']` <br /> 3: `string,string` <br /> 4: `{'key':'value', 'key1':'value1'}` <br />**input**：`string` |
+| data-search-placeholder | string | 否 | - | 设置默认提示，分别为：<br/>**select**：格式：<br />1: `默认值,默认内容`<br />2: `默认内容`<br />**input**：`提示内容` |
+| data-search-attr | string | 否 | - | 设置搜索项的标签属性 |
+| data-search-label | string,boolean | 否 | - | 是否显示字段名称，指定 `true` 则使用默认字段名称，指定 `string` 则使用该名称 |
+| data-search-icon | string | 否 | - | 指定搜索字段图标，设置后将显示在该项的右侧 |
+| data-search-dir | string | 否 | `left` | 设置该搜索选项在左侧还是右侧，`right`为右侧，`left`为左侧 |
+| 表尾:title |  |  |  |  |
+| data-footer-html | string | 否 | - | 设置`tfoot`下该单元格自定义内容的`jQuery选择器` |
+| data-footer-formatter | string | 否 | - | 设置`tfoot`下该单元格的内容处理回调 `window全局方法`，回调参数：<br />**this**：列属性对象<br />**data**：表数据<br />**value**：该单元格原来的内容 |
+
+### 自定义`tfoot`按钮属性
+
+通过对按钮加上自定属性实现
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-btn | string | 是 | - | 设置表尾按钮标记，同一个表格不能重复 |
+| disabled | string | 否 | - | 设置后只有包涵选中项才会允许点击 |
+| data-url | string | 否 | - | 设置点击按钮请求的URL地址。不设置为 `document.URL` |
+| data-method | string | 否 | `post` | 设置请求方式，支持：`post`，`get` |
+| data-confirm | string | 否 | - | 设置请求前是否弹窗询问，支持 `%s` 变量为选中的条数 |
+| data-click | string | 否 | - | 设置点击回调 `window全局方法`，设置后`data-url`无效，点击事件将需要自定义，回调参数：<br /> **formParams**：`[{name:string,value:string}]` 当前表内的表单参数<br /> **selectedRows**：`[object]` 当前选中记录<br />**api**：`BootstrapTable` 对象，如使用 `api.refresh()` 刷新表，[更多方法参考官方手册](https://bootstrap-table.com/docs/api/methods/) |
+
+### jQuery扩展
+
+`$.fn.busyTable(options)`;
+
+```js
+$(function(){
+    $('#demo').busyTable({
+    
+    });
+});
+```
+
+### 使用示例
+
+#### HTML表格
+```demo:实例
+#demo1
+```
+
+#### Ajax表格
+```demo:实例
+#demo2
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<table data-busy-table="html">
+    <thead>
+        <tr>
+            <th rowspan="2" data-valign="middle">名称</th>
+            <th colspan="3">详情</th>
+        </tr>
+        <tr>
+            <th>关注数</th>
+            <th>浏览数</th>
+            <th>描述</th>
+        </tr>
+    </thead>
+    <tbody>
+    <for name="index" start="1" end="5">
+    <tr>
+            <td>张三{$index}</td>
+            <td><?=rand(0, 9999)?></td>
+            <td><?=rand(0, 9999)?></td>
+            <td><?=rand(0, 9999)?></td>
+        </tr>
+    </for></tbody>
+</table></textarea>
+
+
+    <textarea class="hide" id="demo2">
+<script id="btnTest" type="text/html">
+    <button class="btn btn-danger btn-sm" disabled data-url="?action=success" data-confirm="确认要删除选中的%s项吗？">删除</button>
+    <button class="btn btn-warning btn-sm" data-url="?action=error" data-confirm="确认要排序吗？">排序</button>
+</script>
+<table class="table table-hover table-bordered table-striped"
+       data-busy-table=""
+       data-show-export="true"
+       data-footer-buttons="#btnTest"
+       data-show-footer="true"></table>
+<script>
+    function test(formParams, selectRows, api) {
+        console.log(arguments);
+    }
+</script></textarea>
+
+</block>

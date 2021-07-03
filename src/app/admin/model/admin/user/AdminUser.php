@@ -2,14 +2,15 @@
 
 namespace BusyPHP\app\admin\model\admin\user;
 
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\model;
 use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\crypt\TripleDES;
-use BusyPHP\helper\util\Transform;
-use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\setting\AdminSetting;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 use think\facade\Cookie;
 use think\facade\Session;
 use think\helper\Str;
@@ -19,6 +20,9 @@ use think\helper\Str;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:57 下午 AdminUser.php $
+ * @method AdminUserInfo findInfo($data = null, $notFoundMessage = null)
+ * @method AdminUserInfo getInfo($data, $notFoundMessage = null)
+ * @method AdminUserInfo[] selectList()
  */
 class AdminUser extends Model
 {
@@ -31,37 +35,30 @@ class AdminUser extends Model
     
     const SESSION_OPERATE_TIME = 'admin_operate_time';
     
+    protected $dataNotFoundMessage = '管理员不存在';
     
-    /**
-     * 通过ID获取管理员
-     * @param mixed $id
-     * @return array
-     * @throws SQLException
-     */
-    public function getInfo($id)
-    {
-        return parent::getInfo(floatval($id), '管理员不存在');
-    }
+    protected $listNotFoundMessage = '暂无管理员';
+    
+    protected $findInfoFilter      = 'intval';
+    
+    protected $bindParseClass      = AdminUserInfo::class;
     
     
     /**
      * 获取管理员信息缓存
-     * @param int  $id
-     * @param bool $must
-     * @return array
+     * @param int  $id 管理员ID
+     * @param bool $must 是否强制获取
+     * @return AdminUserInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getInfoByCache($id, $must = false)
     {
         $key  = 'user_' . $id;
         $info = $this->getCache($key);
         if (!$info || $must) {
-            try {
-                $info = $this->getInfo($id);
-                $this->setCache($key, $info);
-            } catch (SQLException $e) {
-                $this->deleteCache($key);
-                $info = [];
-            }
+            $info = $this->getInfo($id);
+            $this->setCache($key, $info);
         }
         
         return $info;
@@ -71,57 +68,39 @@ class AdminUser extends Model
     /**
      * 通过管理员账号获取管理员信息
      * @param string $username 账号
-     * @return array
-     * @throws SQLException
+     * @return AdminUserInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getInfoByUsername($username)
     {
-        $where           = AdminUserField::init();
-        $where->username = trim($username);
-        $info            = $this->whereof($where)->findData();
-        if (!$info) {
-            throw new SQLException('管理员不存在', $this);
-        }
-        
-        return static::parseInfo($info);
+        return $this->whereEntity(AdminUserField::username(trim($username)))->failException(true)->findInfo();
     }
     
     
     /**
      * 通过邮箱账号获取管理员信息
      * @param string $email 账号
-     * @return array
-     * @throws SQLException
+     * @return AdminUserInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getInfoByEmail($email)
     {
-        $where        = AdminUserField::init();
-        $where->email = trim($email);
-        $info         = $this->whereof($where)->findData();
-        if (!$info) {
-            throw new SQLException('管理员不存在', $this);
-        }
-        
-        return static::parseInfo($info);
+        return $this->whereEntity(AdminUserField::email(trim($email)))->failException(true)->findInfo();
     }
     
     
     /**
      * 通过邮箱账号获取管理员信息
      * @param string $phone 账号
-     * @return array
-     * @throws SQLException
+     * @return AdminUserInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getInfoByPhone($phone)
     {
-        $where        = AdminUserField::init();
-        $where->phone = trim($phone);
-        $info         = $this->whereof($where)->findData();
-        if (!$info) {
-            throw new SQLException('管理员不存在', $this);
-        }
-        
-        return static::parseInfo($info);
+        return $this->whereEntity(AdminUserField::phone(trim($phone)))->failException(true)->findInfo();
     }
     
     
@@ -129,31 +108,31 @@ class AdminUser extends Model
      * 添加管理员
      * @param AdminUserField $insert
      * @return int
-     * @throws SQLException
+     * @throws DbException
      */
     public function insertData($insert)
     {
         $insert->createTime = time();
         $insert->updateTime = time();
-        if (!$insertId = $this->addData($insert)) {
-            throw new SQLException('添加管理员失败', $this);
-        }
         
-        return $insertId;
+        return $this->addData($insert);
     }
     
     
     /**
      * 修改管理员
      * @param AdminUserField $update
-     * @throws SQLException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function updateData($update)
     {
-        $update->updateTime = time();
-        if (false === $this->saveData($update)) {
-            throw new SQLException('修改管理员失败', $this);
+        if ($update->id < 1) {
+            throw new ParamInvalidException('id');
         }
+        
+        $update->updateTime = time();
+        $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
     }
     
     
@@ -162,8 +141,9 @@ class AdminUser extends Model
      * @param int    $adminUserId
      * @param string $password
      * @param string $confirmPassword
+     * @throws DbException
+     * @throws ParamInvalidException
      * @throws VerifyException
-     * @throws SQLException
      */
     public function updatePassword($adminUserId, $password, $confirmPassword)
     {
@@ -176,19 +156,20 @@ class AdminUser extends Model
     
     /**
      * 删除管理员
-     * @param int $id
+     * @param int $data
      * @return int
-     * @throws SQLException
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws VerifyException
      */
-    public function del($id)
+    public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($id);
-        if ($info['is_system']) {
+        $info = $this->getInfo($data);
+        if ($info->isSystem) {
             throw new VerifyException('系统管理员禁止删除');
         }
         
-        return parent::del($id, '删除管理员失败');
+        return parent::deleteInfo($info->id);
     }
     
     
@@ -196,11 +177,11 @@ class AdminUser extends Model
      * 执行登录
      * @param string $username 账号
      * @param string $password 密码
-     * @return array
+     * @return AdminUserInfo
+     * @throws DbException
      * @throws VerifyException
-     * @throws SQLException
      */
-    public function login($username, $password)
+    public function login($username, $password) : AdminUserInfo
     {
         $username = trim($username);
         $password = trim($password);
@@ -222,17 +203,17 @@ class AdminUser extends Model
             } else {
                 $user = $this->getInfoByUsername($username);
             }
-        } catch (SQLException $e) {
+        } catch (DataNotFoundException $e) {
             throw new VerifyException('账号不存在或密码有误');
         }
         
         // 对比密码
-        if ($user['password'] != self::createPassword($password)) {
+        if ($user->password != self::createPassword($password)) {
             throw new VerifyException('账号不存在或密码错误', 'password', 1);
         }
         
         // 账号未审核
-        if (!$user['checked']) {
+        if (!$user->checked) {
             throw new VerifyException('抱歉，您的账号被禁止登录，请联系管理员', 'checked');
         }
         
@@ -242,7 +223,9 @@ class AdminUser extends Model
     
     /**
      * 校验是否登录
-     * @return array
+     * @return AdminUserInfo
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws VerifyException
      */
     public function checkLogin()
@@ -275,26 +258,25 @@ class AdminUser extends Model
     
     /**
      * 设为登录成功
-     * @param $userInfo
-     * @return array
-     * @throws SQLException
+     * @param AdminUserInfo $userInfo
+     * @return AdminUserInfo
+     * @throws DbException
      */
-    public function setLoginSuccess($userInfo)
+    public function setLoginSuccess(AdminUserInfo $userInfo) : AdminUserInfo
     {
         // 生成密钥
-        $token                = AdminSetting::init()->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
-        $userInfo['token']    = $token;
-        $saveData             = AdminUserField::init();
-        $saveData->id         = floatval($userInfo['id']);
-        $saveData->token      = $token;
-        $saveData->loginTime  = time();
-        $saveData->loginIp    = request()->ip();
-        $saveData->lastTime   = ['exp', 'login_time'];
-        $saveData->lastIp     = ['exp', 'login_ip'];
-        $saveData->loginTotal = ['exp', 'login_total+1'];
-        if (false === $this->saveData($saveData)) {
-            throw new SQLException('登录失败，请稍候再试', $this);
-        }
+        $token           = AdminSetting::init()->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
+        $userInfo->token = $token;
+        
+        $save             = AdminUserField::init();
+        $save->id         = $userInfo->id;
+        $save->token      = $token;
+        $save->loginTime  = time();
+        $save->loginIp    = request()->ip();
+        $save->lastTime   = AdminUserField::loginTime();
+        $save->lastIp     = AdminUserField::loginIp();
+        $save->loginTotal = AdminUserField::loginTotal('+', 1);
+        $this->saveData($save);
         
         // 加密数据
         $tDes          = new TripleDES($token);
@@ -392,24 +374,12 @@ class AdminUser extends Model
     
     
     /**
-     * 解析数据列表
-     * @param array $list
-     * @return array
+     * @param $method
+     * @param $id
+     * @param $options
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public static function parseList($list)
-    {
-        $groupList = AdminGroup::init()->getList();
-        foreach ($list as $i => $r) {
-            $r['is_system']  = Transform::dataToBool($r['is_system']);
-            $r['is_checked'] = Transform::dataToBool($r['checked']);
-            $r['group']      = $groupList[$r['group_id']];
-            $list[$i]        = $r;
-        }
-        
-        return parent::parseList($list);
-    }
-    
-    
     protected function onChanged($method, $id, $options)
     {
         $this->getInfoByCache($id, true);
@@ -421,7 +391,7 @@ class AdminUser extends Model
      */
     public function clearToken()
     {
-        $this->where('id', '>', 0)->setField('token', '');
+        $this->whereEntity(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
         $this->clearCache();
     }
 }

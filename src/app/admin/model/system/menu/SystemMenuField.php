@@ -2,10 +2,11 @@
 
 namespace BusyPHP\app\admin\model\system\menu;
 
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\util\Filter;
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
 
 
@@ -14,82 +15,154 @@ use BusyPHP\helper\util\Transform;
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-06-06 下午5:27 SystemMenu.php busy^life $
+ * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity name($op = null, $value = null) 名称
+ * @method static Entity type($op = null, $value = null) 菜单类型
+ * @method static Entity parentId($op = null, $value = null) 上级菜单ID
+ * @method static Entity module($op = null, $value = null) 分组模块
+ * @method static Entity control($op = null, $value = null) 控制器
+ * @method static Entity action($op = null, $value = null) 执行方法
+ * @method static Entity params($op = null, $value = null) 附加参数
+ * @method static Entity higher($op = null, $value = null) 定义高亮上级
+ * @method static Entity icon($op = null, $value = null) 图标
+ * @method static Entity link($op = null, $value = null) 外部链接
+ * @method static Entity target($op = null, $value = null) 打开方式
+ * @method static Entity isDefault($op = null, $value = null) 默认导航面板
+ * @method static Entity isHide($op = null, $value = null) 是否显示
+ * @method static Entity isDisabled($op = null, $value = null) 是否禁用
+ * @method static Entity isSystem($op = null, $value = null) 是否系统菜单
+ * @method static Entity sort($op = null, $value = null) 自定义排序
  */
 class SystemMenuField extends Field
 {
-    /** @var int */
-    public $id = null;
+    /**
+     * ID
+     * @var int
+     */
+    public $id;
     
-    /** @var string 名称 */
-    public $name = null;
+    /**
+     * 名称
+     * @var string
+     */
+    public $name;
     
-    /** @var string 执行方法 */
-    public $action = null;
+    /**
+     * 菜单类型
+     * @var int
+     */
+    public $type;
     
-    /** @var string 控制器 */
-    public $control = null;
+    /**
+     * 上级菜单ID
+     * @var int
+     */
+    public $parentId;
     
-    /** @var string 分组模块 */
-    public $module = null;
+    /**
+     * 分组模块
+     * @var string
+     */
+    public $module;
     
-    /** @var string 追加方法 */
-    public $pattern = null;
+    /**
+     * 控制器
+     * @var string
+     */
+    public $control;
     
-    /** @var string 附加参数 */
-    public $params = null;
+    /**
+     * 执行方法
+     * @var string
+     */
+    public $action;
     
-    /** @var string 定义高亮上级 */
-    public $higher = null;
+    /**
+     * 附加参数
+     * @var string
+     */
+    public $params;
     
-    /** @var string 图标 */
-    public $icon = null;
+    /**
+     * 定义高亮上级
+     * @var string
+     */
+    public $higher;
     
-    /** @var string 外部链接 */
-    public $link = null;
+    /**
+     * 图标
+     * @var string
+     */
+    public $icon;
     
-    /** @var string 打开方式 */
-    public $target = null;
+    /**
+     * 外部链接
+     * @var string
+     */
+    public $link;
     
-    /** @var int 默认导航面板 */
-    public $isDefault = null;
+    /**
+     * 打开方式
+     * @var string
+     */
+    public $target;
     
-    /** @var int 是否显示 */
-    public $isShow = null;
+    /**
+     * 默认导航面板
+     * @var bool
+     */
+    public $isDefault;
     
-    /** @var int 是否禁用 */
-    public $isDisabled = null;
+    /**
+     * 是否显示
+     * @var bool
+     */
+    public $isHide;
     
-    /** @var int 是否有执行方法 */
-    public $isHasAction = null;
+    /**
+     * 是否禁用
+     * @var bool
+     */
+    public $isDisabled;
     
-    /** @var int 是否系统菜单 */
-    public $isSystem = null;
+    /**
+     * 是否系统菜单
+     * @var bool
+     */
+    public $isSystem;
     
-    /** @var int 自定义排序 */
-    public $sort = null;
-    
-    /** @var null 菜单标识 */
-    private $var = null;
-    
-    /** @var null 菜单类型 */
-    private $type = null;
-    
-    /** @var bool 是否校验数据 */
-    private $isCheckData = true;
+    /**
+     * 自定义排序
+     * @var int
+     */
+    public $sort;
     
     
     /**
      * 设置
      * @param int $id
      * @return $this
-     * @throws VerifyException
+     * @throws ParamInvalidException
      */
     public function setId($id)
     {
         $this->id = floatval($id);
         if ($this->id < 1) {
-            throw new VerifyException('缺少参数', 'id');
+            throw new ParamInvalidException('id');
         }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置上级ID
+     * @param int $parentId
+     * @return $this
+     */
+    public function setParentId($parentId)
+    {
+        $this->parentId = intval($parentId);
         
         return $this;
     }
@@ -116,14 +189,10 @@ class SystemMenuField extends Field
      * 设置执行方法
      * @param string $action
      * @return $this
-     * @throws VerifyException
      */
     public function setAction($action)
     {
         $this->action = trim($action);
-        if (!$this->action) {
-            throw new VerifyException('请选择所属执行方法', 'action');
-        }
         
         return $this;
     }
@@ -133,14 +202,10 @@ class SystemMenuField extends Field
      * 设置控制器
      * @param string $control
      * @return $this
-     * @throws VerifyException
      */
     public function setControl($control)
     {
         $this->control = trim($control);
-        if (!$this->control) {
-            throw new VerifyException('请选择所属控制器', 'control');
-        }
         
         return $this;
     }
@@ -150,33 +215,10 @@ class SystemMenuField extends Field
      * 设置分组模块
      * @param string $module
      * @return $this
-     * @throws VerifyException
      */
     public function setModule($module)
     {
         $this->module = trim($module);
-        if (!$this->module) {
-            throw new VerifyException('请选择所属分组', 'module');
-        }
-        
-        $groups = explode(',', SystemMenu::RETAIN_GROUP);
-        $groups = array_map([Str::class, 'snake'], $groups);
-        if (in_array($this->module, $groups)) {
-            throw new VerifyException($module . '为系统保留值，请勿使用', 'module');
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置追加方法
-     * @param string $pattern
-     * @return $this
-     */
-    public function setPattern($pattern)
-    {
-        $this->pattern = trim($pattern);
         
         return $this;
     }
@@ -190,6 +232,9 @@ class SystemMenuField extends Field
     public function setParams($params)
     {
         $this->params = trim($params);
+        $this->params = explode(',', $this->params);
+        $this->params = Filter::trimArray($this->params);
+        $this->params = implode(',', $this->params);
         
         return $this;
     }
@@ -262,12 +307,12 @@ class SystemMenuField extends Field
     
     /**
      * 设置是否显示
-     * @param int $isShow
+     * @param int $isHide
      * @return $this
      */
-    public function setIsShow($isShow)
+    public function setIsHide($isHide)
     {
-        $this->isShow = Transform::boolToNumber($isShow);
+        $this->isHide = Transform::boolToNumber($isHide);
         
         return $this;
     }
@@ -281,19 +326,6 @@ class SystemMenuField extends Field
     public function setIsDisabled($isDisabled)
     {
         $this->isDisabled = Transform::boolToNumber($isDisabled);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否有执行方法
-     * @param int $isHasAction
-     * @return $this
-     */
-    public function setIsHasAction($isHasAction)
-    {
-        $this->isHasAction = Transform::boolToNumber($isHasAction);
         
         return $this;
     }
@@ -326,33 +358,6 @@ class SystemMenuField extends Field
     
     
     /**
-     * 设置菜单标识
-     * @param string $var 标识
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setVar($var)
-    {
-        $var = Str::snake(trim($var));
-        if (!$var) {
-            throw new VerifyException('请输入菜单标识', 'var');
-        }
-        
-        if (!Regex::account($var)) {
-            throw new VerifyException('菜单标识只能包含字母、数字及下划线', 'var');
-        }
-        
-        if (!Regex::english(substr($var, 0, 1))) {
-            throw new VerifyException('菜单标识开始只能是英文', 'var');
-        }
-        
-        $this->var = $var;
-        
-        return $this;
-    }
-    
-    
-    /**
      * 设置自定义排序
      * @param int $sort
      * @return $this
@@ -360,122 +365,6 @@ class SystemMenuField extends Field
     public function setSort($sort)
     {
         $this->sort = floatval($sort);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * @return array
-     * @throws VerifyException
-     */
-    public function getDBData()
-    {
-        if ($this->isCheckData) {
-            switch ($this->type) {
-                // 执行模式
-                case SystemMenu::TYPE_PATTERN:
-                    if (!$this->module) {
-                        throw new VerifyException('请选择所属分组', 'module');
-                    }
-                    if (!$this->control) {
-                        throw new VerifyException('请选择所属控制器', 'control');
-                    }
-                    if (!$this->action) {
-                        throw new VerifyException('请选择所属执行方法', 'action');
-                    }
-                    
-                    $this->higher = null;
-                    $this->checkRepeat();
-                break;
-                
-                // 执行方法
-                case SystemMenu::TYPE_ACTION:
-                    if (!$this->module) {
-                        throw new VerifyException('请选择所属分组', 'module');
-                    }
-                    if (!$this->control) {
-                        throw new VerifyException('请选择所属控制器', 'control');
-                    }
-                    
-                    $this->pattern = null;
-                    $this->checkRepeat();
-                    
-                    // 显示不能有高亮
-                    // 不显示不能有外部链接
-                    if ($this->isShow) {
-                        $this->higher = null;
-                    } else {
-                        $this->link   = null;
-                        $this->target = null;
-                    }
-                break;
-                
-                
-                // 控制器
-                case SystemMenu::TYPE_CONTROL:
-                    if (!$this->module) {
-                        throw new VerifyException('请选择所属分组', 'module');
-                    }
-                    
-                    
-                    $this->action  = null;
-                    $this->pattern = null;
-                    $this->higher  = null;
-                    $this->checkRepeat();
-                    
-                    // 包含执行方法不能有外部链接
-                    if ($this->isHasAction) {
-                        $this->link   = null;
-                        $this->target = null;
-                    }
-                break;
-                
-                
-                // 模块
-                case SystemMenu::TYPE_MODULE:
-                default:
-                    $this->control = null;
-                    $this->action  = null;
-                    $this->pattern = null;
-                    $this->higher  = null;
-                    $this->checkRepeat();
-            }
-        }
-        
-        return parent::getDBData();
-    }
-    
-    
-    /**
-     * 查重
-     * @throws VerifyException
-     */
-    private function checkRepeat()
-    {
-        $where          = new self();
-        $where->module  = trim($this->module);
-        $where->control = trim($this->control);
-        $where->action  = trim($this->action);
-        $where->pattern = trim($this->pattern);
-        if ($this->id > 0) {
-            $where->id = array('neq', $this->id);
-        }
-        
-        if (SystemMenu::init()->whereof($where)->findData()) {
-            throw new VerifyException('该菜单已存在，请勿重复添加', 'repeat');
-        }
-    }
-    
-    
-    /**
-     * 设置是否校验数据
-     * @param bool $isCheckData
-     * @return $this
-     */
-    public function setIsCheckData($isCheckData)
-    {
-        $this->isCheckData = $isCheckData;
         
         return $this;
     }

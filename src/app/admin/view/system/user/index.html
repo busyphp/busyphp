@@ -1,19 +1,13 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div data-search=""
-         role-search-select-value="username,email,phone,qq"
-         role-search-select-text="用户名,邮箱,手机号,QQ号"
-         role-search-action="{$url.self}"
-         role-search-extend="">
-        <div role-search="content">
-        </div>
-        <div role-search="right">
-            <a class="btn btn-warning" href="{:url('add')}">
-                <i class="icon icon-plus"></i>
+    <busy-search url="{$url.self}" fields="username:用户名,email:邮箱,phone:手机号,qq:QQ号码">
+        <busy-tpl type="search-toolbar">
+            <busy-btn url="add" icon="plus" style="warning">
                 增加管理员
-            </a>
-        </div>
-    </div>
+            </busy-btn>
+        </busy-tpl>
+    </busy-search>
+
 
     <div class="table-responsive">
         <form action="{:url('delete')}" method="post" onsubmit="return false;" id="checkForm" data-queue-post-confirm="" data-table-checkbox="">

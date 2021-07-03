@@ -32,17 +32,17 @@ class Transform
             $data[$endField] = $defEnd;
         }
         
-        $condition = array();
+        $condition = [];
         if ($data[$startField] && $data[$endField]) {
-            $condition = array(
-                array('egt', strtotime($data[$startField])),
-                array('elt', strtotime($data[$endField])),
+            $condition = [
+                ['egt', strtotime($data[$startField])],
+                ['elt', strtotime($data[$endField])],
                 'AND'
-            );
+            ];
         } elseif ($data[$startField] && !$data[$endField]) {
-            $condition = array('egt', strtotime($data[$startField]));
+            $condition = ['egt', strtotime($data[$startField])];
         } elseif ($data[$endField] && !$data[$startField]) {
-            $condition = array('elt', strtotime($data[$endField]));
+            $condition = ['elt', strtotime($data[$endField])];
         }
         
         return $condition;
@@ -138,7 +138,7 @@ class Transform
      * @param array        $attr 属性配置，格式 array(name => key)
      * @return string
      */
-    public static function arrayToOption($array, $value = '', $name = '', $selectedValue = null, $attr = array())
+    public static function arrayToOption($array, $value = '', $name = '', $selectedValue = null, $attr = [])
     {
         $defaultKey    = '__index';
         $value         = $value ?: $defaultKey;
@@ -264,7 +264,7 @@ class Transform
         $args = func_get_args();
         $str  = '';
         foreach ($args as $arg) {
-            $arg = str_replace(array("\r", "\n", "\t", " "), '', $arg);
+            $arg = str_replace(["\r", "\n", "\t", " "], '', $arg);
             $arg = strtoupper(trim($arg));
             $str .= $arg . ';';
         }
@@ -312,7 +312,7 @@ class Transform
      */
     public static function formatBytes($bytes, $returnArray = false)
     {
-        $array = array("B", "KB", "MB", "GB", "TB", "PB");
+        $array = ["B", "KB", "MB", "GB", "TB", "PB"];
         $pos   = 0;
         while ($bytes >= 1024) {
             $bytes /= 1024;
@@ -322,10 +322,10 @@ class Transform
         
         $number = round($bytes, 2);
         if ($returnArray) {
-            return array(
+            return [
                 'number' => $number,
                 'unit'   => $array[$pos]
-            );
+            ];
         } else {
             return $number . ' ' . $array[$pos];
         }
@@ -374,7 +374,7 @@ class Transform
             is_numeric($key) && $key = "item id=\"$key\"";
             $xml .= "<$key>";
             $xml .= (is_array($val) || is_object($val)) ? self::dataToXml($val) : $val;
-            list($key,) = explode(' ', $key);
+            [$key,] = explode(' ', $key);
             $xml .= "</$key>";
         }
         

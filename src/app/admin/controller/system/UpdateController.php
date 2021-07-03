@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\exception\AppException;
 
 /**
  * 缓存管理

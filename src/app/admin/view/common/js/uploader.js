@@ -16,19 +16,13 @@ window.FILE_LIBRARY_URL  = '{:url("System.File/library?mark_type=__MARK_TYPE__&m
 	 * @constructor
 	 */
 	var AdminFileSelect = function (markType, markValue, callback) {
-		$.dialog.removeData('data');
+		busyAdmin.dialog.iframe(window.FILE_LIBRARY_URL.replace('__MARK_TYPE__', (markType || '')).replace('__MARK_VALUE__', (markValue || '')), function (data) {
+			if (!data) {
+				return;
+			}
 
-		$.dialog.open(window.FILE_LIBRARY_URL.replace('__MARK_TYPE__', (markType || '')).replace('__MARK_VALUE__', (markValue || '')), {
-			id    : 'FileLibrary',
-			close : function () {
-				var data = $.dialog.data('data');
-				if (!data) {
-					return true;
-				}
-
-				if (typeof callback === 'function') {
-					return callback(data);
-				}
+			if (typeof callback === 'function') {
+				return callback(data);
 			}
 		});
 	};

@@ -6,14 +6,14 @@
             <div class="clearfix"></div>
         </div>
         <div class="panel-body">
-            <form action="__SELF__" method="post" class="form-horizontal" data-post="">
-                <input type="hidden" value="{$info.id}" name="id"/>
+            <form action="__SELF__" method="post" class="form-horizontal" data-busy-form="">
+                <input type="hidden" value="{$info.id|default=''}" name="id"/>
                 <eq name="Think.ACTION_NAME" value="edit">
                     <div class="form-group">
                         <label class="col-sm-2 control-label">用户名</label>
                         <div class="col-sm-10">
                             <p class="form-control-static">{$info.username}&nbsp;&nbsp;
-                                <small><a href="{:url('password?id=' . $info['id']);}">[修改密码]</a></small>
+                                <small><a href="{:url('password?id=' . ($info['id'] ?? 0));}">[修改密码]</a></small>
                             </p>
                         </div>
                     </div>
@@ -21,7 +21,7 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label must">用户名</label>
                         <div class="col-sm-4">
-                            <input type="text" class="form-control" name="username" value="{$info.username}"/>
+                            <input type="text" class="form-control" name="username" value="{$info.username|default=''}"/>
                         </div>
                         <div class="col-sm-6"><span class="help-block">中文、英文、数字、下划线，不要有特殊字符</span></div>
                     </div>
@@ -44,19 +44,19 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">手机号</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" name="phone" value="{$info.phone}"/>
+                        <input type="text" class="form-control" name="phone" value="{$info.phone|default=''}"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">Email</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" name="email" value="{$info.email}"/>
+                        <input type="text" class="form-control" name="email" value="{$info.email|default=''}"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">QQ号码</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" name="qq" value="{$info.qq}"/>
+                        <input type="text" class="form-control" name="qq" value="{$info.qq|default=''}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -71,11 +71,11 @@
                     <label class="col-sm-2 control-label">审核</label>
                     <div class="col-sm-4">
                         <label class="radio-inline">
-                            <input name="checked" type="radio" value="1" <?=$info['checked'] == 1 ? ' checked' : '';?>/>
+                            <input name="checked" type="radio" value="1" <?=$info['checked'] ?? 0 == 1 ? ' checked' : '';?>/>
                             是
                         </label>
                         <label class="radio-inline">
-                            <input name="checked" type="radio" value="0" <?=$info['checked'] == 0 ? ' checked' : '';?>/>
+                            <input name="checked" type="radio" value="0" <?=$info['checked'] ?? 0 == 0 ? ' checked' : '';?>/>
                             否
                         </label>
                     </div>

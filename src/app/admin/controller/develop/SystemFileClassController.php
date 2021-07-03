@@ -141,7 +141,7 @@ class SystemFileClassController extends InsideController
     public function delete()
     {
         $this->bind(self::CALL_BATCH_EACH, function($id) {
-            $this->model->del($id);
+            $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             $this->log('删除系统附件分类', ['id' => $params], self::LOG_DELETE);

@@ -4,10 +4,8 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use ArrayAccess;
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\exception\AppException;
-use BusyPHP\exception\SQLException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
@@ -19,14 +17,11 @@ use ReflectionException;
 use think\Collection;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
-use think\db\exception\BindParamException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
-use think\db\exception\PDOException;
+use think\db\exception\InvalidArgumentException;
 use think\db\Raw;
 use think\DbManager;
-use think\facade\Db;
 use think\facade\Log;
 use think\helper\Str;
 use think\model\concern\Attribute;
@@ -49,8 +44,6 @@ use think\model\concern\TimeStamp;
  * @method void onAfterInsert($id, array $options) 新增完成后回调
  * @method void onAfterUpdate($id, array $options) 更新完成后回调
  * @method void onAfterDelete($id, array $options) 删除完成后回调
- * @method mixed getField(string $name, $default = null) 获取单个字段的值
- * @method mixed setField(string $name, $value) 设置单个字段
  * @method $this lockShare(boolean $isLock) 是否加共享锁，允许其它对象读不允许写
  */
 abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
@@ -59,6 +52,18 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     use ModelEvent;
     use TimeStamp;
     use Conversion;
+    
+    /**
+     * findInfo方法参数过滤器
+     * @var string|callable|Closure
+     */
+    protected $findInfoFilter = 'trim';
+    
+    /**
+     * deleteInfo方法参数过滤器
+     * @var string|callable|Closure
+     */
+    protected $deleteInfoFilter = 'trim';
     
     /**
      * 绑定通用信息解析类
@@ -73,15 +78,28 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected $bindParseExtendClass;
     
     /**
-     * 指定查找单条数据不存在时的错误信息
+     * 自定义绑定信息解析类
      * @var string
      */
-    protected $findInfoEmptyMessage = '信息不存在';
+    private $useBindParseClass;
     
     /**
-     * @var App
+     * 单条信息不存在的错误消息
+     * @var string
      */
-    protected $app;
+    protected $dataNotFoundMessage = '';
+    
+    /**
+     * 列表信息不存在错误消息
+     * @var string
+     */
+    protected $listNotFoundMessage = '';
+    
+    /**
+     * join查询别名
+     * @var string
+     */
+    protected $joinAlias;
     
     /**
      * 当前数据表主键
@@ -106,12 +124,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @var string
      */
     protected $configName;
-    
-    /**
-     * 错误的SQL语句
-     * @var string
-     */
-    protected $errorSQL = '';
     
     /**
      * Db对象
@@ -184,308 +196,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /** @var string 删除完成事件 */
     const CHANGED_DELETE = 'delete';
-    
-    
-    /**
-     * 架构函数
-     */
-    public function __construct()
-    {
-        $this->app = app();
-        
-        // 当前模型名
-        if (empty($this->name)) {
-            $name       = str_replace('\\', '/', static::class);
-            $this->name = basename($name);
-        }
-        
-        // 设置表名称
-        $this->name($this->name . $this->suffix);
-        $this->pk($this->pk);
-        
-        // 设置表名称
-        if (!empty($this->table)) {
-            $this->table($this->table . $this->suffix);
-        }
-        
-        // 执行服务注入
-        if (!empty(static::$maker)) {
-            foreach (static::$maker as $maker) {
-                call_user_func($maker, $this);
-            }
-        }
-        
-        // 初始化父类
-        parent::__construct(self::$db->instance($this->configName));
-    }
-    
-    
-    /**
-     * 调用反射执行模型方法 支持参数绑定
-     * @access public
-     * @param mixed $method
-     * @param array $vars 参数
-     * @return mixed
-     */
-    public function invoke($method, array $vars = [])
-    {
-        if (self::$invoker) {
-            $call = self::$invoker;
-            
-            return $call($method instanceof Closure ? $method : Closure::fromCallable([$this, $method]), $vars);
-        }
-        
-        return call_user_func_array($method instanceof Closure ? $method : [$this, $method], $vars);
-    }
-    
-    
-    /**
-     * 获取数据表名称，不包含表前缀
-     * @return string
-     */
-    public function getTableWithoutPrefix() : string
-    {
-        return Str::snake($this->name);
-    }
-    
-    
-    /**
-     * 设置当前模型数据表的后缀
-     * @access public
-     * @param string $suffix 数据表后缀
-     * @return $this
-     */
-    public function setSuffix(string $suffix)
-    {
-        $this->suffix = $suffix;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 获取当前模型的数据表后缀
-     * @access public
-     * @return string
-     */
-    public function getSuffix() : string
-    {
-        return $this->suffix ?: '';
-    }
-    
-    
-    /**
-     * 获取当前模型的数据库连接标识
-     * @return string
-     */
-    public function getConfigName() : string
-    {
-        return $this->configName;
-    }
-    
-    
-    /**
-     * 获取错误的SQL语句
-     * @return string
-     */
-    public function getErrorSQL() : string
-    {
-        return $this->errorSQL;
-    }
-    
-    
-    /**
-     * 设置当前模型的数据库连接标识名称
-     * @param string $configName 数据表连接标识
-     * @return $this
-     */
-    public function setConfigName(string $configName) : Model
-    {
-        $this->configName = $configName;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置操作前回调方法
-     * @param mixed   $callType 回调类型
-     * @param Closure $callback 回调方法，具体参数由子类定义
-     * @return $this
-     */
-    public function setCallback($callType, Closure $callback) : Model
-    {
-        $this->callback[$callType] = $callback;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 触发回调方法
-     * @param mixed $callType 回调类型
-     * @param array $args 回调方法参数
-     * @return mixed
-     */
-    protected function triggerCallback($callType, $args = [])
-    {
-        if (isset($this->callback[$callType])) {
-            return call_user_func_array($this->callback[$callType], $args);
-        }
-        
-        return null;
-    }
-    
-    
-    /**
-     * 触发事件回调
-     * @param string $event
-     * @return bool
-     */
-    protected function triggerEvent(string $event) : bool
-    {
-        $call = 'on' . Str::studly($event);
-        if (method_exists($this, $call)) {
-            $result = $this->catchException(function() use ($call) {
-                return $this->$call();
-            }, false, static::class . '::' . $call, 'error');
-            
-            return $result === false ? false : true;
-        }
-        
-        return true;
-    }
-    
-    
-    /**
-     * 获取静态缓存
-     * @param string $name 缓存名称
-     * @return mixed
-     */
-    public function getCache($name)
-    {
-        return Cache::get(static::class, $name);
-    }
-    
-    
-    /**
-     * 设置静态缓存
-     * @param string $name 缓存名称
-     * @param mixed  $value 缓存值
-     * @param int    $expire 缓存时长, 单位秒，0为不过期, 默认过期时间10分钟
-     * @return bool
-     */
-    public function setCache($name, $value, $expire = 600)
-    {
-        return Cache::set(static::class, $name, $value, $expire);
-    }
-    
-    
-    /**
-     * 移除静态缓存
-     * @param string $name 缓存名称
-     * @return bool
-     */
-    public function deleteCache($name = '')
-    {
-        return Cache::delete(static::class, $name);
-    }
-    
-    
-    /**
-     * 清理静态缓存
-     */
-    public function clearCache()
-    {
-        Cache::clear(static::class);
-    }
-    
-    
-    public function __call(string $method, array $args)
-    {
-        switch (strtolower($method)) {
-            case 'getfield':
-                return $this->value($args[0], isset($args[1]) ? $args[1] : null);
-            break;
-            case 'setfield':
-                return $this->saveData([$args[0] => $args[1]]);
-            break;
-            case 'lockshare':
-                return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
-            break;
-            default:
-                return parent::__call($method, $args);
-        }
-    }
-    
-    
-    /**
-     * 修改器 设置数据对象的值
-     * @param string $name 名称
-     * @param mixed  $value 值
-     * @return void
-     */
-    public function __set(string $name, $value) : void
-    {
-        $this->setAttr($name, $value);
-    }
-    
-    
-    /**
-     * 获取器 获取数据对象的值
-     * @param string $name 名称
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        return $this->getAttr($name);
-    }
-    
-    
-    /**
-     * 检测数据对象的值
-     * @param string $name 名称
-     * @return bool
-     */
-    public function __isset(string $name) : bool
-    {
-        return !is_null($this->getAttr($name));
-    }
-    
-    
-    /**
-     * 销毁数据对象的值
-     * @param string $name 名称
-     * @return void
-     */
-    public function __unset(string $name) : void
-    {
-        unset($this->data[$name], $this->relation[$name]);
-    }
-    
-    
-    public function offsetSet($name, $value)
-    {
-        $this->setAttr($name, $value);
-    }
-    
-    
-    public function offsetExists($name) : bool
-    {
-        return $this->__isset($name);
-    }
-    
-    
-    public function offsetUnset($name)
-    {
-        $this->__unset($name);
-    }
-    
-    
-    public function offsetGet($name)
-    {
-        return $this->getAttr($name);
-    }
     
     
     /**
@@ -583,16 +293,362 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 模型列表数据解析
-     * @param array $list 要解析的列表数据
-     * @return array
+     * 调用反射执行模型方法 支持参数绑定
+     * @access public
+     * @param mixed $method
+     * @param array $vars 参数
+     * @return mixed
      */
-    public static function parseList($list)
+    public function invoke($method, array $vars = [])
     {
-        $list = is_array($list) ? $list : [];
-        if (func_num_args() === 2 && $callback = func_get_arg(1)) {
-            if (is_callable($callback)) {
-                $list = call_user_func_array($callback, [$list]);
+        if (self::$invoker) {
+            $call = self::$invoker;
+            
+            return $call($method instanceof Closure ? $method : Closure::fromCallable([$this, $method]), $vars);
+        }
+        
+        return call_user_func_array($method instanceof Closure ? $method : [$this, $method], $vars);
+    }
+    
+    
+    /**
+     * 架构函数
+     */
+    public function __construct()
+    {
+        // 当前模型名
+        if (empty($this->name)) {
+            $name       = str_replace('\\', '/', static::class);
+            $this->name = basename($name);
+        }
+        
+        // 设置表名称
+        $this->name($this->name . $this->suffix);
+        $this->pk($this->pk);
+        
+        // 设置表名称
+        if (!empty($this->table)) {
+            $this->table($this->table . $this->suffix);
+        }
+        
+        // 执行服务注入
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
+        
+        // 初始化父类
+        parent::__construct(self::$db->instance($this->configName));
+    }
+    
+    
+    /**
+     * 获取数据表名称，不包含表前缀
+     * @return string
+     */
+    public function getTableWithoutPrefix() : string
+    {
+        return Str::snake($this->name);
+    }
+    
+    
+    /**
+     * 设置当前模型数据表的后缀
+     * @access public
+     * @param string $suffix 数据表后缀
+     * @return $this
+     */
+    public function setSuffix(string $suffix)
+    {
+        $this->suffix = $suffix;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取当前模型的数据表后缀
+     * @access public
+     * @return string
+     */
+    public function getSuffix() : string
+    {
+        return $this->suffix ?: '';
+    }
+    
+    
+    /**
+     * 获取当前模型的数据库连接标识
+     * @return string
+     */
+    public function getConfigName() : string
+    {
+        return $this->configName;
+    }
+    
+    
+    /**
+     * 设置当前模型的数据库连接标识名称
+     * @param string $configName 数据表连接标识
+     * @return $this
+     */
+    public function setConfigName(string $configName) : Model
+    {
+        $this->configName = $configName;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置操作前回调方法
+     * @param mixed   $callType 回调类型
+     * @param Closure $callback 回调方法，具体参数由子类定义
+     * @return $this
+     */
+    public function setCallback($callType, Closure $callback) : Model
+    {
+        $this->callback[$callType] = $callback;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 触发回调方法
+     * @param mixed $callType 回调类型
+     * @param array $args 回调方法参数
+     * @return mixed
+     */
+    protected function triggerCallback($callType, $args = [])
+    {
+        if (isset($this->callback[$callType])) {
+            return call_user_func_array($this->callback[$callType], $args);
+        }
+        
+        return null;
+    }
+    
+    
+    /**
+     * 触发事件回调
+     * @param string $event
+     */
+    protected function triggerEvent(string $event)
+    {
+        $call = 'on' . Str::studly($event);
+        if (method_exists($this, $call)) {
+            call_user_func([$this, $call]);
+        }
+    }
+    
+    
+    /**
+     * 获取静态缓存
+     * @param string $name 缓存名称
+     * @return mixed
+     */
+    public function getCache($name)
+    {
+        return Cache::get(static::class, $name);
+    }
+    
+    
+    /**
+     * 设置静态缓存
+     * @param string $name 缓存名称
+     * @param mixed  $value 缓存值
+     * @param int    $expire 缓存时长, 单位秒，0为不过期, 默认过期时间10分钟
+     * @return bool
+     */
+    public function setCache($name, $value, $expire = 600)
+    {
+        return Cache::set(static::class, $name, $value, $expire);
+    }
+    
+    
+    /**
+     * 移除静态缓存
+     * @param string $name 缓存名称
+     * @return bool
+     */
+    public function deleteCache($name = '')
+    {
+        return Cache::delete(static::class, $name);
+    }
+    
+    
+    /**
+     * 清理静态缓存
+     */
+    public function clearCache()
+    {
+        Cache::clear(static::class);
+    }
+    
+    
+    public function __call(string $method, array $args)
+    {
+        switch (strtolower($method)) {
+            case 'lockshare':
+                return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
+            break;
+            default:
+                return parent::__call($method, $args);
+        }
+    }
+    
+    
+    /**
+     * 修改器 设置数据对象的值
+     * @param string $name 名称
+     * @param mixed  $value 值
+     * @return void
+     */
+    public function __set(string $name, $value) : void
+    {
+        $this->setAttr($name, $value);
+    }
+    
+    
+    /**
+     * 获取器 获取数据对象的值
+     * @param string $name 名称
+     * @return mixed
+     */
+    public function __get(string $name)
+    {
+        return $this->getAttr($name);
+    }
+    
+    
+    /**
+     * 检测数据对象的值
+     * @param string $name 名称
+     * @return bool
+     */
+    public function __isset(string $name) : bool
+    {
+        return !is_null($this->getAttr($name));
+    }
+    
+    
+    /**
+     * 销毁数据对象的值
+     * @param string $name 名称
+     * @return void
+     */
+    public function __unset(string $name) : void
+    {
+        unset($this->data[$name], $this->relation[$name]);
+    }
+    
+    
+    public function offsetSet($name, $value)
+    {
+        $this->setAttr($name, $value);
+    }
+    
+    
+    public function offsetExists($name) : bool
+    {
+        return $this->__isset($name);
+    }
+    
+    
+    public function offsetUnset($name)
+    {
+        $this->__unset($name);
+    }
+    
+    
+    public function offsetGet($name)
+    {
+        return $this->getAttr($name);
+    }
+    
+    
+    /**
+     * 过滤findInfo参数
+     * @param $data
+     * @return mixed
+     */
+    private function filterFindInfoData($data)
+    {
+        if (is_null($data)) {
+            return null;
+        }
+        
+        if (!$this->findInfoFilter) {
+            return $data;
+        }
+        
+        if (is_callable($this->findInfoFilter)) {
+            return call_user_func_array($this->findInfoFilter, [$data]);
+        } elseif (is_string($this->findInfoFilter) && function_exists($this->findInfoFilter)) {
+            return call_user_func_array($this->findInfoFilter, [$data]);
+        } else {
+            return $data;
+        }
+    }
+    
+    
+    /**
+     * 设置信息解析类
+     * @param string $class
+     * @return $this
+     */
+    public function parse(string $class) : self
+    {
+        $this->useBindParseClass = $class;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 将数据解析成Field对象
+     * @param array $info
+     * @return array|Field
+     */
+    public function toField(array $info)
+    {
+        return $this->toFieldList([$info])[0];
+    }
+    
+    
+    /**
+     * 将数据解析成Field对象集合
+     * @param array|Collection $list
+     * @return array|Field[]
+     */
+    public function toFieldList($list)
+    {
+        if ($list instanceof Collection) {
+            $list = $list->toArray();
+        }
+        
+        // 自定义解析
+        if ($this->useBindParseClass && is_subclass_of($this->useBindParseClass, Field::class)) {
+            foreach ($list as $i => $r) {
+                $list[$i] = call_user_func_array([$this->useBindParseClass, 'parse'], [$r]);
+            }
+            
+            $this->useBindParseClass = null;
+            
+            return $list;
+        }
+        
+        if (method_exists($this, 'onParseBindList')) {
+            $this->onParseBindList($list);
+        }
+        
+        if ($this->bindParseClass) {
+            if (is_subclass_of($this->bindParseClass, Field::class)) {
+                foreach ($list as $i => $r) {
+                    $list[$i] = $this->bindParseClass::parse($r);
+                }
             }
         }
         
@@ -601,119 +657,140 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 解析扩展数据
-     * @param array $list 数据列表
-     * @param bool  $isOnly 是否单条数据
-     * @return array
+     * 将数据解析成包含关联信息的Field对象
+     * @param array $info
+     * @return array|Field
      */
-    public static function parseExtendList($list, $isOnly = false)
+    public function toExtendField(array $info)
     {
-        $list = is_array($list) ? $list : [];
-        $list = $isOnly ? [$list] : $list;
-        if (func_num_args() == 3 && $callback = func_get_arg(2)) {
-            if (is_callable($callback)) {
-                $list = call_user_func_array($callback, [$list]);
-            }
-        }
-        
-        return $isOnly ? $list[0] : $list;
+        return $this->toExtendFieldList([$info])[0];
     }
     
     
     /**
-     * 模型信息数据解析
-     * @param array $info 要解析的数据
-     * @return array
+     * 将数据解析成Field对象集合
+     * @param array|Collection $list
+     * @return array|Field[]
      */
-    public static function parseInfo($info)
+    public function toExtendFieldList($list)
     {
-        $list = static::parseList([0 => $info]);
+        if ($list instanceof Collection) {
+            $list = $list->toArray();
+        }
         
-        return $list[0];
+        if (method_exists($this, 'onParseBindExtendList')) {
+            $this->onParseBindExtendList($list);
+        }
+        
+        if ($this->bindParseExtendClass && is_subclass_of($this->bindParseExtendClass, $this->bindParseClass) && is_subclass_of($this->bindParseExtendClass, Field::class)) {
+            foreach ($list as $i => $r) {
+                $list[$i] = $this->bindParseExtendClass::parse($r);
+            }
+        }
+        
+        return $list;
+    }
+    
+    
+    /**
+     * 解析通用信息
+     * @param $list
+     */
+    protected function onParseBindList(array &$list)
+    {
+    }
+    
+    
+    /**
+     * 解析关联信息
+     * @param $list
+     */
+    protected function onParseBindExtendList(array &$list)
+    {
     }
     
     
     /**
      * 获取单条信息
-     * @param mixed  $pkValue 主键数据，支持字符、数值、数字索引数组
-     * @param string $emptyMessage 找不到数据异常消息
-     * @return array|Field
-     * @throws SQLException
+     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
+     * @param string $notFoundMessage 数据为空异常消息
+     * @return array|Field|null
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function findInfo($pkValue = null, $emptyMessage = '')
+    public function findInfo($data = null, $notFoundMessage = null)
     {
-        $noParseBind = $this->options['no_parse_bind_get_info'] ?? false;
-        $parseBind   = $this->options['parse_to_bind_class'] ?? true;
-        $info        = $this->findData($pkValue);
-        if (!$info) {
-            $emptyMessage = $emptyMessage ?: $this->findInfoEmptyMessage;
-            $emptyMessage = trim($emptyMessage);
-            throw new SQLException($emptyMessage ?: '信息不存在', $this);
+        try {
+            $info = $this->find($this->filterFindInfoData($data));
+            if (!$info) {
+                return null;
+            }
+        } catch (DataNotFoundException $e) {
+            $notFoundMessage = $notFoundMessage ?: $this->dataNotFoundMessage;
+            if ($notFoundMessage) {
+                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
+            }
+            
+            throw $e;
         }
         
-        $info = static::parseInfo($info);
-        
-        return $noParseBind ? $info : $this->parseBindList($parseBind, $info, true);
+        return $this->toField($info);
     }
     
     
     /**
-     * 获取单条包含扩展数据的信息
-     * @param mixed  $pkValue 主键数据，支持字符、数值、数字索引数组
-     * @param string $emptyMessage 找不到数据异常消息
-     * @return array|Field
-     * @throws SQLException
+     * 获取单条包含关联数据的信息
+     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
+     * @param string $notFoundMessage 数据为空异常消息
+     * @return array|Field|null
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function findExtendInfo($pkValue = null, $emptyMessage = '')
+    public function findExtendInfo($data = null, $notFoundMessage = null)
     {
-        $this->options['no_parse_bind_get_info'] = true;
+        try {
+            $info = $this->find($this->filterFindInfoData($data));
+            if (!$info) {
+                return null;
+            }
+        } catch (DataNotFoundException $e) {
+            $notFoundMessage = $notFoundMessage ?: $this->dataNotFoundMessage;
+            if ($notFoundMessage) {
+                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
+            }
+            
+            throw $e;
+        }
         
-        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->findInfo($pkValue, $emptyMessage), true), true);
+        return $this->toExtendField($info);
     }
     
     
     /**
      * 强制获取单条信息
-     * @param mixed $id 信息ID
+     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
+     * @param string $notFoundMessage 数据为空异常消息
      * @return array|Field
-     * @throws SQLException
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getInfo($id)
+    public function getInfo($data, $notFoundMessage = null)
     {
-        $args = func_get_args();
-        $id   = is_null($id) ? '' : $id;
-        
-        return $this->findInfo($id, $args[1] ?? '');
+        return $this->failException(true)->findInfo($data ?? '', $notFoundMessage);
     }
     
     
     /**
-     * 强制获取单条信息(包含扩展信息)
-     * @param mixed $id
-     * @return array
-     * @throws SQLException
+     * 强制获取单条包含关联数据的信息
+     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
+     * @param string $notFoundMessage 数据为空异常消息
+     * @return array|Field
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getExtendInfo($id)
+    public function getExtendInfo($data, $notFoundMessage = null)
     {
-        $args = func_get_args();
-        $id   = is_null($id) ? '' : $id;
-        
-        return $this->findExtendInfo($id, $args[1] ?? '');
-    }
-    
-    
-    /**
-     * 获取单条信息(包含扩展信息)
-     * @param mixed $id
-     * @return array
-     * @throws AppException
-     * @deprecated 该方法已过期，请使用新方法{@see Model::getExtendInfo()} 未来某一个版本会移除该方法
-     */
-    public function getAllInfo($id)
-    {
-        $this->options['no_parse_bind_get_info'] = true;
-        
-        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->getInfo($id), true), true);
+        return $this->failException(true)->findExtendInfo($data ?? '', $notFoundMessage);
     }
     
     
@@ -816,34 +893,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         try {
             return call_user_func($closure);
-        } catch (PDOException $e) {
-            $this->errorSQL = 'PDO ERROR: ' . $e->getMessage();
-            
-            $data     = $e->getData();
-            $errorSql = $data['Database Status']['Error SQL'] ?? '';
-            $message  = $this->errorSQL . ($errorSql ? ", [ SQL : {$errorSql}]" : '');
-        } catch (DbException $e) {
-            $this->errorSQL = 'DB ERROR: ' . $e->getMessage();
-            
-            $data     = $e->getData();
-            $errorSql = $data['Database Status']['Error SQL'] ?? '';
-            $message  = $this->errorSQL . ($errorSql ? ", [ SQL : {$errorSql}]" : '');
         } catch (\Exception | \Throwable $e) {
-            $this->errorSQL = 'ERROR: ' . $e->getMessage();
-            $message        = $this->errorSQL;
-        }
-        
-        $message .= PHP_EOL . $e->getTraceAsString();
-        if ($type == 'sql') {
-            if ($this->getConfig('trigger_sql')) {
-                Log::record($message, 'sql');
+            $message = $e->getMessage();
+            $message .= PHP_EOL . $e->getTraceAsString();
+            if ($type == 'sql') {
+                if ($this->getConfig('trigger_sql')) {
+                    Log::record($message, 'sql');
+                }
+            } else {
+                Log::record(($errorPrefix ? "[ {$errorPrefix} ] " : '') . $message, $type);
             }
-        } else {
-            Log::record(($errorPrefix ? "[ {$errorPrefix} ] " : '') . $message, $type);
+            
+            
+            return $errorReturn;
         }
-        
-        
-        return $errorReturn;
     }
     
     
@@ -916,7 +979,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param mixed $data 数据
      * @return Collection
      * @throws DbException
-     * @throws ModelNotFoundException
      * @throws DataNotFoundException
      */
     public function select($data = null) : Collection
@@ -933,7 +995,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param mixed $data 查询数据
      * @return array|Model|null
      * @throws DbException
-     * @throws ModelNotFoundException
      * @throws DataNotFoundException
      */
     public function find($data = null)
@@ -947,15 +1008,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 更新记录
-     * @param mixed $data 数据
-     * @return integer
+     * @param array $data 更新的数据
+     * @return int
      * @throws DbException
      */
     public function update(array $data = []) : int
     {
-        if (false === $this->triggerEvent('BeforeUpdate')) {
-            return -1;
-        }
+        $this->triggerEvent('BeforeUpdate');
         
         $result  = parent::update($data);
         $options = $this->options;
@@ -970,13 +1029,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 插入记录
      * @param array   $data 数据
      * @param boolean $getLastInsID 返回自增主键
-     * @return int|false
+     * @return int|string
+     * @throws DbException
      */
     public function insert(array $data = [], bool $getLastInsID = false)
     {
-        if (false === $this->triggerEvent('BeforeInsert')) {
-            return false;
-        }
+        $this->triggerEvent('BeforeInsert');
         
         $result  = parent::insert($data, $getLastInsID);
         $options = $this->options;
@@ -991,7 +1049,8 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 批量插入记录
      * @param array   $dataSet 数据集
      * @param integer $limit 每次写入数据限制
-     * @return integer
+     * @return int
+     * @throws DbException
      */
     public function insertAll(array $dataSet = [], int $limit = 0) : int
     {
@@ -1006,14 +1065,15 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 删除记录
      * @param mixed $data 表达式 true 表示强制删除
+     * <p><b>$this->delete(1)</b> 通过主键删除</p>
+     * <p><b>$this->delete([1,2,3])</b> 通过主键批量删除</p>
+     * <p><b>$this->delete(true)</b> 强制删除</p>
      * @return int
      * @throws DbException
      */
     public function delete($data = null) : int
     {
-        if (false === $this->triggerEvent('BeforeDelete')) {
-            return 0;
-        }
+        $this->triggerEvent('BeforeDelete');
         
         $result  = parent::delete($data);
         $options = $this->options;
@@ -1028,11 +1088,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 通过Select方式插入记录
      * @param array  $fields 要插入的数据表字段名
      * @param string $table 要插入的数据表名
-     * @return integer
+     * @return int
+     * @throws DbException
      */
     public function selectInsert(array $fields, string $table) : int
     {
-        $result = parent::selectInsert($fields, $table);
+        $result = parent::selectInsert(Entity::parse($fields), $table);
         $this->removeOption();
         
         return $result;
@@ -1058,10 +1119,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $field 字段名
      * @param mixed  $default 默认值
      * @return mixed
+     * @throws DbException
      */
     public function value(string $field, $default = null)
     {
-        $result = parent::value($field, $default);
+        $result = parent::value(Entity::parse($field), $default);
         $this->removeOption();
         
         return $result;
@@ -1073,10 +1135,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $field 字段名 多个字段用逗号分隔
      * @param string $key 索引
      * @return array
+     * @throws DbException
      */
     public function column($field, string $key = '') : array
     {
-        $result = parent::column($field, $key);
+        $result = parent::column(Entity::parse($field), $key);
         $this->removeOption();
         
         return $result;
@@ -1085,15 +1148,15 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 聚合查询
-     * @access protected
      * @param string     $aggregate 聚合方法
      * @param string|Raw $field 字段名
      * @param bool       $force 强制转为数字类型
      * @return mixed
+     * @throws DbException
      */
     protected function aggregate(string $aggregate, $field, bool $force = false)
     {
-        $result = parent::aggregate($aggregate, $field, $force);
+        $result = parent::aggregate($aggregate, Entity::parse($field), $force);
         $this->removeOption();
         
         return $result;
@@ -1101,37 +1164,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 执行查询并输出数组
-     * @return array|false
-     */
-    public function selecting()
-    {
-        return $this->catchException(function() {
-            return $this->select()->toArray();
-        });
-    }
-    
-    
-    /**
-     * 查找单条数据并返回数组
-     * @param mixed $data
-     * @return array|false
-     */
-    public function findData($data = null)
-    {
-        return $this->catchException(function() use ($data) {
-            $info = $this->find($data);
-            
-            return is_array($info) ? $info : [];
-        });
-    }
-    
-    
-    /**
      * 插入操作
      * @param array|Field $data 数据
      * @param bool        $replace 是否replace
-     * @return mixed|false 自增ID或false
+     * @return int|string
+     * @throws DbException
      */
     public function addData($data = [], bool $replace = false)
     {
@@ -1139,9 +1176,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $this->replace();
         }
         
-        return $this->catchException(function() use ($data) {
-            return $this->insertGetId($this->parseData($data));
-        });
+        return $this->insert($this->parseData($data), true);
     }
     
     
@@ -1149,109 +1184,109 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 批量插入数据
      * @param array $data 插入的数据集合
      * @param bool  $replace 是否替换方式插入
-     * @return int|false 返回插入的条数或false
+     * @return int 返回插入的条数
+     * @throws DbException
      */
-    public function addAll(array $data = [], bool $replace = false)
+    public function addAll(array $data = [], bool $replace = false) : int
     {
         if ($replace) {
             $this->replace();
         }
         
-        return $this->catchException(function() use ($data) {
-            $result = $this->insertAll($data);
-            
-            // 触发回调
-            if (method_exists($this, 'onAddAll')) {
-                $this->catchException(function() {
-                    $this->onAddAll();
-                }, false, static::class . '::onAddAll', 'error');
-            }
-            
-            return $result;
-        });
+        foreach ($data as $index => $item) {
+            $data[$index] = $this->parseData($item);
+        }
+        
+        $result = $this->insertAll($data);
+        
+        // 触发回调
+        if (method_exists($this, 'onAddAll')) {
+            $this->catchException(function() {
+                $this->onAddAll();
+            }, false, static::class . '::onAddAll', 'error');
+        }
+        
+        return $result;
     }
     
     
     /**
      * 保存数据
      * @param array|Field $data
-     * @return int|false 返回0说明没有更新，返回大于0则代表更新了的记录数，false则代表更新失败
+     * @return int 0没有更新任何数据，大于0则代表更新的记录数
+     * @throws DbException
      */
-    public function saveData($data = [])
+    public function saveData($data = []) : int
     {
-        return $this->catchException(function() use ($data) {
-            $result = $this->update($this->parseData($data));
-            if ($result === -1) {
-                return false;
-            }
-            
-            return $result;
-        });
+        return $this->update($this->parseData($data));
     }
     
     
     /**
-     * 批量更新，不支持连贯操作
+     * 批量更新，不支持链式操作
      * @param array  $data 更新的数据<pre>
-     * array(
-     *     array(
-     *         'id' => 1,
-     *         'name' => 'test',
-     *         'name2' => 'test2'
-     *     )
-     * )
+     * $this->saveAll([
+     *     [
+     *         'id'     => 1,       // 主键比选
+     *         'name'   => 'test',  // 要更新的字段1
+     *         'name2'  => 'test2'  // 要更新的字段2
+     *     ]
+     * ]);
      * </pre>
      * @param string $pk 依据$data中的哪个字段进行查询更新 如: id
-     * @return false|int
+     * @return int
+     * @throws InvalidArgumentException
+     * @throws DbException
      */
-    public function saveAll($data = [], $pk = '')
+    public function saveAll(array $data, string $pk = '') : int
     {
-        return $this->catchException(function() use ($data, $pk) {
-            $pk   = $pk ? $pk : $this->getPk();
-            $list = [];
-            $idIn = [];
-            foreach ($data as $values) {
-                $idIn[] = "'{$values[$pk]}'";
-                foreach ($values as $i => $value) {
-                    $list[$i][$values[$pk]] = $value;
+        $pk   = $pk ?: $this->getPk();
+        $list = [];
+        $idIn = [];
+        foreach ($data as $values) {
+            $values = $this->parseData($values);
+            
+            $idIn[] = "'{$values[$pk]}'";
+            foreach ($values as $i => $value) {
+                if ($value instanceof Raw) {
+                    $value = $value->getValue();
                 }
-            }
-            
-            if (!$idIn) {
-                throw new DbException('没有主键字段, 无法批量更新');
-            }
-            
-            
-            $item = [];
-            foreach ($list as $key => $values) {
-                $item[$key] = "{$key} = CASE {$pk} " . PHP_EOL;
-                foreach ($values as $i => $value) {
-                    if (is_array($value) && $value[0] == 'exp') {
-                        $value = $value[1];
-                    } else {
-                        $value = "'{$value}'";
-                    }
-                    
-                    $item[$key] .= "WHEN '{$i}' THEN {$value} " . PHP_EOL;
-                }
-                $item[$key] .= ' END ' . PHP_EOL;
-            }
-            
-            $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
-            if (false !== $result) {
-                $this->addHandleData($data, 'save all');
                 
-                
-                // 触发回调
-                if (method_exists($this, 'onSaveAll')) {
-                    $this->catchException(function() {
-                        $this->onSaveAll();
-                    }, false, static::class . '::onSaveAll', 'error');
-                }
+                $list[$i][$values[$pk]] = $value;
             }
-            
-            return $result;
-        });
+        }
+        
+        if (!$idIn) {
+            throw new InvalidArgumentException('Primary key field must be set');
+        }
+        
+        
+        $item = [];
+        foreach ($list as $key => $values) {
+            $item[$key] = "{$key} = CASE {$pk} " . PHP_EOL;
+            foreach ($values as $i => $value) {
+                if (is_array($value) && $value[0] == 'exp') {
+                    $value = $value[1];
+                } else {
+                    $value = "'{$value}'";
+                }
+                
+                $item[$key] .= "WHEN '{$i}' THEN {$value} " . PHP_EOL;
+            }
+            $item[$key] .= ' END ' . PHP_EOL;
+        }
+        
+        $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
+        $this->addHandleData($data, 'save all');
+        
+        // 触发回调
+        if (method_exists($this, 'onSaveAll')) {
+            $this->catchException(function() {
+                $this->onSaveAll();
+            }, false, static::class . '::onSaveAll', 'error');
+        }
+        
+        return $result;
     }
     
     
@@ -1260,206 +1295,223 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $sql sql指令
      * @param array  $bind 参数绑定
      * @return int
-     * @throws BindParamException
-     * @throws \PDOException
+     * @throws DbException
      */
-    public function execute(string $sql, array $bind = [])
+    public function execute(string $sql, array $bind = []) : int
     {
         return $this->connection->execute($sql, $bind);
     }
     
     
     /**
+     * 执行查询
      * @param string $sql sql指令
      * @param array  $bind 参数绑定
      * @param bool   $master 主库读取
      * @return array
-     * @throws BindParamException
-     * @throws \PDOException
+     * @throws DbException
      */
-    public function query(string $sql, array $bind = [], bool $master = false)
+    public function query(string $sql, array $bind = [], bool $master = false) : array
     {
         return $this->connection->query($sql, $bind, $master);
     }
     
     
     /**
-     * 删除记录
+     * 删除信息
      * @param mixed $data 表达式 true 表示强制删除
-     * @return int|false
+     * <p><b>$this->deleteInfo(1)</b> 通过主键删除</p>
+     * <p><b>$this->deleteInfo([1,2,3])</b> 通过主键批量删除</p>
+     * <p><b>$this->deleteInfo('1,2,3')</b> 通过主键批量删除</p>
+     * @return int 返回删除的记录数
+     * @throws DbException
      */
-    public function deleteData($data = null)
+    public function deleteInfo($data) : int
     {
-        return $this->catchException(function() use ($data) {
-            return $this->delete($data);
-        });
+        if (is_string($data) && false !== strpos($data, ',')) {
+            $data = explode(',', $data);
+        }
+        
+        // 去重，去空
+        if (is_array($data)) {
+            $data = array_map(function($val) {
+                return $this->filterDeleteInfoData($val);
+            }, $data);
+            $data = array_filter($data);
+            $data = array_unique($data);
+            $data = array_values($data);
+        } else {
+            $data = $this->filterDeleteInfoData($data);
+        }
+        
+        return $this->delete($data);
     }
     
     
     /**
-     * 执行删除，支持传入数组、字符串(可包含逗号)
-     * @param string|int|array $id
-     * @return int 返回删除的记录数
-     * @throws VerifyException
-     * @throws SQLException
+     * 过滤deleteInfo参数
+     * @param $data
+     * @return mixed
      */
-    public function del($id)
+    private function filterDeleteInfoData($data)
     {
-        if (is_string($id) && false !== strpos($id, ',')) {
-            $id = explode(',', trim($id, ','));
-        }
-        if (!$id) {
-            throw new VerifyException(func_get_arg(1) ?: '请选择要删除的信息', $this->getPk());
+        if (is_null($data)) {
+            return null;
         }
         
-        if (false === $result = $this->deleteData($id)) {
-            throw new SQLException(func_get_arg(2) ?: '删除信息失败', $this);
+        if (!$this->deleteInfoFilter) {
+            return $data;
         }
         
-        return $result;
+        if (is_callable($this->deleteInfoFilter)) {
+            return call_user_func_array($this->deleteInfoFilter, [$data]);
+        } elseif (is_string($this->deleteInfoFilter) && function_exists($this->deleteInfoFilter)) {
+            return call_user_func_array($this->deleteInfoFilter, [$data]);
+        } else {
+            return $data;
+        }
     }
     
     
     /**
      * 字段值增长
-     * @access public
-     * @param string  $field 字段名
-     * @param integer $step 增长值
-     * @return false|int
+     * @param string|Entity $field 字段名
+     * @param float|int     $step 增长值
+     * @return int
+     * @throws DbException
      */
-    public function setInc($field, $step = 1)
+    public function setInc($field, $step = 1) : int
     {
-        return $this->inc($field, floatval($step))->saveData();
+        return $this->inc(Entity::parse($field), floatval($step))->update();
     }
     
     
     /**
      * 字段值减少
-     * @param string  $field 字段名
-     * @param integer $step 减少值
-     * @return false|int
+     * @param string|Entity $field 字段名
+     * @param float|int     $step 减少值
+     * @return int
+     * @throws DbException
      */
-    public function setDec($field, $step = 1)
+    public function setDec($field, $step = 1) : int
     {
-        return $this->dec($field, floatval($step))->saveData();
+        return $this->dec(Entity::parse($field), floatval($step))->update();
+    }
+    
+    
+    /**
+     * 设置某个字段的值
+     * @param string|Entity $field 字段名
+     * @param mixed         $value 字段值
+     * @return int
+     * @throws DbException
+     */
+    public function setField($field, $value) : int
+    {
+        $this->options['data'][Entity::parse($field)] = $value;
+        
+        return $this->update();
     }
     
     
     /**
      * 查询解析后的数据
      * @return array|Field[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function selectList()
     {
-        $parseBind   = $this->options['parse_to_bind_class'] ?? true;
-        $noParseBind = isset($this->options['no_parse_bind_select_list']);
-        $list        = static::parseList($this->selecting());
-        
-        return $noParseBind ? $list : $this->parseBindList($parseBind, $list);
+        try {
+            return $this->toFieldList($this->select());
+        } catch (DataNotFoundException $e) {
+            $notFoundMessage = $this->listNotFoundMessage ?: $this->dataNotFoundMessage;
+            if ($notFoundMessage) {
+                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
+            }
+            
+            throw $e;
+        }
     }
     
     
     /**
-     * 查询解析后(包含扩展信息)的数据
+     * 查询自定义解析类解析后的数据
+     * @param string $parse 解析器
+     * @param string $notFoundMessage 数据为空提示
+     * @return array|Field
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function selectParse(string $parse, $notFoundMessage = null)
+    {
+        try {
+            $this->parse($parse);
+            
+            return $this->toFieldList($this->select());
+        } catch (DataNotFoundException $e) {
+            $notFoundMessage = $notFoundMessage ?: ($this->listNotFoundMessage ?: $this->dataNotFoundMessage);
+            if ($notFoundMessage) {
+                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
+            }
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 查询包含关联信息的Field对象集合
      * @return array|Field[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function selectExtendList()
     {
-        $this->options['no_parse_bind_select_list'] = true;
-        
-        return $this->parseBindExtendList($this->options['parse_to_bind_class'] ?? true, static::parseExtendList($this->selectList()));
-    }
-    
-    
-    /**
-     * 设置是否解析数据为绑定的对象
-     * @param bool $parseBind 默认解析
-     * @return $this
-     */
-    public function parseBind($parseBind = true)
-    {
-        $this->options['parse_to_bind_class'] = $parseBind;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 解析为绑定的对象集合
-     * @param bool          $status 是否解析
-     * @param array[]|array $data 数据
-     * @param bool          $only 是否单条
-     * @return array|Field[]
-     */
-    private function parseBindList($status, $data, $only = false)
-    {
-        if ($status && $this->bindParseClass && is_subclass_of($this->bindParseClass, Field::class)) {
-            if ($only) {
-                return call_user_func_array([$this->bindParseClass, 'parse'], [$data]);
-            } else {
-                return array_map([$this->bindParseClass, 'parse'], $data);
+        try {
+            return $this->toExtendFieldList($this->select());
+        } catch (DataNotFoundException $e) {
+            $notFoundMessage = $this->listNotFoundMessage ?: $this->dataNotFoundMessage;
+            if ($notFoundMessage) {
+                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
             }
+            
+            throw $e;
         }
-        
-        return $data;
-    }
-    
-    
-    /**
-     * 解析为绑定的对象集合(包含扩展数据)
-     * @param bool          $status 是否解析
-     * @param array[]|array $data 数据
-     * @param bool          $only 是否单条
-     * @return array|Field[]
-     */
-    private function parseBindExtendList($status, $data, $only = false)
-    {
-        if ($status && $this->bindParseExtendClass && is_subclass_of($this->bindParseExtendClass, Field::class)) {
-            if ($only) {
-                return call_user_func_array([$this->bindParseExtendClass, 'parse'], [$data]);
-            } else {
-                return array_map([$this->bindParseExtendClass, 'parse'], $data);
-            }
-        }
-        
-        return $data;
     }
     
     
     /**
      * 分批查询解析数据
-     * @param int          $count 每一批查询多少条
-     * @param callable     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
-     * @param string|array $column 排序依据字段，默认是主键字段
-     * @param string       $order 排序方式
+     * @param int                          $count 每一批查询多少条
+     * @param callable                     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
+     * @param string|array|Entity|Entity[] $column 排序依据字段，默认是主键字段
+     * @param string                       $order 排序方式
      * @return bool 处理回调方法是否全部处理成功
+     * @throws DbException
      */
     public function chunkList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
     {
-        $parseBind = $this->options['parse_to_bind_class'] ?? true;
-        
-        return parent::chunk($count, function(Collection $result) use ($callback, $parseBind) {
-            return call_user_func($callback, $this->parseBindList($parseBind, static::parseList($result->toArray())), $result);
-        }, $column, $order);
+        return parent::chunk($count, function(Collection $result) use ($callback) {
+            return call_user_func($callback, $this->toFieldList($result), $result);
+        }, Entity::parse($column), $order);
     }
     
     
     /**
      * 分批查询扩展数据
-     * @param int          $count 每一批查询多少条
-     * @param callable     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
-     * @param string|array $column 排序依据字段，默认是主键字段
-     * @param string       $order 排序方式
-     * @param bool         $parseBind 是否解析为绑定的对象集合
+     * @param int                          $count 每一批查询多少条
+     * @param callable                     $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
+     * @param string|array|Entity|Entity[] $column 排序依据字段，默认是主键字段
+     * @param string                       $order 排序方式
      * @return bool 处理回调方法是否全部处理成功
+     * @throws DbException
      */
-    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc', $parseBind = true) : bool
+    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
     {
-        $parseBind = $this->options['parse_to_bind_class'] ?? true;
-        
-        return parent::chunk($count, function(Collection $result) use ($callback, $parseBind) {
-            return call_user_func($callback, $this->parseBindExtendList($parseBind, static::parseExtendList(static::parseList($result->toArray()))), $result);
-        }, $column, $order);
+        return parent::chunk($count, function(Collection $result) use ($callback) {
+            return call_user_func($callback, $this->toExtendFieldList($result), $result);
+        }, Entity::parse($column), $order);
     }
     
     
@@ -1549,22 +1601,24 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 查询列表并用字段构建
-     * @param array       $values in查询的值
-     * @param string|null $key 查询的字段，默认id
-     * @param string|null $field 构建的字段，默认id
-     * @param bool        $isExtends 是否查询扩展数据
+     * 查询列表并用字段构建键
+     * @param array         $values in查询的值
+     * @param string|Entity $key 查询的字段，默认id
+     * @param string|Entity $field 构建的字段，默认id
+     * @param bool          $isExtend 是否查询扩展数据
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function buildListWithField($values, $key = null, $field = null, $isExtends = false)
+    public function buildListWithField($values, $key = null, $field = null, $isExtend = false)
     {
-        $key    = $key ? $key : 'id';
-        $field  = $field ? $field : 'id';
+        $key    = Entity::parse($key ?: 'id');
+        $field  = Entity::parse($field ?: 'id');
         $list   = [];
         $values = Filter::trimArray($values);
         if ($values) {
-            $this->whereof([$key => ['in', $values]]);
-            $list = $isExtends ? $this->selectExtendList() : $this->selectList();
+            $this->where($key, 'in', $values);
+            $list = $isExtend ? $this->selectExtendList() : $this->selectList();
             $list = Arr::listByKey($list, $field);
         }
         
@@ -1573,15 +1627,16 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 构建IN查询语句
-     * @param string $field 给In查询用的字段
-     * @param string $key 查询条件字段
-     * @param mixed  $value 查询条件值
-     * @return array
+     * 获取Join别名
+     * @return string
      */
-    public function buildInSql($field, $key, $value) : array
+    public function getJoinAlias() : string
     {
-        return ['in', $this->field($field)->whereof([$key => $value])->buildSql(true), true];
+        $alias = $this->options['alias'] ?? '';
+        $alias = $alias ?: $this->joinAlias;
+        $alias = $alias ?: $this->getTableWithoutPrefix();
+        
+        return $alias;
     }
     
     
@@ -1592,7 +1647,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     protected function parseData($data = []) : array
     {
-        $data = $data ?? [];
         if ($data instanceof Field) {
             $data = $data->getDBData();
         }
@@ -1602,12 +1656,19 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         // 支持 exp 写法 及 过滤字段
         foreach ($data as $key => $value) {
-            if (in_array($key, $fields)) {
-                $list[$key] = $value;
-                if (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
-                    $list[$key] = Db::raw($value[1]);
-                }
+            if (!in_array($key, $fields) || is_null($value)) {
+                continue;
             }
+            
+            if ($value instanceof Entity) {
+                $value = new Raw($value->field() . $value->op() . $value->value());
+            } elseif (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
+                $value = new Raw($value[1]);
+            } elseif (is_bool($value)) {
+                $value = $value ? 1 : 0;
+            }
+            
+            $list[$key] = $value;
         }
         
         return $list;
@@ -1616,12 +1677,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 优化数据表
+     * @throws DbException
      */
     final public function optimize()
     {
-        $this->catchException(function() {
-            $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
-        });
+        $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
     }
     
     
@@ -1678,16 +1738,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 打印结构
-     * @deprecated 该方法以过期，请使用新方法{@see Model::printField()}
-     */
-    final public function __printField()
-    {
-        $this->printField();
-    }
-    
-    
-    /**
-     * 打印结构
      */
     final public function printField()
     {
@@ -1715,7 +1765,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             }
             $r['type'] = $type;
             
-            $string   .= "* @method static mixed {$r['name']}(\$op = null, \$value = null) {$r['comment']}{$br}";
+            $string   .= "* @method static \BusyPHP\model\Entity {$r['name']}(\$op = null, \$value = null) {$r['comment']}{$br}";
             $list[$i] = $r;
         }
         $string .= '</pre>';

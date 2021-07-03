@@ -2,7 +2,6 @@
 
 namespace BusyPHP\helper\util;
 
-use BusyPHP\model\Field;
 use think\Collection;
 
 /**
@@ -25,14 +24,15 @@ class Arr extends \think\helper\Arr
     
     /**
      * 把返回的数据集转换成Tree
-     * @param array  $list 要转换的数据集
-     * @param string $pkKey 主键字段
-     * @param string $parentKey parent标记字段
-     * @param string $childKey 子节点字段
-     * @param int    $root parent字段依据，默认为0则代表是跟节点
+     * @param array    $list 要转换的数据集
+     * @param string   $pkKey 主键字段
+     * @param string   $parentKey parent标记字段
+     * @param string   $childKey 子节点字段
+     * @param int      $root parent字段依据，默认为0则代表是跟节点
+     * @param callable $filter 数据过滤方法，接受一个$item
      * @return array
      */
-    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0)
+    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null)
     {
         // 创建Tree
         $tree = [];
@@ -40,25 +40,81 @@ class Arr extends \think\helper\Arr
             // 创建基于主键的数组引用
             $refer = [];
             foreach ($list as $key => $data) {
-                $refer[$data[$pkKey]] =& $list[$key];
+                if (is_object($data)) {
+                    $refer[$data->{$pkKey}] = &$list[$key];
+                } else {
+                    $refer[$data[$pkKey]] = &$list[$key];
+                }
             }
-            
             
             foreach ($list as $key => $data) {
                 // 判断是否存在parent
-                $parentId = $data[$parentKey];
+                $isObject = is_object($data);
+                $parentId = $isObject ? $data->{$parentKey} : $data[$parentKey];
+                
                 if ($root == $parentId) {
+                    if (is_callable($filter) && false === call_user_func($filter, $data)) {
+                        continue;
+                    }
+                    
                     $tree[] = &$list[$key];
                 } else {
                     if (isset($refer[$parentId])) {
-                        $parent              = &$refer[$parentId];
-                        $parent[$childKey][] = &$list[$key];
+                        $parent = &$refer[$parentId];
+                        
+                        if (is_callable($filter) && false === call_user_func($filter, $data)) {
+                            continue;
+                        }
+                        
+                        if ($isObject) {
+                            $parent->{$childKey}[] = &$list[$key];
+                        } else {
+                            $parent[$childKey][] = &$list[$key];
+                        }
                     }
                 }
             }
         }
         
         return $tree;
+    }
+    
+    
+    /**
+     * 把树状数据转为数据集
+     * @param array  $tree 树状数据
+     * @param string $childKey 子节点字段
+     * @param bool   $clearChild 是否清理子节点
+     * @param array  $list 内部用
+     * @return array
+     */
+    public static function treeToList($tree, $childKey = 'child', bool $clearChild = true, &$list = [])
+    {
+        if (!is_array($tree)) {
+            return $tree;
+        }
+        
+        foreach ($tree as $item) {
+            if (is_object($item)) {
+                $child = $item->{$childKey} ?? [];
+            } else {
+                $child = $item[$childKey] ?? [];
+            }
+            
+            self::treeToList($child, $childKey, $clearChild, $list);
+            
+            if ($clearChild) {
+                if (is_object($item)) {
+                    $item->{$childKey} = [];
+                } else {
+                    $item[$childKey] = [];
+                }
+            }
+            
+            $list[] = $item;
+        }
+        
+        return $list;
     }
     
     

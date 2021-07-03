@@ -1,36 +1,34 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div data-search=""
-         role-search-select-value="name,extension,hash,userid"
-         role-search-select-text="附件名称,附件后缀,HASH,用户ID"
-         role-search-action="{$url.self}">
-        <div role-search="content-left">
-            <div class="form-group">
+    <busy-search url="{$url.self}" fields="name:附件名称,extension:附件后缀,hash:HASH,userid:用户ID">
+        <busy-tpl type="search-left">
+            <busy-form-group>
                 <select class="form-control" name="static[classify]">
                     <option value="">不限类型</option>
                     {$classify_options}
                 </select>
-            </div>
-            <div class="form-group">
+            </busy-form-group>
+            <busy-form-group>
                 <select class="form-control" name="static[mark_type]">
                     <option value="">不限分类</option>
                     {$type_options}
                 </select>
-            </div>
-            <div class="form-group">
+            </busy-form-group>
+            <busy-form-group>
                 <select class="form-control" name="static[admin_type]">
                     <option value="">不限来源</option>
                     <option value="1">后台</option>
                     <option value="2">前台</option>
                 </select>
-            </div>
-        </div>
-        <div role-search="right">
-            <a class="btn btn-warning" href="{:url('upload')}">上传附件</a>
-        </div>
-    </div>
-
-
+            </busy-form-group>
+        </busy-tpl>
+        <busy-tpl type="search-toolbar">
+            <busy-btn url="upload" style="warning">
+                上传附件
+            </busy-btn>
+        </busy-tpl>
+    </busy-search>
+    
     <form action="{:url('delete')}" autocomplete="off" id="checkForm" method="post" onsubmit="return false;" data-queue-post-confirm="" data-table-checkbox="">
         <table class="table table-bordered table-hover table-striped">
             <thead>

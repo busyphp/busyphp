@@ -3,8 +3,10 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\url;
 
+use BusyPHP\Request;
 use think\App;
 use think\Config;
+use think\Container;
 
 /**
  * 动态缩图URL生成
@@ -132,8 +134,11 @@ class ThumbUrl
             $info['dirname'] = '';
         }
         
+        /** @var Request $request */
+        $request = Container::getInstance()->make(Request::class);
+        
         // 绑定域名
-        $domain = $this->options['domain'] ?: URL_ROOT;
+        $domain = $this->options['domain'] ?: $request->getWebUrl();
         $domain = rtrim($domain, '/') . '/';
         
         return "{$domain}thumbs/{$this->type}{$info['dirname']}/{$info['filename']}_{$this->size}.{$info['extension']}";

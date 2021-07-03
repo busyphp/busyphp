@@ -19,6 +19,13 @@ use think\contract\Jsonable;
 class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
 {
     /**
+     * Join别名
+     * @var array
+     */
+    private static $_fieldJoinAliasList = [];
+    
+    
+    /**
      * 快速实例化
      * @return $this
      */
@@ -78,20 +85,73 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
         
         // 静态方法名称存在属性中，则返回属性名称
         if (in_array(Str::camel($name), $fields[$key])) {
-            $value = Str::snake($name);
+            $info  = new Entity();
+            $field = Str::snake($name);
+            $info->setField($field);
+            
+            if (self::$_fieldJoinAliasList[static::class] ?? false) {
+                if (self::$_fieldJoinAliasList[static::class] === true) {
+                    $alias = basename(str_replace('\\', '/', static::class));
+                } else {
+                    $alias = self::$_fieldJoinAliasList[static::class];
+                }
+                $info->setAlias($alias);
+            }
+            
             switch (count($arguments)) {
                 case 1:
-                    return [$value, '=', $arguments[0]];
+                    $info->setOp('=');
+                    $info->setValue($arguments[0]);
                 break;
                 case 2:
-                    return [$value, $arguments[0], $arguments[1]];
+                    $info->setOp($arguments[0]);
+                    $info->setValue($arguments[1]);
                 break;
             }
             
-            return $value;
+            return $info;
         }
         
         throw new MethodNotFoundException(static::class, $name, 'static');
+    }
+    
+    
+    /**
+     * 设置join别名，用完一定要清理 {@see Field::clearJoinAlias()}
+     * @param string $alias
+     */
+    public static function setJoinAlias($alias = null)
+    {
+        self::$_fieldJoinAliasList[static::class] = $alias;
+    }
+    
+    
+    /**
+     * 清理join别名
+     */
+    public static function clearJoinAlias()
+    {
+        unset(self::$_fieldJoinAliasList[static::class]);
+    }
+    
+    
+    /**
+     * 获取join查询别名
+     * @param string $name 字段名
+     * @return string
+     */
+    public static function getJoinAlias($name = null)
+    {
+        $alias = self::$_fieldJoinAliasList[static::class] ?? '';
+        if ($name) {
+            if ($alias) {
+                return "{$alias}.{$name}";
+            }
+            
+            return $name;
+        }
+        
+        return $alias;
     }
     
     
@@ -174,17 +234,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
         }
         
         return $params;
-    }
-    
-    
-    /**
-     * 获取数据
-     * @return array
-     * @deprecated 该方法以过期，新方法参考{@see Field::toArray()}
-     */
-    public function getData()
-    {
-        return $this->toArray();
     }
     
     

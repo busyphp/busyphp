@@ -4,6 +4,7 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\SystemFileUpload;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\exception\AppException;
 use think\helper\Str;
 
@@ -54,10 +55,10 @@ class ActionController extends InsideController
             
             // 分片上传成功
             if ($result === true) {
-                return $this->success('PART SUCCESS', '', array());
+                return $this->success('PART SUCCESS', '', []);
             }
             
-            $return = array(
+            $return = [
                 'file_url'  => $result->url,
                 'file_id'   => $result->id,
                 'name'      => $result->name,
@@ -65,22 +66,34 @@ class ActionController extends InsideController
                 'folder'    => $result->folderPath,
                 'extension' => $result->extension,
                 'has_thumb' => false,
-            );
+            ];
             if ($result->thumb) {
                 $return['has_thumb'] = true;
-                $return['thumb']     = array(
+                $return['thumb']     = [
                     'file_url'  => $result->thumb->url,
                     'file_id'   => $result->thumb->id,
                     'name'      => $result->thumb->name,
                     'filename'  => $result->thumb->filename,
                     'folder'    => $result->thumb->folderPath,
                     'extension' => $result->extension,
-                );
+                ];
             }
             
             return $this->success('上传成功', '', $return);
         } catch (AppException $e) {
             return $this->error($e->getMessage());
         }
+    }
+    
+    
+    /**
+     * 获取菜单
+     */
+    public function nav()
+    {
+        $this->checkLogin();
+        return $this->success('', '', [
+            'tree' => SystemMenu::init()->getAdminNav($this->adminPermissionId)
+        ]);
     }
 }

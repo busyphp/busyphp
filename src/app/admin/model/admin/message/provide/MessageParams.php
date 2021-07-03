@@ -2,6 +2,9 @@
 
 namespace BusyPHP\app\admin\model\admin\message\provide;
 
+use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+
 /**
  * 消息参数模型
  * @author busy^life <busy.life@qq.com>
@@ -16,18 +19,18 @@ class MessageParams
     /** @var string */
     private $username = '';
     
-    /** @var array */
-    private $user = [];
+    /** @var AdminUserInfo */
+    private $user;
     
-    /** @var array */
-    private $permission = [];
+    /** @var AdminGroupInfo */
+    private $permission;
     
     
     /**
      * 设置管理员信息
-     * @param array $user
+     * @param AdminUserInfo $user
      */
-    public function setUser(array $user) : void
+    public function setUser(AdminUserInfo $user) : void
     {
         $this->user = $user;
     }
@@ -35,9 +38,9 @@ class MessageParams
     
     /**
      * 设置当前权限信息
-     * @param array $permission
+     * @param AdminGroupInfo $permission
      */
-    public function setPermission(array $permission) : void
+    public function setPermission(AdminGroupInfo $permission) : void
     {
         $this->permission = $permission;
     }
@@ -75,9 +78,9 @@ class MessageParams
     
     /**
      * 获取当前权限信息
-     * @return array
+     * @return AdminGroupInfo
      */
-    public function getPermission() : array
+    public function getPermission() : AdminGroupInfo
     {
         return $this->permission;
     }
@@ -85,9 +88,9 @@ class MessageParams
     
     /**
      * 获取管理员信息
-     * @return array
+     * @return AdminUserInfo
      */
-    public function getUser() : array
+    public function getUser() : AdminUserInfo
     {
         return $this->user;
     }

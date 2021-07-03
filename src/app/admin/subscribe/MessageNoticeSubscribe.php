@@ -3,13 +3,14 @@
 namespace BusyPHP\app\admin\subscribe;
 
 use BusyPHP\app\admin\model\admin\message\AdminMessage;
+use BusyPHP\app\admin\model\admin\message\AdminMessageField;
 use BusyPHP\app\admin\model\admin\message\provide\MessageNoticeItem;
 use BusyPHP\app\admin\model\admin\message\provide\MessageListParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
 use BusyPHP\contract\abstracts\Subscribe;
-use BusyPHP\exception\SQLException;
-use BusyPHP\exception\VerifyException;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 通知消息订阅器
@@ -29,7 +30,9 @@ class MessageNoticeSubscribe extends Subscribe
      */
     public function onTotal(MessageParams $params) : int
     {
-        return intval(AdminMessage::init()->where('user_id', $params->getUserId())->where('is_read', 0)->count());
+        return intval(AdminMessage::init()
+            ->whereEntity(AdminMessageField::userId($params->getUserId()), AdminMessageField::isRead(0))
+            ->count());
     }
     
     
@@ -37,6 +40,8 @@ class MessageNoticeSubscribe extends Subscribe
      * 获取消息列表
      * @param MessageListParams $params
      * @return MessageNoticeItem[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function onList(MessageListParams $params) : array
     {
@@ -44,22 +49,22 @@ class MessageNoticeSubscribe extends Subscribe
         $page  = $params->getPage();
         $page  = $page <= 1 ? 1 : $page;
         $model = AdminMessage::init();
-        $model->where('user_id', $params->getUserId());
-        $model->order('id', 'desc');
-        $model->limit($size * ($page - 1), $size);
+        $model->whereEntity(AdminMessageField::userId($params->getUserId()));
+        $model->order(AdminMessageField::id(), 'desc');
+        $model->page($page, $size);
         $data = $model->selectList();
         $list = [];
         
-        foreach ($data as $r) {
+        foreach ($data as $info) {
             $item = new MessageNoticeItem();
-            $item->setId($r['id']);
-            $item->setRead($r['is_read']);
-            $item->setCreateTime($r['create_time']);
-            $item->setReadTime($r['read_time']);
-            $item->setTitle($r['content']);
-            $item->setDesc($r['description']);
-            $item->setIcon($r['icon_is_class'], $r['icon'], $r['icon_color']);
-            $item->setOperateUrl($r['url']);
+            $item->setId($info->id);
+            $item->setRead($info->isRead);
+            $item->setCreateTime($info->createTime);
+            $item->setReadTime($info->readTime);
+            $item->setTitle($info->content);
+            $item->setDesc($info->description);
+            $item->setIcon($info->iconIsClass, $info->icon, $info->iconColor);
+            $item->setOperateUrl($info->url);
             $list[] = $item;
         }
         
@@ -70,18 +75,18 @@ class MessageNoticeSubscribe extends Subscribe
     /**
      * 读取消息
      * @param MessageUpdateParams $params
-     * @throws SQLException
+     * @throws DbException
      */
     public function onRead(MessageUpdateParams $params)
     {
-        AdminMessage::init()->where('user_id', $params->getUserId())->setRead($params->getId());
+        AdminMessage::init()->whereEntity(AdminMessageField::userId($params->getUserId()))->setRead($params->getId());
     }
     
     
     /**
      * 全部已读
      * @param MessageParams $params
-     * @throws SQLException
+     * @throws DbException
      */
     public function onAllRead(MessageParams $params)
     {
@@ -92,19 +97,20 @@ class MessageNoticeSubscribe extends Subscribe
     /**
      * 删除消息
      * @param MessageUpdateParams $params
-     * @throws SQLException
-     * @throws VerifyException
+     * @throws DbException
      */
     public function onDelete(MessageUpdateParams $params)
     {
-        AdminMessage::init()->where('user_id', $params->getUserId())->del(intval($params->getId()));
+        AdminMessage::init()
+            ->whereEntity(AdminMessageField::userId($params->getUserId()))
+            ->deleteInfo(intval($params->getId()));
     }
     
     
     /**
      * 清空消息
      * @param MessageParams $params
-     * @throws SQLException
+     * @throws DbException
      */
     public function onClear(MessageParams $params)
     {

@@ -5,71 +5,144 @@ namespace BusyPHP\app\admin\model\admin\user;
 use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Regex;
+use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Transform;
 use think\Exception;
 
 /**
- * 管理员表字段
+ * 管理员表模型
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-17 上午11:54 AdminUserField.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/6/25 下午下午2:47 AdminUserField.php $
+ * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity username($op = null, $value = null) 帐号
+ * @method static Entity password($op = null, $value = null) 密码
+ * @method static Entity email($op = null, $value = null) 邮箱
+ * @method static Entity phone($op = null, $value = null) 联系方式
+ * @method static Entity qq($op = null, $value = null) QQ号码
+ * @method static Entity loginIp($op = null, $value = null) 本次登录IP
+ * @method static Entity loginTime($op = null, $value = null) 本次登录时间
+ * @method static Entity lastIp($op = null, $value = null) 最后一次登录IP地址
+ * @method static Entity lastTime($op = null, $value = null) 最后一次登录时间
+ * @method static Entity createTime($op = null, $value = null) 创建时间
+ * @method static Entity updateTime($op = null, $value = null) 更新时间
+ * @method static Entity groupId($op = null, $value = null) 用户组权限ID
+ * @method static Entity sectionId($op = null, $value = null) 所属部门ID
+ * @method static Entity checked($op = null, $value = null) 是否审核
+ * @method static Entity loginTotal($op = null, $value = null) 登录次数
+ * @method static Entity isSystem($op = null, $value = null) 是否系统管理员
+ * @method static Entity token($op = null, $value = null) 密钥
  */
 class AdminUserField extends Field
 {
-    /** @var int ID */
-    public $id = null;
+    /**
+     * ID
+     * @var int
+     */
+    public $id;
     
-    /** @var string 帐号 */
-    public $username = null;
+    /**
+     * 帐号
+     * @var string
+     */
+    public $username;
     
-    /** @var string 密码 */
-    public $password = null;
+    /**
+     * 密码
+     * @var string
+     */
+    public $password;
     
-    /** @var string 邮箱 */
-    public $email = null;
+    /**
+     * 邮箱
+     * @var string
+     */
+    public $email;
     
-    /** @var string 联系方式 */
-    public $phone = null;
+    /**
+     * 联系方式
+     * @var string
+     */
+    public $phone;
     
-    /** @var string QQ号码 */
-    public $qq = null;
+    /**
+     * QQ号码
+     * @var string
+     */
+    public $qq;
     
-    /** @var string 本次登录IP */
-    public $loginIp = null;
+    /**
+     * 本次登录IP
+     * @var string
+     */
+    public $loginIp;
     
-    /** @var int 本次登录时间 */
-    public $loginTime = null;
+    /**
+     * 本次登录时间
+     * @var int
+     */
+    public $loginTime;
     
-    /** @var string 最后一次登录IP地址 */
-    public $lastIp = null;
+    /**
+     * 最后一次登录IP地址
+     * @var string
+     */
+    public $lastIp;
     
-    /** @var int 最后一次登录时间 */
-    public $lastTime = null;
+    /**
+     * 最后一次登录时间
+     * @var int
+     */
+    public $lastTime;
     
-    /** @var int 创建时间 */
-    public $createTime = null;
+    /**
+     * 创建时间
+     * @var int
+     */
+    public $createTime;
     
-    /** @var int 更新时间 */
-    public $updateTime = null;
+    /**
+     * 更新时间
+     * @var int
+     */
+    public $updateTime;
     
-    /** @var int 用户组权限ID */
-    public $groupId = null;
+    /**
+     * 用户组权限ID
+     * @var int
+     */
+    public $groupId;
     
-    /** @var int 所属部门ID */
-    public $sectionId = null;
+    /**
+     * 所属部门ID
+     * @var int
+     */
+    public $sectionId;
     
-    /** @var int 是否审核 */
-    public $checked = null;
+    /**
+     * 是否审核
+     * @var int
+     */
+    public $checked;
     
-    /** @var int 登录次数 */
-    public $loginTotal = null;
+    /**
+     * 登录次数
+     * @var int
+     */
+    public $loginTotal;
     
-    /** @var int 是否系统管理员 */
-    public $isSystem = null;
+    /**
+     * 是否系统管理员
+     * @var int
+     */
+    public $isSystem;
     
-    /** @var string 密钥 */
-    public $token = null;
+    /**
+     * 密钥
+     * @var string
+     */
+    public $token;
     
     
     /**

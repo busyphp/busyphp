@@ -14,13 +14,13 @@
             <div class="clearfix"></div>
         </div>
         <div class="panel-body">
-            <form action="{$url.self}" method="post" class="form-horizontal" data-post="">
-                <input type="hidden" value="{$info.id}" name="id"/>
+            <form action="{$url.self}" method="post" class="form-horizontal" data-busy-form="">
+                <input type="hidden" value="{$info.id|default=''}" name="id"/>
                 <neq name="info.is_system" value="1">
                     <div class="form-group">
                         <label class="col-sm-2 control-label must">用户组名称</label>
                         <div class="col-sm-4">
-                            <input type="text" class="form-control" name="name" value="{$info.name}"/>
+                            <input type="text" class="form-control" name="name" value="{$info.name|default=''}"/>
                         </div>
                         <div class="col-sm-6"><span class="help-block"></span></div>
                     </div>

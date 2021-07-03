@@ -9,29 +9,29 @@
             <div class="clearfix"></div>
         </div>
         <div class="panel-body">
-            <form action="__SELF__" method="post" class="form-horizontal" data-post="">
+            <form action="__SELF__" method="post" class="form-horizontal" data-busy-form="">
                 <div class="form-group-title">系统基本设置</div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">站点名称</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" name="data[title]" value="{$info.title}"/>
+                        <input type="text" class="form-control input-sm" name="data[title]" value="{$info.title}"/>
                     </div>
                     <div class="col-sm-6"><p class="help-block">设置网站名称</p></div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">版权信息</label>
                     <div class="col-sm-6">
-                        <textarea class="form-control" name="data[copyright]">{$info.copyright}</textarea>
+                        <textarea class="form-control" name="data[copyright]" data-busy-date="">{$info.copyright}</textarea>
                     </div>
                     <div class="col-sm-4"><p class="help-block">设置版权所有，如：CopyRight ** 版权所有</p></div>
                 </div>
+
                 {$extend_template.content}
-                <div class="form-group m-b-0">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <input type="submit" class="btn btn-primary" value="设置"/>
-                        <input type="reset" class="btn btn-default" value="重置"/>
-                    </div>
-                </div>
+
+                <busy-form-group type="action" col="2,10" class="m-b-0">
+                    <input type="submit" class="btn btn-primary" value="设置"/>
+                    <input type="reset" class="btn btn-default" value="重置"/>
+                </busy-form-group>
             </form>
         </div>
     </div>

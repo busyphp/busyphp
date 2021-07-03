@@ -3,6 +3,8 @@
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\menu\SystemMenu as Model;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
@@ -40,6 +42,81 @@ class SystemMenuController extends InsideController
     {
         $this->assign('list', $this->model->getTreeList());
         
+        if ($this->request->header('Busy-Admin-Table')) {
+            $selectList = $this->model->order('sort', 'asc')->selectList();
+            foreach ($selectList as $i => $item) {
+                $selectList[$i] = $item;
+            }
+            
+            return $this->success('', '', [
+                'options' => [
+                    'columns'         => [
+                        [
+                            [
+                                'field'     => 'sort',
+                                'title'     => '排序',
+                                'formatter' => 'tableSortFormatter',
+                                'width'     => 60,
+                                'align'     => 'center',
+                                'falign'    => 'left'
+                            ],
+                            [
+                                'field'     => 'icon',
+                                'formatter' => 'tableIconFormatter',
+                                'title'     => '图标',
+                                'width'     => 50,
+                                'align'     => 'center',
+                            ],
+                            [
+                                'field'      => 'name',
+                                'formatter' => 'tableNameFormatter',
+                                'title'      => '菜单名称',
+                                'halign'     => 'center',
+                            ],
+                            [
+                                'field' => 'is_default',
+                                'title' => '默认',
+                                'align' => 'center',
+                                'width' => 60,
+                            ],
+                            [
+                                'field' => 'is_disabled',
+                                'title' => '禁用',
+                                'align' => 'center',
+                                'width' => 60,
+                            ],
+                            [
+                                'field' => 'is_show',
+                                'title' => '隐藏',
+                                'align' => 'center',
+                                'width' => 60,
+                            ],
+                            [
+                                'field'     => 'operate',
+                                'title'     => '操作',
+                                'align'     => 'center',
+                                'formatter' => 'tableOperateFormatter',
+                                'width'     => 80,
+                            ]
+                        ],
+                    ],
+                    'paginationParts' => [],
+                ],
+                'list'    => [
+                    'total'            => count($selectList),
+                    'totalNotFiltered' => count($selectList),
+                    'rows'             => $selectList,
+                    /*'footer'           => [
+                        'check'       => '你',
+                        'id'          => '',
+                        '_id_colspan' => 3,
+                        'view_number' => '',
+                        'desc'        => '',
+                    ]*/
+                ]
+            ]);
+        }
+        
         return $this->display();
     }
     
@@ -50,58 +127,27 @@ class SystemMenuController extends InsideController
     public function add()
     {
         return $this->submit('post', function($data) {
-            $type   = intval($data['type']);
-            $var    = trim($data['var']);
             $insert = SystemMenuField::init();
+            
+            if (SystemMenu::DEBUG) {
+                $insert->setIsSystem($data['is_system']);
+            }
+            
+            $insert->setParentId($data['parent_id']);
+            $insert->setType($data['type']);
             $insert->setName($data['name']);
-            $insert->setVar($var);
-            $insert->setType($type);
+            $insert->setModule($data['module']);
+            $insert->setControl($data['control']);
+            $insert->setAction($data['action']);
             $insert->setIcon($data['icon']);
             $insert->setIsDefault($data['is_default']);
             $insert->setIsDisabled($data['is_disabled']);
-            $insert->setIsHasAction($data['is_has_action']);
-            $insert->setIsShow($data['is_show']);
-            $insert->setIsSystem($data['is_system']);
-            
-            // 按类型添加
-            switch ($type) {
-                // 控制器
-                case Model::TYPE_CONTROL:
-                    $insert->setControl($var);
-                    $insert->setModule($data['module']);
-                break;
-                
-                // 执行方法
-                case Model::TYPE_ACTION:
-                    $insert->setAction($var);
-                    $insert->setIcon($data['icon']);
-                    $insert->setModule($data['module']);
-                    $insert->setControl($data['control']);
-                    $insert->setHigher($data['higher']);
-                break;
-                
-                // 执行类型
-                case Model::TYPE_PATTERN:
-                    $insert->setPattern($var);
-                    $insert->setIcon($data['icon']);
-                    $insert->setModule($data['module']);
-                    $insert->setControl($data['control']);
-                    $insert->setAction($data['action']);
-                break;
-                
-                // 分组
-                case Model::TYPE_MODULE:
-                default:
-                    $insert->setModule($var);
-                    $insert->setIcon($data['icon']);
-            }
-            
+            $insert->setIsHide($data['is_hide']);
+            $insert->setHigher($data['higher']);
             $insert->setParams($data['params']);
-            $insert->setLink($data['link']);
             $insert->setTarget($data['target']);
-            $insert->setSort($data['sort']);
-            
-            $this->model->insertData($insert);
+            $insert->setLink($data['link']);
+            $this->model->createMenu($insert);
             $this->log('增加系统菜单', $this->model->getHandleData(), self::LOG_INSERT);
             $this->updateCache();
             
@@ -109,20 +155,17 @@ class SystemMenuController extends InsideController
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
                 $array                   = [];
-                $array['target_options'] = Transform::arrayToOption(Model::getTargets());
+                $array['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
                 $array['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
-                $array['is_show']        = 1;
-                $array['is_has_action']  = 1;
-                $array['type']           = isset($_GET['type']) ? intval($_GET['type']) : Model::TYPE_CONTROL;
-                $array['sort']           = 50;
-                $array['type_list']      = Model::getTypes();
+                $array['target_options'] = Transform::arrayToOption(Model::getTargets());
+                $array['tree_options']   = $this->model->getTreeOptions();
+                $array['debug']          = SystemMenu::DEBUG;
                 
                 return $array;
             });
             
             $this->setRedirectUrl(url('index'));
-            $this->submitName   = '添加';
-            $this->templateName = 'add';
+            $this->submitName = '添加';
         });
     }
     
@@ -133,72 +176,42 @@ class SystemMenuController extends InsideController
     public function edit()
     {
         return $this->submit('post', function($data) {
-            $info   = $this->model->getInfo($data['id']);
-            $type   = intval($info['type']);
-            $var    = trim($data['var']);
             $update = SystemMenuField::init();
+            
+            if (SystemMenu::DEBUG) {
+                $update->setIsSystem($data['is_system']);
+            }
+            
             $update->setId($data['id']);
+            $update->setParentId($data['parent_id']);
+            $update->setType($data['type']);
             $update->setName($data['name']);
-            $update->setVar($var);
-            $update->setType($type);
+            $update->setModule($data['module']);
+            $update->setControl($data['control']);
+            $update->setAction($data['action']);
             $update->setIcon($data['icon']);
             $update->setIsDefault($data['is_default']);
             $update->setIsDisabled($data['is_disabled']);
-            $update->setIsHasAction($data['is_has_action']);
-            $update->setIsShow($data['is_show']);
-            $update->setIsSystem($data['is_system']);
-            
-            // 按类型添加
-            switch ($type) {
-                // 控制器
-                case Model::TYPE_CONTROL:
-                    $update->setControl($var);
-                    $update->setModule($data['module']);
-                break;
-                
-                // 执行方法
-                case Model::TYPE_ACTION:
-                    $update->setAction($var);
-                    $update->setIcon($data['icon']);
-                    $update->setModule($data['module']);
-                    $update->setControl($data['control']);
-                    $update->setHigher($data['higher']);
-                break;
-                
-                // 执行类型
-                case Model::TYPE_PATTERN:
-                    $update->setPattern($var);
-                    $update->setIcon($data['icon']);
-                    $update->setModule($data['module']);
-                    $update->setControl($data['control']);
-                    $update->setAction($data['action']);
-                break;
-                
-                // 分组
-                case Model::TYPE_MODULE:
-                default:
-                    $update->setModule($var);
-                    $update->setIcon($data['icon']);
-            }
-            
+            $update->setIsHide($data['is_hide']);
+            $update->setHigher($data['higher']);
             $update->setParams($data['params']);
-            $update->setLink($data['link']);
             $update->setTarget($data['target']);
-            $update->setSort($data['sort']);
-            
-            $this->model->updateData($update);
+            $update->setLink($data['link']);
+            $this->model->updateMenu($update);
             $this->log('修改系统菜单', $this->model->getHandleData(), self::LOG_UPDATE);
             $this->updateCache();
             
             return '修改成功';
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
-                $array                   = $this->model->getInfo($this->iGet('id'));
-                $array['target_options'] = Transform::arrayToOption(Model::getTargets(), '', '', $array['target']);
-                $array['tree']           = json_encode($this->model->getTreeList());
-                $array['type_list']      = Model::getTypes();
+                $info                   = $this->model->getInfo($this->iGet('id'));
+                $info['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
+                $info['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
+                $info['target_options'] = Transform::arrayToOption(Model::getTargets(), '', '', $info->target);
+                $info['tree_options']   = $this->model->getTreeOptions($info->parentId);
+                $info['debug']          = SystemMenu::DEBUG;
                 
-                return $array;
+                return $info;
             });
             
             
@@ -218,7 +231,7 @@ class SystemMenuController extends InsideController
             $this->model->setSort($id, $value);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('排序系统菜单', $params, self::LOG_DELETE);
+            $this->log('排序系统菜单', $params, self::LOG_BATCH);
             $this->updateCache();
             
             return '排序成功';
@@ -234,8 +247,9 @@ class SystemMenuController extends InsideController
     public function delete()
     {
         $this->bind(self::CALL_BATCH_EACH, function($id) {
-            $this->model->del($id);
+            $this->model->deleteInfo($id);
         });
+        
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             $this->log('删除系统菜单', ['id' => $params], self::LOG_DELETE);
             $this->updateCache();
