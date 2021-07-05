@@ -39,7 +39,7 @@ class PassportController extends InsideController
         return $this->submit('post', function($data) {
             $username = $data['username'];
             $password = $data['password'];
-            $verify   = $data['verify'];
+            $verify   = $data['verify'] ?? '';
             $isVerify = AdminSetting::init()->isVerify();
             
             try {
