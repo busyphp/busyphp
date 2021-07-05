@@ -63,7 +63,8 @@ class Handle extends \think\exception\Handle
                     foreach ($exception->getData() as $label => $item) {
                         $log .= PHP_EOL . "[LABEL] {$class} {$label}: ";
                         foreach ($item as $key => $value) {
-                            $log .= PHP_EOL . "{$key}: {$value}";
+                            $value = is_array($value) || is_object($value) ? json_encode($value) : $value;
+                            $log   .= PHP_EOL . "{$key}: {$value}";
                         }
                     }
                 }
