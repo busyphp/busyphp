@@ -8,6 +8,7 @@ use BusyPHP\helper\util\Str;
 use JsonSerializable;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
+use think\db\Raw;
 
 /**
  * 模型字段基本类
@@ -200,10 +201,19 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
                 if (isset($value[0]) && $value[0] !== 'exp' || !isset($value[0])) {
                     $value = serialize($value);
                 }
-            } elseif (is_object($value)) {
-                $value = serialize($value);
             }
             
+            //
+            // 实体转换
+            elseif ($value instanceof Entity) {
+                $value = new Raw($value->field() . $value->op() . $value->value());
+            }
+            
+            //
+            // 其他对象序列化
+            elseif (is_object($value)) {
+                $value = serialize($value);
+            }
             
             $params[$key] = $value;
         }
