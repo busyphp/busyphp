@@ -1,0 +1,137 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-busy-color-picker-picker` 来触发
+
+```html
+<div data-busy-color-picker-picker=""></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-busy-color-picker | string | `是` | - | 初始化组件属性，如果不为空，则值为默认颜色 |
+| data-color | string | 否 | `false` | 默认颜色 |
+| data-format | string | 否 | `hex` | 将颜色格式为对应的格式：`hex`,`rgb`,`rgba`, 留空则自动转换 |
+| data-container | string,jQueryElement | 否 | `false` | 实例化到该元素中 |
+| data-component | string,jQueryElement | 否 | `.add-on, .input-group-addon` | 触发颜色组件的元素，内部必须包涵`i`标签 |
+| data-input | string,jQueryElement | 否 | `input` | 设置选中值填充的容器，必须是当前容器下的节点 |
+| data-hex-prefix | boolean | 否 | `true` | 是否在16进制颜色前面加`#`号 |
+| data-inline | boolean | 否 | `false` | 设为`true`则强制将选择器显示为内联元素。 |
+| data-align | string | 否 | `right` | 设置选择器弹出框的对齐方式，支持`left`, `right` |
+| data-selectors | object | 否 | `null` | 设置预选值，如果选择其中一种颜色，将返回别名而不是十六进制代码。 |
+
+
+### 方法
+
+> 通过 `.busyAdminColorPicker(true)` 获取 `$.colorpicker` 实例 或 `.busyAdminColorPicker(方法名, 方法参数...)` 参考官方手册：https://itsjavi.com/bootstrap-colorpicker/v2/
+
+```JS
+// 获取$.colorpicker实例
+$('#color').busyAdminColorPicker(true).destroy(); // 销毁实例
+
+// 直接使用方法
+$('#color').busyAdminColorPicker('destroy'); // 销毁实例
+```
+
+
+### 事件
+
+| 事件名:240 | 参数:400 | 返回值:100 | 描述 |
+| :- | :- | :--: | - |
+| create.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 创建时触发 |
+| show-picker.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 选择器显示时触发 |
+| hide-picker.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 选择器隐藏时触发 |
+| change-color.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 颜色改变时触发 |
+| disable.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 禁用时触发 |
+| enable.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 启用时触发 |
+| destroy.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 销毁时触发 |
+
+
+### 使用示例
+
+#### 基本示例
+
+```demo:实例
+#demo1
+```
+
+#### RGB,RGBA示例
+
+```demo:实例
+#demo2
+```
+
+#### 内嵌示例
+
+```demo:实例
+#demo3
+```
+
+#### 预定义颜色选项
+
+```demo:实例
+#demo4
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<input type="text" class="form-control" data-busy-color-picker="#000000" data-align="left"/>
+<hr />
+<div class="input-group" data-busy-color-picker="" data-color="#FF0000" data-align="right">
+    <input type="text" class="form-control"/>
+    <div class="input-group-addon"><i></i></div>
+</div>
+<hr />
+<div class="input-group" data-busy-color-picker="" data-align="right">
+    <input type="text" value="#006600" class="form-control"/>
+    <div class="input-group-addon"><i></i></div>
+</div>
+    </textarea>
+
+    <textarea class="hide" id="demo2">
+<input type="text" class="form-control" data-busy-color-picker="" data-align="left" data-format="rgb"/>
+<hr/>
+<input type="text" class="form-control" data-busy-color-picker="" data-align="left" data-format="rgba"/>
+    </textarea>
+
+    <textarea class="hide" id="demo3">
+<input type="text" class="form-control" id="demo3_input"/>
+<div data-busy-color-picker="" id="demo3_color" data-inline="true"></div>
+<script>
+    $(function () {
+        $('#demo3_color').on(busyAdmin.e.colorPickerChange, function (e, colorPicker, color) {
+            $('#demo3_input').val(color.toString('hex'));
+        });
+    });
+</script>
+    </textarea>
+
+    <textarea class="hide" id="demo4">
+<input type="text" class="form-control" id="demo4_input"/>
+<div data-busy-color-picker="" id="demo4_color" data-inline="true" data-selectors='{"black":"#000000","red":"#FF0000","green":"#006600"}'></div>
+<script>
+    $(function () {
+        $('#demo4_color').on(busyAdmin.e.colorPickerChange, function (e, colorPicker, color) {
+            $('#demo4_input').val(color.toString());
+        });
+    });
+</script>
+    </textarea>
+</block>
+<block name="foot">
+</block>
