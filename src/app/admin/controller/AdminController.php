@@ -358,7 +358,7 @@ abstract class AdminController extends Controller
                 $navActive       = $navParentInfo->path;
                 $this->addBreadcrumb($navParentInfo->name, $navParentInfo->url);
             }
-       
+            
             
             if ($navInfo) {
                 $params = [];
@@ -695,5 +695,16 @@ HTML;
         }
         
         return $resp;
+    }
+    
+    
+    /**
+     * 输出JsTree结构数据
+     * @param array $data
+     * @return Response
+     */
+    protected function responseJsTree($data)
+    {
+        return $this->success('', '', ['data' => $data]);
     }
 }

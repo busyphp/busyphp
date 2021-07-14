@@ -62,6 +62,91 @@ class ManualComponentController extends InsideController
     
     
     /**
+     * 颜色选择器
+     */
+    public function color()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 树形组件
+     */
+    public function tree()
+    {
+        if ($this->request->get('action') === 'data') {
+            $parentId = $this->request->post('parent_id', 0, 'intval');
+            switch ($parentId) {
+                case 1:
+                    $data = [
+                        [
+                            'id'       => '1-1',
+                            'text'     => '节点1-1',
+                            'state'    => [
+                                'selected' => true
+                            ],
+                            'children' => false
+                        ],
+                        [
+                            'id'       => '1-2',
+                            'text'     => '节点1-2',
+                            'state'    => [
+                                'selected' => false
+                            ],
+                            'children' => false
+                        ]
+                    ];
+                break;
+                case 2:
+                    $data = [
+                        [
+                            'id'       => '2-1',
+                            'text'     => '节点2-1',
+                            'state'    => [
+                                'selected' => true
+                            ],
+                            'children' => false
+                        ],
+                        [
+                            'id'       => '2-2',
+                            'text'     => '节点2-2',
+                            'state'    => [
+                                'selected' => false
+                            ],
+                            'children' => false
+                        ]
+                    ];
+                break;
+                default:
+                    $data = [
+                        [
+                            'id'       => 1,
+                            'text'     => '节点1',
+                            'state'    => [
+                                'selected' => true
+                            ],
+                            'children' => true
+                        ],
+                        [
+                            'id'       => 2,
+                            'text'     => '节点2',
+                            'state'    => [
+                                'selected' => false
+                            ],
+                            'children' => true
+                        ]
+                    ];
+            }
+            
+            return $this->responseJsTree($data);
+        }
+        
+        return $this->display();
+    }
+    
+    
+    /**
      * 表格
      */
     public function table()
