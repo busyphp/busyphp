@@ -4,6 +4,8 @@ namespace BusyPHP\helper\file;
 
 use BusyPHP\helper\net\Http;
 use BusyPHP\exception\AppException;
+use BusyPHP\Request;
+use think\Container;
 use think\helper\Str;
 
 /**
@@ -19,12 +21,16 @@ class UploadFile
     //+--------------------------------------
     /** 普通上传 */
     const TYPE_FILE = 1;
+    
     /** BASE64上传 */
     const TYPE_BASE64 = 2;
+    
     /** 远程下载 */
     const TYPE_REMOTE = 3;
+    
     /** 分片上传 */
     const TYPE_CHUNK = 4;
+    
     /** 附件移动方式上传 */
     const TYPE_MOVE = 5;
     
@@ -33,62 +39,62 @@ class UploadFile
     //+--------------------------------------
     /** hash方式命名 */
     const FOLDER_NAME_METHOD_HASH = 'hash';
+    
     /** 日期方式命名 */
     const FOLDER_NAME_METHOD_DATE = 'date';
     
-    
     /** @var array 配置 */
-    protected $options = array(
+    protected $options = [
         'type'          => self::TYPE_FILE,
-        'limit'         => array(
+        'limit'         => [
             'size' => 0,
-            'ext'  => array(),
-            'mime' => array(),
-        ),
+            'ext'  => [],
+            'mime' => [],
+        ],
         'root_path'     => '',
         'tmp_path'      => '',
         'root_url'      => '/',
         'replace_cover' => true,
-        'folder'        => array(
+        'folder'        => [
             'name_method' => self::FOLDER_NAME_METHOD_HASH,
             'name_format' => 1
-        ),
-        'file'          => array(
+        ],
+        'file'          => [
             'name_method' => 'uniqid',
             'hash_method' => 'md5_file',
-        ),
-        'remote'        => array(
+        ],
+        'remote'        => [
             'ext'         => '',
             'mime'        => '',
-            'filter_host' => array(),
-            'curl_opt'    => array(),
+            'filter_host' => [],
+            'curl_opt'    => [],
             'filename'    => '',
-        ),
-        'base64'        => array(
+        ],
+        'base64'        => [
             'ext'      => '',
             'mime'     => '',
             'filename' => ''
-        ),
-        'chunk'         => array(
+        ],
+        'chunk'         => [
             'guid_key'     => 'guid',
             'total_key'    => 'chunks',
             'index_key'    => 'chunk',
             'complete_key' => 'is_complete',
             'filename_key' => 'filename'
-        )
-    );
+        ]
+    ];
     
     /** @var UploadFileResult 附件结果容器 */
     protected $uploadResult = null;
     
     /** @var array mimeType映射 */
-    public static $mimeTypes = array(
+    public static $mimeTypes = [
         'image/gif'    => 'gif',
         'image/png'    => 'png',
         'image/jpeg'   => 'jpeg',
         'image/jpg'    => 'jpg',
         'image/x-icon' => 'ico'
-    );
+    ];
     
     
     /**
@@ -112,7 +118,7 @@ class UploadFile
     public function setLimitExtensions($extensions)
     {
         if (!$extensions) {
-            $this->options['limit']['ext'] = array();
+            $this->options['limit']['ext'] = [];
             
             return $this;
         }
@@ -139,7 +145,7 @@ class UploadFile
     public function setLimitMimeTypes($mime)
     {
         if (!$mime) {
-            $this->options['limit']['mime'] = array();
+            $this->options['limit']['mime'] = [];
             
             return $this;
         }
@@ -401,12 +407,14 @@ class UploadFile
      */
     public function uploadByChunk($data)
     {
-        $getData          = $_REQUEST;
-        $guid             = trim($getData[$this->options['chunk']['guid_key']]);
-        $total            = intval($getData[$this->options['chunk']['total_key']]);
-        $index            = intval($getData[$this->options['chunk']['index_key']]);
-        $isComplete       = intval($getData[$this->options['chunk']['complete_key']]) > 0;
-        $completeFilename = trim($getData[$this->options['chunk']['filename_key']]);
+        /** @var Request $request */
+        $request = Container::getInstance()->make(Request::class);
+        
+        $guid             = trim($request->post($this->options['chunk']['guid_key']));
+        $total            = intval($request->post($this->options['chunk']['total_key']));
+        $index            = intval($request->post($this->options['chunk']['index_key']));
+        $isComplete       = intval($request->post($this->options['chunk']['complete_key'])) > 0;
+        $completeFilename = trim($request->post($this->options['chunk']['filename_key']));
         
         // 非分片上传走普通上传
         if (!$isComplete && $total <= 1 && $index <= 0) {
@@ -422,7 +430,7 @@ class UploadFile
         $this->parseOptions();
         $tmpPath    = $this->options['tmp_path'] . 'chunks/';
         $folderName = md5($guid);
-        $folder     = array();
+        $folder     = [];
         for ($i = 0; $i < 3; $i++) {
             $folder[] = $folderName[$i];
         }
@@ -553,16 +561,16 @@ class UploadFile
         
         // 写入日志
         if (!is_file($logName)) {
-            $logs          = array();
+            $logs          = [];
             $logs['total'] = $total;
             $logs['mime']  = $data['type'];
-            $logs['list']  = array();
+            $logs['list']  = [];
         } else {
             $logs = unserialize(file_get_contents($logName));
             if (!$logs) {
                 $logs['total'] = $total;
                 $logs['mime']  = $data['type'];
-                $logs['list']  = array();
+                $logs['list']  = [];
             }
         }
         
@@ -681,7 +689,7 @@ class UploadFile
         // 过滤系统资源
         $urls    = parse_url($url);
         $hosts   = $this->options['remote']['filter_host'];
-        $hosts   = is_array($hosts) ? $hosts : array();
+        $hosts   = is_array($hosts) ? $hosts : [];
         $hosts[] = $_SERVER['HTTP_HOST'];
         $hosts   = array_filter($hosts);
         $hosts   = array_unique($hosts);
@@ -697,7 +705,7 @@ class UploadFile
         
         // 获取扩展名
         if (!is_string($this->options['remote']['ext']) && is_callable($this->options['remote']['ext'])) {
-            $extension = call_user_func_array($this->options['remote']['ext'], array($urls));
+            $extension = call_user_func_array($this->options['remote']['ext'], [$urls]);
         } else {
             if (false !== strpos($extensionStr, '.')) {
                 $extension = trim(substr($extensionStr, strrpos($extensionStr, '.') + 1));
@@ -908,7 +916,7 @@ class UploadFile
         if (!$hashMethod) {
             $hash = md5_file($filename);
         } elseif (is_callable($hashMethod)) {
-            $hash = call_user_func_array($hashMethod, array($filename));
+            $hash = call_user_func_array($hashMethod, [$filename]);
         } elseif (function_exists($hashMethod)) {
             $hash = $hashMethod($filename);
         } else {
@@ -949,7 +957,7 @@ class UploadFile
         $method   = $this->options['file']['name_method'];
         $filename = $name;
         if (!is_string($method) && is_callable($method)) {
-            $filename = call_user_func_array($method, array($name, $extension));
+            $filename = call_user_func_array($method, [$name, $extension]);
         } elseif (!empty($method)) {
             if (function_exists($method)) {
                 $filename = $method() . '.' . $extension;
@@ -994,7 +1002,7 @@ class UploadFile
         
         // 回调
         if (!is_string($method) && is_callable($method)) {
-            return trim(call_user_func_array($method, array($name)), '/');
+            return trim(call_user_func_array($method, [$name]), '/');
         }
         
         // 内置方法
@@ -1012,7 +1020,7 @@ class UploadFile
                 $level = intval($this->options['folder']['name_format']);
                 $level = $level <= 1 ? 1 : $level;
                 $name  = md5($name);
-                $dir   = array();
+                $dir   = [];
                 for ($i = 0; $i < $level; $i++) {
                     $dir[] = $name[$i];
                 }
@@ -1240,12 +1248,12 @@ class UploadFile
     {
         // 如果是图像文件 检测文件格式
         $extension = strtolower($extension);
-        if (!in_array($extension, array('gif', 'jpg', 'jpeg', 'bmp', 'png', 'swf'))) {
+        if (!in_array($extension, ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'swf'])) {
             return;
         }
         
         // 非法文件
-        if (in_array($extension, array('php', 'php5', 'asp', 'jsp', 'js', 'html', 'htm'))) {
+        if (in_array($extension, ['php', 'php5', 'asp', 'jsp', 'js', 'html', 'htm'])) {
             throw new AppException('非法文件');
         }
         
