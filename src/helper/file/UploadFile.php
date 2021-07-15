@@ -417,7 +417,7 @@ class UploadFile
         $completeFilename = trim($request->post($this->options['chunk']['filename_key']));
         
         // 非分片上传走普通上传
-        if (!$isComplete && $total <= 1 && $index <= 0) {
+        if (!$isComplete && $total < 1 && $index <= 0) {
             return $this->uploadByFile($data);
         }
         
@@ -454,10 +454,10 @@ class UploadFile
             }
             
             // 读取日志文件
-            $log     = md5($completeFilename . $guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
+            $log     = md5($guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
             $logName = $tmpPath . $log;
             if (!$config = unserialize(file_get_contents($logName))) {
-                throw new AppException('文件上传保存错误[log]');
+                throw new AppException('文件上传保存错误[log]' . $logName);
             }
             if (!$config['list']) {
                 throw new AppException('文件上传保存错误[list]');
@@ -545,7 +545,7 @@ class UploadFile
         $this->checkIsUploadFile($data['tmp_name']);
         
         $name     = md5($data['name'] . $guid . $index . $total . $_SERVER['HTTP_USER_AGENT']) . '.tmp';
-        $log      = md5($data['name'] . $guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
+        $log      = md5($guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
         $filename = $tmpPath . $name;
         $logName  = $tmpPath . $log;
         
