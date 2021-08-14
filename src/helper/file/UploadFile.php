@@ -2,9 +2,12 @@
 
 namespace BusyPHP\helper\file;
 
+use BusyPHP\App;
 use BusyPHP\helper\net\Http;
 use BusyPHP\exception\AppException;
 use BusyPHP\Request;
+use Exception;
+use League\Flysystem\Filesystem;
 use think\Container;
 use think\helper\Str;
 
@@ -43,7 +46,10 @@ class UploadFile
     /** 日期方式命名 */
     const FOLDER_NAME_METHOD_DATE = 'date';
     
-    /** @var array 配置 */
+    /**
+     * 配置
+     * @var array
+     */
     protected $options = [
         'type'          => self::TYPE_FILE,
         'limit'         => [
@@ -76,18 +82,30 @@ class UploadFile
             'filename' => ''
         ],
         'chunk'         => [
-            'guid_key'     => 'guid',
-            'total_key'    => 'chunks',
-            'index_key'    => 'chunk',
-            'complete_key' => 'is_complete',
-            'filename_key' => 'filename'
+            'guid_key'     => 'chunk_guid',
+            'total_key'    => 'chunk_total',
+            'index_key'    => 'chunk_current',
+            'complete_key' => 'chunk_complete',
+            'filename_key' => 'chunk_filename',
+            'user_id'      => ''
         ]
     ];
     
-    /** @var UploadFileResult 附件结果容器 */
+    /**
+     * 附件结果容器
+     * @var UploadFileResult
+     */
     protected $uploadResult = null;
     
-    /** @var array mimeType映射 */
+    /**
+     * @var App
+     */
+    protected $app;
+    
+    /**
+     * mimeType映射
+     * @var array
+     */
     public static $mimeTypes = [
         'image/gif'    => 'gif',
         'image/png'    => 'png',
@@ -95,6 +113,15 @@ class UploadFile
         'image/jpg'    => 'jpg',
         'image/x-icon' => 'ico'
     ];
+    
+    
+    /**
+     * UploadFile constructor.
+     */
+    public function __construct()
+    {
+        $this->app = Container::getInstance()->make(App::class);
+    }
     
     
     /**
@@ -352,14 +379,14 @@ class UploadFile
     
     /**
      * 设置分片上传键名
-     * @param string $guid
-     * @param string $total
-     * @param string $index
-     * @param string $completeKey
-     * @param string $filenameKey
+     * @param string $guid 分片唯一标识
+     * @param string $total 总分片数
+     * @param string $index 当前分片数
+     * @param string $completeKey 是否所有分片上传完成
+     * @param string $filenameKey 文件名称
      * @return $this
      */
-    public function setChunkField($guid = 'guid', $total = 'chunks', $index = 'chunk', $completeKey = 'is_complete', $filenameKey = 'filename')
+    public function setChunkField($guid = 'chunk_guid', $total = 'chunk_total', $index = 'chunk_current', $completeKey = 'chunk_complete', $filenameKey = 'chunk_filename')
     {
         $this->options['chunk']['guid_key']     = trim($guid);
         $this->options['chunk']['total_key']    = trim($total);
@@ -368,6 +395,16 @@ class UploadFile
         $this->options['chunk']['filename_key'] = trim($filenameKey);
         
         return $this;
+    }
+    
+    
+    /**
+     * 设置分片用户标识，以保证上传的时候不会重复
+     * @param $userId
+     */
+    public function setChunkUserId($userId)
+    {
+        $this->options['chunk']['user_id'] = trim($userId);
     }
     
     
@@ -404,17 +441,18 @@ class UploadFile
      * @param $data
      * @return UploadFileResult|true
      * @throws AppException
+     * @throws Exception
+     * TODO MUST mkdir 错误
+     * TODO MUST 分片数据不要内部接收
+     * TODO MUST {@see \think\facade\Filesystem}
      */
     public function uploadByChunk($data)
     {
-        /** @var Request $request */
-        $request = Container::getInstance()->make(Request::class);
-        
-        $guid             = trim($request->post($this->options['chunk']['guid_key']));
-        $total            = intval($request->post($this->options['chunk']['total_key']));
-        $index            = intval($request->post($this->options['chunk']['index_key']));
-        $isComplete       = intval($request->post($this->options['chunk']['complete_key'])) > 0;
-        $completeFilename = trim($request->post($this->options['chunk']['filename_key']));
+        $guid             = trim($this->app->request->request($this->options['chunk']['guid_key']));
+        $total            = intval($this->app->request->request($this->options['chunk']['total_key']));
+        $index            = intval($this->app->request->request($this->options['chunk']['index_key']));
+        $isComplete       = intval($this->app->request->request($this->options['chunk']['complete_key'])) > 0;
+        $completeFilename = trim($this->app->request->request($this->options['chunk']['filename_key']));
         
         // 非分片上传走普通上传
         if (!$isComplete && $total < 1 && $index <= 0) {
@@ -428,104 +466,112 @@ class UploadFile
         
         // 初始化参数
         $this->parseOptions();
-        $tmpPath    = $this->options['tmp_path'] . 'chunks/';
+        $tmpPath    = $this->options['tmp_path'] . 'chunks' . DIRECTORY_SEPARATOR;
         $folderName = md5($guid);
         $folder     = [];
         for ($i = 0; $i < 3; $i++) {
             $folder[] = $folderName[$i];
         }
-        $tmpPath .= implode('/', $folder) . '/';
-        if (!is_dir($tmpPath)) {
+        $tmpPath .= implode(DIRECTORY_SEPARATOR, $folder) . DIRECTORY_SEPARATOR;
+        if (!is_dir($tmpPath) || !file_exists($tmpPath)) {
             if (!mkdir($tmpPath, 0775, true)) {
-                throw new AppException("创建临时目录{$tmpPath}失败");
+                throw new AppException("创建临时目录[{$tmpPath}]失败");
             }
         }
         
         // 合并附件
         $this->uploadResult = new UploadFileResult();
         if ($isComplete) {
-            if (!$completeFilename) {
-                throw new AppException('附件名称不能为空');
-            }
-            
-            $extension = File::getExtension($completeFilename);
-            if (!$extension) {
-                throw new AppException('无法获取附件扩展名');
-            }
-            
             // 读取日志文件
-            $log     = md5($guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
-            $logName = $tmpPath . $log;
-            if (!$config = unserialize(file_get_contents($logName))) {
-                throw new AppException('文件上传保存错误[log]' . $logName);
-            }
-            if (!$config['list']) {
-                throw new AppException('文件上传保存错误[list]');
+            $json     = md5($guid . $this->options['chunk']['user_id']) . '.json';
+            $jsonFile = $tmpPath . $json;
+            if (!$config = json_decode(file_get_contents($jsonFile), true)) {
+                throw new AppException("无法获取分片配置文件{$jsonFile}");
             }
             
-            // 文件的总数不等于开始的统计条数认为无效
-            if (count($config['list']) != $config['total']) {
-                array_map('unlink', $config['list']);
-                throw new AppException('文件上传保存错误[total]');
-            }
-            
-            // 遍历合并文件
-            ksort($config['list']);
-            $this->parseSaveFilePath($completeFilename, $extension);
-            if (false === $resource = fopen($this->uploadResult->savePath, 'wb')) {
-                array_map('unlink', $config['list']);
-                throw new AppException('文件上传保存错误[open]');
-            }
-            
-            flock($resource, LOCK_EX);
-            foreach ($config['list'] as $i => $item) {
-                if (!is_file($item) || false === $tmpFile = fopen($item, 'rb')) {
-                    array_map('unlink', $config['list']);
-                    throw new AppException('文件上传保存错误[item.open]');
-                }
-                
-                if (false === $tmpStr = fread($tmpFile, filesize($item))) {
-                    array_map('unlink', $config['list']);
-                    throw new AppException('文件上传保存错误[item.read]');
-                }
-                
-                fclose($tmpFile);
-                if (false === fwrite($resource, $tmpStr)) {
-                    throw new AppException('文件上传保存错误[item.write]');
-                }
-            }
-            fclose($resource);
-            
-            // 删除分片
-            array_map('unlink', $config['list']);
-            
-            // 删除日志
-            unlink($logName);
-            
-            // 校验附件
-            if (false === $size = self::isFile($this->uploadResult)) {
-                throw new AppException('保存的附件无效');
+            if (empty($config['list']) || empty($config['total'])) {
+                throw new AppException('分片配置异常');
             }
             
             try {
+                if (!$completeFilename) {
+                    throw new AppException('附件名称不能为空');
+                }
+                
+                $extension = File::getExtension($completeFilename);
+                if (!$extension) {
+                    throw new AppException('无法获取附件扩展名');
+                }
+                
+                // 文件的总数不等于开始的统计条数认为无效
+                if (count($config['list']) != $config['total']) {
+                    array_map('unlink', $config['list']);
+                    throw new AppException('分片配置校验失败');
+                }
+                
+                // 生成保存路径
+                $this->parseSaveFilePath($completeFilename, $extension);
+                if (false === $resource = fopen($this->uploadResult->savePath, 'wb')) {
+                    array_map('unlink', $config['list']);
+                    throw new AppException("无法读写目录[{$this->uploadResult->savePath}]");
+                }
+                
+                // 合并文件
+                ksort($config['list']);
+                flock($resource, LOCK_EX);
+                foreach ($config['list'] as $i => $item) {
+                    if (!is_file($item) || false === $tmpFile = fopen($item, 'rb')) {
+                        array_map('unlink', $config['list']);
+                        throw new AppException("分片文件打开失败[{$item}]");
+                    }
+                    
+                    if (false === $tmpStr = fread($tmpFile, filesize($item))) {
+                        array_map('unlink', $config['list']);
+                        throw new AppException("分片文件读取失败[{$item}]");
+                    }
+                    
+                    fclose($tmpFile);
+                    if (false === fwrite($resource, $tmpStr)) {
+                        array_map('unlink', $config['list']);
+                        throw new AppException("写入分片文件失败[{$this->uploadResult->savePath}, {$item}]");
+                    }
+                }
+                flock($resource, LOCK_UN);
+                fclose($resource);
+                
+                // 校验附件
+                if (false === $size = self::isFile($this->uploadResult)) {
+                    throw new AppException('保存的附件无效');
+                }
+                
                 // 校验大小
                 $this->checkSize($size);
                 
                 // 校验图片
                 self::checkImage($this->uploadResult->savePath, $extension);
-            } catch (AppException $e) {
-                unlink($this->uploadResult->savePath);
-                throw new AppException($e);
+                
+                $this->uploadResult->name      = $completeFilename;
+                $this->uploadResult->size      = $size;
+                $this->uploadResult->mimeType  = $config['mime'];
+                $this->uploadResult->extension = $extension;
+                $this->uploadResult->hash      = $this->parseHash($this->uploadResult->savePath);
+                $this->uploadResult->url       = $this->parseUrl($this->uploadResult->folderPath, $this->uploadResult->filename);
+                
+                // 清理
+                array_map('unlink', $config['list']);
+                unlink($jsonFile);
+                
+                return $this->uploadResult;
+            } catch (Exception $e) {
+                array_map('unlink', $config['list']); // todo unlink 偶尔会报错
+                unlink($jsonFile);
+                
+                if ($this->uploadResult->savePath) {
+                    unlink($this->uploadResult->savePath);
+                }
+                
+                throw $e;
             }
-            
-            $this->uploadResult->name      = $completeFilename;
-            $this->uploadResult->size      = $size;
-            $this->uploadResult->mimeType  = $config['mime'];
-            $this->uploadResult->extension = $extension;
-            $this->uploadResult->hash      = $this->parseHash($this->uploadResult->savePath);
-            $this->uploadResult->url       = $this->parseUrl($this->uploadResult->folderPath, $this->uploadResult->filename);
-            
-            return $this->uploadResult;
         }
         
         
@@ -544,10 +590,10 @@ class UploadFile
         $this->checkMimeTypes($data['type']);
         $this->checkIsUploadFile($data['tmp_name']);
         
-        $name     = md5($data['name'] . $guid . $index . $total . $_SERVER['HTTP_USER_AGENT']) . '.tmp';
-        $log      = md5($guid . $_SERVER['HTTP_USER_AGENT']) . '.log';
+        $name     = md5($data['name'] . $guid . $index . $total . $this->options['chunk']['user_id']) . '.tmp';
+        $json     = md5($guid . $this->options['chunk']['user_id']) . '.json';
         $filename = $tmpPath . $name;
-        $logName  = $tmpPath . $log;
+        $jsonFile = $tmpPath . $json;
         
         // 上传附件
         if (!move_uploaded_file($data['tmp_name'], $filename)) {
@@ -559,34 +605,50 @@ class UploadFile
             throw new AppException('保存的分片无效');
         }
         
-        // 写入日志
-        if (!is_file($logName)) {
-            $logs          = [];
-            $logs['total'] = $total;
-            $logs['mime']  = $data['type'];
-            $logs['list']  = [];
-        } else {
-            $logs = unserialize(file_get_contents($logName));
-            if (!$logs) {
-                $logs['total'] = $total;
-                $logs['mime']  = $data['type'];
-                $logs['list']  = [];
+        // 写入分片记录
+        $jsonInfo = [];
+        if (is_file($jsonFile)) {
+            if (false === $resource = fopen($jsonFile, 'rb')) {
+                throw new AppException('分片记录读取失败[open]');
             }
-        }
-        
-        try {
-            $logs['list'][$index] = $filename;
-            if (false === $resource = fopen($logName, 'w')) {
-                throw new AppException('分片日志写入失败[open]');
+            if (!flock($resource, LOCK_SH)) {
+                throw new AppException('分片记录读取失败[lock]');
             }
-            flock($resource, LOCK_EX);
-            if (false === fwrite($resource, serialize($logs))) {
-                throw new AppException('分片日志写入失败[write]');
+            $content = '';
+            while (!feof($resource)) {
+                $content .= fread($resource, 8192);
+            }
+            if (!flock($resource, LOCK_UN)) {
+                throw new AppException('分片记录读取失败[unlock]');
             }
             fclose($resource);
-        } catch (AppException $e) {
+            
+            $decode   = json_decode($content, true);
+            $jsonInfo = is_array($decode) ? $decode : [];
+        }
+        
+        $jsonInfo['total'] = $jsonInfo['total'] ?? $total;
+        $jsonInfo['mime']  = $jsonInfo['mime'] ?? $data['type'];
+        $jsonInfo['list']  = $jsonInfo['list'] ?? [];
+        
+        try {
+            $jsonInfo['list'][$index] = $filename;
+            if (false === $resource = fopen($jsonFile, 'w')) {
+                throw new AppException('分片记录写入失败[open]');
+            }
+            if (!flock($resource, LOCK_EX)) {
+                throw new AppException('分片记录写入失败[lock]');
+            }
+            if (false === fwrite($resource, json_encode($jsonInfo))) {
+                throw new AppException('分片日志写入失败[write]');
+            }
+            if (!flock($resource, LOCK_UN)) {
+                throw new AppException('分片记录写入失败[unlock]');
+            }
+            fclose($resource);
+        } catch (Exception $e) {
             unlink($filename);
-            throw new AppException($e);
+            throw $e;
         }
         
         return true;

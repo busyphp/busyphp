@@ -291,6 +291,7 @@ class Thumb extends Image
         }
         
         // 验证类型
+        // TODO MUST 大图片内存不够用
         switch ($info['mime']) {
             case 'image/jpeg' :
             case 'image/jpg' :

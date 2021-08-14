@@ -31,6 +31,9 @@ class SystemFile extends Model
     /** @var string 视频 */
     const FILE_TYPE_VIDEO = 'video';
     
+    /** @var string 音频 */
+    const FILE_TYPE_AUDIO = 'audio';
+    
     /** @var string 附件 */
     const FILE_TYPE_FILE = 'file';
     
@@ -207,7 +210,7 @@ class SystemFile extends Model
      */
     public static function getTypes($var = null)
     {
-        return self::parseVars(self::parseConst(self::class, 'TYPE_', [], function($item) {
+        return self::parseVars(self::parseConst(self::class, 'FILE_TYPE_', [], function($item) {
             return $item['name'];
         }), $var);
     }

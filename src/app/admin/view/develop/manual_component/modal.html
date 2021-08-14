@@ -8,36 +8,48 @@
             <script type="text/x-markdown" id="markdown">
 ### 开始
 
+
+#### 自动识别
+```demo:实例
+#demo1
+```
+
 本组件属于内置组件，无需引用即可使用
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-dialog` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-modal"` 来触发
 
 ```html
-<a href="/dialog_page.html" data-busy-dialog="">打开对话框</a>
+<a href="/dialog_page.html" data-toggle="busy-modal">打开对话框</a>
 ```
 
 ### 标签属性
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-busy-dialog | string | `是` | - | 初始化组件属性，指定对话框请求URL，如果留空则获取当前标签内的`href`属性值 |
+| 基本:title |  |  |  |  |
 | data-type | string | 否 | `form` | 对话框类型，支持以下类型：<br />`form`：表单<br />`page`：页面<br />`list`：列表 |
+| data-backdrop | boolean,string | 否 | `true` | 是否显示背景遮罩，指定`static`则点击背景遮罩不会关闭对话框 |
 | data-size | string | 否 | - | 对话框大小，留空则默认大小，支持以下类型：<br />`sm`：小对话框<br />`lg`：大对话框 |
-| data-form-method | string | 否 | `post` | 当对话框类型为`form`时指定标签提交请求方式 |
-| data-dialog-type | string | 否 | `bootstrap` | 对话框类型，默认为`bootstrap`对话框，支持以下类型：<br />`bootstrap`：bootstrap对话框<br />`layer`：layer对话框 |
-| data-ok-class | string | 否 | - | 确定按钮扩展css类名 |
-| data-ok-skin | string | 否 | `primary` | 确定按钮风格，支持：`primary`, `warning`, `danger`, `info`, `success`, `default`, `light`, `secondary`, `dark` |
-| data-ok-text | string | 否 | `确定` | 确定按钮文本 |
+| data-title | boolean,string | 否 | - | 设置对话框标题，`false`则不显示对话框标题栏，远端加载可以输出`<title>`标签指定标题 |
+| data-footer | boolean,string | 否 | - | 设置`footer`内容，`false`则不显示`footer`栏 |
+| data-content | string,jQueryElement,DOM | 否 | - | 设置对话框内容 |
+| data-url | string | 否 | - | 设置远程加载的页面，设置后`content`无效，`a`节点支持`href`指定 |
+| data-class-name | string | 否 | - | 自定义对话框css类名 |
+| 确认按钮:title |  |  |  |  |
+| data-ok | boolean,string | 否 | `确定` | 设置确认按钮的文本内容，`false`则不显示 |
+| data-ok-skin | string | 否 | `btn-primary` | 确定按钮css类名 |
 | data-ok-icon | string | 否 | - | 确定按钮图标css类名称，如：`icon icon-check` |
 | data-ok-click | string | 否 | - | 确定按钮点击事件，如不指定默认为：<br /> `data-type=form` 为 `submit`事件<br /> `data-type=其他` 为 `close` 事件 |
-| data-cancel-class | string | 否 | - | 取消按钮扩展css类名 |
-| data-cancel-skin | string | 否 | `default` | 取消按钮风格，支持：`primary`, `warning`, `danger`, `info`, `success`, `default`, `light`, `secondary`, `dark` |
-| data-cancel-text | string | 否 | `取消` | 取消按钮文本 |
+| 取消按钮:title |  |  |  |  |
+| data-cancel | boolean,string | 否 | `取消` | 设置确认按钮的文本内容，`false`则不显示 |
+| data-cancel-skin | string | 否 | `btn-default` | 取消按钮css类名 |
 | data-cancel-icon | string | 否 | - | 取消按钮图标css类名称，如：`icon icon-close` |
 | data-cancel-click | string | 否 | - | 取消按钮点击事件，如不指定默认为：`data-type=form` 为 `reset`事件<br /> `data-type=其他` 为 `close` 事件 |
-
+| data-type="form":title |  |  |  |  |
+| data-form-method | string | 否 | `post` | 指定form提交方式 |
+| data-form-action | string | 否 | - | 指定form提交地址 |
 
 ### 标签事件
 | 事件                     | 参数                                                         | 返回值  | 描述                                                         |
@@ -67,17 +79,26 @@ $(function(){
 ```
 
 ### 使用示例
-
-#### 自动识别
-```demo:实例
-#demo1
-```
             </script>
         </div>
     </div>
 
     <textarea class="hide" id="demo1">
-<a class="btn btn-primary" href="{:url('?action=demo1')}" data-busy-dialog="" data-ok-skin="success">打开一个普通大小的对话框</a></textarea>
+<a class="btn btn-primary"
+   href="{:url('?action=demo1')}"
+   data-content="1111"
+   data-toggle="busy-modal"
+   data-ok-click="test"
+   id="test">打开一个普通大小的对话框</a>
+<script>
+    $('#test').on(busyAdmin.e.modalReady, function (e, api) {
+        api.$form.on(busyAdmin.e.formCheck, function () {
+            console.log(this);
+            return false;
+        });
+    });
+</script>
+    </textarea>
 
 
 </block>

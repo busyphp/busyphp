@@ -6,7 +6,6 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -77,30 +76,59 @@ class SystemFileClass extends Model
     
     /**
      * 获取后台可显示的附件分类
-     * @param int    $selectedValue
-     * @param bool   $defaultText
-     * @param int    $defaultValue
-     * @param string $type 指定附件类型
-     * @return string
+     * @param string|bool $selectedValue 选中项，设为true则返回数组
+     * @param bool|string $defaultText 默认文本，false则不输出
+     * @param string      $defaultValue 默认值
+     * @param string      $type 指定附件类型
+     * @return string|SystemFileClassInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function getAdminOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0, $type = null)
+    public function getAdminOptions($selectedValue = '', $defaultText = true, $defaultValue = '', $type = null)
     {
-        $list  = $this->getListByCache();
+        $list  = $this->getList();
         $array = [];
-        foreach ($list as $i => $r) {
-            if (!$r['admin_show'] || ($type && $r['type'] != $type)) {
+        foreach ($list as $item) {
+            if (!$item->adminShow || ($type && $item->type != $type)) {
                 continue;
             }
-            $array[] = $r;
+            
+            $array[$item->type][] = $item;
         }
         
+        if ($selectedValue === true) {
+            return $array;
+        }
         
-        $options = Transform::arrayToOption($array, 'var', 'name', $selectedValue);
+        $options = '';
         if ($defaultText) {
             if (true === $defaultText) {
-                $defaultText = '请选择';
+                $defaultText = '请选择分类';
             }
-            $options = '<option value="' . $defaultValue . '">' . $defaultText . '</option>' . $options;
+            
+            $options = '<option value="' . $defaultValue . '">' . $defaultText . '</option>';
+        }
+        foreach ($array as $type => $list) {
+            $value    = "type:{$type}";
+            $name     = SystemFile::getTypes($type);
+            $selected = '';
+            if ($selectedValue == $value) {
+                $selected = ' selected';
+            }
+            
+            $options .= '<optgroup label="' . $name . '">';
+            $options .= '<option value="' . $value . '"' . $selected . '>所有' . $name . '</option>';
+            
+            /** @var SystemFileClassInfo $item */
+            foreach ($list as $item) {
+                $itemSelected = '';
+                if ($item->var == $selectedValue) {
+                    $itemSelected = ' selected';
+                }
+                $options .= '<option value="' . $item->var . '"' . $itemSelected . '>' . $item->name . '</option>';
+            }
+            
+            $options .= '</optgroup>';
         }
         
         return $options;
@@ -113,6 +141,8 @@ class SystemFileClass extends Model
      * @param bool $defaultText
      * @param int  $defaultValue
      * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getAdminImageOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
     {
@@ -126,6 +156,8 @@ class SystemFileClass extends Model
      * @param bool $defaultText
      * @param int  $defaultValue
      * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getAdminFileOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
     {
@@ -139,10 +171,27 @@ class SystemFileClass extends Model
      * @param bool $defaultText
      * @param int  $defaultValue
      * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getAdminVideoOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
     {
         return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_VIDEO);
+    }
+    
+    
+    /**
+     * 获取后台可显示的音频分类
+     * @param int  $selectedValue
+     * @param bool $defaultText
+     * @param int  $defaultValue
+     * @return string
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getAdminAudioOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
+    {
+        return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_AUDIO);
     }
     
     
@@ -153,7 +202,7 @@ class SystemFileClass extends Model
      * @throws DbException
      * @throws DataNotFoundException
      */
-    public function getListByCache($must = false)
+    public function getList($must = false)
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
@@ -177,7 +226,7 @@ class SystemFileClass extends Model
      */
     public function getInfoByKey($key)
     {
-        $list = $this->getListByCache();
+        $list = $this->getList();
         $info = $list[$key] ?? null;
         if (!$info) {
             throw new DataNotFoundException('附件类型[' . $key . ']不存在');
@@ -208,6 +257,6 @@ class SystemFileClass extends Model
      */
     protected function onChanged($method, $id, $options)
     {
-        $this->getListByCache(true);
+        $this->getList(true);
     }
 }

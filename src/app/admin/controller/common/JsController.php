@@ -44,7 +44,7 @@ class JsController extends InsideController
         $stamp     = time();
         $sid       = session_id();
         $fileSet   = FileSetting::init();
-        $classList = SystemFileClass::init()->getListByCache();
+        $classList = SystemFileClass::init()->getList();
         $fileClass = [];
         foreach ($classList as $key => $r) {
             $fileSet->setClassify($key);

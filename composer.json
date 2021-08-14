@@ -19,7 +19,9 @@
 		"james-heinrich/phpthumb"  : "1.7.15",
 		"aferrandini/phpqrcode"    : "1.0.1",
 		"ext-json"                 : "*",
-		"ext-pdo"                  : "*"
+		"ext-pdo"                  : "*",
+		"ext-iconv"                : "*",
+		"ext-gd"                   : "*"
 	},
 	"require-dev" : {
 		"symfony/var-dumper" : "^4.2"

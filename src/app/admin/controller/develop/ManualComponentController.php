@@ -49,12 +49,12 @@ class ManualComponentController extends InsideController
     
     
     /**
-     * 单页对话框
+     * 模态框
      */
-    public function page_dialog()
+    public function modal()
     {
         if ($this->request->header('Busy-Admin-Page-Dialog')) {
-            return $this->display('page_dialog_' . $this->request->request('action'));
+            return $this->display('modal_' . $this->request->request('action'));
         }
         
         return $this->display();
@@ -241,6 +241,42 @@ class ManualComponentController extends InsideController
             return $this->success('删除成功', '', $this->request->param('action'));
         }
         
+        return $this->display();
+    }
+    
+    
+    /**
+     * 文件上传
+     */
+    public function upload()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 文件选择
+     */
+    public function file_picker()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 图片预览
+     */
+    public function image_viewer()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 视频预览
+     */
+    public function video_viewer()
+    {
         return $this->display();
     }
 }

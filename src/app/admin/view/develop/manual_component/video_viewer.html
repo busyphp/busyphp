@@ -1,0 +1,73 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-video-viewer"` 来触发
+
+```html
+<div data-toggle="busy-video-viewer"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-src | string | `是` | - | 设置视频地址，自动识别视频类型，`video`标签请设置`src`或`source` |
+| data-mp4 | string | `否` | - | 设置`MP4`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
+| data-webm | string | `否` | - | 设置`WEBM`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
+| data-ogv | string | `否` | - | 设置`OGV`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
+| data-poster | string | `否` | - | 设置视频封面地址 |
+| data-autoplay | boolean | `否` | `true` | 设置是否自动播放 |
+| data-muted | boolean | `否` | `false` | 设置是否静音播放 |
+| data-size | boolean | `否` | `true` | 是否自动获取尺寸 |
+| data-click-handler | boolean | `否` | `true` | 是否点击预览，针对非`video`标签有效 |
+
+### 使用示例
+
+#### video标签预览
+```demo:实例
+#demo1
+```
+
+#### 非video标签预览
+```demo:实例
+#demo2
+```
+
+#### 自定义点击预览
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+    <textarea class="hide" id="demo1">
+<video style="width: 200px" src="http://vjs.zencdn.net/v/oceans.webm" data-toggle="busy-video-viewer" poster="{$skin.root}images/login/1.jpg"></video>
+    </textarea>
+    
+    <textarea class="hide" id="demo2">
+<a href="javascript:;" class="btn btn-success" data-toggle="busy-video-viewer" data-src="http://vjs.zencdn.net/v/oceans.webm" data-autoplay="true">点击播放</a>
+    </textarea>
+    
+    <textarea class="hide" id="demo3">
+<a href="javascript:;" class="btn btn-success" id="demo3_btn" data-toggle="busy-video-viewer" data-src="http://vjs.zencdn.net/v/oceans.webm" data-click-handler="false">点击播放</a>
+<script>
+$(function () {
+    $('#demo3_btn').on('click', function () {
+        $(this).busyAdminVideoViewer('show')
+    });
+});
+</script>
+    </textarea>
+</block>

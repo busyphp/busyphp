@@ -26,20 +26,10 @@
     </busy-search>
 
 -->
-    <script type="text/html" id="batchOperate">
-        <a class="btn btn-success btn-sm" href="javascript:void(0)" data-url="{:url('set_sort')}" data-confirm="确认要排序吗？">
-            <i class="icon icon-sort"></i> 排序
-        </a>
-    </script>
-
-    <a class="btn btn-success btn-sm" href="javascript:void(0)" data-btn="name" data-click="test1w3" data-url="{:url('set_sort')}" id="aaaaaaa" data-confirm="确认要排序吗？">
-        <i class="icon icon-sort"></i> 排序
-    </a>
-
-    <table class="table table-bordered table-hover table-striped"
-           data-busy-table="html"
+    <table class="table"
+           data-toggle="busy-table"
+           data-type="html"
            data-height="auto"
-           data-show-footer="true"
     >
         <thead>
         <tr>
@@ -63,7 +53,7 @@
         <tbody>
         <empty name="list">
             <tr>
-                <td class="empty-info" colspan="10">暂无相关数据</td>
+                <td class="empty-info" colspan="10" >暂无相关数据</td>
             </tr>
             <else/>
             <foreach name="list" item="vo">
@@ -109,7 +99,7 @@
         $(function () {
             $('[data-busy-table]').on(busyAdmin.e.tableFooterBtnClick, function () {
                 console.log(this, arguments);
-                
+
                 return false;
             });
         })

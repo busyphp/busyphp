@@ -292,7 +292,7 @@ class Service extends ThinkService
                     'group'   => 'System',
                     'control' => 'File',
                 ])->pattern([
-                    'action' => '[setting|index|delete|upload|library]+'
+                    'action' => '[setting|index|delete|upload|picker]+'
                 ]);
                 
                 $route->rule('Common.<control>/<action>', 'common\<control>Controller@<action>')->append([

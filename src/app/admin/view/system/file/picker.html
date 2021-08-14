@@ -1,0 +1,94 @@
+<title>文件管理器</title>
+
+<div class="search-bar">
+    <form class="form-inline clearfix" action="{:url()}" method="get">
+        <input type="hidden" name="mark_type" value="{$mark_type}"/>
+        <input type="hidden" name="mark_value" value="{$mark_value}"/>
+        <input type="hidden" name="extensions" value="{$extensions}"/>
+
+        <div class="form-group field-range">
+            <select class="form-control" name="range">
+                <option value="0"<?=is_selected($range == 0)?>>当前信息</option>
+                <option value="1"<?=is_selected($range == 1)?>>全部附件</option>
+            </select>
+        </div>
+        <div class="form-group field-type">
+            <select class="form-control font-tabs" name="type">
+                {$type_options}
+            </select>
+        </div>
+        <div class="form-group field-word">
+            <input type="text" name="word" class="form-control" value="{$word}" placeholder="请输入关键词"/>
+        </div>
+        <div class="form-group field-btn">
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success"><i class="icon icon-search"></i> 搜索</button>
+                <a href="{$reset_url}" class="btn btn-default"><i class="icon icon-repeat"></i> 重置</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<eq name="is_file" value="1">
+    <div class="file-list">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr>
+                <th class="text-center" width="40" data-checkbox="true"></th>
+                <th class="text-center" width="60" data-field="id">ID</th>
+                <th class="text-center" data-field="name">文件名</th>
+                <th class="text-center" data-field="size" width="100">大小</th>
+                <th class="text-center" width="70" data-click-to-select="false">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <foreach name="list" item="vo">
+                <tr data-item='<?=json_encode($vo);?>'>
+                    <td class="text-center"></td>
+                    <td class="text-center" data-item="abc">{$vo.id}</td>
+                    <td class="text-left"><a href="{$vo.url}" target="_blank">{$vo.name}</a></td>
+                    <td class="text-center text-muted">{$vo.format_size}</td>
+                    <td class="text-center">
+                        <a class="btn btn-default btn-xs"><i class="icon icon-search-plus"></i></a>
+                        <!-- TODO 权限 -->
+                        <a class="btn btn-danger btn-xs"
+                           data-url="{:url('delete?id=' . $vo['id'])}"
+                           data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="icon icon-trash"></i></a>
+                    </td>
+                </tr>
+            </foreach>
+            </tbody>
+        </table>
+    </div>
+</eq>
+
+<eq name="is_image" value="1">
+    <div class="image-list" data-toggle="busy-image-viewer">
+        <div class="image-list-body clearfix">
+            <foreach name="list" item="vo">
+                <div class="item item-{$vo.id}" data-item='<?=json_encode($vo);?>'>
+                    <div class="thumb">
+                        <img src="{$vo.url}"/>
+
+                        <div class="tool-box">
+                            <div class="toolbar">
+                                <input type="checkbox" class="icon" value="{$vo.id}"/>
+
+                                <div class="pull-right">
+                                    <a class="preview cursor-zoom-in" href="javascript:void(0)"><i class="icon icon-search-plus"></i></a>
+                                    <a class="delete"
+                                       href="javascript:void(0)"
+                                       data-url="{:url('delete?id=' . $vo['id'])}"
+                                       data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="icon icon-trash"></i></a>
+                                </div>
+                            </div>
+                            <div class="name">{$vo.name}</div>
+                        </div>
+                    </div>
+                </div>
+            </foreach>
+        </div>
+    </div>
+</eq>
+
+{$page}

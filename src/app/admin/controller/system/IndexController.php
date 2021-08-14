@@ -81,7 +81,7 @@ class IndexController extends InsideController
             }
             unset($where['admin_type']);
             
-            return $where;
+            return [];
         });
         $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
         $this->setSelectLimit(50);

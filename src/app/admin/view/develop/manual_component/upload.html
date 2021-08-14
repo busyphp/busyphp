@@ -1,0 +1,179 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-upload"` 来触发
+
+```html
+<div data-toggle="busy-upload"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传` |
+| data-name | string | `否` | - | 设置表单参数名称, 如果为 `input`标签，则可以直接设置`name`值 |
+| data-mark-type | string | `否` | `file` | 上传的文件类型 |
+| data-mark-value | string | `否` | - | 上传的文件标识 |
+| data-value | string | `否` | - | 默认值, 如果为 `input`标签，则可以直接设置`value`值 |
+| data-dnd | boolean | `否` | `false` | 是否启用拖拽上传，该功能在一个页面只能有一个组件启用，请谨慎使用 |
+| data-paste | boolean | `否` | `false` | 是否启用粘贴上传，此功能为通过粘贴来添加截屏的图片 |
+| data-paste-container | string,jQueryElement | `否` | `document.body` | 是否启用粘贴上传，此功能为通过粘贴来添加截屏的图片，建议设置为`document.body` |
+| data-chunk-size | number | `否` | `5242880` 5M | 设置分片上传的单片大小，字节 |
+| data-threads | number | `否` | `3` | 设置上传并发数，允许同时最大上传进程数 |
+| data-duplicate | boolean | `否` | `false` | 设置是否去重，根据文件名字、文件大小和最后修改时间来生成hash Key |
+| data-class-name | string | `否` | - | 自定义css类名 |
+| data-placeholder | string | `否` | - | 设置上传提示，`input`标签支持使用`placeholder`属性 |
+| data-max-size | number | `否` | - | 设置最多允许选择的文件大小，字节 |
+| data-max-single-size | number | `否` | - | 设置单个文件大小，字节 |
+| data-max-total | number | `否` | - | 设置单次上传最多允许选择的数量 |
+| data-auto | boolean | `否` | `true` | 是否自动上传 |
+| data-object-fit | string | `否` | - | 设置图片或视频预览填充方式`css属性object-fit`的值，默认为`cover` |
+| 系统文件库:title |  |  |  |  |
+| data-select | boolean | `否` | `true` | 是否允许选择系统库文件 |
+| data-select-name | string | `否` | `图库选择` | 设置选择按钮的名称 |
+| data-select-icon | string | `否` | - | 设置选择按钮的图标css类名 |
+| data-select-class | string | `否` | - | 设置选择按钮的样式css类名 |
+| 上传本地文件:title |  |  |  |  |
+| data-upload | boolean | `否` | `true` | 是否允许上传本地文件 |
+| data-upload-name | string | `否` | `上传图片` | 设置上传按钮的名称 |
+| data-upload-icon | string | `否` | - | 设置上传按钮选图标css类名 |
+| data-upload-class | string | `否` | - | 设置上传按钮的样式css类名 |
+| 图片压缩:title |  |  |  |  |
+| data-compress | boolean | `否` | `false` | 是否在上传前对图片进行压缩 |
+| data-compress-width | number | `否` | `1600` | 压缩的图片最大宽度 |
+| data-compress-height | number | `否` | `1600` | 压缩的图片最大高度 |
+| data-compress-quality | number | `否` | `90` | 压缩的图片质量，只有type为`image/jpeg`的时候才有效 |
+| data-compress-zoom | boolean | `否` | `false` | 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false |
+| data-compress-crop | boolean | `否` | `false` | 是否允许裁剪 |
+| data-compress-meta | boolean | `否` | `true` | 是否保留头部meta信息 |
+| data-compress-larger | boolean | `否` | `false` | 如果发现压缩后文件大小比原来还大，则使用原来图片，此属性可能会影响图片自动纠正功能 |
+| data-compress-size | number | `否` | `0` | 单位字节，如果图片大小小于此值，不会采用压缩 |
+| 单文件上传 `type="single"`:title |  |  |  |  |
+| data-single-input | boolean | `否` | `true` | 是否显示上传地址输入框 |
+| data-single-preview | boolean | `否` | `true` | 是否显示文件预览，针对`图片，视频，音频`有效 |
+| data-single-preview-size | string | `否` | `100px,100px` | 设置预览尺寸，留空则默认大小，格式：`宽,高`，针对`音频`无效，`图片`可以设置另外另外一项为0则自动适配 |
+| 多文件上传 `type="files"`:title |  |  |  |  |
+| data-files-result | boolean | `否` | `true` | 是否显示文已上传的文件列表 |
+| 卡片上传 `type="card"`:title |  |  |  |  |
+| data-card-ratio | string | `否` | - | 设置容器显示比例，格式：`宽,高` |
+| data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形`，设置该类型后，将不显示上传和选择文件按钮 |
+
+
+### 使用示例
+            
+#### 单文件上传
+
+```demo:实例
+#demo1
+```
+
+#### 多文件上传
+```demo:实例
+#demo2
+```
+
+#### 卡片上传
+
+> 卡片上传仅支持`图片`及`视频`格式的文件，其它格式未做适配
+
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<h5>图片上传</h5>
+<input type="text" class="form-control" name="test"
+       data-toggle="busy-upload"
+       data-mark-type="image"
+       data-auto="false"
+       placeholder="可以将图片拖拽到这里上传，或使用粘贴功能"
+       id="demo1_image"/>
+<hr/>
+<h5>视频上传</h5>
+<div data-toggle="busy-upload"
+     data-name="test1"
+     data-mark-type="video"
+     data-placeholder="请上传或选择mp4文件"
+     id="demo1_video"></div>
+<hr/>
+<h5>音频上传</h5>
+<div data-toggle="busy-upload"
+     data-name="test2"
+     data-mark-type="audio"
+     data-placeholder="请上传或选择mp3文件"
+     id="demo1_audio"></div>
+<hr/>
+<h5>文件上传</h5>
+<div data-toggle="busy-upload"
+     data-name="test3"
+     data-mark-type="file"
+     data-placeholder="请上传文件"
+     id="demo1_file"></div>
+    </textarea>
+
+    <textarea class="hide" id="demo2">
+<h5>图片上传</h5>
+<div id="demo2_banner"
+     data-toggle="busy-upload"
+     data-type="files"
+     data-mark-type="banner"
+     data-auto="false"
+     data-name="demo2_banner"
+     data-value="{$skin.root}images/login/1.jpg,{$skin.root}images/login/2.jpg,{$skin.root}images/login/3.jpg"></div>
+<hr/>
+<h5>文件上传</h5>
+<div id="demo2_file"
+     data-toggle="busy-upload"
+     data-type="files"
+     data-mark-type="file"
+     data-auto="false"
+     data-name="demo2_file"
+     data-value='[{"url":"{$skin.root}images/login/1.jpg"},{"url":"{$skin.root}images/login/2.jpg"},{"url":"{$skin.root}images/login/3.jpg"}]'></div>
+    </textarea>
+
+    <textarea class="hide" id="demo3">
+<h5>图片上传</h5>
+<div style="width: 200px;" id="demo3_image" data-toggle="busy-upload"
+     data-type="card"
+     data-mark-type="image"
+     data-auto="false"
+     data-name="demo3_image"></div>
+<hr/>
+
+<h5>视频上传</h5>
+
+<div style="width: 200px;" id="demo3_video" data-toggle="busy-upload"
+     data-type="card"
+     data-mark-type="video"
+     data-card-icon="icon icon-file-video-o"
+     data-auto="false"
+     data-name="demo3_video"></div>
+
+<hr/>
+
+<h5>头像上传</h5>
+<div style="width: 200px;" id="demo3_avatar" data-toggle="busy-upload"
+     data-type="card"
+     data-mark-type="avatar"
+     data-card-type="circle"
+     data-card-icon="icon icon-image"
+     data-auto="false"
+     data-placeholder="请上传头像"></div>
+    </textarea>
+</block>

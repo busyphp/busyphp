@@ -440,7 +440,7 @@ class UeditorController extends InsideController
     private function getFileConfig()
     {
         $fileSet = FileSetting::init();
-        $list    = SystemFileClass::init()->getListByCache();
+        $list    = SystemFileClass::init()->getList();
         $array   = [];
         foreach ($list as $key => $value) {
             $fileSet->setClassify($key);

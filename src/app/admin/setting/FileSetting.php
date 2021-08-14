@@ -39,7 +39,7 @@ class FileSetting extends Setting
     {
         $this->classify = trim($classify);
         if (!self::$classList) {
-            self::$classList = SystemFileClass::init()->getListByCache();
+            self::$classList = SystemFileClass::init()->getList();
         }
         
         return $this;

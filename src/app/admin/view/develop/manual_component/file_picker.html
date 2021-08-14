@@ -1,0 +1,66 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-file-picker"` 来触发
+
+```html
+<button data-toggle="busy-file-picker">选择文件</button>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-mark-type | string | `否` | `file` | 文件类型 |
+| data-mark-value | string | `否` | - | 文件标识 |
+| data-multiple | boolean | `否` | `false` | 是否允许多选 |
+| data-count | number | `否` | 9 | 多选情况单次最多允许选择数，0为不限 |
+| data-extensions | string | `否` | - | 允许的文件后缀，多个用英文逗号隔开，不包含`.` |
+| data-success | string,function | `否` | - | 选中回调方法，参数：<br />**files** ：选中的文件数据集合|
+
+### 使用示例
+
+
+#### 基础示例
+
+```demo:实例
+#demo1
+```
+#### 多选示例
+
+```demo:实例
+#demo2
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-mark-type="audio" data-title="请选择图片">选择图片</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-mark-type="file" data-title="请选择文件">选择文件</button>
+<script>
+    $(function () {
+        $('.file-picker1').on(busyAdmin.e.filePickerSuccess, function (e, files) {
+            busyAdmin.dialog.alert(JSON.stringify(files));
+        });
+    })
+</script>
+    </textarea>
+
+    <textarea class="hide" id="demo2">
+<button class="btn btn-primary" data-toggle="busy-file-picker" data-multiple="true" data-count="9">选择文件</button>
+<button class="btn btn-primary" data-toggle="busy-file-picker" data-multiple="true" data-count="0">选择文件(不限数量)</button>
+    </textarea>
+</block>

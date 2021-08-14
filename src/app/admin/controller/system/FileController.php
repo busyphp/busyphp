@@ -3,12 +3,17 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
+use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\setting\FileSetting;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 附件管理
@@ -58,8 +63,7 @@ class FileController extends InsideController
             return $where;
         });
         $this->assign('classify_options', Transform::arrayToOption(SystemFile::getTypes()));
-        $this->assign('type_options', Transform::arrayToOption(SystemFileClass::init()
-            ->getListByCache(), 'var', 'name'));
+        $this->assign('type_options', Transform::arrayToOption(SystemFileClass::init()->getList(), 'var', 'name'));
         $this->setSelectLimit(50);
         $this->setSelectSimple(true);
         
@@ -138,6 +142,88 @@ class FileController extends InsideController
     
     /**
      * 文件管理器
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function picker()
+    {
+        $markType   = $this->iGet('mark_type', 'trim');
+        $markValue  = $this->iGet('mark_value', 'trim');
+        $extensions = $this->iGet('extensions', 'trim');
+        $range      = $this->iGet('range', 'intval');
+        $type       = $this->iGet('type', 'trim');
+        $word       = $this->iGet('word', 'trim');
+        $fileType   = SystemFile::FILE_TYPE_FILE;
+        
+        // 按分类查询
+        if ($range > 0) {
+            if (false !== stripos($type, 'type:')) {
+                $typeList = SystemFileClass::init()->getAdminOptions(true);
+                $fileType = substr($type, 5);
+                $typeList = $typeList[$fileType] ?? [];
+                $ins      = [];
+                
+                /** @var SystemFileClassInfo $item */
+                foreach ($typeList as $item) {
+                    $ins[] = $item->var;
+                }
+                
+                if ($typeList) {
+                    $this->model->whereEntity(SystemFileField::classify('in', $ins));
+                }
+            } else {
+                $typeList = SystemFileClass::init()->getList();
+                $fileType = $typeList[$type]->type ?? $fileType;
+                if ($type) {
+                    $this->model->whereEntity(SystemFileField::classify($type));
+                }
+            }
+        }
+        
+        //
+        // 当前信息
+        else {
+            $typeList = SystemFileClass::init()->getList();
+            $fileType = $typeList[$markType]->type ?? $fileType;
+            $this->model->whereEntity(SystemFileField::markType($markType));
+            $this->model->whereEntity(SystemFileField::markValue($markValue));
+        }
+        
+        // 允许的后缀
+        if ($extensions) {
+            $extensionsList = Filter::trimArray(explode(',', $extensions));
+            if ($extensionsList) {
+                $this->model->whereEntity(SystemFileField::extension('in', $extensionsList));
+            }
+        }
+        
+        if ($word) {
+            $this->model->whereEntity(SystemFileField::name('like', '%' . Filter::searchWord($word) . '%'));
+        }
+        
+        
+        $this->assign('type_options', SystemFileClass::init()->getAdminOptions($type));
+        $this->assign('mark_type', $markType);
+        $this->assign('mark_value', $markValue);
+        $this->assign('extensions', $extensions);
+        $this->assign('range', $range);
+        $this->assign('word', $word);
+        $this->assign('reset_url', url('', ['mark_type' => $markType, 'mark_value' => $markValue]));
+        $this->assign('is_file', in_array($fileType, [
+            SystemFile::FILE_TYPE_FILE,
+            SystemFile::FILE_TYPE_VIDEO,
+            SystemFile::FILE_TYPE_AUDIO
+        ]));
+        $this->assign('is_image', $fileType === SystemFile::FILE_TYPE_IMAGE);
+        
+        // TODO 分页应该能自定义为迷你版
+        return $this->select($this->model);
+    }
+    
+    
+    /**
+     * 文件管理器
      */
     public function library()
     {
@@ -176,7 +262,7 @@ class FileController extends InsideController
         
         // 没有指定类型则通过附件分类配置创建显示模板
         if (!$classify && $markType) {
-            $fileClass  = SystemFileClass::init()->getListByCache();
+            $fileClass  = SystemFileClass::init()->getList();
             $fileConfig = $fileClass[$markType];
             $listType   = $fileConfig['type'];
         }

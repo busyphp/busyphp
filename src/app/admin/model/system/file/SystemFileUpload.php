@@ -13,6 +13,7 @@ namespace BusyPHP\app\admin\model\system\file {
     use BusyPHP\helper\image\Image;
     use BusyPHP\helper\image\Thumb;
     use BusyPHP\app\admin\setting\FileSetting;
+    use Exception;
     
     /**
      * 附件上传
@@ -57,13 +58,15 @@ namespace BusyPHP\app\admin\model\system\file {
         
         /** @var FileSetting 上传配置 */
         protected $fileSetting = null;
-    
-    
+        
+        
         /**
          * SystemFileUpload constructor.
          */
         public function __construct()
         {
+            parent::__construct();
+            
             $this->fileSetting = FileSetting::init();
             
             // 基本目录
@@ -87,7 +90,7 @@ namespace BusyPHP\app\admin\model\system\file {
             }
             
             // 分片参数
-            $this->setChunkField('guid', 'chunks', 'chunk', 'is_complete', 'filename');
+            $this->setChunkField('chunk_guid', 'chunk_total', 'chunk_current', 'chunk_complete', 'chunk_filename');
             
             // 同名覆盖
             $this->setReplaceCover(true);
@@ -135,6 +138,8 @@ namespace BusyPHP\app\admin\model\system\file {
          * @param mixed $data
          * @return SystemFileUpload_Result|true
          * @throws AppException
+         * @throws VerifyException
+         * @throws Exception
          */
         public function upload($data)
         {
@@ -250,7 +255,7 @@ namespace BusyPHP\app\admin\model\system\file {
                 $fileModel->commit();
                 
                 return $returnData;
-            } catch (AppException $e) {
+            } catch (Exception $e) {
                 $fileModel->rollback();
                 
                 if ($uploadResult) {
@@ -260,7 +265,7 @@ namespace BusyPHP\app\admin\model\system\file {
                     unlink($thumbResult->savePath);
                 }
                 
-                throw new AppException($e->getMessage());
+                throw $e;
             }
         }
         
