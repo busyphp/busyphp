@@ -21,7 +21,8 @@
 		"ext-json"                 : "*",
 		"ext-pdo"                  : "*",
 		"ext-iconv"                : "*",
-		"ext-gd"                   : "*"
+		"ext-gd"                   : "*",
+		"ext-curl"                 : "*"
 	},
 	"require-dev" : {
 		"symfony/var-dumper" : "^4.2"
