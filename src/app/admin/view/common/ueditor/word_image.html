@@ -42,7 +42,7 @@
 
 	var fileConfig   = eval('({$file_config})'),
 		serverParams = editor.queryCommandValue('serverparam'),
-		markType     = serverParams.mark_image_type || '{$default_type}',
+		markType     = serverParams.mark_image_type || 'image',
 		markValue    = serverParams.mark_value || '',
 		config       = fileConfig[markType] || {};
 

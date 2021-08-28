@@ -8,24 +8,6 @@
     <js href="{$url.plugin}third-party/webuploader/webuploader.min.js"/>
     <css href="{$url.plugin}third-party/webuploader/webuploader.css"/>
     <css href="{$url.plugin}dialogs/attachment/attachment.css"/>
-    <style>
-        #online ul { margin-top: 10px;}
-        #online li div span.file-title { height: 15px; line-height: 15px;}
-        #online ul { margin-top: 10px; }
-        #online select { }
-        #online .searchBar { border-bottom: 1px #ccc solid; padding: 0 10px 10px; }
-        #online .searchBar select { height: 30px; padding: 5px; }
-        #online .searchBar .searchTxt { height: 30px; border-radius: 4px; border: 1px #BBB solid; padding: 5px; box-sizing: border-box; }
-        #online .searchBar select:focus,
-        #online .searchBar .searchTxt:focus { outline: none; }
-        #online #onlineSearchAll,
-        #online #onlineSearchBtn { display: inline-block; margin-bottom: 0; margin-right: 5px; padding: 4px 10px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; background-image: none; border: 1px solid transparent; white-space: nowrap; font-size: 14px; border-radius: 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; vertical-align: top; float: right; }
-        #online #onlineSearchBtn { color: white; border-color: #285e8e; background-color: #3b97d7; }
-        #online #onlineSearchAll { color: #333; border-color: #ccc; background-color: #fff; }
-        #online #onlineSearchBtn:hover { background-color: #3276b1; }
-        #online #onlineSearchAll:hover { background-color: #eee; }
-        #online #fileList { height: 294px}
-    </style>
 </head>
 <body>
 
@@ -61,22 +43,7 @@
         </div>
 
         <!-- 在线图片 -->
-        <div id="online" class="panel">
-            <div class="searchBar">
-                <form id="onlineForm" onsubmit="return false;">
-                    <select class="searchType" id="onlineSelect">{$options}</select>
-                    <input class="searchTxt text" type="text" id="onlineWord" placeholder="关键词"/>
-                    <label>
-                        <input type="checkbox" id="onlineSelf" value="1" checked="checked"/>
-                        当前信息
-                    </label>
-                    <input id="onlineSearchAll" type="reset" value="重置"/>
-                    <input id="onlineSearchBtn" type="submit" value="搜索"/>
-                </form>
-            </div>
-            <div id="fileList"><var id="lang_imgLoading"></var></div>
-        </div>
-
+        <div id="online" class="panel"></div>
     </div>
 </div>
 <script src="{:url('?js=1')}"></script>

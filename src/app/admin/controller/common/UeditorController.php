@@ -4,20 +4,22 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
-use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\SystemFileUpload;
 use BusyPHP\app\admin\setting\FileSetting;
 use BusyPHP\exception\AppException;
+use Exception;
 use stdClass;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
- * 百度Ueditor编辑器
+ * 百度UEditor编辑器
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/16 下午2:58 下午 Ueditor.php $
+ * @version $Id: 2021/8/28 下午上午9:52 UeditorController.php $
  */
 class UeditorController extends InsideController
 {
@@ -61,88 +63,17 @@ class UeditorController extends InsideController
     
     /**
      * 插入图片
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function insert_image()
     {
-        // 在线图片管理
         if ($this->isAjax()) {
-            // 上传
-            if (isset($_FILES['upload'])) {
-                return $this->json($this->upload());
-            }
-            
-            
-            // 搜索
-            $jsonData          = [];
-            $jsonData['state'] = 'SUCCESS';
-            
-            try {
-                if (!$this->checkLogin()) {
-                    throw new AppException('请登录后操作');
-                }
-                
-                $word        = $this->iRequest('word', 'trim');
-                $markType    = $this->iRequest('mark_type', 'trim');
-                $markValue   = $this->iRequest('mark_value', 'trim');
-                $newMarkType = $this->iRequest('new_mark_type', 'trim', 0);
-                $isSelf      = $this->iRequest('is_self', 'intval');
-                $type        = $isSelf ? $markType : $newMarkType;
-                $start       = $this->iRequest('start', 'intval');
-                $size        = $this->iRequest('size', 'intval');
-                
-                // 搜索条件
-                $where              = [];
-                $where['extension'] = ['in', ['jpg', 'jpeg', 'png', 'gif', 'bmp']];
-                
-                // 当前信息
-                if ($isSelf && $markValue) {
-                    $where['mark_value'] = $markValue;
-                }
-                
-                // 按照类型搜索
-                if ($type && $type != SystemFile::FILE_TYPE_IMAGE) {
-                    $where['mark_type'] = $type;
-                }
-                
-                // 按关键字搜索
-                if ($word) {
-                    $where['name'] = ['like', '%' . Filter::searchWord($word) . '%'];
-                }
-                
-                $model            = SystemFile::init();
-                $count            = floatval($model->whereof($where)->count());
-                $jsonData['list'] = [];
-                
-                // 有数据
-                if ($count > 0) {
-                    $list              = $model->field('id,url,name,size')
-                        ->whereof($where)
-                        ->order('id DESC')
-                        ->limit($start, $size)
-                        ->selecting();
-                    $jsonData['list']  = $list;
-                    $jsonData['total'] = $count;
-                    $jsonData['start'] = $start;
-                } else {
-                    $jsonData['total'] = 0;
-                    $jsonData['state'] = '没有找到相关图片';
-                }
-                
-                if ($this->app->isDebug()) {
-                    $jsonData['trace'] = trace();
-                }
-            } catch (AppException $e) {
-                $jsonData['state'] = $e->getMessage();
-            }
-            
-            return $this->json($jsonData);
+            return $this->json($this->upload());
         } else {
-            $url = url('', [$this->request->getVarAjax() => 1]);
-            $this->assign('search_url', $url);
-            $this->assign('upload_url', $url);
-            $this->assign('image_options', SystemFileClass::init()->getAdminImageOptions('', false));
+            $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
-            $this->assign('default_type', SystemFile::FILE_TYPE_IMAGE);
             
             return $this->display();
         }
@@ -151,87 +82,17 @@ class UeditorController extends InsideController
     
     /**
      * 插入附件
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function insert_attachment()
     {
-        // 在线附件管理
         if ($this->isAjax()) {
-            // 上传
-            if (isset($_FILES['upload'])) {
-                return $this->json($this->upload());
-            }
-            
-            // 搜索
-            $jsonData          = [];
-            $jsonData['state'] = 'SUCCESS';
-            try {
-                if (!$this->checkLogin()) {
-                    throw new AppException('请登录后操作');
-                }
-                
-                // 搜索
-                $word        = $this->iRequest('word', 'trim');
-                $markType    = $this->iRequest('mark_type', 'trim');
-                $markValue   = $this->iRequest('mark_value', 'trim');
-                $newMarkType = $this->iRequest('new_mark_type', 'trim', 0);
-                $isSelf      = $this->iRequest('is_self', 'intval');
-                $type        = $isSelf ? $markType : $newMarkType;
-                $start       = $this->iRequest('start', 'intval');
-                $size        = $this->iRequest('size', 'intval');
-                
-                // 搜索条件
-                $where             = [];
-                $where['classify'] = SystemFile::FILE_TYPE_FILE;
-                
-                // 当前信息
-                if ($isSelf && $markValue) {
-                    $where['mark_value'] = $markValue;
-                }
-                
-                // 按照类型搜索
-                if ($type && $type != SystemFile::FILE_TYPE_FILE) {
-                    $where['mark_type'] = $type;
-                }
-                
-                // 按关键字搜索
-                if ($word) {
-                    $where['name'] = ['like', '%' . Filter::searchWord($word) . '%'];
-                }
-                
-                $model            = SystemFile::init();
-                $count            = floatval($model->whereof($where)->count());
-                $jsonData['list'] = [];
-                
-                // 有数据
-                if ($count > 0) {
-                    $list              = $model->field('id,url,name,size')
-                        ->whereof($where)
-                        ->order('id DESC')
-                        ->limit($start, $size)
-                        ->selecting();
-                    $jsonData['list']  = $list;
-                    $jsonData['total'] = $count;
-                    $jsonData['start'] = $start;
-                } else {
-                    $jsonData['total'] = 0;
-                    $jsonData['state'] = '没有找到相关附件';
-                }
-            } catch (AppException $e) {
-                $jsonData['state'] = $e->getMessage();
-            }
-            
-            if ($this->app->isDebug()) {
-                $jsonData['trace'] = trace();
-            }
-            
-            return $this->json($jsonData);
+            return $this->json($this->upload());
         } else {
-            $url = url('', [$this->request->getVarAjax() => 1]);
-            $this->assign('search_url', $url);
-            $this->assign('upload_url', $url);
-            $this->assign('options', SystemFileClass::init()->getAdminFileOptions('', false));
+            $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
-            $this->assign('default_type', SystemFile::FILE_TYPE_FILE);
             
             return $this->display();
         }
@@ -240,7 +101,9 @@ class UeditorController extends InsideController
     
     /**
      * 插入视频
-     * @throws AppException
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function insert_video()
     {
@@ -249,7 +112,6 @@ class UeditorController extends InsideController
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
-            $this->assign('default_type', SystemFile::FILE_TYPE_VIDEO);
             
             return $this->display();
         }
@@ -265,7 +127,6 @@ class UeditorController extends InsideController
             return $this->json($this->upload(true));
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
-            $this->assign('default_type', SystemFile::FILE_TYPE_IMAGE);
             
             return $this->display();
         }
@@ -274,6 +135,9 @@ class UeditorController extends InsideController
     
     /**
      * word图片转存
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function word_image()
     {
@@ -283,37 +147,13 @@ class UeditorController extends InsideController
     
     /**
      * 编辑器运行JS
+     * @return Response
+     * @throws DbException
+     * @throws DataNotFoundException
      */
     public function runtime()
     {
-        $this->app->config->load(App::getBusyPath('app' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'config') . 'ueditor.php', 'ueditor');
-        $uEditorConfig = $this->app->config->get('ueditor');
-        
-        foreach ($uEditorConfig as $key => $config) {
-            // 工具栏解析
-            $config['toolbars'] = [array_map('trim', explode(',', $config['toolbars']))];
-            
-            // 白名单规则解析
-            if ($config['xssFilterRules']) {
-                $whitList           = array_map('trim', explode(';', $config['whitList']));
-                $config['whitList'] = [];
-                foreach ($whitList as $tag => $rule) {
-                    $rule                     = array_map('trim', explode(',', $rule));
-                    $config['whitList'][$tag] = $rule;
-                }
-                $config['whitList'] = $config['whitList'] ? $config['whitList'] : new stdClass();
-            } else {
-                $config['whitList'] = new stdClass();
-            }
-            
-            $uEditorConfig[$key] = $config;
-        }
-        
-        $this->assign('editor_config', json_encode($uEditorConfig));
         $this->assign('file_config', json_encode($this->getFileConfig()));
-        $this->assign('default_image', SystemFile::FILE_TYPE_IMAGE);
-        $this->assign('default_video', SystemFile::FILE_TYPE_VIDEO);
-        $this->assign('default_file', SystemFile::FILE_TYPE_FILE);
         
         return $this->display();
     }
@@ -356,7 +196,7 @@ class UeditorController extends InsideController
             $jsonData['original'] = $result->name;
             $jsonData['type']     = $result->extension;
             $jsonData['size']     = $result->size;
-        } catch (AppException $e) {
+        } catch (Exception $e) {
             $jsonData['state'] = $e->getMessage();
         }
         
@@ -436,6 +276,8 @@ class UeditorController extends InsideController
     /**
      * 获取配置
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     private function getFileConfig()
     {

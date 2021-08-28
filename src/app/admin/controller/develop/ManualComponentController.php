@@ -279,4 +279,13 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 富文本编辑器
+     */
+    public function editor()
+    {
+        return $this->display();
+    }
 }

@@ -1,0 +1,154 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-editor"` 来触发
+
+```html
+<div data-toggle="busy-editor"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-type | string | `否` | `ue` | 编辑器类型，`ue:百度富文本编辑器` |
+| data-mark-image | string | `否` | `image` | 编辑器图片附件标识 |
+| data-mark-video | string | `否` | `video` | 编辑器视频附件标识 |
+| data-mark-audio | string | `否` | `audio` | 编辑器音频附件标识 |
+| data-mark-file | string | `否` | `file` | 编辑器附件标识 |
+| data-show-count | boolean | `否` | `false` | 是否显示字数统计 |
+| data-auto-save | boolean | `否` | `false` | 是否自动保存到本地 |
+| data-zindex | number | `否` | 1 | 编辑器层级 |
+| data-catch-remote-image | boolean | `否` | `true` | 是否允许抓取远程图片到本地 |
+| data-catch-remote-image | boolean | `否` | `true` | 是否允许抓取远程图片到本地 |
+| data-auto-height | boolean | `否` | `true` | 是否允许编辑器更随内容自动长高 |
+| data-element-path | boolean | `否` | `false` | 是否显示元素路径 |
+| data-sticky-toolbar | boolean | `否` | `false` | 是否固定工具栏 |
+| data-video-upload | boolean | `否` | `false` | 是否允许上传视频 |
+| data-video-manager | boolean | `否` | `false` | 是否显示在线视频 |
+| data-image-manager | boolean | `否` | `false` | 是否显示在线图片 |
+| data-file-manager | boolean | `否` | `false` | 是否显示在线附件 |
+| data-locale | string | `否` | `zh-cn` | 编辑器语言 |
+| data-placeholder | string | `否` | - | 输入提示 |
+| data-name | string | `否` | `content` | 表单域名称，需要放到`form`标签内有效 |
+| UEditor配置:title |  |  |  |  |
+| data-ue-type | string | `否` | `small` | Ueditor编辑器预定义配置，支持：<br />`default`：默认版<br />`small`：简洁版<br />`text`：只允许输入文字 |
+| data-ue-toolbar | string | `否` | - | Ueditor编辑器工具栏配置，多个用逗号隔开 |
+| data-ue-options | object | `否` | - | Ueditor编辑器配置选项，参考：[Ueditor](http://fex.baidu.com/ueditor/) |
+
+### 使用示例
+
+#### 简洁版
+
+```demo:实例
+#demo1
+```
+
+#### 全功能
+
+```demo:实例
+#demo1_1
+```
+
+#### 文字版
+
+```demo:实例
+#demo1_2
+```
+
+#### 工具栏浮动/自动高度
+
+```demo:实例
+#demo2
+```
+
+#### 定制工具栏
+
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1">
+        <button class="btn btn-primary" id="demo1_btn1">获取内容</button>
+        <button class="btn btn-primary" id="demo1_btn2">设置内容</button>
+        <button class="btn btn-primary" id="demo1_btn3">禁用</button>
+        <button class="btn btn-primary" id="demo1_btn4">启用</button>
+        <button class="btn btn-primary" id="demo1_btn5">获得焦点</button>
+        <button class="btn btn-primary" id="demo1_btn6">失去焦点</button>
+        <button class="btn btn-primary" id="demo1_btn7">插入内容</button>
+        <hr/>
+        <textarea id="demo1_text" class="form-control" data-toggle="busy-editor" placeholder="测试"></textarea>
+        <script>
+            $(function () {
+                $('#demo1_btn1').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('ready', function () {
+                        busyAdmin.dialog.alert(this.getContent());
+                    });
+                });
+                $('#demo1_btn2').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('setContent', '<p>这是设置的自定义内容</p>');
+                });
+                $('#demo1_btn3').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('setDisabled', true);
+                });
+                $('#demo1_btn4').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('setDisabled', false);
+                });
+                $('#demo1_btn5').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('setFocus', true);
+                });
+                $('#demo1_btn6').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('setFocus', false);
+                });
+                $('#demo1_btn7').on('click', function () {
+                    $('#demo1_text').busyAdminEditor('append', '<p>这是插入的内容</p>');
+                });
+            })
+        </script>
+    </template>
+
+    <template id="demo1_1">
+        <textarea class="form-control"
+                  data-toggle="busy-editor"
+                  data-image-manager="true"
+                  data-video-manager="true"
+                  data-video-upload="true"
+                  data-file-manager="true"
+                  data-ue-type="default"></textarea>
+    </template>
+    
+    <template id="demo1_2">
+        <textarea class="form-control"
+                  data-toggle="busy-editor"
+                  data-ue-type="text"></textarea>
+    </template>
+    
+    <template id="demo2">
+        <textarea class="form-control"
+                  data-toggle="busy-editor"
+                  data-auto-height="true"
+                  data-sticky-toolbar="true"
+                  style="height: 200px;"></textarea>
+    </template>
+
+    <template id="demo3">
+        <textarea class="form-control"
+                  data-toggle="busy-editor"
+                  data-ue-toolbar="bold,italic,underline" placeholder="请输入内容"></textarea>
+    </template>
+</block>
