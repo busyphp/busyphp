@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\controller\common;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
@@ -10,7 +9,6 @@ use BusyPHP\app\admin\model\system\file\SystemFileUpload;
 use BusyPHP\app\admin\setting\FileSetting;
 use BusyPHP\exception\AppException;
 use Exception;
-use stdClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
