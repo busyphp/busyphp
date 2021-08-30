@@ -3,14 +3,13 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\Autocomplete;
 use BusyPHP\app\admin\js\SelectPicker;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
-use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Str;
-use BusyPHP\Model;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\Controller;
@@ -150,6 +149,12 @@ abstract class AdminController extends Controller
      */
     protected $pluginSelectPicker;
     
+    /**
+     * JS Autocomplete 插件
+     * @var Autocomplete
+     */
+    protected $pluginAutocomplete;
+    
     
     /**
      * 在控制器中初始化基本事物
@@ -173,6 +178,14 @@ abstract class AdminController extends Controller
             case 'SelectPicker':
                 $this->pluginSelectPicker = new SelectPicker();
                 if ($result = $this->pluginSelectPicker->build()) {
+                    throw new HttpResponseException($this->success('', '', $result));
+                }
+            break;
+            
+            // 自动处理Autocomplete插件
+            case 'Autocomplete':
+                $this->pluginAutocomplete = new Autocomplete();
+                if ($result = $this->pluginAutocomplete->build()) {
                     throw new HttpResponseException($this->success('', '', $result));
                 }
             break;

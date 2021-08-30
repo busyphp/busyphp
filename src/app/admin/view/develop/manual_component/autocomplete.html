@@ -8,6 +8,8 @@
             <script type="text/x-markdown" id="markdown">
 ### 开始
 
+
+
 本组件属于内置组件，无需引用即可使用
 
 ### 使用
@@ -23,19 +25,49 @@
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
 | 基本属性:title |  |  |  |  |
-| data-type | string | `否` | `ue` | 编辑器类型，`ue:百度富文本编辑器` |
+| data-list | [string] | `否` | null | 设置数据，如：["张三","李四"] |
+| data-url | boolean,string,function | `否` | `false` | 是否启用异步数据选项，设置字符串URL则从该地址获取，否则从当前网址获取 |
+| data-delay | number | `否` | `250` | 异步加载延迟毫秒 |
+| data-model | string | `否` | - | 设置自动获取选项的模型类名称 |
+| data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
+| data-text-field | string | `否` | `name` | 取模型数据的text值字段 |
+| data-limit | string | `否` | `name` | 模型数据最大展示条数，0为不限 |
+| data-order | string | `否` | `id DESC` | 模型数据排序方式，多个用英文逗号隔开 |
+| data-search-min | number | `否` | 1 | 设置自动提示最少需要输入多少个字符，0为不限 |
 
 ### 使用示例
 
-#### 简洁版
-
+#### 基本示例
 ```demo:实例
 #demo1
+```
+
+#### 异步示例
+```demo:实例
+#demo2
 ```
             </script>
         </div>
     </div>
 
-    <template id="demo1">
-    </template>
+    <textarea id="demo1" class="hide">
+请输入关键词 a,b进行测试
+<input type="text"
+       class="form-control"
+       placeholder="请输入内容"
+       data-toggle="busy-autocomplete"
+       data-search-min="1"
+       data-list='["Action","Blue", "As", "Close", "Bold"]'/>
+    </textarea>
+
+    <textarea id="demo2" class="hide">
+该示例读取的系统日志，请输入日志标题关键词进行测试，如：登录，删除
+<input type="text"
+       class="form-control"
+       placeholder="请输入内容"
+       data-toggle="busy-autocomplete"
+       data-search-min="1"
+       data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>"
+       data-text-field="<?=\BusyPHP\app\admin\model\system\logs\SystemLogsField::title();?>"/>
+    </textarea>
 </block>
