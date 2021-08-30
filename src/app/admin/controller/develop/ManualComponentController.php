@@ -288,4 +288,22 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 下拉选择器
+     */
+    public function select_picker()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 输入提示
+     */
+    public function autocomplete()
+    {
+        return $this->display();
+    }
 }

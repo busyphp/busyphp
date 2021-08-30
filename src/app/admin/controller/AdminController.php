@@ -3,11 +3,14 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\SelectPicker;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
+use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Str;
+use BusyPHP\Model;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\Controller;
@@ -21,6 +24,7 @@ use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Exception;
+use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Session;
 use think\Response;
@@ -134,19 +138,44 @@ abstract class AdminController extends Controller
      */
     private $layoutLeftNavActive = '';
     
+    /**
+     * 请求的插件名称
+     * @var bool
+     */
+    protected $requestPluginName;
+    
+    /**
+     * JS SelectPicker 插件
+     * @var SelectPicker
+     */
+    protected $pluginSelectPicker;
+    
     
     /**
      * 在控制器中初始化基本事物
      * @param bool $checkLogin 是否验证登录，默认验证
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function initialize($checkLogin = true)
     {
-        $this->publicConfig = config('user.public');
-        $this->urlPath      = SystemMenu::getUrlPath();
+        $this->publicConfig      = config('user.public');
+        $this->urlPath           = SystemMenu::getUrlPath();
+        $this->requestPluginName = $this->request->header('Busy-Admin-Plugin', '');
         
         // 验证登录
         if ($checkLogin) {
             $this->isLogin();
+        }
+        
+        switch ($this->requestPluginName) {
+            // 自动处理SelectPicker插件
+            case 'SelectPicker':
+                $this->pluginSelectPicker = new SelectPicker();
+                if ($result = $this->pluginSelectPicker->build()) {
+                    throw new HttpResponseException($this->success('', '', $result));
+                }
+            break;
         }
     }
     
