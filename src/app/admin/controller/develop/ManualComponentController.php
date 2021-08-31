@@ -306,4 +306,22 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 穿梭框
+     */
+    public function shuttle()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 全选反选
+     */
+    public function check_all()
+    {
+        return $this->display();
+    }
 }

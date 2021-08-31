@@ -1,0 +1,81 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-checked-all"` 来触发
+
+```html
+<input type="checkbox" data-toggle="busy-shuttle" />
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-child | string | `是` | - | 在父Checkbox上设置子Checkbox选择器 |
+| data-parent | string | `是` | - | 在子Checkbox上设置父Checkbox选择器 |
+
+### 使用示例
+
+#### 默认半选
+```demo:实例
+#demo1
+```
+
+#### 默认全选
+```demo:实例
+#demo2
+```
+
+#### 多级关联
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea id="demo1" class="hide">
+<div class="checkbox-inline"><label><input type="checkbox" class="demo1_check_all" data-toggle="busy-checked-all" data-child="[name='demo1_test[]']"/> 全选</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" checked name="demo1_test[]" data-toggle="busy-checked-all" data-parent=".demo1_check_all"/> 百度</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" checked name="demo1_test[]" data-toggle="busy-checked-all" data-parent=".demo1_check_all"/> 腾讯</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" disabled name="demo1_test[]" data-toggle="busy-checked-all" data-parent=".demo1_check_all"/> 阿里</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" name="demo1_test[]" data-toggle="busy-checked-all" data-parent=".demo1_check_all"/> 抖音</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo1_check_all" data-toggle="busy-checked-all" data-child="[name='demo1_test[]']"/> 全选</label></div>
+    </textarea>
+    
+    <textarea id="demo2" class="hide">
+<div class="checkbox-inline"><label><input type="checkbox" checked class="demo2_check_all" data-toggle="busy-checked-all" data-child="[name='demo2_test[]']"/> 全选</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" name="demo2_test[]" data-toggle="busy-checked-all" data-parent=".demo2_check_all"/> 百度</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" name="demo2_test[]" data-toggle="busy-checked-all" data-parent=".demo2_check_all"/> 腾讯</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" name="demo2_test[]" data-toggle="busy-checked-all" data-parent=".demo2_check_all"/> 阿里</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" name="demo2_test[]" data-toggle="busy-checked-all" data-parent=".demo2_check_all"/> 抖音</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo2_check_all" data-toggle="busy-checked-all" data-child="[name='demo2_test[]']"/> 全选</label></div>
+    </textarea>
+    
+    <textarea id="demo3" class="hide">
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1" data-toggle="busy-checked-all" data-child=".demo-1-child"/> 全选</label></div>
+<br />
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-child demo-1-1" data-toggle="busy-checked-all" data-parent=".demo-1" data-child=".demo-1-1-1"/> 百度</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-1-1" data-toggle="busy-checked-all" data-parent=".demo-1-1"/> 新闻</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-1-1" data-toggle="busy-checked-all" data-parent=".demo-1-1"/> 图片</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-1-1" data-toggle="busy-checked-all" data-parent=".demo-1-1"/> 百科</label></div>
+<br />
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-child demo-1-2" data-toggle="busy-checked-all" data-parent=".demo-1" data-child=".demo-1-2-1"/> 腾讯</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-2-1" data-toggle="busy-checked-all" data-parent=".demo-1-2"/> 新闻</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-2-1" data-toggle="busy-checked-all" data-parent=".demo-1-2"/> 图片</label></div>
+<div class="checkbox-inline"><label><input type="checkbox" class="demo-1-2-1" data-toggle="busy-checked-all" data-parent=".demo-1-2"/> 百科</label></div>
+    
+    </textarea>
+</block>
