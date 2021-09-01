@@ -8,21 +8,12 @@
             <script type="text/x-markdown" id="markdown">
 ### 开始
 
-本组件需要引用后使用，组件名称：`busyAdmin.ext.catalog`
-
-```js
-require([busyAdmin.ext.catalog], function() {
-    // 执行目录实例化
-    $('#demo').busyCatalog(options);
-});
-```
-
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-catalog` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-catalog"` 来触发
 
 ```html
-<div data-busy-catalog="">
+<div data-catalog="">
     <h1>标题1</h1>
     <h2>标题2</h2>
     <h3>标题3</h3>
@@ -34,12 +25,12 @@ require([busyAdmin.ext.catalog], function() {
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-busy-catalog | string | `是` | - | 初始化组件属性，指定内容文本则为目录的标题 |
-| data-busy-container | string | 否 | - | 指定存放目录容器的 `jQuery选择器`，不指定则生成到当前容器中 |
-| data-busy-scroll | string,boolean | 否 | - | 开启滚动监听，设置字符串则为滚动监听容器的 `jQuery选择器`，设为 `true` 则默认为 `body` |
-| data-busy-sticky | boolean | 否 | - | 是否要将目录钉住，滚动兼容容器必须是 `body` 有效 |
-| data-busy-top | number | 否 | 0 | 设置滚动监听开始上偏移值 |
-| data-busy-bottom | number | 否 | 0 | 设置滚动监听结束下偏移值 |
+| data-catalog | string | `是` | - | 初始化组件属性，指定内容文本则为目录的标题 |
+| data-container | string | 否 | - | 指定存放目录容器的 `jQuery选择器`，不指定则生成到当前容器中 |
+| data-scroll | string,boolean | 否 | - | 开启滚动监听，设置字符串则为滚动监听容器的 `jQuery选择器`，设为 `true` 则默认为 `body` |
+| data-sticky | boolean | 否 | - | 是否要将目录钉住，滚动兼容容器必须是 `body` 有效 |
+| data-top | number | 否 | 0 | 设置滚动监听开始上偏移值 |
+| data-bottom | number | 否 | 0 | 设置滚动监听结束下偏移值 |
 
 ### jQuery扩展
 
@@ -47,13 +38,13 @@ require([busyAdmin.ext.catalog], function() {
 
 ```js
 $(function(){
-    $('#demo').busyCatalog({
-        title: string, //参考 data-busy-catalog
-        container: string|Node|jQuery, //参考 data-busy-container
-        scroll: string|true|Node|jQuery, //参考 data-busy-scroll
-        sticky: boolean, //参考 data-busy-sticky
-        top: number, //参考 data-busy-top
-        bottom: number, //参考 data-busy-bottom
+    $('#demo').busyAdminCatalog({
+        title: string, //参考 data-catalog
+        container: string|Node|jQuery, //参考 data-container
+        scroll: string|true|Node|jQuery, //参考 data-scroll
+        sticky: boolean, //参考 data-sticky
+        top: number, //参考 data-top
+        bottom: number, //参考 data-bottom
     });
 });
 ```
@@ -70,7 +61,7 @@ $(function(){
     </div>
 
     <textarea class="hide" id="demo1">
-<div class="row" style="height: 400px; overflow-y: auto;" id="catalogScroll" data-busy-catalog="菜单目录" data-busy-container="#catalogContainer" data-busy-scroll="#catalogScroll">
+<div class="row" style="height: 400px; overflow-y: auto;" id="catalogScroll" data-toggle="busy-catalog" data-title="菜单目录" data-container="#catalogContainer" data-scroll="#catalogScroll">
     <div class="col-sm-8" id="catalogDemo">
         <h1>万年历</h1>
         <p>万年历是中国古代传说中最古老的一部太阳历。万年历是记录一定时间范围内（比如100年或更多）的具体阳历与阴历的日期的年历，方便有需要的人查询使用。万年只是一种象征，表示时间跨度大。</p>

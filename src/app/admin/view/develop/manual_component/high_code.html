@@ -8,21 +8,12 @@
             <script type="text/x-markdown" id="markdown">
 ### 开始
 
-本组件需要引用后使用，组件名称：`busyAdmin.ext.highCode`
-
-```js
-require([busyAdmin.ext.highCode], function() {
-    // 执行代码高亮
-    $('#demo').busyHighCode(options);
-});
-```
-
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-high-code` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-high-code"` 来触发
 
 ```html
-<textarea data-busy-high-code="html">
+<textarea data-toggle="busy-high-code">
     <div></div>
     <a></a>
 </textarea>
@@ -32,19 +23,7 @@ require([busyAdmin.ext.highCode], function() {
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-busy-high-code | string | `是` | - | 初始化组件属性，指定内容则为对应的语言，指定`auto`或空则自动识别 |
-
-### jQuery扩展
-
-`$.fn.busyHighCode(options)`;
-
-```js
-$(function(){
-    $('#demo').busyHighCode({
-        type: string, //参考 data-busy-high-code
-    });
-});
-```
+| data-type | string | `否` | - | 初始化组件属性，指定内容则为对应的语言，指定`auto`或空则自动识别 |
 
 ### 使用示例
 
@@ -62,7 +41,7 @@ $(function(){
         </div>
     </div>
 
-    <textarea class="hide" id="demo1"><script type="text/html" data-busy-high-code="">
+    <textarea class="hide" id="demo1"><script type="text/html" data-toggle="busy-high-code" data-type="html">
 <div>
     <a>测试</a>
 </div>
@@ -70,7 +49,7 @@ $(function(){
     
 
     <textarea class="hide" id="demo2">
-<script type="text/html" data-busy-high-code="php">
+<script type="text/html" data-toggle="busy-high-code" data-type="php">
 /**
  * @param $a
  * @param $b

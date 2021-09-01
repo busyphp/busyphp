@@ -14,46 +14,19 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-copy` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-copy"` 来触发
 
 ```html
-<button type="button" data-busy-copy="要复制的内容">点击复制</button>
+<button type="button" data-toggle="busy-copy" data-content="">点击复制</button>
 ```
 
 ### 标签属性
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-busy-copy | string | `是` | - | 初始化组件属性，指定内容文本则为复制的内容 |
-| data-busy-action | string | 否 | `copy` | 指定操作类型, `copy` 为复制, `cut` 为剪切 `剪切只能作用于 input 或 textarea 标签上` |
-| data-busy-target | string,boolean | 否 | - | 设置为 `true` 则复制元素内部，指定要复制的 `jQuery选择器` 则复制对应元素的内容 |
-| data-busy-success | string | 否 | - | 复制成功后的回调 `window全局方法名`，返回`false`阻止弹出成功提示 |
-| data-busy-error | string | 否 | - | 复制失败后的回调 `window全局方法名`，返回`false`阻止弹出失败提示 |
-| data-busy-decode | string | 否 | - | 复制的内容是否要执行 `decode`，目前支持: `html`，其它字符为 `window全局方法名` |
-
-### 标签事件
-
-| 事件名:240 | 参数:200 | 返回值:100 | 描述 |
-| :- | :- | :--: | - |
-| busy.admin.copy.success | `object` <br /> -- `action`: string 操作类型, <br /> -- `text`: string 复制的文本, <br /> -- `trigger`: HTMLElement 触发的节点 | `boolean` | 复制成功触发，返回false阻止执行 `data-busy-success` 阻止弹出成功提示 |
-| busy.admin.copy.error | `object` <br /> -- `action`: string 操作类型, <br /> -- `trigger`: HTMLElement 触发的节点 | `boolean` | 复制失败触发，返回false阻止执行 `data-busy-error` 阻止弹出失败提示 |
-| busy.admin.copy.decode | `object` | `string` | 解析文本触发，返回string阻止执行 `data-busy-decode` |
-
-### jQuery扩展
-
-`$.fn.busyCopy(options)`;
-
-```js
-$(function(){
-    $('#demo').busyCopy({
-        text: string, //参考 data-busy-copy
-        target: string|boolean, //参考 data-busy-target
-        success: callback, //参考 data-busy-success
-        error: callback, //参考 data-busy-error
-        decode: callback|string, //参考 data-busy-decode
-    });
-});
-```
+| data-content | string | `否` | - | 要复制的内容 |
+| data-action | string | 否 | `copy` | 指定操作类型, `copy` 为复制, `cut` 为剪切 `剪切只能作用于 input 或 textarea 标签上` |
+| data-target | string,boolean | 否 | - | 设置为 `true` 则复制元素内部，指定要复制的 `jQuery选择器` 则复制对应元素的内容 |
 
 ### 使用示例
 
@@ -80,6 +53,11 @@ $(function(){
 ```demo:实例
 #demo5
 ```
+
+#### 6. 剪切
+```demo:实例
+#demo6
+```
             </script>
         </div>
     </div>
@@ -87,30 +65,30 @@ $(function(){
     
     <textarea id="demo1" class="hide">
 <p>点击下方输入框进行复制</p>
-<input type="text" class="form-control" data-busy-copy="" data-busy-target="true" value="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd."/></textarea>
+<input type="text" class="form-control" data-toggle="busy-copy" data-target="true" value="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd."/></textarea>
 
     
     <textarea id="demo2" class="hide">
 <p>点击按钮进行复制</p>
 <div class="input-group">
     <input type="text" class="form-control" id="demo2Input" value="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd."/>
-    <div class="input-group-btn"><button class="btn btn-primary" data-busy-copy="" data-busy-target="#demo2Input">点击复制</button></div>
+    <div class="input-group-btn"><button class="btn btn-primary" data-toggle="busy-copy" data-target="#demo2Input">点击复制</button></div>
 </div></textarea>
 
     
     <textarea id="demo3" class="hide">
 <p>点击按钮进行复制</p>
-<button class="btn btn-primary" data-busy-copy="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd.">点击复制</button></textarea>
+<button class="btn btn-primary" data-toggle="busy-copy" data-content="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd.">点击复制</button></textarea>
 
     
     <textarea id="demo4" class="hide">
 <p>用事件属性改变弹出对话框，请打开控制台观察回调参数</p>
-<button class="btn btn-primary" data-busy-copy="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd." data-busy-success="copySuccess" data-busy-error="copyError" data-busy-decode="copyDecode">点击复制</button>
+<button class="btn btn-primary" data-toggle="busy-copy" data-content="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd." data-on-success="copySuccess" data-on-error="copyError" data-on-decode="copyDecode">点击复制</button>
 
 <script>
     // 复制成功
     window.copySuccess = function (e) {
-        console.log('复制成功', e);
+        console.log('复制成功');
 
         alert('复制成功');
 
@@ -119,7 +97,7 @@ $(function(){
 
     // 复制失败
     window.copyError = function (e) {
-        console.log('复制失败', e);
+        console.log('复制失败');
 
         alert('复制失败');
 
@@ -136,13 +114,13 @@ $(function(){
 
     <textarea id="demo5" class="hide">
 <p>事件监听会优先于事件属性执行，如果请打开控制台观察回调参数</p>
-<button class="btn btn-primary" data-busy-copy="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd." id="demo5Input">点击复制</button>
+<button class="btn btn-primary" data-toggle="busy-copy" data-content="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd." id="demo5Input">点击复制</button>
 
 <script>
     $(function () {
         // 监听复制成功事件
-        $('#demo5Input').on('busy.admin.copy.success', function (e, result) {
-            console.log('复制成功', result);
+        $('#demo5Input').on(busyAdmin.e.copySuccess, function (e) {
+            console.log('复制成功');
             
             busyAdmin.dialog.alertSuccess('复制成功');
             
@@ -150,8 +128,8 @@ $(function(){
         });
         
         // 监听复制失败事件
-        $('#demo5Input').on('busy.admin.copy.error', function (e, result) {
-            console.log('复制失败', result);
+        $('#demo5Input').on(busyAdmin.e.copyError, function (e) {
+            console.log('复制失败');
             
             busyAdmin.dialog.alertError('复制失败');
             
@@ -159,11 +137,18 @@ $(function(){
         });
         
         // 监听复制解析事件
-        $('#demo5Input').on('busy.admin.copy.decode', function (e, text) {
+        $('#demo5Input').on(busyAdmin.e.copyDecode, function (text) {
             console.log('解析复制内容', text);
             
             return text;
         });
     });
-</script></textarea>
+</script>
+    </textarea>
+
+    <textarea id="demo6" class="hide">
+<div class="input-group">
+    <input type="text" class="form-control" id="demo6Input" value="山西函拓科技有限公司 ShanXi Han Tuo Technology Co.,Ltd."/>
+    <div class="input-group-btn"><button class="btn btn-primary" data-toggle="busy-copy" data-action="cut" data-target="#demo6Input">剪切</button></div>
+</div></textarea>
 </block>
