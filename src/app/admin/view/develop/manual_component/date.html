@@ -13,74 +13,37 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-date` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-date-picker"` 来触发
 
 ```html
-<input type="text" data-busy-date=""/>
+<input type="text" data-toggle="busy-date-picker"/>
 ```
 
 ### 标签属性
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-busy-date | string | `是` | `YYYY-MM-DD` | 初始化组件属性，值为格式化日期的规则，支持如下规则：<br />`YYYY`: 年<br />`MM`: 月<br />`DD`: 日<br />`HH`: 时<br />`mm`: 分<br />`ss`: 秒<br />**注意：指定不同的规则可以显示不同的选择器** |
-| data-busy-range | bool,string | 否 | ` - ` | 设置是否启用范围选择，设置`true`则默认为` - `分隔符，设置`字符串`可自定义分隔符 |
-| data-busy-start-date | string | 否 | - | 设置单日历的默认时间，双日历的开始时间，支持`日期规则`组成的字符串 |
-| data-busy-end-date | string | 否 | - | 设置双日历的结束时间，支持`日期规则`组成的字符串 |
-| data-busy-min-date | string | 否 | - | 设置允许选择的最小时间，支持`日期规则`组成的字符串 |
-| data-busy-max-date | string | 否 | - | 设置允许选择的最大时间，支持`日期规则`组成的字符串 |
-| data-busy-force | boolean | 否 | `false` | 针对非input触发的元素，是否强制设置值 |
-| data-busy-value-target | string | 否 | - | 设置赋值选中值的附加元素`jQuery选择器`，非input会触发`busy.admin.date.picker.change`事件，input会触发`change`事件 |
-| data-busy-clear | boolean | 否 | `true` | 是否显示清空按钮，默认显示 |
-| data-busy-apply-class | string | 否 | - | 设置确认按钮的 css class 名称 |
-| data-busy-now-class | string | 否 | - | 设置现在按钮的 css class 名称 |
-| data-busy-clear-class | string | 否 | - | 设置清空按钮的 css class 名称 |
-| data-busy-span | string | 否 | - | 设置最多允许选择的时间跨度，格式：`年,月,日,时,分,秒`，某一项不需要可以填0代替，支持向后省略，<br />如：`10` 代表最多允许选择 10年的跨度<br />如：`0,0,0,10` 代表最多允许选择 10个小时的跨度|
-| data-busy-drops | string | 否 | `auto` | 设置默认打开方向，支持：`up`: 上, `down`: 下, `auto`: 自动识别|
-| data-busy-opens | string | 否 | `left` | 设置显示方向，支持：`left`: 左侧, `right`: 右侧, `center`: 中间|
-| data-busy-input | boolean | 否 | `false` | 是否自动为元素赋值 |
-| data-busy-link | boolean | 否 | `false` | 双日历模式，是否连接左右日历 |
-| data-busy-custom | boolean | 否 | `true` | 是否显示快速range范围的自定义选项 |
-| data-busy-ranges | string | 否 | - | 自定义快速选择范围的`window全局方法` |
-| data-busy-end-target | string | 否 | - | 设置关联结束元素的`jQuery选择器` |
-| data-busy-start-target | string | 否 | - | 设置关联开始元素的`jQuery选择器` |
-
-### 标签事件
-
-| 事件名:240 | 参数:200 | 返回值:100 | 描述 |
-| :- | :-: | :--: | - |
-| busy.admin.date.picker.show | `picker:DatePicker` | `void` | 日期控件显示完成触发 |
-| busy.admin.date.picker.hide | `picker:DatePicker` | `void` | 日期控件隐藏完成触发 |
-| busy.admin.date.picker.outsideClick | `picker:DatePicker` | `void` | 点击非日期控件区域的时候触发 |
-| busy.admin.date.picker.showCalendar | `picker:DatePicker` | `void` | 日历显示完成时触发 |
-| busy.admin.date.picker.hideCalendar | `picker:DatePicker` | `void` | 日历隐藏完成时触发 |
-| busy.admin.date.picker.apply | `picker:DatePicker` | `void` | 点击确定时触发 |
-| busy.admin.date.picker.clear | `picker:DatePicker` | `void` | 点击清空时触发 |
-| busy.admin.date.picker.change | `picker:DatePicker` | `void` | 触发显示日历的非input元素内容发生改变时触发 |
-
-### jQuery扩展
-
-`$.fn.busyDatePicker(options)`;
-
-```js
-$(function(){
-    $('#demo').busyDatePicker({
-        locale : {
-            format          : string, // 参考 data-busy-date
-            separator       : string, //参考 data-busy-range
-        },
-        valueTarget     : string, //参考 data-busy-value-target
-        startDate       : string|Date|moment, //参考 data-busy-start-date
-        endDate         : string|Date|moment, //参考 data-busy-end-date
-        minDate         : string|Date|moment, //参考 data-busy-min-date
-        maxDate         : string|Date|moment, //参考 data-busy-max-date
-        span            : object, // 参考 data-busy-max-date
-        opens           : string, // 参考 data-busy-opens
-        drops           : string, // 参考 data-busy-drops
-        // 更多参数基本和自定义属性一致
-    });
-});
-```
+| data-format | string | `否` | `YYYY-MM-DD` | 初始化组件属性，值为格式化日期的规则，支持如下规则：<br />`YYYY`: 年<br />`MM`: 月<br />`DD`: 日<br />`HH`: 时<br />`mm`: 分<br />`ss`: 秒<br />**注意：指定不同的规则可以显示不同的选择器** |
+| data-range | bool,string | 否 | ` - ` | 设置是否启用范围选择，设置`true`则默认为` - `分隔符，设置`字符串`可自定义分隔符 |
+| data-start-date | string | 否 | - | 设置单日历的默认时间，双日历的开始时间，支持`日期规则`组成的字符串 |
+| data-end-date | string | 否 | - | 设置双日历的结束时间，支持`日期规则`组成的字符串 |
+| data-min-date | string | 否 | - | 设置允许选择的最小时间，支持`日期规则`组成的字符串 |
+| data-max-date | string | 否 | - | 设置允许选择的最大时间，支持`日期规则`组成的字符串 |
+| data-force | boolean | 否 | `false` | 针对非input触发的元素，是否强制设置值 |
+| data-value-target | string | 否 | - | 设置赋值选中值的附加元素`jQuery选择器`，非input会触发`busy.admin.date.picker.change`事件，input会触发`change`事件 |
+| data-clear | boolean | 否 | `true` | 是否显示清空按钮，默认显示 |
+| data-apply-class | string | 否 | - | 设置确认按钮的 css class 名称 |
+| data-now-class | string | 否 | - | 设置现在按钮的 css class 名称 |
+| data-clear-class | string | 否 | - | 设置清空按钮的 css class 名称 |
+| data-span | string | 否 | - | 设置最多允许选择的时间跨度，格式：`年,月,日,时,分,秒`，某一项不需要可以填0代替，支持向后省略，<br />如：`10` 代表最多允许选择 10年的跨度<br />如：`0,0,0,10` 代表最多允许选择 10个小时的跨度|
+| data-drops | string | 否 | `auto` | 设置默认打开方向，支持：`up`: 上, `down`: 下, `auto`: 自动识别|
+| data-opens | string | 否 | `left` | 设置显示方向，支持：left: 左侧自动右侧靠边, right: 右侧自动左侧靠边, center: 中间 |
+| data-input | boolean | 否 | `false` | 是否自动为元素赋值 |
+| data-link | boolean | 否 | `false` | 双日历模式，是否连接左右日历 |
+| data-custom | boolean | 否 | `true` | 是否显示快速range范围的自定义选项 |
+| data-ranges | string | 否 | - | 自定义快速选择范围的`window全局方法` |
+| data-end-target | string | 否 | - | 设置关联结束元素的`jQuery选择器` |
+| data-start-target | string | 否 | - | 设置关联开始元素的`jQuery选择器` |
 
 ### 使用示例
 
@@ -135,108 +98,109 @@ $(function(){
     </div>
 
     <textarea class="hide" id="demo1">
-<input type="text" class="form-control" data-busy-date="" data-busy-min-date="2020-01-01" placeholder="YYYY-MM-DD"/></textarea>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-min-date="2020-01-01" placeholder="YYYY-MM-DD"/></textarea>
 
     <textarea class="hide" id="demo2">
 <label>年选择器</label>
-<input type="text" class="form-control" data-busy-date="YYYY" placeholder="YYYY"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY" placeholder="YYYY"/>
 <br />
 
 
 <label>月选择器</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM" placeholder="YYYY-MM"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM" placeholder="YYYY-MM"/>
 <br />
 
 
 <label>日选择器</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD" placeholder="YYYY-MM-DD"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD" placeholder="YYYY-MM-DD"/>
 <br />
 
 
 <label>时间选择器</label>
-<input type="text" class="form-control" data-busy-date="HH:mm:ss" placeholder="HH:mm:ss"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="HH:mm:ss" placeholder="HH:mm:ss"/>
 <br />
 
 
 <label>日期时间选择器</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD HH:mm:ss" placeholder="YYYY-MM-DD HH:mm:ss"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" placeholder="YYYY-MM-DD HH:mm:ss"/>
 <br />
 
 
 <label>时分选择器</label>
-<input type="text" class="form-control" data-busy-date="HH:mm" placeholder="HH:mm"/></textarea>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="HH:mm" placeholder="HH:mm"/></textarea>
  
     <textarea class="hide" id="demo3">
 <label>年范围</label>
-<input type="text" class="form-control" data-busy-date="YYYY" data-busy-range="true" placeholder="YYYY - YYYY"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY" data-range="true" placeholder="YYYY - YYYY"/>
 <br />
 
 
 <label>年月范围</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM" data-busy-range="true" placeholder="YYYY-MM - YYYY-MM"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM" data-range="true" placeholder="YYYY-MM - YYYY-MM"/>
 <br />
 
 
 <label>年月日范围</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD" data-busy-range="true" placeholder="YYYY-MM-DD - YYYY-MM-DD"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD" data-range="true" placeholder="YYYY-MM-DD - YYYY-MM-DD"/>
 <br />
 
 
 <label>时间范围</label>
-<input type="text" class="form-control" data-busy-date="HH:mm:ss" data-busy-range="true" placeholder="HH:mm:ss - HH:mm:ss"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="HH:mm:ss" data-range="true" placeholder="HH:mm:ss - HH:mm:ss"/>
 <br />
 
 
 <label>日期时间范围</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD HH:mm:ss" data-busy-range="true" placeholder="YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss"/></textarea>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" placeholder="YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss"/>
+    </textarea>
 
     <textarea class="hide" id="demo4">
-<input type="text" class="form-control" data-busy-date="YYYY/MM/DD" placeholder="YYYY/MM/DD"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY/MM/DD" placeholder="YYYY/MM/DD"/>
 <br />
 
 
-<input type="text" class="form-control" data-busy-date="YYYY年MM月DD日" placeholder="YYYY年MM月DD日"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY年MM月DD日" placeholder="YYYY年MM月DD日"/>
 <br />
 
 
-<input type="text" class="form-control" data-busy-date="YYYY年MM月DD日" data-busy-range=" 到 " placeholder="YYYY年MM月DD日 到 YYYY年MM月DD日"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY年MM月DD日" data-range=" 到 " placeholder="YYYY年MM月DD日 到 YYYY年MM月DD日"/>
 <br />
 
 
-<input type="text" class="form-control" data-busy-date="HH时mm分ss秒" data-busy-range=" ~ " placeholder="HH时mm分ss秒 ~ HH时mm分ss秒"/></textarea>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="HH时mm分ss秒" data-range=" ~ " placeholder="HH时mm分ss秒 ~ HH时mm分ss秒"/></textarea>
     
     <textarea class="hide" id="demo5">
 <label>最多允许选择7天</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD" data-busy-range="true" data-busy-span="0,0,7" placeholder="YYYY-MM-DD - YYYY-MM-DD"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD" data-range="true" data-span="0,0,7" placeholder="YYYY-MM-DD - YYYY-MM-DD"/>
 <br />
 
 
 <label>最多允许选择2年</label>
-<input type="text" class="form-control" data-busy-date="YYYY" data-busy-range="true" data-busy-span="2" placeholder="YYYY - YYYY"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY" data-range="true" data-span="2" placeholder="YYYY - YYYY"/>
 <br />
 
 
 <label>最多允许选择3个月</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM" data-busy-range="true" data-busy-span="0,3" placeholder="YYYY-MM - YYYY-MM"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM" data-range="true" data-span="0,3" placeholder="YYYY-MM - YYYY-MM"/>
 <br />
 
 
 <label>限制最小时间</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD" data-busy-range="true" data-busy-min-date="2020-01-01" placeholder="最小允许 2020-01-01"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD" data-range="true" data-min-date="2020-01-01" placeholder="最小允许 2020-01-01"/>
 <br />
 
 
 <label>限制最大为今天</label>
-<input type="text" class="form-control" data-busy-date="YYYY-MM-DD" data-busy-range="true" data-busy-max-date="{:date('Y-m-d')}" placeholder="限制到今日"/></textarea>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-format="YYYY-MM-DD" data-range="true" data-max-date="{:date('Y-m-d')}" placeholder="限制到今日"/></textarea>
     
     <textarea class="hide" id="demo6">
 <label>关闭快速选择</label>
-<input type="text" class="form-control" data-busy-date="" data-busy-range="true" data-busy-ranges="false"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-range="true" data-ranges="false"/>
 <br />
 
 
 <label>自定义快速选择</label>
-<input type="text" class="form-control" data-busy-date="" data-busy-range="true" data-busy-ranges="use_ranges"/>
+<input type="text" class="form-control" data-toggle="busy-date-picker" data-range="true" data-ranges="use_ranges"/>
 <script>
 // 自定义快速选择JS代码
 require([busyAdmin.lib.moment], function (moment) {
@@ -255,14 +219,14 @@ require([busyAdmin.lib.moment], function (moment) {
 <div class="input-group">
     <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="valueTarget"/>
     <div class="input-group-btn">
-        <a class="btn btn-success" data-busy-date="" data-busy-value-target="#valueTarget">点我触发</a>
+        <a class="btn btn-success" data-toggle="busy-date-picker" data-value-target="#valueTarget">点我触发</a>
     </div>
 </div>
 <br />
 
 
 <label>绑定到DIV上</label>
-<div class="form-control-static" style="border-bottom: 1px #ddd solid;" data-busy-date="YYYY年MM月DD日" data-busy-force="true">
+<div class="form-control-static" style="border-bottom: 1px #ddd solid;" data-toggle="busy-date-picker" data-format="YYYY年MM月DD日" data-force="true">
     点击获取
 </div></textarea>
     
@@ -270,10 +234,10 @@ require([busyAdmin.lib.moment], function (moment) {
 <label>关联触发单日历</label>
 <div class="row">
     <div class="col-sm-6">
-        <input type="text" class="form-control" id="startValue" data-busy-date="" data-busy-max-date="2021-03-31" data-busy-end-target="#endValue" placeholder="请选择开始时间"/>
+        <input type="text" class="form-control" id="startValue" data-toggle="busy-date-picker" data-max-date="2021-03-31" data-end-target="#endValue" placeholder="请选择开始时间"/>
     </div>
     <div class="col-sm-6">
-        <input type="text" class="form-control" id="endValue" data-busy-date="" data-busy-start-target="#startValue" placeholder="请选择结束时间"/>
+        <input type="text" class="form-control" id="endValue" data-toggle="busy-date-picker" data-start-target="#startValue" placeholder="请选择结束时间"/>
     </div>
 </div>
 <br />
@@ -282,10 +246,10 @@ require([busyAdmin.lib.moment], function (moment) {
 <label>关联触发双日历</label>
 <div class="row">
     <div class="col-sm-6">
-        <input type="text" class="form-control" id="start1Value" data-busy-range="true" data-busy-date="" data-busy-end-target="#end1Value" placeholder="请选择开始时间"/>
+        <input type="text" class="form-control" id="start1Value" data-range="true" data-toggle="busy-date-picker" data-end-target="#end1Value" placeholder="请选择开始时间"/>
     </div>
     <div class="col-sm-6">
-        <input type="text" class="form-control" id="end1Value" data-busy-range="true" data-busy-date="" data-busy-start-target="#start1Value" placeholder="请选择结束时间"/>
+        <input type="text" class="form-control" id="end1Value" data-range="true" data-toggle="busy-date-picker" data-start-target="#start1Value" placeholder="请选择结束时间"/>
     </div>
 </div></textarea>
 </block>
