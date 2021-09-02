@@ -1,0 +1,97 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 基本示例
+
+```demo:实例
+#demo1
+```
+
+### 边框徽章
+
+```demo:实例
+#demo2
+```
+
+### 胶囊徽章
+
+```demo:实例
+#demo3
+```
+
+### 小圆点
+
+```demo:实例
+#demo4
+```
+
+### 搭配示例
+
+```demo:实例
+#demo5
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<span class="badge badge-primary">主色</span>
+<span class="badge badge-secondary">次要</span>
+<span class="badge badge-info">一般</span>
+<span class="badge badge-success">成功</span>
+<span class="badge badge-warning">警告</span>
+<span class="badge badge-danger">错误</span>
+<span class="badge badge-light">亮色</span>
+<span class="badge badge-dark">暗色</span>
+<span class="badge badge-default">默认</span>
+    </textarea>
+    
+    <textarea class="hide" id="demo2">
+<span class="badge badge-outline-primary">主色</span>
+<span class="badge badge-outline-secondary">次要</span>
+<span class="badge badge-outline-info">一般</span>
+<span class="badge badge-outline-success">成功</span>
+<span class="badge badge-outline-warning">警告</span>
+<span class="badge badge-outline-danger">错误</span>
+<span class="badge badge-outline-light">亮色</span>
+<span class="badge badge-outline-dark">暗色</span>
+<span class="badge badge-outline-default">默认</span>
+    </textarea>
+    
+    <textarea class="hide" id="demo3">
+<span class="badge badge-primary badge-pill">主色</span>
+<span class="badge badge-secondary badge-pill">次要</span>
+<span class="badge badge-info badge-pill">一般</span>
+<span class="badge badge-success badge-pill">成功</span>
+<span class="badge badge-warning badge-pill">警告</span>
+<span class="badge badge-danger badge-pill">错误</span>
+<span class="badge badge-light badge-pill">亮色</span>
+<span class="badge badge-dark badge-pill">暗色</span>
+<span class="badge badge-default badge-pill">默认</span>
+    </textarea>
+    
+    <textarea class="hide" id="demo4">
+<span class="badge-dot badge-primary"></span>
+<span class="badge-dot badge-secondary"></span>
+<span class="badge-dot badge-info"></span>
+<span class="badge-dot badge-success"></span>
+<span class="badge-dot badge-warning"></span>
+<span class="badge-dot badge-danger"></span>
+<span class="badge-dot badge-light"></span>
+<span class="badge-dot badge-dark"></span>
+<span class="badge-dot badge-default"></span>
+    </textarea>
+    
+    <textarea class="hide" id="demo5">
+<button class="btn btn-primary">消息 <span class="badge-dot badge-light"></span></button>
+<button class="btn btn-primary">消息 <span class="badge badge-light">100</span></button>
+<button class="btn btn-outline-success">消息 <span class="badge badge-success">100</span></button>
+    </textarea>
+</block>

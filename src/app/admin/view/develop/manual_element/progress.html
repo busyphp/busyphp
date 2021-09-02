@@ -1,0 +1,103 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 基本示例
+
+```demo:实例
+#demo1
+```
+### 带有提示标签的进度条
+
+```demo:实例
+#demo2
+```
+
+### 进度条风格
+
+```demo:实例
+#demo3
+```
+
+### 条纹效果
+
+```demo:实例
+#demo4
+```
+
+### 动画效果
+
+为 `.progress-bar-striped` 添加 `.active` 类，使其呈现出由右向左运动的动画效果。IE9 及更低版本的浏览器不支持。
+
+```demo:实例
+#demo5
+```
+
+### 堆叠效果
+
+把多个进度条放入同一个 `.progress` 中，使它们呈现堆叠的效果。
+
+```demo:实例
+#demo6
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<div class="progress no-margin">
+    <div class="progress-bar" role="progressbar" style="width: 60%;"></div>
+</div>
+    </textarea>
+    <textarea class="hide" id="demo2">
+<div class="progress no-margin">
+    <div class="progress-bar" role="progressbar" style="width: 60%;">60%</div>
+</div>
+    </textarea>
+    <textarea class="hide" id="demo3">
+<div class="progress">
+    <div class="progress-bar progress-bar-success" style="width: 40%"></div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-info" style="width: 20%"></div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-warning" style="width: 60%"></div>
+</div>
+<div class="progress no-margin">
+    <div class="progress-bar progress-bar-danger" style="width: 80%"></div>
+</div>
+    </textarea>
+    <textarea class="hide" id="demo4">
+<div class="progress">
+    <div class="progress-bar progress-bar-success progress-bar-striped" style="width: 40%"></div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-info progress-bar-striped" style="width: 20%"></div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 60%"></div>
+</div>
+<div class="progress no-margin">
+    <div class="progress-bar progress-bar-danger progress-bar-striped" style="width: 80%"></div>
+</div>
+    </textarea>
+    <textarea class="hide" id="demo5">
+<div class="progress no-margin">
+    <div class="progress-bar progress-bar-success progress-bar-striped active" style="width: 40%"></div>
+</div>
+    </textarea>
+    <textarea class="hide" id="demo6">
+<div class="progress no-margin">
+    <div class="progress-bar progress-bar-success" style="width: 35%"></div>
+    <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 20%"></div>
+    <div class="progress-bar progress-bar-danger" style="width: 10%"></div>
+</div>
+    </textarea>
+</block>

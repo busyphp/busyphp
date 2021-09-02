@@ -1,0 +1,734 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 基本示例
+
+单独的表单控件会被自动赋予一些全局样式。所有设置了 `.form-control` 类的 `<input>`、`<textarea>` 和 `<select>` 元素都将被默认设置宽度属性为 width: 100%;。 将 `label` 元素和前面提到的控件包裹在 `.form-group` 中可以获得最好的排列。
+
+```demo:实例
+#demo1
+```
+
+### 内联表单
+
+为 `<form>` 元素添加 `.form-inline` 类可使其内容左对齐并且表现为 `inline-block` 级别的控件。只适用于窗口至少在 768px 宽度时（视口宽度再小的话就会使表单折叠）。
+
+> **可能需要手动设置宽度**<br />
+> 输入框和单选/多选框控件默认被设置为 `width: 100%;` 宽度。在内联表单，我们将这些元素的宽度设置为 `width: auto;`，因此，多个控件可以排列在同一行。根据你的布局需求，可能需要一些额外的定制化组件。
+
+```demo:实例
+#demo2
+```
+
+### 水平排列的表单
+
+通过为表单添加` .form-horizontal` 类，并联合使用栅格类，可以将 `label` 标签和控件组水平并排布局。这样做将改变 `.form-group` 的行为，使其表现为栅格系统中的行（`row`），因此就无需再额外添加 `.row` 了。
+
+```demo:实例
+#demo3
+```
+
+### 静态控件
+
+如果需要在表单中将一行纯文本和 `label` 元素放置于同一行，为 `<p>` 元素添加 `.form-control-static` 类即可。
+
+```demo:实例
+#demo4
+```
+
+### 支持的控件
+
+表单布局实例中展示了其所支持的标准表单控件。
+
+#### 输入框
+包括大部分表单控件、文本输入域控件，还支持所有 HTML5 类型的输入控件： `text`、`password`、`datetime`、`datetime-local`、`date`、`month`、`time`、`week`、`number`、`email`、`url`、`search`、`tel` 和 `color`。
+```demo:实例
+#demo5
+```
+
+#### 文本域
+支持多行文本的表单控件。可根据需要改变 `rows` 属性。
+```demo:实例
+#demo6
+```
+
+#### 多选和单选框
+
+多选框（checkbox）用于选择列表中的一个或多个选项，而单选框（radio）用于从多个选项中只选择一个。
+
+支持禁用`checkbox`和`radio`，但要在父级 `<label>` 鼠标悬停时呈现`不允许`的光标，需要将 `.disabled` 类添加到父节点 `.radio`, `.radio-inline`, `.checkbox`, `.checkbox-inline`
+
+```demo:实例
+#demo7
+```
+
+
+##### 内联单选和多选框
+
+通过将 `.checkbox-inline` 或 `.radio-inline` 类应用到一系列的多选框（checkbox）或单选框（radio）控件上，可以使这些控件排列在一行。
+
+```demo:实例
+#demo8
+```
+
+
+##### 不带label文本
+
+目前只适用于非内联的 checkbox 和 radio
+
+```demo:实例
+#demo9
+```
+
+
+#### 下拉列表（select）
+
+注意，很多原生选择菜单 - 即在 `Safari` 和 `Chrome` 中 - 的圆角是无法通过修改 `border-radius` 属性来改变的。
+
+```demo:实例
+#demo10
+```
+
+#### 控件尺寸
+
+通过 `.input-lg` 类似的类可以为控件设置高度，通过 `.col-lg-*` 类似的类可以为控件设置宽度。
+
+```demo:实例
+#demo11
+```
+
+
+##### 水平排列的表单组的尺寸
+
+通过添加 `.form-group-lg` 或 `.form-group-sm` 类，为 `.form-horizontal` 包裹的 label 元素和表单控件快速设置尺寸。
+
+```demo:实例
+#demo12
+```
+
+##### 调整列（column）尺寸
+
+用栅格系统中的列（column）包裹输入框或其任何父元素，都可很容易的为其设置宽度。
+
+```demo:实例
+#demo13
+```
+
+### 输入框组
+
+通过在文本输入框 `<input>` 前面、后面或是两边加上文字或按钮，可以实现对表单控件的扩展。为 `.input-group` 赋予 `.input-group-addon` 或 `.input-group-btn` 类，可以给 `.form-control` 的前面或后面添加额外的元素。
+
+#### 基本实例
+
+在输入框的任意一侧添加额外元素或按钮。你还可以在输入框的两侧同时添加额外元素。
+
+```demo:实例
+#demo14
+```
+
+#### 尺寸
+
+为 `.input-group` 添加相应的尺寸类，其内部包含的元素将自动调整自身的尺寸。不需要为输入框组中的每个元素重复地添加控制尺寸的类。
+
+```demo:实例
+#demo15
+```
+
+#### 多选框和单选框
+
+可以将多选框或单选框作为额外元素添加到输入框组中。
+
+```demo:实例
+#demo16
+```
+
+#### 按钮
+
+为输入框组添加按钮需要额外添加一层嵌套，不是 `.input-group-addon`，而是添加 `.input-group-btn` 来包裹按钮元素。由于不同浏览器的默认样式无法被统一的重新赋值，所以才需要这样做。
+
+```demo:实例
+#demo17
+```
+
+#### 按钮式下拉菜单
+
+```demo:实例
+#demo18
+```
+
+#### 分裂式按钮下拉菜单
+
+```demo:实例
+#demo19
+```
+
+
+#### 多个按钮
+
+```demo:实例
+#demo20
+```
+
+            
+            
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<form>
+    <div class="form-group">
+        <label for="exampleInputEmail1">邮箱</label>
+        <input type="email" class="form-control" id="exampleInputEmail1" placeholder="邮箱">
+    </div>
+    <div class="form-group">
+        <label for="exampleInputPassword1">密码</label>
+        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
+    </div>
+    <div class="form-group">
+        <label for="exampleInputFile">文件</label>
+        <input type="file" id="exampleInputFile">
+        <p class="help-block">请上传文件，可以将辅助提示放到这里</p>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
+    </div>
+    <button type="submit" class="btn btn-default">提交</button>
+</form>
+    </textarea>
+
+    <textarea class="hide" id="demo2">
+<form class="form-inline">
+    <div class="form-group">
+        <label for="exampleInputName2">姓名</label>
+        <input type="text" class="form-control" id="exampleInputName2" placeholder="姓名">
+    </div>
+    <div class="form-group">
+        <label for="exampleInputEmail2">邮箱</label>
+        <input type="email" class="form-control" id="exampleInputEmail2" placeholder="邮箱">
+    </div>
+    <button type="submit" class="btn btn-default">发送</button>
+</form>
+<hr/>
+<form class="form-inline">
+    <div class="form-group">
+        <input type="email" class="form-control" id="exampleInputEmail3" placeholder="邮箱">
+    </div>
+    <div class="form-group">
+        <input type="password" class="form-control" id="exampleInputPassword3" placeholder="密码">
+    </div>
+    <div class="form-group">
+        <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
+    </div>
+    <button type="submit" class="btn btn-default">登录</button>
+</form>
+<hr/>
+<form class="form-inline">
+    <div class="form-group">
+        <div class="input-group">
+            <div class="input-group-addon">￥</div>
+            <input type="text" class="form-control" id="exampleInputAmount" placeholder="余额">
+            <div class="input-group-addon">元</div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">调整余额</button>
+</form>
+    </textarea>
+
+    <textarea class="hide" id="demo3">
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">邮箱</label>
+        <div class="col-sm-10">
+            <input type="email" class="form-control" id="inputEmail3" placeholder="邮箱">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+        <div class="col-sm-10">
+            <input type="password" class="form-control" id="inputPassword3" placeholder="密码">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">登录</button>
+        </div>
+    </div>
+</form>
+    </textarea>
+
+    <textarea class="hide" id="demo4">
+<div class="form-group-title">水平排列</div>
+<form class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">邮箱</label>
+        <div class="col-sm-10">
+            <p class="form-control-static">email@example.com</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword" class="col-sm-2 control-label">密码</label>
+        <div class="col-sm-10">
+            <input type="password" class="form-control" id="inputPassword" placeholder="密码">
+        </div>
+    </div>
+</form>
+
+<div class="form-group-title">内联表单</div>
+<form class="form-inline">
+    <div class="form-group">
+        <label class="sr-only">邮箱</label>
+        <p class="form-control-static">email@example.com</p>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword2" class="sr-only">密码</label>
+        <input type="password" class="form-control" id="inputPassword2" placeholder="密码">
+    </div>
+    <button type="submit" class="btn btn-default">确认</button>
+</form>
+    </textarea>
+
+    <textarea class="hide" id="demo5">
+<input type="text" class="form-control" placeholder="请输入内容"/>
+    </textarea>
+
+    <template class="hide" id="demo6">
+        <textarea class="form-control" placeholder="请输入内容" rows="4"></textarea>
+    </template>
+
+    <template class="hide" id="demo7">
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="">
+                选项1
+            </label>
+        </div>
+        <div class="checkbox disabled">
+            <label>
+                <input type="checkbox" value="" disabled>
+                选项2
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="">
+                选项3
+            </label>
+        </div>
+
+        <hr/>
+        <div class="radio">
+            <label>
+                <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                选项1
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                选项2
+            </label>
+        </div>
+        <div class="radio disabled">
+            <label>
+                <input type="radio" name="optionsRadios" id="optionsRadios3" value="option3" disabled>
+                选项3
+            </label>
+        </div>
+
+        <hr />
+        
+        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+        <input type="checkbox" data-toggle="busy-checkbox" checked value="" title="选项2">
+        <input type="checkbox" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
+        <input type="checkbox" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
+
+        <hr />
+        <input type="checkbox" data-toggle="busy-checkbox" value="" checked title="选项1">
+        <input type="checkbox" class="success" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="warning" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="info" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+
+        <hr />
+        
+        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
+        <input type="checkbox" class="pill" data-toggle="busy-checkbox" checked value="" title="选项2">
+        <input type="checkbox" class="pill" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
+        <input type="checkbox" class="pill" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
+
+        <hr />
+        
+        <input type="checkbox" class="pill input-lg" checked data-toggle="busy-checkbox" value="" title="大">
+        <input type="checkbox" class="pill input-sm" checked data-toggle="busy-checkbox" value="" title="小">
+        <input type="checkbox" class="pill input-xs" checked data-toggle="busy-checkbox" value="" title="极小">
+
+
+        <hr />
+        
+        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" checked title="选项1">
+        <input type="checkbox" class="pill success" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="pill warning" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="pill info" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="pill danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="pill secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
+        <input type="checkbox" class="pill danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+
+        <hr />
+        
+        <input type="checkbox" class="switch" data-toggle="busy-checkbox" value="" title="开,关">
+        <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch" data-toggle="busy-checkbox" disabled value="" title="开,关">
+        <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked disabled value="" title="开,关">
+
+
+        <hr />
+
+        <input type="checkbox" class="switch input-lg" checked data-toggle="busy-checkbox" value="" title="开,关">
+        <input type="checkbox" class="switch input-sm" checked data-toggle="busy-checkbox" value="" title="开,关">
+        <input type="checkbox" class="switch input-xs" checked data-toggle="busy-checkbox" value="" title="开,关">
+        
+        <hr />
+        
+        <input type="checkbox" class="switch" data-toggle="busy-checkbox" value="" checked title="开,关">
+        <input type="checkbox" class="switch success" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch warning" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch info" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch secondary" data-toggle="busy-checkbox" checked value="" title="开,关">
+        <input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
+
+        <hr />
+        
+        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项1">
+        <input type="radio" data-toggle="busy-radio" name="radioName" checked value="" title="选项2">
+        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项3">
+        <input type="radio" data-toggle="busy-radio" name="radioName" disabled value="" title="禁用状态">
+
+        <hr />
+        <input type="radio" data-toggle="busy-radio" value="" checked title="选项1">
+        <input type="radio" class="success" data-toggle="busy-radio" checked value="" title="选项1">
+        <input type="radio" class="warning" data-toggle="busy-radio" checked value="" title="选项1">
+        <input type="radio" class="info" data-toggle="busy-radio" checked value="" title="选项1">
+        <input type="radio" class="danger" data-toggle="busy-radio" checked value="" title="选项1">
+        <input type="radio" class="secondary" data-toggle="busy-radio" checked value="" title="选项1">
+        <input type="radio" class="danger" data-toggle="busy-radio" checked value="" title="选项1">
+    </template>
+
+    <template class="hide" id="demo8">
+        <label class="checkbox-inline">
+            <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+        </label>
+        <label class="checkbox-inline">
+            <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+        </label>
+        <label class="checkbox-inline">
+            <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+        </label>
+
+        <hr/>
+
+        <label class="radio-inline">
+            <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
+        </label>
+    </template>
+
+    <template class="hide" id="demo9">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="blankCheckbox" value="option1">
+            </label>
+        </div>
+        <hr/>
+        <div class="radio">
+            <label>
+                <input type="radio" name="blankRadio" id="blankRadio1" value="option1">
+            </label>
+        </div>
+    </template>
+
+    <template class="hide" id="demo10">
+        <select class="form-control">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+
+        <hr/>
+
+        <select class="form-control" multiple>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+    </template>
+
+    <template class="hide" id="demo11">
+        <input class="form-control input-lg" type="text" placeholder=".input-lg">
+        <hr/>
+        <input class="form-control" type="text" placeholder="Default input">
+
+        <hr/>
+
+        <input class="form-control input-sm" type="text" placeholder=".input-sm">
+        <hr/>
+
+        <select class="form-control input-lg">...</select>
+        <hr/>
+
+        <select class="form-control">...</select>
+        <hr/>
+
+        <select class="form-control input-sm">...</select>
+    </template>
+
+    <template class="hide" id="demo12">
+        <form class="form-horizontal">
+            <div class="form-group form-group-lg">
+                <label class="col-sm-2 control-label" for="formGroupInputLarge">Large label</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" id="formGroupInputLarge" placeholder="Large input">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-2 control-label" for="formGroupInputSmall">Small label</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" id="formGroupInputSmall" placeholder="Small input">
+                </div>
+            </div>
+        </form>
+    </template>
+
+    <template class="hide" id="demo13">
+        <div class="row">
+            <div class="col-xs-2">
+                <input type="text" class="form-control" placeholder=".col-xs-2">
+            </div>
+            <div class="col-xs-3">
+                <input type="text" class="form-control" placeholder=".col-xs-3">
+            </div>
+            <div class="col-xs-4">
+                <input type="text" class="form-control" placeholder=".col-xs-4">
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo14">
+        <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1">@</span>
+            <input type="text" class="form-control" placeholder="Username">
+        </div>
+
+        <hr/>
+
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Recipient's username">
+            <span class="input-group-addon" id="basic-addon2">@example.com</span>
+        </div>
+
+        <hr/>
+
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+            <span class="input-group-addon">.00</span>
+        </div>
+
+        <hr/>
+
+        <label for="basic-url">Your vanity URL</label>
+        <div class="input-group">
+            <span class="input-group-addon" id="basic-addon3">https://example.com/users/</span>
+            <input type="text" class="form-control" id="basic-url">
+        </div>
+    </template>
+
+    <template class="hide" id="demo15">
+        <div class="input-group input-group-lg">
+            <span class="input-group-addon" id="sizing-addon1">@</span>
+            <input type="text" class="form-control" placeholder="Username">
+        </div>
+
+        <hr/>
+
+        <div class="input-group">
+            <span class="input-group-addon" id="sizing-addon2">@</span>
+            <input type="text" class="form-control" placeholder="Username">
+        </div>
+
+        <hr/>
+
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon" id="sizing-addon3">@</span>
+            <input type="text" class="form-control" placeholder="Username">
+        </div>
+    </template>
+
+    <template class="hide" id="demo16">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <input type="checkbox" data-toggle="busy-checkbox">
+                    </span>
+                    <input type="text" class="form-control">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <input type="radio" data-toggle="busy-radio">
+                    </span>
+                    <input type="text" class="form-control">
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo17">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+                    <input type="text" class="form-control" placeholder="Search for...">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo18">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Action <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </div>
+                    <input type="text" class="form-control" aria-label="...">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" aria-label="...">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Action <span class="caret"></span></button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo19">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default">Action</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Text input with segmented button dropdown">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" aria-label="Text input with segmented button dropdown">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default">Action</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo20">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default" aria-label="Bold"><span class="glyphicon glyphicon-bold"></span></button>
+                        <button type="button" class="btn btn-default" aria-label="Italic"><span class="glyphicon glyphicon-italic"></span></button>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Text input with multiple buttons">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" aria-label="Text input with multiple buttons">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default" aria-label="Help"><span class="glyphicon glyphicon-question-sign"></span></button>
+                        <button type="button" class="btn btn-default">Action</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</block>

@@ -1,0 +1,56 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 基本示例
+
+```demo:实例
+#demo1
+```
+
+### 警告框尺寸
+
+```demo:实例
+#demo2
+```
+
+### 可关闭警告框
+
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <textarea class="hide" id="demo1">
+<div class="alert alert-primary"><strong>主色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-secondary"><strong>次要色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-info"><strong>一般色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-success"><strong>成功提示框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-warning"><strong>警告提示框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-danger"><strong>错误提示框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-light"><strong>亮色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-dark"><strong>暗色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-default no-margin"><strong>默认色警告框！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+    </textarea>
+    
+    <textarea class="hide" id="demo2">
+<div class="alert alert-primary"><strong>默认！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-primary alert-sm"><strong>小型！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+<div class="alert alert-primary alert-xs no-margin"><strong>极小！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。</div>
+    </textarea>
+    
+    <textarea class="hide" id="demo3">
+<div class="alert alert-warning alert-dismissible no-margin">
+    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span></button>
+    <strong>可关闭！</strong>警告框组件通过提供一些灵活的预定义消息，为常见的用户动作提供反馈消息。
+</div>
+    </textarea>
+</block>

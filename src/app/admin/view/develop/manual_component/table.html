@@ -12,10 +12,10 @@
 
 ### 使用
 
-通过在`table`标签上加上自定义属性 `data-busy-table` 来触发
+通过在`table`标签上加上自定义属性 `data-toggle="busy-table"` 来触发
 
 ```html
-<table data-busy-table=""></table>
+<table data-toggle="busy-table"></table>
 ```
 
 ### 标签属性
@@ -116,18 +116,6 @@
 | data-confirm | string | 否 | - | 设置请求前是否弹窗询问，支持 `%s` 变量为选中的条数 |
 | data-click | string | 否 | - | 设置点击回调 `window全局方法`，设置后`data-url`无效，点击事件将需要自定义，回调参数：<br /> **formParams**：`[{name:string,value:string}]` 当前表内的表单参数<br /> **selectedRows**：`[object]` 当前选中记录<br />**api**：`BootstrapTable` 对象，如使用 `api.refresh()` 刷新表，[更多方法参考官方手册](https://bootstrap-table.com/docs/api/methods/) |
 
-### jQuery扩展
-
-`$.fn.busyTable(options)`;
-
-```js
-$(function(){
-    $('#demo').busyTable({
-    
-    });
-});
-```
-
 ### 使用示例
 
 #### HTML表格
@@ -144,7 +132,7 @@ $(function(){
     </div>
 
     <textarea class="hide" id="demo1">
-<table data-busy-table="html">
+<table data-toggle="busy-table">
     <thead>
         <tr>
             <th rowspan="2" data-valign="middle">名称</th>
@@ -174,7 +162,7 @@ $(function(){
     <button class="btn btn-warning btn-sm" data-url="?action=error" data-confirm="确认要排序吗？">排序</button>
 </script>
 <table class="table table-hover table-bordered table-striped"
-       data-busy-table=""
+       data-toggle="busy-table"
        data-show-export="true"
        data-footer-buttons="#btnTest"
        data-show-footer="true"></table>
