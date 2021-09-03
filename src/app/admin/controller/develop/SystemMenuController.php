@@ -4,9 +4,9 @@ namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
-use BusyPHP\app\admin\model\system\menu\SystemMenu as Model;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 
 /**
@@ -18,7 +18,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 class SystemMenuController extends InsideController
 {
     /**
-     * @var Model
+     * @var SystemMenu
      */
     private $model;
     
@@ -31,7 +31,7 @@ class SystemMenuController extends InsideController
         
         parent::initialize($checkLogin);
         
-        $this->model = Model::init();
+        $this->model = SystemMenu::init();
     }
     
     
@@ -40,69 +40,13 @@ class SystemMenuController extends InsideController
      */
     public function index()
     {
-        $this->assign('list', $this->model->getTreeList());
-        
         if ($this->request->header('Busy-Admin-Table')) {
-            $selectList = $this->model->order('sort', 'asc')->selectList();
-            foreach ($selectList as $i => $item) {
-                $selectList[$i] = $item;
-            }
+            $selectList = $this->model->order(SystemMenuField::sort(), 'asc')
+                ->order(SystemMenuField::id(), 'desc')
+                ->selectList();
             
             return $this->success('', '', [
-                'options' => [
-                    'columns'         => [
-                        [
-                            [
-                                'field'     => 'sort',
-                                'title'     => '排序',
-                                'formatter' => 'tableSortFormatter',
-                                'width'     => 60,
-                                'align'     => 'center',
-                                'falign'    => 'left'
-                            ],
-                            [
-                                'field'     => 'icon',
-                                'formatter' => 'tableIconFormatter',
-                                'title'     => '图标',
-                                'width'     => 50,
-                                'align'     => 'center',
-                            ],
-                            [
-                                'field'      => 'name',
-                                'formatter' => 'tableNameFormatter',
-                                'title'      => '菜单名称',
-                                'halign'     => 'center',
-                            ],
-                            [
-                                'field' => 'is_default',
-                                'title' => '默认',
-                                'align' => 'center',
-                                'width' => 60,
-                            ],
-                            [
-                                'field' => 'is_disabled',
-                                'title' => '禁用',
-                                'align' => 'center',
-                                'width' => 60,
-                            ],
-                            [
-                                'field' => 'is_show',
-                                'title' => '隐藏',
-                                'align' => 'center',
-                                'width' => 60,
-                            ],
-                            [
-                                'field'     => 'operate',
-                                'title'     => '操作',
-                                'align'     => 'center',
-                                'formatter' => 'tableOperateFormatter',
-                                'width'     => 80,
-                            ]
-                        ],
-                    ],
-                    'paginationParts' => [],
-                ],
-                'list'    => [
+                'list' => [
                     'total'            => count($selectList),
                     'totalNotFiltered' => count($selectList),
                     'rows'             => $selectList,
@@ -157,7 +101,7 @@ class SystemMenuController extends InsideController
                 $array                   = [];
                 $array['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
                 $array['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
-                $array['target_options'] = Transform::arrayToOption(Model::getTargets());
+                $array['target_options'] = Transform::arrayToOption(SystemMenu::getTargets());
                 $array['tree_options']   = $this->model->getTreeOptions();
                 $array['debug']          = SystemMenu::DEBUG;
                 
@@ -207,7 +151,7 @@ class SystemMenuController extends InsideController
                 $info                   = $this->model->getInfo($this->iGet('id'));
                 $info['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
                 $info['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
-                $info['target_options'] = Transform::arrayToOption(Model::getTargets(), '', '', $info->target);
+                $info['target_options'] = Transform::arrayToOption(SystemMenu::getTargets(), '', '', $info->target);
                 $info['tree_options']   = $this->model->getTreeOptions($info->parentId);
                 $info['debug']          = SystemMenu::DEBUG;
                 
@@ -218,6 +162,30 @@ class SystemMenuController extends InsideController
             $this->setRedirectUrl();
             $this->submitName   = '修改';
             $this->templateName = 'add';
+        });
+    }
+    
+    
+    /**
+     * 快速设置属性
+     */
+    public function set_attr()
+    {
+        return $this->submit('request', function() {
+            $type   = $this->request->get('type', '', 'trim');
+            $id     = $this->request->get('id', '', 'intval');
+            $status = $this->request->get('status', 0, 'intval') > 0;
+            
+            switch ($type) {
+                case 'disabled':
+                    $this->model->setDisabled($id, !$status);
+                break;
+                case 'hide':
+                    $this->model->setHide($id, !$status);
+                break;
+                default:
+                    throw new VerifyException('未知类型');
+            }
         });
     }
     

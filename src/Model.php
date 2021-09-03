@@ -37,7 +37,7 @@ use think\model\concern\TimeStamp;
  * @method mixed onBeforeInsert() 新增前回调, 返回false阻止新增
  * @method mixed onBeforeUpdate() 更新前回调, 返回false阻止更新
  * @method mixed onBeforeDelete() 删除前回调, 返回false阻止更新
- * @method void onChanged(string $method, $id, array $options) 新增/更新/删除后回调
+ * @method void onChanged(string $method, mixed $id, array $options) 新增/更新/删除后回调
  * @method void onSaveAll() 批量更新回调
  * @method void onAddAll() 批量更新回调
  * @method void onAfterWrite($id, array $options) 新增/更新完成后回调

@@ -2,6 +2,7 @@
 
 namespace BusyPHP\app\admin\model\system\menu;
 
+use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\menu\provide\AdminMenuStruct;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
@@ -628,6 +629,30 @@ class SystemMenu extends Model
     
     
     /**
+     * 设置是否禁用
+     * @param int  $id
+     * @param bool $status
+     * @throws DbException
+     */
+    public function setDisabled($id, $status)
+    {
+        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::isDisabled(), $status ? 1 : 0);
+    }
+    
+    
+    /**
+     * 设置是否隐藏
+     * @param int  $id
+     * @param bool $status
+     * @throws DbException
+     */
+    public function setHide($id, $status)
+    {
+        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::isHide(), $status ? 1 : 0);
+    }
+    
+    
+    /**
      * 获取菜单选项
      * @param string $selectedValue
      * @param array  $list
@@ -661,5 +686,18 @@ class SystemMenu extends Model
         }
         
         return $options;
+    }
+    
+    
+    /**
+     * @param string $method
+     * @param mixed  $id
+     * @param array  $options
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function onChanged(string $method, $id, array $options)
+    {
+        $this->updateCache();
     }
 }

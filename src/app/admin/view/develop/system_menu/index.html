@@ -6,33 +6,48 @@
             <i class="icon icon-sort"></i> 排序
         </a>
     </script>
-    <table class="table-striped table-bordered table-hover"
+
+    <table class="table table-striped table-bordered table-hover"
            data-toggle="busy-table"
+           data-height="auto"
            data-tree-show-field="name"
-           data-show-columns="true"
-           data-search-type=""
-           data-search-align="left"
-           data-show-fullscreen="true"
-           data-show-refresh="true"
-           data-show-toggle="true"
-           data-height="auto"></table>
+           data-tree-save-state="ssasdfasdf"
+           id="table">
+        <thead>
+            <tr>
+                <th width="60" data-align="center" data-field="sort" data-formatter="@" data-vue="sort">排序</th>
+                <th width="60" data-align="center" data-field="id">ID</th>
+                <th width="50" data-align="center" data-field="icon" data-formatter="@">图标</th>
+                <th data-align="left" data-halign="center" data-field="name">菜单名称</th>
+                <th width="80" data-align="center" data-field="is_disabled" data-formatter="@">状态</th>
+                <th width="80" data-align="center" data-field="is_hide" data-formatter="@">显示</th>
+                <th width="80" data-align="center" data-field="operate" data-formatter="@">操作</th>
+            </tr>
+        </thead>
+    </table>
+
+    <script type="text/html" id="sort">
+        <input type="text" class="form-control input-xs text-center" value="{{value}}"/>
+    </script>
+
+    <script type="text/html" id="icon">
+        <i class="icon icon-{{value}}"></i>
+    </script>
+
+    <script type="text/html" id="is_disabled">
+        <input class="switch input-xs info" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="正常,禁用"/>
+    </script>
+
+    <script type="text/html" id="is_hide">
+        <input class="switch input-xs secondary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="显示,隐藏"/>
+    </script>
+
+    <script type="text/html" id="operate">
+        <a class="btn btn-success btn-xs" href="{:url('edit?id=')}{{item.id}}"><i class="icon icon-pencil"></i></a>
+        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？"><i class="icon icon-trash"></i></a>
+    </script>
 </block>
 <block name="foot">
     <script>
-        function tableSortFormatter(value, data, index, field) {
-            return '<input type="text" class="form-control input-xs text-center" value="' + value + '" name="' + field + '[' + data.id + ']"/>';
-        }
-
-        function tableIconFormatter(value, data, index, field) {
-            return '<i class="icon icon-' + value + '"></i>';
-        }
-
-        function tableNameFormatter(value, data, index, field) {
-            return value + ' <code>' + data.path + '</code>';
-        }
-
-        function tableOperateFormatter(value, data, index, field) {
-            return '<a href="' + ('<?=url('edit?id=_ID_')?>').replace('_ID_', data.id) + '">修改</a>';
-        }
     </script>
 </block>
