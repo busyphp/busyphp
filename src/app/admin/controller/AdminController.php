@@ -696,44 +696,8 @@ HTML;
     {
         $resp = parent::display($template, $charset, $contentType, $content);
         
-        // 输出过滤
-        $resp->filter(function($content) {
-            // 处理style, script, link 标签
-            return preg_replace_callback('/<!--busy-admin-page-([head|foot]+)-->(.*?)<!--\/busy-admin-page-([head|foot]+)-->/is', function($match) {
-                $content = preg_replace_callback('/<(style|script|link)(.*?)>/is', function($match) {
-                    return "<{$match[1]} data-busy-id=\"{$match[1]}\" {$match[2]}>";
-                }, $match[2]);
-                
-                return "<!--busy-admin-page-{$match[1]}-->{$content}<!--/busy-admin-page-{$match[1]}-->";
-            }, $content);
-        });
-        
-        
-        // dialog模式
-        if (intval($this->request->header('busy_admin_page_dialog', 0)) > 0) {
+        if ($this->requestPluginName === 'SinglePage') {
             return $this->success('', '', $resp->getContent());
-        }
-        
-        
-        // 单页模式
-        if (intval($this->request->header('busy_admin_single_page', 0)) > 0) {
-            $content = $resp->getContent();
-            preg_match_all('/<!--busy-admin-hide-([0-9a-z\-]+?)--(.*?)\/-->/is', $content, $hideList);
-            preg_match_all('/<!--busy-admin-page-([0-9a-z\-]+?)-->(.*?)<!--\/busy-admin-page-([0-9a-z\-]+?)-->/is', $content, $matchList);
-            
-            $data = [];
-            foreach ($hideList[0] as $index => $match) {
-                $data[str_replace('-', '_', $hideList[1][$index])] = $hideList[2][$index];
-            }
-            
-            foreach ($matchList[0] as $index => $match) {
-                $data[str_replace('-', '_', $matchList[1][$index])] = $matchList[2][$index];
-            }
-            
-            preg_match('/<title>(.*?)<\/title>/is', $content, $match);
-            $data['title'] = $match[1] ?? '';
-            
-            return $this->success('', '', $data);
         }
         
         return $resp;

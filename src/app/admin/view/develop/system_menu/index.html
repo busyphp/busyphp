@@ -10,8 +10,9 @@
     <table class="table table-striped table-bordered table-hover"
            data-toggle="busy-table"
            data-height="auto"
+           data-show-columns="true"
            data-tree-show-field="name"
-           data-tree-save-state="ssasdfasdf"
+           data-tree-save-state="{$url.group}{$url.controller}{$url.action}"
            id="table">
         <thead>
             <tr>
@@ -48,6 +49,9 @@
     </script>
 </block>
 <block name="foot">
+    <js href="{$skin.js}test.js"/>
+
     <script>
+        console.log('1');
     </script>
 </block>

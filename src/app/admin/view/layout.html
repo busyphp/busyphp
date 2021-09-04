@@ -10,18 +10,8 @@
     </script>
     <include file="@admin:head"/>
     <!--busy-admin-hide-page-title--{$panel_title}/-->
-    <!--busy-admin-page-head-->
-    <block name="head"></block><!--/busy-admin-page-head-->
 </head>
-<body id="{$url.group}{$url.controller}{$url.action}">
-
-<!--[if lt IE 9]>
-<div class="alert alert-danger" style="position: absolute; z-index:999; width:100%; height: 60px;">您正在使用
-    <strong>过时的</strong>
-    浏览器. 是时候
-    <a class="btn btn-success" target="_blank" href="http://browsehappy.com/">更换一个更好的浏览器</a> 来提升用户体验.
-</div>
-<![endif]-->
+<body>
 
 <div id="wrap">
     <div class="busy-admin-header" data-busy-id="header">
@@ -143,7 +133,6 @@
 
     <div class="busy-admin-content clearfix" data-busy-id="content">
         <div class="busy-admin-content-bar clearfix" data-busy-id="content-header">
-            <!--busy-admin-page-breadcrumb-->
             <ol class="breadcrumb clearfix">
                 <li class="title">
                     <i class="icon icon-home"></i>
@@ -160,20 +149,16 @@
                     </li>
                 </foreach>
             </ol>
-            <!--/busy-admin-page-breadcrumb-->
         </div>
 
         <div class="busy-admin-content-box busy-admin-content-pending clearfix" data-busy-id="content-body">
-            <!--busy-admin-page-content-->
+            <block name="head"></block>
             <block name="content"></block>
-            <!--/busy-admin-page-content-->
+            <block name="foot"></block>
         </div>
 
         <div class="busy-admin-content-bg" data-busy-id="content-bg"></div>
     </div>
 </div>
-<include file="@admin:foot"/>
-<!--busy-admin-page-foot-->
-<block name="foot"></block><!--/busy-admin-page-foot-->
 </body>
 </html>
