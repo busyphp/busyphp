@@ -1,0 +1,125 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-search-bar"` 来触发
+
+```html
+<div data-toggle="busy-search-bar"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-url | string | `否` | - | 设置搜索提交的URL地址 |
+| data-fields | [string],[object] | `否` | [] | 设置参与搜索的字段选项 |
+| data-field-unlimited | boolean,string | `否` | `false` | 设置是否显示搜索字段不限选项，设置字符串这为该选项的名称 |
+| data-field-name | string | `否` | `field` | 设置搜索字段参数名称 |
+| data-word-name | string | `否` | `word` | 设置搜索值参数名称 |
+| data-placeholder | string | `否` | `请输入关键词` | 设置搜索词输入提示 |
+| data-accurate | boolean | `否` | `false` | 设置默认是否选中精确搜索 |
+| data-accurate-show | boolean | `否` | `false` | 设置是否显示精确搜索 |
+| data-accurate-class | string | `否` | - | 设置精确选项的样式，如：`danger` |
+| data-accurate-name | string | `否` | `accurate` | 设置精确选项参数名 |
+| data-toolbar | string | `否` | - | 设置自定义工具栏的jQuery选择器，不设置则查找当前节点下的`data-search-id="toolbar"`的内容 |
+| data-content-left | string | `否` | - | 设置参与搜索的左侧自定义表单内容，不设置则查找当前节点下的`data-search-id="left"`的内容 |
+| data-content-right | string | `否` | - | 设置参与搜索的右侧自定义表单内容，不设置则查找当前节点下的`data-search-id="right"`的内容 |
+| data-search-mark | string | `否` | `_search` | 设置能代表当前处于搜索状态的参数名称 |
+| data-search-btn-class | string | `否` | `btn-info` | 设置搜索按钮的样式 |
+| data-show-all-btn-class | string | `否` | `btn-default` | 设置显示全部按钮的样式 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+
+#### 精确搜索
+```demo:实例
+#demo2
+```
+
+#### 自定义表单
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <div data-toggle="busy-search-bar"></div>
+        <hr />
+        <div data-toggle="busy-search-bar" data-fields="user_id:用户ID,phone:手机号,name:姓名" data-search-btn-class="btn-danger" data-show-all-btn-class="btn-warning"></div>
+        <hr />
+        <div data-toggle="busy-search-bar" data-fields='[{"name":"姓名", "value":"name"},{"name":"年龄", "value":"age"}]' data-field-unlimited="true"></div>
+    </template>
+
+    <template id="demo2" class="hide">
+        <div data-toggle="busy-search-bar" data-accurate-show="true"></div>
+        <hr />
+        <div data-toggle="busy-search-bar" data-accurate-show="true" data-accurate="true"></div>
+        <hr />
+        <div data-toggle="busy-search-bar" data-accurate-show="true" data-accurate="true" data-accurate-class="success"></div>
+    </template>
+    
+    <template id="demo3" class="hide">
+        <div data-toggle="busy-search-bar" data-accurate-show="true">
+            <script type="text/html" data-search-id="left">
+                <div class="form-group">
+                    <select class="form-control"><option>不限类型</option></select>
+                </div>
+                <div class="form-group">
+                    <select class="form-control"><option>不限状态</option></select>
+                </div>
+            </script>
+        </div>
+        
+        <hr />
+
+        <div data-toggle="busy-search-bar" data-accurate-show="true">
+            <script type="text/html" data-search-id="right">
+                <div class="form-group">
+                    <select class="form-control"><option>不限类型</option></select>
+                </div>
+                <div class="form-group">
+                    <select class="form-control"><option>不限状态</option></select>
+                </div>
+            </script>
+        </div>
+        
+        <hr />
+
+        <div data-toggle="busy-search-bar" data-accurate-show="true">
+            <script type="text/html" data-search-id="left">
+                <div class="form-group">
+                    <select class="form-control"><option>不限类型</option></select>
+                </div>
+            </script>
+            <script type="text/html" data-search-id="right">
+                <div class="form-group">
+                    <select class="form-control"><option>不限状态</option></select>
+                </div>
+            </script>
+            <script type="text/html" data-search-id="toolbar">
+                <a class="btn btn-success"><i class="icon icon-plus"></i> 创建数据</a>
+                <a class="btn btn-default"><i class="icon icon-file-excel-o"></i> 导出数据</a>
+            </script>
+        </div>
+    </template>
+</block>
