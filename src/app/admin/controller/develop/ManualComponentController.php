@@ -324,4 +324,13 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 搜索栏
+     */
+    public function search_bar()
+    {
+        return $this->display();
+    }
 }

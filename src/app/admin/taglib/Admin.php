@@ -540,7 +540,7 @@ HTML;
         $accurate = $tag['accurate'] ?? 'false';
         
         return <<<HTML
-<div data-busy-search="{$url}" data-busy-accurate="{$accurate}" data-busy-fields="{$fields}" {$this->createAttr($tag, 'search')}>{$content}</div>
+<div data-toggle="busy-search-bar" data-url="{$url}" data-accurate="{$accurate}" data-fields="{$fields}" {$this->createAttr($tag, 'search')}>{$content}</div>
 HTML;
     }
     
@@ -558,7 +558,7 @@ HTML;
             case 'search-left':
             case 'search-right':
             case 'search-toolbar':
-                $attr = 'data-busy-search-id="' . substr($type, 7) . '"';
+                $attr = 'data-search-id="' . substr($type, 7) . '"';
             break;
             default:
                 $attr = '';

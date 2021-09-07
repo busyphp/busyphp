@@ -10,6 +10,8 @@ use BusyPHP\helper\util\Transform;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午5:04 SystemLogsInfo.php $
+ * @method static string formatCreateTime();
+ * @method static string typeName();
  */
 class SystemLogsInfo extends SystemLogsField
 {

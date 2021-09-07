@@ -40,25 +40,8 @@ class SystemMenuController extends InsideController
      */
     public function index()
     {
-        if ($this->request->header('Busy-Admin-Table')) {
-            $selectList = $this->model->order(SystemMenuField::sort(), 'asc')
-                ->order(SystemMenuField::id(), 'desc')
-                ->selectList();
-            
-            return $this->success('', '', [
-                'list' => [
-                    'total'            => count($selectList),
-                    'totalNotFiltered' => count($selectList),
-                    'rows'             => $selectList,
-                    /*'footer'           => [
-                        'check'       => '你',
-                        'id'          => '',
-                        '_id_colspan' => 3,
-                        'view_number' => '',
-                        'desc'        => '',
-                    ]*/
-                ]
-            ]);
+        if ($this->pluginTable) {
+            return $this->success('', '', $this->pluginTable->build($this->model));
         }
         
         return $this->display();
@@ -195,10 +178,15 @@ class SystemMenuController extends InsideController
      */
     public function set_sort()
     {
-        $this->bind(self::CALL_BATCH_EACH, function($value, $id) {
-            $this->model->setSort($id, $value);
-        });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
+            $data = [];
+            foreach ($params as $key => $value) {
+                $data[] = [
+                    SystemMenuField::id()->field()   => $key,
+                    SystemMenuField::sort()->field() => $value
+                ];
+            }
+            $this->model->saveAll($data);
             $this->log('排序系统菜单', $params, self::LOG_BATCH);
             $this->updateCache();
             

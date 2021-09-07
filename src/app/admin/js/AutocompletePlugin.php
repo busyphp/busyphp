@@ -14,9 +14,9 @@ use think\db\exception\DbException;
  * Autocomplete Js 插件
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/8/30 下午下午5:23 Autocomplete.php $
+ * @version $Id: 2021/8/30 下午下午5:23 AutocompletePlugin.php $
  */
-class Autocomplete
+class AutocompletePlugin
 {
     /**
      * @var Request

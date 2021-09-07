@@ -3,8 +3,9 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\js\Autocomplete;
-use BusyPHP\app\admin\js\SelectPicker;
+use BusyPHP\app\admin\js\AutocompletePlugin;
+use BusyPHP\app\admin\js\SelectPickerPlugin;
+use BusyPHP\app\admin\js\TablePlugin;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
@@ -145,15 +146,21 @@ abstract class AdminController extends Controller
     
     /**
      * JS SelectPicker 插件
-     * @var SelectPicker
+     * @var SelectPickerPlugin
      */
     protected $pluginSelectPicker;
     
     /**
      * JS Autocomplete 插件
-     * @var Autocomplete
+     * @var AutocompletePlugin
      */
     protected $pluginAutocomplete;
+    
+    /**
+     * Js Table 插件
+     * @var TablePlugin
+     */
+    protected $pluginTable;
     
     
     /**
@@ -176,7 +183,7 @@ abstract class AdminController extends Controller
         switch ($this->requestPluginName) {
             // 自动处理SelectPicker插件
             case 'SelectPicker':
-                $this->pluginSelectPicker = new SelectPicker();
+                $this->pluginSelectPicker = new SelectPickerPlugin();
                 if ($result = $this->pluginSelectPicker->build()) {
                     throw new HttpResponseException($this->success('', '', $result));
                 }
@@ -184,8 +191,16 @@ abstract class AdminController extends Controller
             
             // 自动处理Autocomplete插件
             case 'Autocomplete':
-                $this->pluginAutocomplete = new Autocomplete();
+                $this->pluginAutocomplete = new AutocompletePlugin();
                 if ($result = $this->pluginAutocomplete->build()) {
+                    throw new HttpResponseException($this->success('', '', $result));
+                }
+            break;
+            
+            // 自动处理Table插件
+            case 'Table':
+                $this->pluginTable = new TablePlugin();
+                if ($result = $this->pluginTable->build()) {
                     throw new HttpResponseException($this->success('', '', $result));
                 }
             break;

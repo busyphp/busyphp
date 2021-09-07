@@ -617,18 +617,6 @@ class SystemMenu extends Model
     
     
     /**
-     * 排序菜单
-     * @param int $id
-     * @param int $value
-     * @throws DbException
-     */
-    public function setSort($id, $value)
-    {
-        $this->whereEntity(SystemMenuField::id(intval($id)))->setField(SystemMenuField::sort(), intval($value));
-    }
-    
-    
-    /**
      * 设置是否禁用
      * @param int  $id
      * @param bool $status

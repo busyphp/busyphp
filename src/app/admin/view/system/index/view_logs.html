@@ -1,60 +1,67 @@
-<div class="form-horizontal">
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作名称</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.title}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作IP</label>
-        <div class="col-sm-10"><p class="form-control-static"><a href="https://ip.cn/index.php?ip={$info.ip}" target="_blank">{$info.ip|default="--"}</a></p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作UA</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.ua|default="--"}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作URL</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.url|default="--"}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作时间</label>
-        <div class="col-sm-10">
-            <p class="form-control-static">{$info.format_create_time}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作用户</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.username}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作用户ID</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.userid}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作路径</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.path}</p></div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作来源</label>
-        <div class="col-sm-10">
-            <p class="form-control-static">
-                <eq name="info.is_admin" value="1">
-                    <span class="label label-primary">后台</span>
-                    <else />
-                    <span class="label label-primary">前台</span>
-                </eq>
-                <span class="label label-default">{$info.app_name}</span>
-            </p>
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="form-horizontal">
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作名称</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.title}</p></div>
         </div>
-    </div>
-    <div class="form-group form-group-sm">
-        <label class="col-sm-2 control-label">操作类型</label>
-        <div class="col-sm-10"><p class="form-control-static">{$info.type_name}</p></div>
-    </div>
-    <div class="form-group no-margin-bottom">
-        <label class="col-sm-2 control-label">操作详情</label>
-        <div class="col-sm-10">
-            <div class="form-control-static">
-                <?php dump($info['content']);?>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作IP</label>
+            <div class="col-sm-10"><p class="form-control-static">
+                    <a href="https://ip.cn/index.php?ip={$info.ip}" target="_blank">{$info.ip|default="--"}</a></p>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作UA</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.ua|default="--"}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作URL</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.url|default="--"}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作时间</label>
+            <div class="col-sm-10">
+                <p class="form-control-static">{$info.format_create_time}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作用户</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.username}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作用户ID</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.userid}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作路径</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.path}</p></div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作来源</label>
+            <div class="col-sm-10">
+                <p class="form-control-static">
+                    <eq name="info.is_admin" value="1">
+                        <span class="label label-primary">后台</span>
+                        <else/>
+                        <span class="label label-primary">前台</span>
+                    </eq>
+                    <span class="label label-default">{$info.app_name}</span>
+                </p>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作类型</label>
+            <div class="col-sm-10"><p class="form-control-static">{$info.type_name}</p></div>
+        </div>
+        <div class="form-group no-margin-bottom">
+            <label class="col-sm-2 control-label">操作详情</label>
+            <div class="col-sm-10">
+                <div class="form-control-static">
+                    <?php
+                    dump($info['content']);
+                    ?>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</block>

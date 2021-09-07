@@ -66,7 +66,7 @@ class IndexController extends InsideController
      */
     public function logs()
     {
-        $this->setSelectWhere(function($where) {
+        /*$this->setSelectWhere(function($where) {
             if (floatval($where['type'] ?? -1) < 0) {
                 unset($where['type']);
             }
@@ -85,9 +85,13 @@ class IndexController extends InsideController
         });
         $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
         $this->setSelectLimit(50);
-        $this->setSelectSimple(true);
+        $this->setSelectSimple(true);*/
+    
+        if ($this->pluginTable) {
+            return $this->success('', '', $this->pluginTable->build(SystemLogs::init()));
+        }
         
-        return $this->select(SystemLogs::init());
+        return $this->display();
     }
     
     

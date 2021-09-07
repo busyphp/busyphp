@@ -26,12 +26,15 @@
 | data-type | string | `是` | `ajax` | 初始化组件属性，支持：`html`,`ajax` |
 | data-height | number,string,DOM,jQueryElement | 否 | - | 设置表高度或高度计算依赖节点，设置后表头和表尾将固定，设置`auto`则自动计算高度 |
 | data-no-data-text | string | 否 | - | 设置无数据提示内容 |
+| data-route | boolean | 否 | `false` | 是否启用路由管理，启用后可以通过URL复原表单 |
+| 分页:title |  |  |  |  |
+| data-pagination | boolean | 否 | `true` | 设置是否显示分页 |
 | 搜索:title |  |  |  |  |
-| data-search | boolean | 否 | `true` | 是否显示表格搜索 |
+| data-search | boolean|string | 否 | `false` | 是否显示搜索，或自定义搜索表单的jQuery选择器 |
 | data-search-type | string | 否 | `default` | 搜索框类型，支持：`default`：BusyAdmin类型搜索框，留空则为默认搜索框 |
 | data-show-search-button | boolean | 否 | `true` | 默认搜索框是否显示搜索按钮 |
 | data-show-search-clear-button | boolean | 否 | `true` | 默认搜索框是否显示清空按钮 |
-| 工具栏:title |  |  |  |  |
+| 工具栏按钮:title |  |  |  |  |
 | data-show-columns | boolean | 否 | `false` | 是否显示列筛选 |
 | data-show-print | boolean | 否 | `false` | 是否显示打印选项 |
 | data-show-fullscreen | boolean | 否 | `false` | 是否显示全屏按钮，`目前不兼容，谨慎使用` |
@@ -39,6 +42,8 @@
 | data-show-export | boolean | 否 | `false` | 是否显示导出选项 |
 | data-export-types | string | 否 | `excel` | 导出类型，多个用英文逗号分割，支持：`excel`, `csv`, `xml`, `json`, `txt` |
 | data-show-button-text | boolean | 否 | `false` | 是否显示工具栏按钮文本 |
+| data-toolbar | string | 否 | - | 设置自定义工具栏的jQuery选择器 |
+| data-buttons | string,Function | 否 | - | 设置自定义按钮的回调方法 |
 | 拖拽:title |  |  |  |  |
 | data-resizable | boolean | 否 | `false` | 是否启用列宽度拖拽，`目前不兼容，谨慎使用` |
 | data-reorderable-rows | boolean | 否 | `false` | 是否启用表格行拖拽排序，`该功能 与 固定列功能不兼容` |
@@ -51,6 +56,7 @@
 | 树结构:title |  |  |  |  |
 | data-tree-show-field | string | 否 | - | 指定树结构显示的字段，设置后表格将展示树状结构 |
 | data-parent-id-field | string | 否 | `parent_id` | 指定树结构依赖字段名称 |
+| data-tree-save-state | string | 否 | `document.URL` | 设置保存树结构状态的名称 |
 | 固定表头:title |  |  |  |  |
 | data-sticky-header | boolean | 否 | `false` | 是否启用滚动固定表头 |
 | data-sticky-header-offset-y | number | 否 | 0 | 滚动固定表头的上偏移 |
@@ -116,6 +122,30 @@
 | data-confirm | string | 否 | - | 设置请求前是否弹窗询问，支持 `%s` 变量为选中的条数 |
 | data-click | string | 否 | - | 设置点击回调 `window全局方法`，设置后`data-url`无效，点击事件将需要自定义，回调参数：<br /> **formParams**：`[{name:string,value:string}]` 当前表内的表单参数<br /> **selectedRows**：`[object]` 当前选中记录<br />**api**：`BootstrapTable` 对象，如使用 `api.refresh()` 刷新表，[更多方法参考官方手册](https://bootstrap-table.com/docs/api/methods/) |
 
+### 自定义`data-toolbar`中的元素属性
+
+可以通过对元素加上自定属性实现一些扩展功能
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本:title |  |  |  |  |
+| data-disabled | true | 否 | - | 设置后元素被初始化为默认禁用状态，只有数据被选中才允许使用 |
+| 执行请求:title |  |  |  |  |
+| data-url | true,string | 是 | - | 设置点击该元素要异步请求的url |
+| data-field | string | 是 | `id` | 设置请求需要携带的值从表数据中通过该字段访问，支持设置键值分别获取字段，格式`键字段,值字段` |
+| data-name | true,string | 否 | `true` | 设置携带值的参数名，true为`data-field`值 |
+| data-checked | boolean | 否 | `false` | 设置携带的值是否只包涵选中项的数据 |
+| data-... |  |  |  | 请参考 `$.fn.busyAdminRequest` |
+
+
+### 自定义`td`中的元素属性
+
+可以通过对元素加上自定属性实现一些扩展功能
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-bind | boolean,string | 否 | - | 针对表单元素有效，设置后，表单元素内容发生改变，对应的单元格数据也会发生改变 |
+
 ### 使用示例
 
 #### HTML表格
@@ -127,6 +157,7 @@
 ```demo:实例
 #demo2
 ```
+            
             </script>
         </div>
     </div>
