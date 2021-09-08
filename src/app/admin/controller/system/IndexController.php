@@ -8,6 +8,10 @@ use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\setting\PublicSetting;
+use BusyPHP\model\Map;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 系统管理
@@ -63,33 +67,34 @@ class IndexController extends InsideController
     
     /**
      * 操作记录
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function logs()
     {
-        /*$this->setSelectWhere(function($where) {
-            if (floatval($where['type'] ?? -1) < 0) {
-                unset($where['type']);
-            }
-            
-            switch (intval($where['admin_type'] ?? 0)) {
-                case 1:
-                    $where['is_admin'] = 0;
-                break;
-                case 2:
-                    $where['is_admin'] = 1;
-                break;
-            }
-            unset($where['admin_type']);
-            
-            return [];
-        });
-        $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
-        $this->setSelectLimit(50);
-        $this->setSelectSimple(true);*/
-    
         if ($this->pluginTable) {
+            $this->pluginTable->setQueryHandler(function(SystemLogs $model, Map $data) {
+                if ($data->get('type', -1) < 0) {
+                    $data->remove('type');
+                }
+                
+                switch ($data->get('admin_type', 0)) {
+                    case 1:
+                        $data->set('is_admin', 1);
+                    break;
+                    case 2:
+                        $data->set('is_admin', 0);
+                    break;
+                }
+                
+                $data->remove('admin_type');
+            });
+            
             return $this->success('', '', $this->pluginTable->build(SystemLogs::init()));
         }
+        
+        $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
         
         return $this->display();
     }

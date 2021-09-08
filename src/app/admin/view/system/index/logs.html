@@ -9,6 +9,7 @@
             <div class="form-group">
                 <select class="form-control" name="type">
                     <option value="-1">不限类型</option>
+                    {$type_options}
                 </select>
             </div>
             <div class="form-group">
@@ -31,8 +32,6 @@
            data-show-fullscreen="true"
            data-toolbar="#tableToolbar"
            data-route="true"
-           data-sort-name="ip"
-           data-sort-order="asc"
            data-url="{$url.self}"
            data-height="auto">
         <thead>
