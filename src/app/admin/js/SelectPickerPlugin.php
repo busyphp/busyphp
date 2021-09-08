@@ -27,19 +27,19 @@ class SelectPickerPlugin
      * 选项文本处理回调
      * @var Closure
      */
-    private $textCallback;
+    private $textHandler;
     
     /**
      * 选项ID处理回调
      * @var Closure
      */
-    private $idCallback;
+    private $idHandler;
     
     /**
      * 查询处理回调
      * @var Closure
      */
-    private $queryCallback;
+    private $queryHandler;
     
     /**
      * 请求类型
@@ -152,8 +152,8 @@ class SelectPickerPlugin
             }
             
             // 自定义查询条件
-            if (is_callable($this->queryCallback)) {
-                call_user_func_array($this->queryCallback, [$model]);
+            if (is_callable($this->queryHandler)) {
+                call_user_func_array($this->queryHandler, [$model]);
             }
             
             // 统计总数
@@ -189,18 +189,18 @@ class SelectPickerPlugin
      */
     public function result(array $data, string $idField = 'id', string $textField = 'name', bool $more = false, $child = false, $groupTextField = 'name') : array
     {
-        $hasTextCallback = is_callable($this->textCallback);
-        $hasIdCallback   = is_callable($this->idCallback);
+        $hasTextCallback = is_callable($this->textHandler);
+        $hasIdCallback   = is_callable($this->idHandler);
         foreach ($data as $i => $item) {
             if ($child) {
                 $child     = $child === true ? 'child' : $child;
                 $childList = $item[$child] ?? [];
                 foreach ($childList as $j => $vo) {
-                    $vo['id']   = $hasIdCallback ? call_user_func_array($this->idCallback, [
+                    $vo['id']   = $hasIdCallback ? call_user_func_array($this->idHandler, [
                         $item,
                         false
                     ]) : ($vo[$idField] ?? '');
-                    $vo['text'] = $hasTextCallback ? call_user_func_array($this->textCallback, [
+                    $vo['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
                         $vo,
                         false
                     ]) : ($vo[$textField] ?? '');
@@ -208,16 +208,16 @@ class SelectPickerPlugin
                     $childList[$j] = $vo;
                 }
                 $item['children'] = $childList;
-                $item['text']     = $hasTextCallback ? call_user_func_array($this->textCallback, [
+                $item['text']     = $hasTextCallback ? call_user_func_array($this->textHandler, [
                     $item,
                     true
                 ]) : ($item[$groupTextField] ?? '');
             } else {
-                $item['id']   = $hasIdCallback ? call_user_func_array($this->idCallback, [
+                $item['id']   = $hasIdCallback ? call_user_func_array($this->idHandler, [
                     $item,
                     false
                 ]) : ($item[$idField] ?? '');
-                $item['text'] = $hasTextCallback ? call_user_func_array($this->textCallback, [
+                $item['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
                     $item,
                     false
                 ]) : ($item[$textField] ?? '');
@@ -237,7 +237,7 @@ class SelectPickerPlugin
     
     /**
      * 设置选项ID处理回调
-     * @param Closure $idCallback <p>
+     * @param Closure $idHandler <p>
      * 匿名函数包涵2个参数，并返回处理后的ID<br />
      * <b>array $item 信息</b><br />
      * <b>boolean $isGroup 当前信息是否分组</b><br /><br />
@@ -247,15 +247,15 @@ class SelectPickerPlugin
      * });</pre>
      * </p>
      */
-    public function setIdCallback(Closure $idCallback) : void
+    public function setIdHandler(Closure $idHandler) : void
     {
-        $this->idCallback = $idCallback;
+        $this->idHandler = $idHandler;
     }
     
     
     /**
      * 设置选项文本处理回调
-     * @param Closure $textCallback <p>
+     * @param Closure $textHandler <p>
      * 匿名函数包涵2个参数，并返回处理后的文本<br />
      * <b>array $item 信息</b><br />
      * <b>boolean $isGroup 当前信息是否分组</b><br /><br />
@@ -265,15 +265,15 @@ class SelectPickerPlugin
      * });</pre>
      * </p>
      */
-    public function setTextCallback(Closure $textCallback) : void
+    public function setTextHandler(Closure $textHandler) : void
     {
-        $this->textCallback = $textCallback;
+        $this->textHandler = $textHandler;
     }
     
     
     /**
      * 设置查询处理回调
-     * @param Closure $queryCallback <p>
+     * @param Closure $queryHandler <p>
      * 匿名函数包涵1个参数<br />
      * <b>Model $model 当前查询模型</b><br /><br />
      * 示例：<br />
@@ -282,8 +282,8 @@ class SelectPickerPlugin
      * });</pre>
      * </p>
      */
-    public function setQueryCallback(Closure $queryCallback) : void
+    public function setQueryHandler(Closure $queryHandler) : void
     {
-        $this->queryCallback = $queryCallback;
+        $this->queryHandler = $queryHandler;
     }
 }

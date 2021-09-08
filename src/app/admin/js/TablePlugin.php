@@ -4,7 +4,9 @@ namespace BusyPHP\app\admin\js;
 
 use BusyPHP\helper\util\Filter;
 use BusyPHP\Model;
+use BusyPHP\model\Map;
 use BusyPHP\Request;
+use Closure;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -23,16 +25,28 @@ class TablePlugin
     private $request;
     
     /**
+     * 数据处理回调
+     * @var Closure
+     */
+    private $listHandler;
+    
+    /**
+     * 查询处理回调
+     * @var Closure
+     */
+    private $queryHandler;
+    
+    /**
      * 排序字段
      * @var string
      */
-    public $sort;
+    public $sortField;
     
     /**
      * 排序方式
      * @var string
      */
-    public $order;
+    public $sortOrder;
     
     /**
      * 偏移量
@@ -64,17 +78,44 @@ class TablePlugin
      */
     public $isExtend;
     
+    /**
+     * 查询字段键值对
+     * @var Map
+     */
+    public $data;
+    
+    /**
+     * 是否精确搜索
+     * @var bool
+     */
+    public $accurate;
+    
     
     public function __construct()
     {
-        $this->request  = Container::getInstance()->make(Request::class);
-        $this->isExtend = $this->request->get('extend', 0, 'intval') > 0;
-        $this->limit    = $this->request->get('limit', 0, 'intval');
-        $this->offset   = $this->request->get('offset', 0, 'intval');
-        $this->word     = $this->request->get('word', '', 'trim');
-        $this->field    = $this->request->get('field', '', 'trim');
-        $this->order    = $this->request->get('order', '', 'trim');
-        $this->sort     = $this->request->get('sort', '', 'trim');
+        $this->request   = Container::getInstance()->make(Request::class);
+        $this->isExtend  = $this->request->get('extend', 0, 'intval') > 0;
+        $this->limit     = $this->request->get('limit', 0, 'intval');
+        $this->offset    = $this->request->get('offset', 0, 'intval');
+        $this->word      = $this->request->get('word', '', 'trim');
+        $this->field     = $this->request->get('field', '', 'trim');
+        $this->accurate  = $this->request->get('accurate', 0, 'intval') > 0;
+        $this->sortOrder = $this->request->get('order', '', 'trim');
+        $this->sortOrder = $this->sortOrder ?: 'desc';
+        $this->sortField = $this->request->get('sort', '', 'trim');
+        $this->sortField = $this->sortField ?: 'id';
+        
+        // 附加数据
+        $data = $this->request->get('static', []);
+        foreach ($data as $key => $value) {
+            $data[$key] = trim($value);
+        }
+        $this->data = Map::parse($data);
+        
+        // 扩展搜索词
+        if (!$this->word) {
+            $this->word = $this->request->get('search', '', 'trim');
+        }
     }
     
     
@@ -88,32 +129,56 @@ class TablePlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->post('model', '', 'trim');
+            $model = $this->request->get('model', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }
         
         if ($model instanceof Model) {
-            if ($this->word) {
-                $model->whereLike($this->field, '%' . Filter::searchWord($this->word) . '%');
+            // 搜索
+            if ($this->word && $this->field) {
+                if ($this->accurate) {
+                    $model->where($this->field, $this->word);
+                } else {
+                    $model->whereLike($this->field, '%' . Filter::searchWord($this->word) . '%');
+                }
             }
             
-            $model->order($this->sort, $this->order);
+            // 执行查询处理程序
+            if (is_callable($this->queryHandler)) {
+                call_user_func_array($this->queryHandler, [$model, $this->data]);
+                $where = $this->data->getWhere();
+                foreach ($where as $key => $value) {
+                    $model->where($key, $value);
+                }
+            }
             
-            // 不限制条数
+            // 限制条数
             if ($this->limit > 0) {
-                $model->limit($this->offset, $this->limit);
+                // 统计长度
                 $totalModel = clone $model;
-                $totalModel->limit(0);
-                $total = $totalModel->count();
+                $total      = $totalModel->count();
+                
+                $model->limit($this->offset, $this->limit);
             } else {
                 $total = 0;
             }
+            
+            // 排序
+            $model->order($this->sortField, $this->sortOrder);
             
             if ($this->isExtend) {
                 $list = $model->selectExtendList();
             } else {
                 $list = $model->selectList();
+            }
+            
+            // 执行数据处理程序
+            if (is_callable($this->listHandler)) {
+                $resultList = call_user_func_array($this->listHandler, [&$list]);
+                if (is_array($resultList)) {
+                    $list = $resultList;
+                }
             }
             
             return $this->result($list, $this->limit > 0 ? $total : count($list));
@@ -136,5 +201,46 @@ class TablePlugin
             'totalNotFiltered' => $total,
             'rows'             => $data,
         ];
+    }
+    
+    
+    /**
+     * 设置查询回调
+     * @param Closure $queryHandler <p>
+     * 匿名函数包涵2个参数<br />
+     * <b>{@see \BusyPHP\model\Model} $model 当前查询模型</b><br />
+     * <b>{@see \BusyPHP\model\Map} $data 查询参数</b><br /><br />
+     * 示例：<br />
+     * <pre>$this->setQueryCallback(function(\BusyPHP\model\Model $model, \BusyPHP\model\Map $data) {
+     *      $model->where('id', 1);
+     *      $data->delete('id');
+     *      $data->set('id', 2);
+     *      $data->get('id', 0);
+     * });</pre>
+     * </p>
+     */
+    public function setQueryHandler(Closure $queryHandler) : void
+    {
+        $this->queryHandler = $queryHandler;
+    }
+    
+    
+    /**
+     * 设置数据列表处理回调
+     * @param Closure $listHandler <p>
+     * 匿名函数包涵1个参数<br />
+     * <b>{@see \BusyPHP\model\Field[]}|array $list 查询得到的数据</b><br />
+     * 示例：<br />
+     * <pre>$this->setQueryCallback(function(array &$list) {
+     *      foreach($list as $i => $item) {
+     *      }
+     *
+     *      return $list;
+     * });</pre>
+     * </p>
+     */
+    public function setListHandler(Closure $listHandler) : void
+    {
+        $this->listHandler = $listHandler;
     }
 }

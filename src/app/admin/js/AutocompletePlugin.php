@@ -27,13 +27,13 @@ class AutocompletePlugin
      * 选项文本处理回调
      * @var Closure
      */
-    private $textCallback;
+    private $textHandler;
     
     /**
      * 查询处理回调
      * @var Closure
      */
-    private $queryCallback;
+    private $queryHandler;
     
     /**
      * text字段
@@ -100,8 +100,8 @@ class AutocompletePlugin
             }
             
             // 自定义查询条件
-            if (is_callable($this->queryCallback)) {
-                call_user_func_array($this->queryCallback, [$model]);
+            if (is_callable($this->queryHandler)) {
+                call_user_func_array($this->queryHandler, [$model]);
             }
             
             if ($this->limit > 0) {
@@ -130,9 +130,9 @@ class AutocompletePlugin
      */
     public function result(array $data, string $textField = 'name') : array
     {
-        $hasTextCallback = is_callable($this->textCallback);
+        $hasTextCallback = is_callable($this->textHandler);
         foreach ($data as $i => $item) {
-            $item['text'] = $hasTextCallback ? call_user_func_array($this->textCallback, [
+            $item['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
                 $item,
                 false
             ]) : ($item[$textField] ?? '');
@@ -148,7 +148,7 @@ class AutocompletePlugin
     
     /**
      * 设置选项文本处理回调
-     * @param Closure $textCallback <p>
+     * @param Closure $textHandler <p>
      * 匿名函数包涵2个参数，并返回处理后的文本<br />
      * <b>array $item 信息</b><br /><br />
      * 示例：<br />
@@ -157,15 +157,15 @@ class AutocompletePlugin
      * });</pre>
      * </p>
      */
-    public function setTextCallback(Closure $textCallback) : void
+    public function setTextHandler(Closure $textHandler) : void
     {
-        $this->textCallback = $textCallback;
+        $this->textHandler = $textHandler;
     }
     
     
     /**
      * 设置查询处理回调
-     * @param Closure $queryCallback <p>
+     * @param Closure $queryHandler <p>
      * 匿名函数包涵1个参数<br />
      * <b>Model $model 当前查询模型</b><br /><br />
      * 示例：<br />
@@ -174,8 +174,8 @@ class AutocompletePlugin
      * });</pre>
      * </p>
      */
-    public function setQueryCallback(Closure $queryCallback) : void
+    public function setQueryHandler(Closure $queryHandler) : void
     {
-        $this->queryCallback = $queryCallback;
+        $this->queryHandler = $queryHandler;
     }
 }
