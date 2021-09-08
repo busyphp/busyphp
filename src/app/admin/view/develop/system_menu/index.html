@@ -7,19 +7,23 @@
            data-show-columns="true"
            data-show-export="true"
            data-show-print="true"
+           data-search="true"
+           data-show-refresh="true"
            data-tree-show-field="name"
            data-tree-save-state="{$url.group}{$url.controller}{$url.action}"
            data-pagination="false"
            data-toolbar="#tableToolbar"
-           data-url="{$url.self}">
+           data-url="{$url.self}"
+           data-route="true"
+           style="min-width: 650px">
         <thead>
             <tr>
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
                 <th width="60" data-align="center" data-field="id">ID</th>
                 <th width="50" data-align="center" data-field="icon" data-formatter="@">图标</th>
-                <th width="500" data-align="left" data-halign="center" data-field="name">菜单名称</th>
-                <th width="80" data-align="center" data-field="is_disabled" data-formatter="@">状态</th>
-                <th width="80" data-align="center" data-field="is_hide" data-formatter="@">显示</th>
+                <th data-align="left" data-halign="center" data-field="name" data-searchable="true">菜单名称</th>
+                <th width="100" data-align="center" data-field="is_disabled" data-formatter="@">状态</th>
+                <th width="100" data-align="center" data-field="is_hide" data-formatter="@">显示</th>
                 <th width="80" data-align="center" data-field="operate" data-formatter="@">操作</th>
             </tr>
         </thead>

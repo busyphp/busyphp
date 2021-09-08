@@ -91,7 +91,7 @@ class IndexController extends InsideController
                 $data->remove('admin_type');
             });
             
-            return $this->success('', '', $this->pluginTable->build(SystemLogs::init()));
+            return $this->success($this->pluginTable->build(SystemLogs::init()));
         }
         
         $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));

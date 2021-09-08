@@ -90,20 +90,27 @@ class TablePlugin
      */
     public $accurate;
     
+    /**
+     * 允许参与搜索的字段
+     * @var array
+     */
+    public $searchable;
+    
     
     public function __construct()
     {
-        $this->request   = Container::getInstance()->make(Request::class);
-        $this->isExtend  = $this->request->get('extend', 0, 'intval') > 0;
-        $this->limit     = $this->request->get('limit', 0, 'intval');
-        $this->offset    = $this->request->get('offset', 0, 'intval');
-        $this->word      = $this->request->get('word', '', 'trim');
-        $this->field     = $this->request->get('field', '', 'trim');
-        $this->accurate  = $this->request->get('accurate', 0, 'intval') > 0;
-        $this->sortOrder = $this->request->get('order', '', 'trim');
-        $this->sortOrder = $this->sortOrder ?: 'desc';
-        $this->sortField = $this->request->get('sort', '', 'trim');
-        $this->sortField = $this->sortField ?: 'id';
+        $this->request    = Container::getInstance()->make(Request::class);
+        $this->isExtend   = $this->request->get('extend', 0, 'intval') > 0;
+        $this->limit      = $this->request->get('limit', 0, 'intval');
+        $this->offset     = $this->request->get('offset', 0, 'intval');
+        $this->word       = $this->request->get('word', '', 'trim');
+        $this->field      = $this->request->get('field', '', 'trim');
+        $this->accurate   = $this->request->get('accurate', 0, 'intval') > 0;
+        $this->sortOrder  = $this->request->get('order', '', 'trim');
+        $this->sortOrder  = $this->sortOrder ?: 'desc';
+        $this->sortField  = $this->request->get('sort', '', 'trim');
+        $this->sortField  = $this->sortField ?: 'id';
+        $this->searchable = $this->request->get('searchable');
         
         // 附加数据
         $data = $this->request->get('static', []);
@@ -142,6 +149,10 @@ class TablePlugin
                 } else {
                     $model->whereLike($this->field, '%' . Filter::searchWord($this->word) . '%');
                 }
+            } elseif ($this->word && $this->searchable) {
+                foreach ($this->searchable as $field) {
+                    $model->whereLike($field, '%' . Filter::searchWord($this->word) . '%');
+                }
             }
             
             // 执行查询处理程序
@@ -165,7 +176,9 @@ class TablePlugin
             }
             
             // 排序
-            $model->order($this->sortField, $this->sortOrder);
+            if ($this->sortOrder && $this->sortField) {
+                $model->order($this->sortField, $this->sortOrder);
+            }
             
             if ($this->isExtend) {
                 $list = $model->selectExtendList();

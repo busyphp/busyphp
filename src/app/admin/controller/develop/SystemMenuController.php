@@ -8,6 +8,9 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 开发模式-后台菜单管理
@@ -37,11 +40,21 @@ class SystemMenuController extends InsideController
     
     /**
      * 栏目列表
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function index()
     {
         if ($this->pluginTable) {
-            return $this->success('', '', $this->pluginTable->build($this->model));
+            $this->pluginTable->sortField = '';
+            $this->pluginTable->sortOrder = '';
+            $this->pluginTable->setQueryHandler(function(SystemMenu $model) {
+                $model->order(SystemMenuField::sort(), 'asc');
+                $model->order(SystemMenuField::id(), 'desc');
+            });
+            
+            return $this->success($this->pluginTable->build($this->model));
         }
         
         return $this->display();

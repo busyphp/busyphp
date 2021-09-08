@@ -479,7 +479,12 @@ abstract class AdminController extends Controller
      */
     protected function success($message, $jumpUrl = '', $data = '')
     {
-        if ($this->isAjax()) {
+        if (is_array($message)) {
+            $data    = $message;
+            $message = '';
+        }
+        
+        if ($this->isAjax() || $data) {
             return $this->json($this->parseAjaxReturn([
                 'info'   => $this->parseMessage($message),
                 'status' => true,
