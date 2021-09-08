@@ -99,30 +99,14 @@
 | data-sort-order | string | 否 | `asc` | 指定列排序的默认排序方式，支持：`asc`, `desc` |
 | 搜索:title |  |  |  |  |
 | data-searchable | boolean | 否 | `true` | 是否允许搜索 |
-| busyAdmin搜索类型:title |  |
-| data-search-type | string | 否 | - | 指定字段搜索类型，支持：`select`, `input` |
-| data-search-value | any | 否 | - | 指定字段搜索类型时的值配置，分别为：<br />**select**：支持格式：<br />1: `[{'name':'string','value':'string','selected':boolean}]` <br /> 2: `['string']` <br /> 3: `string,string` <br /> 4: `{'key':'value', 'key1':'value1'}` <br />**input**：`string` |
-| data-search-placeholder | string | 否 | - | 设置默认提示，分别为：<br/>**select**：格式：<br />1: `默认值,默认内容`<br />2: `默认内容`<br />**input**：`提示内容` |
-| data-search-attr | string | 否 | - | 设置搜索项的自定义标签属性，如：`id="#test"` |
-| data-search-label | string,boolean | 否 | - | 是否显示字段名称，指定 `true` 则使用默认字段名称，指定 `string` 则使用该名称 |
-| data-search-icon | string | 否 | - | 指定搜索字段图标，设置后将显示在该项的右侧 |
-| data-search-dir | string | 否 | `left` | 设置该搜索选项在左侧还是右侧，`right`为右侧，`left`为左侧 |
 | 表尾:title |  |  |  |  |
-| data-footer-html | string | 否 | - | 设置`tfoot`下该单元格自定义内容的`jQuery选择器` |
 | data-footer-formatter | string | 否 | - | 设置`tfoot`下该单元格的内容处理回调 `window全局方法`，回调参数：<br />**this**：列属性对象<br />**data**：表数据<br />**value**：该单元格原来的内容 |
+| 内容:title |  |  |  |  |
+| data-escape | boolean | 否 | `false` | 内容包涵html节点是否原样输出 |
+| data-event | string | 否 | - | 设置自定义单元格事件 `window全局变量名称` |
+| data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，@则使用 artTemplate 引擎解析 |
+| data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，@则使用 artTemplate 引擎解析 |
 
-### 自定义`tfoot`按钮属性
-
-通过对按钮加上自定属性实现
-
-| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
-| - | :-: | :--: | :-: | - |
-| data-btn | string | 是 | - | 设置表尾按钮标记，同一个表格不能重复 |
-| disabled | string | 否 | - | 设置后只有包涵选中项才会允许点击 |
-| data-url | string | 否 | - | 设置点击按钮请求的URL地址。不设置为 `document.URL` |
-| data-method | string | 否 | `post` | 设置请求方式，支持：`post`，`get` |
-| data-confirm | string | 否 | - | 设置请求前是否弹窗询问，支持 `%s` 变量为选中的条数 |
-| data-click | string | 否 | - | 设置点击回调 `window全局方法`，设置后`data-url`无效，点击事件将需要自定义，回调参数：<br /> **formParams**：`[{name:string,value:string}]` 当前表内的表单参数<br /> **selectedRows**：`[object]` 当前选中记录<br />**api**：`BootstrapTable` 对象，如使用 `api.refresh()` 刷新表，[更多方法参考官方手册](https://bootstrap-table.com/docs/api/methods/) |
 
 ### 自定义`data-toolbar`中的元素属性
 
@@ -160,49 +144,52 @@
 #demo2
 ```
             
+            
+            
             </script>
         </div>
     </div>
 
-    <textarea class="hide" id="demo1">
-<table data-toggle="busy-table">
-    <thead>
-        <tr>
-            <th rowspan="2" data-valign="middle">名称</th>
-            <th colspan="3">详情</th>
-        </tr>
-        <tr>
-            <th>关注数</th>
-            <th>浏览数</th>
-            <th>描述</th>
-        </tr>
-    </thead>
-    <tbody>
-    <for name="index" start="1" end="5">
-    <tr>
-            <td>张三{$index}</td>
-            <td><?=rand(0, 9999)?></td>
-            <td><?=rand(0, 9999)?></td>
-            <td><?=rand(0, 9999)?></td>
-        </tr>
-    </for></tbody>
-</table></textarea>
+    <template class="hide" id="demo1">
+        <table data-toggle="busy-table"
+               data-height="300">
+            <thead>
+                <tr>
+                    <th rowspan="2" data-valign="middle">名称</th>
+                    <th colspan="3">详情</th>
+                </tr>
+                <tr>
+                    <th>关注数</th>
+                    <th>浏览数</th>
+                    <th>描述</th>
+                </tr>
+            </thead>
+            <tbody>
+                <for name="index" start="1" end="100">
+                    <tr>
+                        <td>张三{$index}</td>
+                        <td><?=rand(0, 9999)?></td>
+                        <td><?=rand(0, 9999)?></td>
+                        <td><?=rand(0, 9999)?></td>
+                    </tr>
+                </for>
+            </tbody>
+        </table>
+    </template>
 
 
-    <textarea class="hide" id="demo2">
-<script id="btnTest" type="text/html">
-    <button class="btn btn-danger btn-sm" disabled data-url="?action=success" data-confirm="确认要删除选中的%s项吗？">删除</button>
-    <button class="btn btn-warning btn-sm" data-url="?action=error" data-confirm="确认要排序吗？">排序</button>
-</script>
-<table class="table table-hover table-bordered table-striped"
-       data-toggle="busy-table"
-       data-show-export="true"
-       data-footer-buttons="#btnTest"
-       data-show-footer="true"></table>
-<script>
-    function test(formParams, selectRows, api) {
-        console.log(arguments);
-    }
-</script></textarea>
-
+    <template class="hide" id="demo2">
+        <table class="table table-hover table-bordered table-striped"
+               data-toggle="busy-table"
+               data-height="300"
+               data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>">
+            <thead>
+                <tr>
+                    <th data-field="id">ID</th>
+                    <th data-field="title">操作名称</th>
+                    <th data-field="format_create_time">创建时间</th>
+                </tr>
+            </thead>
+        </table>
+    </template>
 </block>

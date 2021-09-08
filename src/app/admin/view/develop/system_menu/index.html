@@ -3,17 +3,15 @@
 <block name="content">
     <table class="table table-striped table-bordered table-hover"
            data-toggle="busy-table"
-           data-height="auto"
+           data-height="true"
            data-show-columns="true"
            data-show-export="true"
            data-show-print="true"
            data-tree-show-field="name"
            data-tree-save-state="{$url.group}{$url.controller}{$url.action}"
            data-pagination="false"
-           data-toolbar="#setSort"
-           data-fixed-columns="true"
-           data-fixed-number="1"
-           id="table">
+           data-toolbar="#tableToolbar"
+           data-url="{$url.self}">
         <thead>
             <tr>
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
@@ -28,15 +26,16 @@
     </table>
 
     <div class="hide">
-        <a id="setSort"
-           class="btn btn-success"
-           href="javascript:void(0)"
-           data-url="{:url('set_sort')}"
-           data-field="id,sort"
-           data-method="post"
-           data-confirm="确认要排序吗？">
+        <div id="tableToolbar">
+            <a class="btn btn-success"
+               href="javascript:void(0)"
+               data-url="{:url('set_sort')}"
+               data-field="id,sort"
+               data-method="post"
+               data-confirm="确认要排序吗？">
             <i class="icon icon-sort"></i> 排序
         </a>
+        </div>
     </div>
 
     <script type="text/html" id="sort">
@@ -58,9 +57,5 @@
     <script type="text/html" id="operate">
         <a class="btn btn-success btn-xs" href="{:url('edit?id=')}{{item.id}}"><i class="icon icon-pencil"></i></a>
         <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？"><i class="icon icon-trash"></i></a>
-    </script>
-</block>
-<block name="foot">
-    <script>
     </script>
 </block>
