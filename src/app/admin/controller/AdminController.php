@@ -716,7 +716,7 @@ HTML;
     {
         $resp = parent::display($template, $charset, $contentType, $content);
         
-        if ($this->requestPluginName === 'SinglePage') {
+        if ($this->requestPluginName === 'SinglePage' || $this->requestPluginName === 'Modal') {
             return $this->success('', '', $resp->getContent());
         }
         

@@ -59,7 +59,7 @@
     </script>
 
     <script type="text/html" id="operate">
-        <a class="btn btn-success btn-xs" href="{:url('edit?id=')}{{item.id}}"><i class="icon icon-pencil"></i></a>
+        <a class="btn btn-success btn-xs" href="{:url('edit?id=')}{{item.id}}" data-toggle="busy-modal" data-size="lg" data-footer="false"><i class="icon icon-pencil"></i></a>
         <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？"><i class="icon icon-trash"></i></a>
     </script>
 </block>
