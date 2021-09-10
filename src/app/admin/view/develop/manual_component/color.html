@@ -33,31 +33,14 @@
 | data-align | string | 否 | `right` | 设置选择器弹出框的对齐方式，支持`left`, `right` |
 | data-selectors | object | 否 | `null` | 设置预选值，如果选择其中一种颜色，将返回别名而不是十六进制代码。 |
 
+### 预定义颜色格式
 
-### 方法
-
-> 通过 `.busyAdminColorPicker(true)` 获取 `$.colorpicker` 实例 或 `.busyAdminColorPicker(方法名, 方法参数...)` 参考官方手册：https://itsjavi.com/bootstrap-colorpicker/v2/
-
-```JS
-// 获取$.colorpicker实例
-$('#color').busyAdminColorPicker(true).destroy(); // 销毁实例
-
-// 直接使用方法
-$('#color').busyAdminColorPicker('destroy'); // 销毁实例
+```js
+var colors = {
+    colorName : colorValue, // 颜色名称 : 颜色值
+    colorName1 : colorValue1,
+}
 ```
-
-
-### 事件
-
-| 事件名:240 | 参数:400 | 返回值:100 | 描述 |
-| :- | :- | :--: | - |
-| create.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 创建时触发 |
-| show-picker.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 选择器显示时触发 |
-| hide-picker.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 选择器隐藏时触发 |
-| change-color.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 颜色改变时触发 |
-| disable.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 禁用时触发 |
-| enable.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 启用时触发 |
-| destroy.busy.admin.color-picker | `api:ColorPicker` - ColorPicker对象 | `void` | 销毁时触发 |
 
 
 ### 使用示例
@@ -90,28 +73,28 @@ $('#color').busyAdminColorPicker('destroy'); // 销毁实例
     </div>
 
     <textarea class="hide" id="demo1">
-<input type="text" class="form-control" data-busy-color-picker="#000000" data-align="left"/>
+<input type="text" class="form-control" data-toggle="busy-color-picker" value="#000000" data-align="left"/>
 <hr />
-<div class="input-group" data-busy-color-picker="" data-color="#FF0000" data-align="right">
+<div class="input-group" data-toggle="busy-color-picker" data-color="#FF0000" data-align="right">
     <input type="text" class="form-control"/>
     <div class="input-group-addon"><i></i></div>
 </div>
 <hr />
-<div class="input-group" data-busy-color-picker="" data-align="right">
+<div class="input-group" data-toggle="busy-color-picker" data-align="right">
     <input type="text" value="#006600" class="form-control"/>
     <div class="input-group-addon"><i></i></div>
 </div>
     </textarea>
 
     <textarea class="hide" id="demo2">
-<input type="text" class="form-control" data-busy-color-picker="" data-align="left" data-format="rgb"/>
+<input type="text" class="form-control" data-toggle="busy-color-picker" data-align="left" data-format="rgb"/>
 <hr/>
-<input type="text" class="form-control" data-busy-color-picker="" data-align="left" data-format="rgba"/>
+<input type="text" class="form-control" data-toggle="busy-color-picker" data-align="left" data-format="rgba"/>
     </textarea>
 
     <textarea class="hide" id="demo3">
 <input type="text" class="form-control" id="demo3_input"/>
-<div data-busy-color-picker="" id="demo3_color" data-inline="true"></div>
+<div data-toggle="busy-color-picker" id="demo3_color" data-inline="true"></div>
 <script>
     $(function () {
         $('#demo3_color').on(busyAdmin.e.colorPickerChange, function (e, colorPicker, color) {
@@ -123,7 +106,7 @@ $('#color').busyAdminColorPicker('destroy'); // 销毁实例
 
     <textarea class="hide" id="demo4">
 <input type="text" class="form-control" id="demo4_input"/>
-<div data-busy-color-picker="" id="demo4_color" data-inline="true" data-selectors='{"black":"#000000","red":"#FF0000","green":"#006600"}'></div>
+<div data-toggle="busy-color-picker" id="demo4_color" data-inline="true" data-selectors='{"black":"#000000","red":"#FF0000","green":"#006600"}'></div>
 <script>
     $(function () {
         $('#demo4_color').on(busyAdmin.e.colorPickerChange, function (e, colorPicker, color) {
