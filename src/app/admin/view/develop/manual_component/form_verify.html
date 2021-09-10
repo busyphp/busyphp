@@ -1,0 +1,265 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-verify"` 来触发
+
+```html
+<form data-toggle="busy-verify">...</form>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-error-popup | boolean | 否 | `false` | 错误信息是否浮动显示 |
+| data-error-dir | string | 否 | `right` | 错误信息浮动位置，支持`left`,`top`,`bottom`,`right` |
+| data-error-offset | number | 否 | 8 | 错误信息浮动偏移 |
+
+### 表单元素属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本:title |  |  |  |  |
+| data-rule-required | boolean | 否 | - | 是否必填项 |
+| data-msg | string | 否 | - | 必填项未填写的消息提示，默认使用`placeholder`属性 |
+| data-verify-msg-target | string | 否 | - | 设置错误提示的容器jQuery选择器，如："#username_error" |
+| 相同:title |  |  |  |  |
+| data-rule-equalTo | string | 否 | - | 如："#password"。输入值必须和 #password 相同,通常用于密码验证 |
+| data-msg-equalTo | string | 否 | - | 输入的内容于对应的内容不相同时的消息 |
+| 数值大小:title |  |  |  |  |
+| data-rule-min | number | 否 | - | 输入的数字不能小于这个数 |
+| data-rule-max | number | 否 | - | 输入的数字不能大于这个数 |
+| data-rule-range | string,array | 否 | - | 输入的数字不能超出这个范围，如`5,10` |
+| data-rule-step | number | 否 | - | 输入的数字必须是这个值的倍数 |
+| data-msg-min | string | 否 | - | 输入的数字超过最小值内容提示，支持变量`{0}` |
+| data-msg-max | string | 否 | - | 输入的数字超过最大值内容提示，支持变量`{0}` |
+| data-msg-range | string,array | 否 | - | 输入的数字超出这个范围的消息提示，支持变量`{0}`,`{1}`  |
+| data-msg-step | string,array | 否 | - | 输入的数字不是对应的倍数的错误消息，支持变量`{0}`  |
+| 字符长度:title |  |  |  |  |
+| data-rule-minlength | number | 否 | - | 输入的字符长度不能小于这个数 |
+| data-rule-maxlength | number | 否 | - | 输入的字符长度不能大于这个数 |
+| data-rule-rangelength | string,array | 否 | - | 输入的字符长度不能超过这个范围，如`5,10` |
+| data-msg-minlength | number | 否 | - | 输入的字符长度不足的消息提示，支持变量`{0}` |
+| data-msg-maxlength | number | 否 | - | 输入的字符长度超过的消息提示，支持变量`{0}` |
+| data-msg-rangelength | string | 否 | - | 输入的字符长度超过这个范围的消息提示，支持变量`{0}`,`{1}` |
+| 数据类型:title |  |  |  |  |
+| data-rule-remote | string | 否 | - | 异步验证URL |
+| data-rule-email | boolean | 否 | - | 必须输入email格式 |
+| data-rule-url | boolean | 否 | - | 必须输入网址格式 |
+| data-rule-date | boolean | 否 | - | 日期格式校验 ie6 出错，慎用 |
+| data-rule-dateISO | boolean | 否 | - | 必须输入正确格式的日期(ISO)，例如：2009-06-23，1998/01/22 只验证格式，不验证有效性 |
+| data-rule-number | boolean | 否 | - | 必须输入数字 |
+| data-rule-digits | boolean | 否 | - | 必须输入整数 |
+| data-rule-phone | boolean | 否 | - | 必须输入手机号格式 |
+| data-rule-tel | boolean | 否 | - | 必须输入电话号码格式 |
+| data-rule-decimal | boolean | 否 | - | 必须输入数字，可以包涵小数 |
+| data-rule-zip | boolean | 否 | - | 必须邮编格式 |
+| data-rule-en | boolean | 否 | - | 只能输入英文字母格式 |
+| data-rule-enNumLine | boolean | 否 | - | 只能输入英文字母字数下划线格式 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <form data-toggle="busy-verify" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">账号</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="username" data-rule-enNumLine="true" data-rule-remote="__SELF__" required placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">手机号</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input type="tel" class="form-control" name="phone" data-rule-phone="true" required placeholder="请输入手机号"/>
+                        <div class="input-group-addon"><i class="icon icon-mobile"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">电话号码</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input type="tel" class="form-control" name="phone" data-rule-tel="true" required placeholder="请输入电话号码"/>
+                        <div class="input-group-addon"><i class="icon icon-telegram"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请输入价格</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input type="tel" class="form-control" name="decimal" data-rule-decimal="true" required placeholder="请输入价格"/>
+                        <div class="input-group-addon">元</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input type="email" class="form-control" name="email" required placeholder="请输入邮箱"/>
+                        <div class="input-group-addon">@</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">登录密码</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" required name="password" placeholder="请输入密码"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">确认密码</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" required name="confirm_password" data-rule-equalTo="[name='password']" data-msg-equalTo="两次输入的密码不一致" placeholder="请输入确认密码"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择爱好</label>
+                <div class="col-sm-6">
+                    <div class="checkbox-inline">
+                        <label>
+                            <input type="checkbox" name="like[]" required data-msg="请选择爱好"/>
+                            足球
+                        </label>
+                    </div>
+                    <div class="checkbox-inline">
+                        <label>
+                            <input type="checkbox" name="like[]"/>
+                            篮球
+                        </label>
+                    </div>
+                    <div class="checkbox-inline">
+                        <label>
+                            <input type="checkbox" name="like[]"/>
+                            乒乓球
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择爱好1</label>
+                <div class="col-sm-6">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="like1[]" required data-msg="请选择爱好"/>
+                            足球
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="like1[]"/>
+                            篮球
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="like1[]"/>
+                            乒乓球
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择爱好2</label>
+                <div class="col-sm-6">
+                    <div class="checkbox">
+                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" required title="足球" data-msg="请选择爱好"/>
+                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" title="篮球" data-msg="请选择爱好"/>
+                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" title="乒乓球" data-msg="请选择爱好"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择性别</label>
+                <div class="col-sm-6">
+                    <div class="radio-inline">
+                        <label>
+                            <input type="radio" name="sex" required data-msg="请选择性别"/>
+                            男
+                        </label>
+                    </div>
+                    <div class="radio-inline">
+                        <label>
+                            <input type="radio" name="sex"/>
+                            女
+                        </label>
+                    </div>
+                    <div class="radio-inline">
+                        <label>
+                            <input type="radio" name="sex"/>
+                            人妖
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择性别</label>
+                <div class="col-sm-6">
+                    <div class="radio">
+                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="男"/>
+                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="女"/>
+                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="人妖"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择地区</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="city" required>
+                        <option value="">请选择</option>
+                        <option value="1">北京</option>
+                        <option value="2">河北</option>
+                        <option value="3">山西</option>
+                        <option value="4">河南</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">请选择地区1</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="city1" data-toggle="busy-select-picker" data-placeholder="请选择" data-verify-msg-target="#city1Helper" required>
+                        <option value=""></option>
+                        <option value="1">北京</option>
+                        <option value="2">河北</option>
+                        <option value="3">山西</option>
+                        <option value="4">河南</option>
+                    </select>
+                    <div id="city1Helper"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">个人简介</label>
+                <div class="col-sm-10">
+                    <textarea class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-2">
+                    <button type="submit" class="btn btn-primary">提交</button>
+                    <button type="reset" class="btn btn-default">重置</button>
+                </div>
+            </div>
+        </form>
+    </template>
+</block>
