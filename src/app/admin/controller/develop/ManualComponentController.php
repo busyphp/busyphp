@@ -68,7 +68,7 @@ class ManualComponentController extends InsideController
     /**
      * 颜色选择器
      */
-    public function color()
+    public function color_picker()
     {
         return $this->display();
     }
