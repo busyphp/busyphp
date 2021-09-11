@@ -261,6 +261,7 @@ class ManualComponentController extends InsideController
         return $this->display();
     }
     
+    
     /**
      * 表单验证
      */
@@ -268,6 +269,19 @@ class ManualComponentController extends InsideController
     {
         if ($this->requestPluginName === 'VerifyRemote') {
             return $this->error('该账号已存在');
+        }
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 自动请求
+     */
+    public function request()
+    {
+        if ($this->isPost()) {
+            return $this->success('请求成功');
         }
         
         return $this->display();
