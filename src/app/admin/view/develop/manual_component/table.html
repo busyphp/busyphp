@@ -104,8 +104,7 @@
 | 内容:title |  |  |  |  |
 | data-escape | boolean | 否 | `false` | 内容包涵html节点是否原样输出 |
 | data-event | string | 否 | - | 设置自定义单元格事件 `window全局变量名称` |
-| data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，@则使用 artTemplate 引擎解析 |
-| data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，@则使用 artTemplate 引擎解析 |
+| data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，`@`则使用 `artTemplate` 模板引擎解析 |
 
 
 ### 自定义`data-toolbar`中的元素属性
@@ -116,12 +115,11 @@
 | - | :-: | :--: | :-: | - |
 | 基本:title |  |  |  |  |
 | data-disabled | true | 否 | - | 设置后元素被初始化为默认禁用状态，只有数据被选中才允许使用 |
-| 执行请求:title |  |  |  |  |
-| data-url | true,string | 是 | - | 设置点击该元素要异步请求的url |
+| 执行请求，扩展自 [自动请求]({:url('request')}) 组件，更多属性请直接参考该组件:title |  |  |  |  |
+| data-url | true,string | 是 | - | 设置点击该元素要异步请求的url，`设置后才能触发自动请求` |
 | data-field | string | 是 | `id` | 设置请求需要携带的值从表数据中通过该字段访问，支持设置键值分别获取字段，格式`键字段,值字段` |
 | data-name | true,string | 否 | `true` | 设置携带值的参数名，true为`data-field`值 |
 | data-checked | boolean | 否 | `false` | 设置携带的值是否只包涵选中项的数据 |
-| data-... |  |  |  | 请参考 `$.fn.busyAdminRequest` |
 
 
 ### 自定义`td`中的元素属性
@@ -143,9 +141,6 @@
 ```demo:实例
 #demo2
 ```
-            
-            
-            
             </script>
         </div>
     </div>
@@ -182,14 +177,21 @@
         <table class="table table-hover table-bordered table-striped"
                data-toggle="busy-table"
                data-height="300"
+               data-fixed-columns="true"
+               data-fixed-right-number="1"
                data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>">
             <thead>
                 <tr>
                     <th data-field="id">ID</th>
                     <th data-field="title">操作名称</th>
                     <th data-field="format_create_time">创建时间</th>
+                    <th data-field="operate" data-align="center" data-formatter="@">操作</th>
                 </tr>
             </thead>
         </table>
+        
+        <script type="text/html" id="operate">
+            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-method="post" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload"><i class="icon icon-plus"></i></a>
+        </script>
     </template>
 </block>

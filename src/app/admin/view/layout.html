@@ -1,18 +1,10 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>{$page_title} - 后台管理系统</title>
-    <script>
-        if (window.self != window.top) {
-            window.top.location.href = document.URL;
-            document.write('');
-        }
-    </script>
+    <title data-title="{$panel_title}">{$page_title} - 后台管理系统</title>
     <include file="@admin:head"/>
-    <!--busy-admin-hide-page-title--{$panel_title}/-->
 </head>
 <body>
-
 <div id="wrap">
     <div class="busy-admin-header" data-busy-id="header">
         <div class="busy-admin-header-top">

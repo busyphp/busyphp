@@ -1,10 +1,12 @@
 <extend name="@admin:layout"/>
 <block name="content">
+    <title>远程自定义表单</title>
+    
     <form action="__SELF__" method="post" class="form-horizontal">
         <div class="form-group">
             <label class="col-sm-2 control-label must">姓名</label>
             <div class="col-sm-6">
-                <input type="text" class="form-control" name="name" placeholder="请输入姓名" value=""/>
+                <input type="text" class="form-control" name="name"  placeholder="请输入姓名" value=""/>
             </div>
             <div class="col-sm-4"><span class="help-block">请输入姓名</span></div>
         </div>
@@ -12,7 +14,7 @@
             <label class="col-sm-2 control-label must">年龄</label>
             <div class="col-sm-6">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="sex" placeholder="请输入年龄" value=""/>
+                    <input type="text" class="form-control" name="sex"  placeholder="请输入年龄" value=""/>
                     <div class="input-group-addon">岁</div>
                 </div>
             </div>
