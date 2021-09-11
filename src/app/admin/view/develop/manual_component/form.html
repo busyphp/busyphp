@@ -1,0 +1,140 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-form"` 来触发
+
+```html
+<form data-toggle="busy-form">...</form>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本:title |  |  |  |  |
+| data-confirm | string | 否 | - | 设置提交前确认提示文案 |
+| data-pending | boolean | 否 | `true` | 是否显示提交过程中的loading提示 |
+| data-pending-message | string | 否 | `请稍后...` | loading提示内容 |
+| data-method | string | 否 | `post` | 提交方式，`get`，`post`，不设置默认取`form`标签的`method`属性 |
+| data-action | string | 否 | - | 提交的地址，不设置默认取`form`标签的`action`属性 |
+| 表单验证，扩展自 [自动验证]({:url('form_verify')}) 组件，请使用 `data-verify-*`进行验证配置 :title |  |  |  |  |
+| data-verify | boolean | 否 | `true` | 是否开启表单验证 |
+| 回调方法:title |  |  |  |  |
+| data-on-check | string | 否 | - | 表单验证回调，返回`false`阻止提交 |
+| data-on-before | string | 否 | - | 表单提交前回调，返回`false`阻止提交，可以通过该回调修改提交参数 |
+| data-on-complete | string | 否 | - | 表单提交完成回调，返回`false`阻止`success`,`error`执行 |
+| data-on-success | string | 否 | - | 表单提交成功回调，返回`false`阻止弹出提示，支持语法糖如下：<br />`@app.reload`：重载当前页面<br />`@app.back`：返回上一页<br />`@app.redirect`：跳转到响应结果内返回的`url`地址<br />`@form.reset`：重置当前表单 |
+| data-on-error | string | 否 | - | 表单提交失败回调，返回`false`阻止弹出提示，支持语法糖如下：<br />`@app.reload`：重载当前页面<br />`@app.back`：返回上一页<br />`@app.redirect`：跳转到响应结果内返回的`url`地址<br />`@form.reset`：重置当前表单 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+
+#### 提交确认
+```demo:实例
+#demo2
+```
+
+#### 禁止验证
+```demo:实例
+#demo3
+```
+
+#### 验证提示风格
+```demo:实例
+#demo4
+```
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <form data-toggle="busy-form">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">账号</div>
+                    <input type="text" class="form-control" required name="username" placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">密码</div>
+                    <input type="password" class="form-control" required name="password" placeholder="请输入密码"/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="reset" class="btn btn-default">重置</button>
+        </form>
+    </template>
+
+    <template class="hide" id="demo2">
+        <form data-toggle="busy-form" data-confirm="确认要提交吗？" data-on-success="@form.reset">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">账号</div>
+                    <input type="text" class="form-control" required name="username" placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">密码</div>
+                    <input type="password" class="form-control" required name="password" placeholder="请输入密码"/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="reset" class="btn btn-default">重置</button>
+        </form>
+    </template>
+
+    <template class="hide" id="demo3">
+        <form data-toggle="busy-form" data-verify="false" data-on-success="@form.reset">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">账号</div>
+                    <input type="text" class="form-control" name="username" placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">密码</div>
+                    <input type="password" class="form-control" name="password" placeholder="请输入密码"/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="reset" class="btn btn-default">重置</button>
+        </form>
+    </template>
+
+    <template class="hide" id="demo4">
+        <form data-toggle="busy-form" data-on-success="@form.reset" data-verify-error-popup="true" data-verify-error-dir="top">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">账号</div>
+                    <input type="text" class="form-control" name="username" required placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">密码</div>
+                    <input type="password" class="form-control" name="password" required placeholder="请输入密码"/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="reset" class="btn btn-default">重置</button>
+        </form>
+    </template>
+</block>
