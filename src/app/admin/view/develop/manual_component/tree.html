@@ -12,17 +12,16 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-busy-tree` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-tree"` 来触发
 
 ```html
-<div data-busy-tree=""></div>
+<div data-toggle="busy-tree"></div>
 ```
 
 ### 属性
 
 | 属性:240 | 类型:400 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :- | :-: | :-: | - |
-| data-busy-tree | string | `是` | `html` | 初始化组件属性，支持：`html`, `ajax`, `data` |
 | data-dots | boolean | 否 | `true` | 是否显示连线 |
 | data-icons | boolean | 否 | `true` | 是否显示图标 |
 | data-ellipsis | boolean | 否 | `false` | 内容超出时是否显示省略号 |
@@ -39,7 +38,7 @@
 | data-method | string | 否 | `get` | 设置请求方式，支持`get`, `post` |
 | data-parent-id-field | string | 否 | `parent_id` | 设置请求下级的时候传上级id的参数名称 |
 | Data:title |  |  |  |  |
-| data-source | string | 否 | - | 设置初始化的数据，支持html、json格式的数据 |
+| data-list | string | 否 | - | 设置初始化的数据，支持html、json格式的数据 |
 | 复选框:title |  |  |  |  |
 | data-checkbox | boolean | 否 | `false` | 是否启用复选框 |
 | data-checkbox-keep-selected-style | boolean | 否 | `false` | 是否保留选中样式 |
@@ -83,73 +82,61 @@
 }
 ```
 
-### 方法
-
-> 通过 `.busyAdminTree(true)` 获取 `$.jstree` 实例 或 `.busyAdminTree(方法名, 方法参数...)` 参考官方手册：https://www.jstree.com/api/#/
-
-```JS
-// 获取jstree实例
-$('#tree').busyAdminTree(true).destroy(true); // 销毁实例
-
-// 直接使用方法
-$('#tree').busyAdminTree('destroy', true); // 销毁实例
-```
-
 ### 事件
 
 | 事件名:240 | 参数:400 | 返回值:100 | 描述 |
 | :- | :- | :--: | - |
 | 核心:title | | |  |
-| init.busy.admin.tree | `api:Tree` - Tree对象 | `void` | 所有事件绑定后触发 |
-| loading.busy.admin.tree | `api:Tree` - Tree对象 | `void` | 加载开始之前触发 |
-| destroy.busy.admin.tree | `api:Tree` - Tree对象 | `void` | 销毁前触发 |
-| loaded.busy.admin.tree | `api:Tree` - Tree对象 | `void` | 首次加载根节点后触发 |
-| ready.busy.admin.tree | `api:Tree` - Tree对象 | `void` | 所有节点加载完毕后触发，这里就可以使用方法了 |
-| load-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 正在加载的节点<br />`status:boolean` - 节点是否加载成功 | `void` | 加载节点后触发 |
-| load-all.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 递归加载的节点 | `void` | 执行`loadAll`方法后触发 |
-| redraw.busy.admin.tree | `api:Tree` - Tree对象<br />`nodes:[string]` - 重绘的节点ID集合 | `void` | 节点重绘后触发 |
-| insert.busy.admin.tree | `api:Tree` - Tree对象<br />`nodes:[string]` - 新增的节点ID集合<br />`parent:string` - 父节点ID | `void` | 新增节点后触发 |
-| before-open.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当一个节点即将被打开时触发 |
-| open-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 打开节点时触发（如果有动画则不触发） |
-| after-open.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当节点打开且动画完成时触发 |
-| close-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭时触发（如果有动画则不触发） |
-| after-close.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭且动画完成时触发 |
-| open-all.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 执行`openAll`方法后触发 |
-| enable-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 启用节点时触发 |
-| disable-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 节点被禁用时触发 |
+| treeInit | `api:Tree` - Tree对象 | `void` | 所有事件绑定后触发 |
+| treeLoading | `api:Tree` - Tree对象 | `void` | 加载开始之前触发 |
+| treeDestroy | `api:Tree` - Tree对象 | `void` | 销毁前触发 |
+| treeLoaded | `api:Tree` - Tree对象 | `void` | 首次加载根节点后触发 |
+| treeReady | `api:Tree` - Tree对象 | `void` | 所有节点加载完毕后触发，这里就可以使用方法了 |
+| treeLoadNode | `api:Tree` - Tree对象<br />`node:object` - 正在加载的节点<br />`status:boolean` - 节点是否加载成功 | `void` | 加载节点后触发 |
+| treeLoadAll | `api:Tree` - Tree对象<br />`node:object` - 递归加载的节点 | `void` | 执行`loadAll`方法后触发 |
+| treeRedraw | `api:Tree` - Tree对象<br />`nodes:[string]` - 重绘的节点ID集合 | `void` | 节点重绘后触发 |
+| treeInsert | `api:Tree` - Tree对象<br />`nodes:[string]` - 新增的节点ID集合<br />`parent:string` - 父节点ID | `void` | 新增节点后触发 |
+| treeBeforeOpen | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当一个节点即将被打开时触发 |
+| treeOpenNode | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 打开节点时触发（如果有动画则不触发） |
+| treeAfterOpen | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当节点打开且动画完成时触发 |
+| treeCloseNode | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭时触发（如果有动画则不触发） |
+| treeAfterClose | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭且动画完成时触发 |
+| treeOpenAll | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 执行`openAll`方法后触发 |
+| treeEnableNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 启用节点时触发 |
+| treeDisableNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 节点被禁用时触发 |
 | hide-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 隐藏的节点 | `void` | 节点被隐藏时触发 |
 | show-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 显示的节点 | `void` | 节点被显示时触发 |
-| hide-all.busy.admin.tree| `api:Tree` - Tree对象<br />`nodes:[string]` - 所有隐藏节点的 ID | `void` | 所有节点被隐身时触发 |
-| show-all.busy.admin.tree| `api:Tree` - Tree对象<br />`nodes:[string]` - 所有显示节点的 ID | `void` | 所有节点被显示时触发 |
-| click-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 点击的节点<br />`event: object` - 触发调用的原始事件（如果有）（可能是一个空对象） | `void` | 节点被点击时触发 |
-| hover-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标悬停节点时触发 |
-| dehover-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标移除悬停节点时触发 |
-| select-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 select-node 的事件（如果有）| `void` | 选择节点时触发 |
-| deselect-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 deselect-node 的事件（如果有）| `void` | 取消选择节点时触发 |
-| changed.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`action:string` - 导致选择更改的操作<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此更改事件的事件（如果有）| `void` | 选择更改时触发 |
-| select-all.busy.admin.tree| `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选择所有节点时触发 |
-| deselect-all.busy.admin.tree| `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选择所有节点时触发 |
-| set-state.busy.admin.tree| `api:Tree` - Tree对象 | `void` | 设置树状态后触发 |
-| refresh.busy.admin.tree| `api:Tree` - Tree对象 | `void` | 执行`refresh`方法后触发  |
-| refresh_node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 刷新的节点<br />`nodes:[string]` - 重新加载的节点的 ID 数组 | `void` | 节点刷新时触发  |
-| set-id.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`old:string` - 旧的ID | `void` | 当节点 id 值改变时触发  |
-| set-text.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新的值 | `void` | 当节点文本值更改时触发 |
-| create-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 新节点在父节点中的位置 | `void` | 创建节点时触发 |
-| rename-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新名称<br />`old:string` - 旧名称 | `void` | 重命名节点时触发 |
-| delete-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID | `void` | 删除节点时触发 |
-| move-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`old_parent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 移动节点时触发 |
-| copy-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点<br />`original:object` - 原始节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`oldParent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 当节点被复制时触发 |
-| cut.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行移动时触发 |
-| copy.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行复制时触发 |
-| paste.busy.admin.tree| `api:Tree` - Tree对象<br />`parent:string` - 父节点ID<br />`node:[]` - 缓冲区中的节点<br />`mode:string` - 执行的操作 - "copy-node" 或 "move-node" | `void` | 调用 `paste`方法 时触发 |
-| clear-buffer.busy.admin.tree| `api:Tree` - Tree对象| `void` | 当复制/剪切缓冲区被清除时触发 |
+| treeHideAll | `api:Tree` - Tree对象<br />`nodes:[string]` - 所有隐藏节点的 ID | `void` | 所有节点被隐身时触发 |
+| treeShowAll | `api:Tree` - Tree对象<br />`nodes:[string]` - 所有显示节点的 ID | `void` | 所有节点被显示时触发 |
+| treeClickNode | `api:Tree` - Tree对象<br />`node:object` - 点击的节点<br />`event: object` - 触发调用的原始事件（如果有）（可能是一个空对象） | `void` | 节点被点击时触发 |
+| treeHoverNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标悬停节点时触发 |
+| treeDeHoverNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标移除悬停节点时触发 |
+| treeSelectNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 select-node 的事件（如果有）| `void` | 选择节点时触发 |
+| treeDeSelectNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 deselect-node 的事件（如果有）| `void` | 取消选择节点时触发 |
+| treeChanged | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`action:string` - 导致选择更改的操作<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此更改事件的事件（如果有）| `void` | 选择更改时触发 |
+| treeSelectAll | `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选择所有节点时触发 |
+| treeDeSelectAll | `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选择所有节点时触发 |
+| treeSetState | `api:Tree` - Tree对象 | `void` | 设置树状态后触发 |
+| treeRefresh | `api:Tree` - Tree对象 | `void` | 执行`refresh`方法后触发  |
+| treeRefreshNode | `api:Tree` - Tree对象<br />`node:object` - 刷新的节点<br />`nodes:[string]` - 重新加载的节点的 ID 数组 | `void` | 节点刷新时触发  |
+| treeSetId | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`old:string` - 旧的ID | `void` | 当节点 id 值改变时触发  |
+| treeSetText | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新的值 | `void` | 当节点文本值更改时触发 |
+| treeCreateNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 新节点在父节点中的位置 | `void` | 创建节点时触发 |
+| treeRenameNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新名称<br />`old:string` - 旧名称 | `void` | 重命名节点时触发 |
+| treeDeleteNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID | `void` | 删除节点时触发 |
+| treeMoveNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`old_parent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 移动节点时触发 |
+| treeCopyNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`original:object` - 原始节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`oldParent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 当节点被复制时触发 |
+| treeCut | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行移动时触发 |
+| treeCopy | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行复制时触发 |
+| treePaste | `api:Tree` - Tree对象<br />`parent:string` - 父节点ID<br />`node:[]` - 缓冲区中的节点<br />`mode:string` - 执行的操作 - "copy-node" 或 "move-node" | `void` | 调用 `paste`方法 时触发 |
+| treeClearBuffer | `api:Tree` - Tree对象| `void` | 当复制/剪切缓冲区被清除时触发 |
 | 复选框:title | | |  |
-| disable-checkbox.busy.admin.tree | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
-| enable-checkbox.busy.admin.tree | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
-| check-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 check-node 的事件（如果有） | `void` | 选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时）|
-| uncheck-node.busy.admin.tree | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 uncheck-node 的事件（如果有） | `void` | 取消选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
-| check-all.busy.admin.tree | `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
-| uncheck-all.busy.admin.tree | `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeDisableCheckbox | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
+| treeEnableCheckbox | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
+| treeCheckNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 check-node 的事件（如果有） | `void` | 选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时）|
+| treeUnCheckNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 uncheck-node 的事件（如果有） | `void` | 取消选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeCheckAll | `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeUnCheckAll | `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
 
 ### 使用示例
 
@@ -177,158 +164,160 @@ $('#tree').busyAdminTree('destroy', true); // 销毁实例
         </div>
     </div>
 
-    <textarea class="hide" id="demo1">
-<button class="btn btn-primary" id="demo1_btn1">获取选中值</button>
-<button class="btn btn-primary" id="demo1_btn2">全选</button>
-<button class="btn btn-primary" id="demo1_btn3">取消全选</button>
-<button class="btn btn-primary" id="demo1_btn4">选中指定节点</button>
-<button class="btn btn-primary" id="demo1_btn5">展开节点</button>
-<button class="btn btn-primary" id="demo1_btn6">关闭节点</button>
-<button class="btn btn-primary" id="demo1_btn7">展开指定节点</button>
-<button class="btn btn-primary" id="demo1_btn8">关闭指定节点</button>
-<button class="btn btn-primary" id="demo1_btn9">隐藏连线</button>
-<button class="btn btn-primary" id="demo1_btn10">显示连线</button>
-<button class="btn btn-primary" id="demo1_btn11">隐藏图标</button>
-<button class="btn btn-primary" id="demo1_btn12">显示图标</button>
-<button class="btn btn-primary" id="demo1_btn13">隐藏复选框</button>
-<button class="btn btn-primary" id="demo1_btn14">显示复选框</button>
-<br/>
-<br/>
-<div data-busy-tree="html" id="demo1_tree" data-operate="true" data-contextmenu="true" data-contextmenu-items="customContextMenu" data-checkbox="true" data-expand-selected-onload="true">
-    <ul>
-        <li disabled="">
-            根节点 1
+    <template class="hide" id="demo1">
+        <button class="btn btn-primary" id="demo1_btn1">获取选中值</button>
+        <button class="btn btn-primary" id="demo1_btn2">全选</button>
+        <button class="btn btn-primary" id="demo1_btn3">取消全选</button>
+        <button class="btn btn-primary" id="demo1_btn4">选中指定节点</button>
+        <button class="btn btn-primary" id="demo1_btn5">展开节点</button>
+        <button class="btn btn-primary" id="demo1_btn6">关闭节点</button>
+        <button class="btn btn-primary" id="demo1_btn7">展开指定节点</button>
+        <button class="btn btn-primary" id="demo1_btn8">关闭指定节点</button>
+        <button class="btn btn-primary" id="demo1_btn9">隐藏连线</button>
+        <button class="btn btn-primary" id="demo1_btn10">显示连线</button>
+        <button class="btn btn-primary" id="demo1_btn11">隐藏图标</button>
+        <button class="btn btn-primary" id="demo1_btn12">显示图标</button>
+        <button class="btn btn-primary" id="demo1_btn13">隐藏复选框</button>
+        <button class="btn btn-primary" id="demo1_btn14">显示复选框</button>
+        <br/>
+        <br/>
+
+        <div data-toggle="busy-tree" id="demo1_tree" data-block="true" data-operate="true" data-contextmenu="true" data-contextmenu-items="customContextMenu" data-checkbox="true" data-expand-selected-onload="true">
             <ul>
-                <li id="demo1_tree_1" data-selected="true">
-                    子节点1
+                <li disabled="">
+                    根节点 1
                     <ul>
-                        <li>子节点1-1</li>
-                        <li>子节点2-1</li>
+                        <li id="demo1_tree_1" data-selected="true">
+                            子节点1
+                            <ul>
+                                <li>子节点1-1</li>
+                                <li>子节点2-1</li>
+                            </ul>
+                        </li>
+                        <li>子节点2</li>
                     </ul>
                 </li>
-                <li>子节点2</li>
+                <li data-icon="icon icon-plus">
+                    根节点 2
+                    <ul>
+                        <li data-selected="true">子节点11</li>
+                        <li id="demo1_tree_2">子节点22</li>
+                    </ul>
+                </li>
             </ul>
-        </li>
-        <li data-icon="icon icon-plus">
-            根节点 2
-            <ul>
-                <li data-selected="true">子节点11</li>
-                <li id="demo1_tree_2">子节点22</li>
-            </ul>
-        </li>
-    </ul>
-</div>
-<script>
-    // 自定义菜单
-    var customContextMenu = function (node) {
-        return {
-            menu1 : {
-                separator_before : false,   // 是否显示上线
-                separator_after  : false,   // 是否显示下线
-                _disabled        : false,   // 是否禁用
-                label            : '菜单1', // 菜单名称
-                icon             : 'icon icon-plus',    // 菜单图标
-                action           : function (api) {     // 菜单点击
-                    busyAdmin.dialog.toast('点击了菜单1')
-                }
-            },
-            menu2 : {
-                separator_before: true,
-                label: '更多',
-                action: false,
-                submenu: {
-                    menu3: {
-                        label: '菜单3',
+        </div>
+
+        <script>
+            // 自定义菜单
+            var customContextMenu = function (node) {
+                return {
+                    menu1 : {
+                        separator_before : false,   // 是否显示上线
+                        separator_after  : false,   // 是否显示下线
+                        _disabled        : false,   // 是否禁用
+                        label            : '菜单1', // 菜单名称
+                        icon             : 'icon icon-plus',    // 菜单图标
+                        action           : function (api) {     // 菜单点击
+                            busyAdmin.dialog.toast('点击了菜单1')
+                        }
                     },
-                    menu4: {
-                        label: '菜单4',
+                    menu2 : {
+                        separator_before : true,
+                        label            : '更多',
+                        action           : false,
+                        submenu          : {
+                            menu3 : {
+                                label : '菜单3',
+                            },
+                            menu4 : {
+                                label : '菜单4',
+                            }
+                        }
                     }
-                }
-            }
-        };
-    };
-    
-    $(function () {
-        $('#demo1_tree').on(busyAdmin.e.treeClickNode, function (e, tree, node, event) {
-            busyAdmin.dialog.toast(node.text)
-        });
+                };
+            };
 
-        $('#demo1_btn1').on('click', function () {
-            busyAdmin.dialog.alert(JSON.stringify($('#demo1_tree').busyAdminTree('get_checked')));
-        });
+            $(function () {
+                $('#demo1_tree').on(busyAdmin.e.treeClickNode, function (e, tree, node, event) {
+                    busyAdmin.dialog.toast(node.text)
+                });
 
-        $("#demo1_btn2").on('click', function () {
-            $('#demo1_tree').busyAdminTree('check_all');
-        });
+                $('#demo1_btn1').on('click', function () {
+                    busyAdmin.dialog.alert(JSON.stringify($('#demo1_tree').busyAdminTree('get_checked')));
+                });
 
-        $("#demo1_btn3").on('click', function () {
-            $('#demo1_tree').busyAdminTree('uncheck_all');
-        });
+                $("#demo1_btn2").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('check_all');
+                });
 
-        $("#demo1_btn4").on('click', function () {
-            $('#demo1_tree').busyAdminTree('check_node', ['demo1_tree_1', 'demo1_tree_2']);
-        });
-        $("#demo1_btn5").on('click', function () {
-            $('#demo1_tree').busyAdminTree('open_all');
-        });
-        $("#demo1_btn6").on('click', function () {
-            $('#demo1_tree').busyAdminTree('close_all');
-        });
-        $("#demo1_btn7").on('click', function () {
-            $('#demo1_tree').busyAdminTree('open_node', 'demo1_tree_1');
-        });
-        $("#demo1_btn8").on('click', function () {
-            $('#demo1_tree').busyAdminTree('close_node', 'demo1_tree_1');
-        });
-        $("#demo1_btn9").on('click', function () {
-            $('#demo1_tree').busyAdminTree('hide_dots');
-        });
-        $("#demo1_btn10").on('click', function () {
-            $('#demo1_tree').busyAdminTree('show_dots');
-        });
-        $("#demo1_btn11").on('click', function () {
-            $('#demo1_tree').busyAdminTree('hide_icons');
-        });
-        $("#demo1_btn12").on('click', function () {
-            $('#demo1_tree').busyAdminTree('show_icons');
-        });
-        $("#demo1_btn13").on('click', function () {
-            $('#demo1_tree').busyAdminTree('hide_checkboxes');
-        });
-        $("#demo1_btn14").on('click', function () {
-            $('#demo1_tree').busyAdminTree('show_checkboxes');
-        });
-    })
-</script>
-    </textarea>
+                $("#demo1_btn3").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('uncheck_all');
+                });
 
-    <textarea class="hide" id="demo2"><div data-busy-tree="ajax" data-checkbox="true" data-url="?action=data" data-method="post"></div></textarea>
+                $("#demo1_btn4").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('check_node', ['demo1_tree_1', 'demo1_tree_2']);
+                });
+                $("#demo1_btn5").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('open_all');
+                });
+                $("#demo1_btn6").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('close_all');
+                });
+                $("#demo1_btn7").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('open_node', 'demo1_tree_1');
+                });
+                $("#demo1_btn8").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('close_node', 'demo1_tree_1');
+                });
+                $("#demo1_btn9").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('hide_dots');
+                });
+                $("#demo1_btn10").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('show_dots');
+                });
+                $("#demo1_btn11").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('hide_icons');
+                });
+                $("#demo1_btn12").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('show_icons');
+                });
+                $("#demo1_btn13").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('hide_checkboxes');
+                });
+                $("#demo1_btn14").on('click', function () {
+                    $('#demo1_tree').busyAdminTree('show_checkboxes');
+                });
+            })
+        </script>
+    </template>
 
-    <textarea class="hide" id="demo3">
-<div data-busy-tree="data" id="demo3_tree" data-checkbox="true" data-source='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
-    </textarea>
+    <template class="hide" id="demo2">
+        <div data-toggle="busy-tree" data-checkbox="true" data-url="?action=data" data-method="post"></div>
+    </template>
 
-    <textarea class="hide" id="demo4">
-<form id="demo4_form">
-    请输入内容
-    <input type="text" class="form-control" name="name" placeholder="请输入内容"/>
-    <br/>
-    请选择节点
-    <br/>
-    <div id="demo4_tree" data-busy-tree="data" data-name="tree_id[]" data-checkbox="true" data-source='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
-    <br/>
-    <button type="submit" class="btn btn-primary">提交表单</button>
-</form>
-<script>
-    $(function () {
-        $('#demo4_form').on('submit', function () {
-            busyAdmin.dialog.alert(JSON.stringify($(this).serializeArray()));
+    <template class="hide" id="demo3">
+        <div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-list='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
+    </template>
 
-            return false;
-        });
-    })
-</script>
-    </textarea>
-</block>
-<block name="foot">
+    <template class="hide" id="demo4">
+        <form id="demo4_form">
+            请输入内容
+            <input type="text" class="form-control" name="name" placeholder="请输入内容"/>
+            <br/>
+            请选择节点
+            <br/>
+            <div id="demo4_tree" data-toggle="busy-tree" data-name="tree_id[]" data-checkbox="true" data-list='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
+            <br/>
+            <button type="submit" class="btn btn-primary">提交表单</button>
+        </form>
+        <script>
+            $(function () {
+                $('#demo4_form').on('submit', function () {
+                    busyAdmin.dialog.alert(JSON.stringify($(this).serializeArray()));
+
+                    return false;
+                });
+            })
+        </script>
+    </template>
 </block>
