@@ -1,11 +1,10 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title data-title="{$panel_title}">{$page_title} - 后台管理系统</title>
     <include file="@admin:head"/>
 </head>
 <body>
-<div id="wrap">
+<div data-busy-id="app">
     <div class="busy-admin-header" data-busy-id="header">
         <div class="busy-admin-header-top">
 
@@ -45,7 +44,7 @@
                     <a href="{$url.base_root}" target="_blank">网站首页</a>
                 </div>
 
-                <a class="busy-admin-header-bar-item" href="{:url('admin_out')}" data-busy-request="确认要退出登录吗？">
+                <a class="busy-admin-header-bar-item" href="{:url('admin_out')}" data-toggle="busy-request" data-confirm="确认要退出登录吗？" data-on-success="@app.redirect">
                     <i class="icon icon-off"></i>
                     退出登录
                 </a>

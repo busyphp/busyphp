@@ -1,26 +1,27 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+<title data-title="{$panel_title}">{$page_title} - 后台管理系统</title>
 <link id="layuicss-layer" rel="stylesheet" href="{$skin.lib}layer/theme/default/layer.css">
 <css href="{$skin.css}theme.css?{:time()}"/>
 <css href="{$skin.css}admin.css?{:time()}"/>
 <script>
-    window.ADMIN_URL         = '{$url.root}';
-    window.GLOBALS_URL       = '{$url.base_root}';
-    window.USER_ID           = '{$system.user_id|default="0"}';
-    window.USER_NAME         = '{$system.username|default=""}';
-    window.USER_GROUP_NAME   = '{$system.permission.name|default=""}';
-    window.LOGIN_URL         = '{$url.login}';
-    window.SELF_URL          = '{$url.self}';
-    window.SKIN_URL          = '{$skin.root}';
-    window.SKIN_CSS          = '{$skin.css}';
-    window.SKIN_JS           = '{$skin.js}';
-    window.SKIN_LIB          = '{$skin.lib}';
-    window.URL_GROUP_VALUE   = '{$url.group}';
-    window.URL_MODULE_VALUE  = '{$url.controller}';
-    window.URL_ACTION_VALUE  = '{$url.action}';
-    window.URL_PAGE_KEY      = '{$Think.config.route.var_page}';
-    window.MESSAGE_URL       = '{$system.message_url|default=""}';
+    window.ADMIN_URL        = '{$url.root}';
+    window.GLOBALS_URL      = '{$url.base_root}';
+    window.USER_ID          = '{$system.user_id|default="0"}';
+    window.USER_NAME        = '{$system.username|default=""}';
+    window.USER_GROUP_NAME  = '{$system.permission.name|default=""}';
+    window.LOGIN_URL        = '{$url.login}';
+    window.SELF_URL         = '{$url.self}';
+    window.SKIN_URL         = '{$skin.root}';
+    window.SKIN_CSS         = '{$skin.css}';
+    window.SKIN_JS          = '{$skin.js}';
+    window.SKIN_LIB         = '{$skin.lib}';
+    window.URL_GROUP_VALUE  = '{$url.group}';
+    window.URL_MODULE_VALUE = '{$url.controller}';
+    window.URL_ACTION_VALUE = '{$url.action}';
+    window.URL_PAGE_KEY     = '{$Think.config.route.var_page}';
+    window.MESSAGE_URL      = '{$system.message_url|default=""}';
 </script>
 <!--[if lt IE 9]>
 <js href="{$skin.lib}bootstrap/js/respond.min.js"/>

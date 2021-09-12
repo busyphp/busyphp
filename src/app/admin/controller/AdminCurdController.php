@@ -305,7 +305,7 @@ abstract class AdminCurdController extends AdminController
                     return $message;
                 }
                 
-                return $this->success($message ?: '提交成功', $this->getRedirectUrl(), MESSAGE_SUCCESS_GOTO);
+                return $this->success($message ?: '提交成功', $this->getRedirectUrl());
             } else {
                 if ($display instanceof Closure) {
                     $view = call_user_func($display);
@@ -363,7 +363,7 @@ abstract class AdminCurdController extends AdminController
             // 遍历完成回调
             $message = $this->trigger(self::CALL_BATCH_EACH_AFTER, [$params]);
             
-            return $this->success($message ?: '操作成功', $this->getRedirectUrl(), MESSAGE_SUCCESS_GOTO);
+            return $this->success($message ?: '操作成功', $this->getRedirectUrl());
         } catch (\Exception $e) {
             return $this->error($e);
         }

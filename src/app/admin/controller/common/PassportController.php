@@ -62,7 +62,7 @@ class PassportController extends InsideController
                 $redirectUrl = Session::get(self::ADMIN_LOGIN_REDIRECT_URL);
                 $redirectUrl = $redirectUrl ?: $this->request->getAppUrl();
                 
-                return $this->success('登录成功', $redirectUrl, MESSAGE_SUCCESS_GOTO);
+                return $this->success('登录成功', $redirectUrl);
             } catch (VerifyException $e) {
                 if ($e->getCode()) {
                     $this->log('密码输入错误', [
@@ -81,11 +81,13 @@ class PassportController extends InsideController
             }
             
             $this->assign('is_verify', AdminSetting::init()->isVerify());
+            $this->assign('save_login', false); // TODO 记住密码
             $this->assign('bg', $array[rand(0, count($array) - 1)]);
             $this->assign('page_title', $this->publicConfig['title']);
             $this->assign('verify_url', VerifyController::url('admin_login'));
             $this->assign('year', date('Y'));
             $this->assign('version', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
+            $this->assign('logo', ''); // TODO logo
         });
     }
     
@@ -98,6 +100,6 @@ class PassportController extends InsideController
         $this->log('退出登录');
         AdminUser::outLogin();
         
-        return $this->success('退出成功', url('admin_login'), MESSAGE_SUCCESS_GOTO);
+        return $this->success('退出成功', url('admin_login'));
     }
 }

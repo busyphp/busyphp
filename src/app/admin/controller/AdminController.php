@@ -10,6 +10,7 @@ use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
+use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model\Setting;
 use BusyPHP\exception\VerifyException;
@@ -28,14 +29,6 @@ use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Session;
 use think\Response;
-
-// 前端收到通知后直接跳转
-define('MESSAGE_GOTO', 9999);
-// 前端弹出正确的提示后跳转到对应的链接
-define('MESSAGE_SUCCESS_GOTO', 9998);
-// 前端弹出错误的提示后跳转到对应的链接
-define('MESSAGE_WARING_GOTO', 9997);
-
 
 /**
  * 后台基础类
@@ -237,7 +230,7 @@ abstract class AdminController extends Controller
             
             // 抛出错误
             if ($this->isAjax()) {
-                $result = $this->error($message, (string) $redirectUrl, MESSAGE_WARING_GOTO);
+                $result = $this->error($message, (string) $redirectUrl);
             } else {
                 if ($isRedirect) {
                     $result = $this->redirect($redirectUrl);
@@ -472,18 +465,24 @@ abstract class AdminController extends Controller
     
     /**
      * 成功提示
-     * @param mixed  $message 消息
-     * @param string $jumpUrl 跳转地址
-     * @param string $data 成功数据
+     * @param string|array $message 消息或成功数据
+     * @param string|array $jumpUrl 跳转地址或成功数据
+     * @param array        $data 成功数据
      * @return Response
      */
-    protected function success($message, $jumpUrl = '', $data = '')
+    protected function success($message, $jumpUrl = '', array $data = [])
     {
+        if (is_array($jumpUrl)) {
+            $data    = $jumpUrl;
+            $jumpUrl = '';
+        }
+        
         if (is_array($message)) {
             $data    = $message;
             $message = '';
         }
         
+        $jumpUrl = (string) $jumpUrl;
         if ($this->isAjax() || $data) {
             return $this->json($this->parseAjaxReturn([
                 'info'   => $this->parseMessage($message),
@@ -491,9 +490,9 @@ abstract class AdminController extends Controller
                 'url'    => $jumpUrl,
                 'data'   => $data
             ]));
-        } else {
-            return parent::success($message, $jumpUrl);
         }
+        
+        return parent::success($message, $jumpUrl);
     }
     
     
@@ -709,18 +708,6 @@ HTML;
     public static function checkAuth($path) : bool
     {
         return true;
-    }
-    
-    
-    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
-    {
-        $resp = parent::display($template, $charset, $contentType, $content);
-        
-        if ($this->requestPluginName === 'SinglePage' || $this->requestPluginName === 'Modal') {
-            return $this->success('', '', $resp->getContent());
-        }
-        
-        return $resp;
     }
     
     

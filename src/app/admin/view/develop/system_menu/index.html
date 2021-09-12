@@ -31,14 +31,25 @@
 
     <div class="hide">
         <div id="tableToolbar">
-            <a class="btn btn-success"
+             <a class="btn btn-success"
+                href="javascript:void(0)"
+                data-toggle="busy-modal"
+                data-size="lg"
+                data-ok="添加菜单"
+                data-url="{:url('add')}">
+                <i class="icon icon-plus"></i>
+                 添加菜单
+            </a>
+            <a class="btn btn-warning"
                href="javascript:void(0)"
                data-url="{:url('set_sort')}"
                data-field="id,sort"
                data-method="post"
+               data-on-success="@table.reload"
                data-confirm="确认要排序吗？">
-            <i class="icon icon-sort"></i> 排序
-        </a>
+                <i class="icon icon-sort"></i>
+                排序
+            </a>
         </div>
     </div>
 
@@ -51,15 +62,32 @@
     </script>
 
     <script type="text/html" id="is_disabled">
+        {{if item.is_system}}
+        <span class="badge badge-default badge-pill">系统菜单</span>
+        {{else}}
         <input class="switch input-xs info" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="正常,禁用"/>
+        {{/if}}
     </script>
 
     <script type="text/html" id="is_hide">
+        {{if item.is_system}}
+        <span class="badge badge-default badge-pill">系统菜单</span>
+        {{else}}
         <input class="switch input-xs secondary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="显示,隐藏"/>
+        {{/if}}
     </script>
 
     <script type="text/html" id="operate">
-        <a class="btn btn-success btn-xs" href="{:url('edit?id=')}{{item.id}}" data-toggle="busy-modal" data-size="lg" data-footer="false"><i class="icon icon-pencil"></i></a>
-        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？"><i class="icon icon-trash"></i></a>
+        <a class="btn btn-success btn-xs"
+           data-url="{:url('edit?id=')}{{item.id}}"
+           data-toggle="busy-modal"
+           data-size="lg"
+           data-ok="修改菜单"
+           data-form-on-success="@table.reload">
+            <i class="icon icon-pencil"></i>
+        </a>
+        {{if !item.is_system}}
+        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        {{/if}}
     </script>
 </block>

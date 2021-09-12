@@ -1,81 +1,60 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{$page_title} - BusyPHP后台管理系统</title>
-    <include file="@admin:head"/>
-    <css href="{$skin.css}login.css"/>
-</head>
-<body>
-<div class="container" style="background: url(<?=$bg?>) no-repeat center center / cover">
-    <div class="row">
-        <div class="page-header">
-            <h1 class="text-center">{$page_title}后台管理系统</h1>
-        </div>
-
-        <div class="page-body box-shadow-10">
+<extend name="@admin:page" />
+<block name="content">
+    <div class="login">
+        <div class="login-bg" style="background-image: url({$bg})"></div>
+        <div class="login-body">
             <div class="login-box">
-                <div class="space-30 hidden-xs"></div>
-                <form action="__SELF__" method="post" class="form-horizontal" data-post="">
-                    <div class="form-group">
-                        <label for="" class="col-sm-2 control-label  hidden-xs">帐号</label>
-                        <div class="col-sm-9">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="请输入管理员帐号" name="username">
-                                <div class="input-group-addon">
-                                    <i class="icon icon-user"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="" class="col-sm-2 control-label  hidden-xs">密码</label>
-                        <div class="col-sm-9">
-                            <div class="input-group">
-                                <input type="password" class="form-control" placeholder="请输入密码" name="password">
-                                <div class="input-group-addon">
-                                    <i class="icon icon-lock"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <notempty name="logo">
+                    <div class="logo"><img src="{$logo}"/></div>
+                </notempty>
 
-                    <eq name="is_verify" value="1">
+                <h1 class="text-center">{$page_title}后台管理系统</h1>
+
+                <div class="login-form">
+                    <h2>用户登录<small>User Login</small></h2>
+                    <form action="__SELF__" method="post" data-toggle="busy-form" data-on-success="@app.redirect">
                         <div class="form-group">
-                            <label for="" class="col-sm-2 control-label hidden-xs">验证码</label>
-                            <div class="col-sm-9">
+                            <div class="input-group">
+                                <div class="input-group-addon">
+                                    <div><i class="icon icon-user"></i></div>
+                                </div>
+                                <input type="text" class="form-control" placeholder="请输入帐号" required name="username">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">
+                                    <div><i class="icon icon-lock"></i></div>
+                                </div>
+                                <input type="password" class="form-control" placeholder="请输入密码" required name="password">
+                            </div>
+                        </div>
+                        <eq name="is_verify" value="1">
+                            <div class="form-group">
                                 <div class="input-group">
-                                    <input type="text" maxlength="4" class="form-control" placeholder="请输入验证码" name="verify">
-                                    <div class="input-group-addon input-group-image">
-                                        <img id="changeVerify" src="{$verify_url}"/>
+                                    <input type="text" maxlength="4" required class="form-control" placeholder="请输入验证码" name="verify">
+                                    <div class="input-group-image">
+                                        <img data-toggle="busy-change-verify" src="{$verify_url}"/>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </eq>
-
-                    <div class="form-group no-margin-bottom">
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-9">
+                        </eq>
+                        
+                        <eq name="save_login" value="1">
+                            <div class="form-group">
+                                <input type="checkbox" data-toggle="busy-checkbox" title="记住登录"/>
+                            </div>
+                        </eq>
+                        
+                        <div class="form-group no-margin-bottom">
                             <button class="btn btn-primary btn-block">立即登录</button>
                         </div>
-                    </div>
-                    <div class="space-30  hidden-xs"></div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
+        <div class="login-footer">
+            &copy; CopyRight 2015-{$year} {$version}
+        </div>
     </div>
-    <div class="page-footer">
-        &copy; CopyRight 2015-{$year} {$version}
-    </div>
-</div>
-<include file="@admin:foot"/>
-<script>
-    $(function () {
-        $('#changeVerify').changeVerify();
-    });
-</script>
-</body>
-</html>
+</block>

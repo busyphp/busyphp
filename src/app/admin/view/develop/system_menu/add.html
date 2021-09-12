@@ -1,125 +1,112 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
-            <div class="clearfix"></div>
-        </div>
-        <div class="panel-body">
-            <form action="__SELF__" method="post" class="form-horizontal" data-busy-form="">
-                <input type="hidden" value="{$info.id|default=''}" name="id"/>
+    <form action="__SELF__" method="post" class="form-horizontal">
+        <input type="hidden" value="{$info.id|default=''}" name="id"/>
 
-                <eq name="info.debug" value="1">
-                    <busy-form-group label="系统菜单" col="2,4" desc="选择菜单类型，分组可以创建子菜单，菜单不能创建子菜单">
-                        <label class="radio-inline">
-                            <input name="is_system" type="radio" value="1" <?=is_checked(($info['is_system'] ?? 0) == 1)?>/>
-                            是
-                        </label>
-                        <label class="radio-inline">
-                            <input name="is_system" type="radio" value="0" <?=is_checked(($info['is_system'] ?? 0) == 0)?>/>
-                            否
-                        </label>
-                    </busy-form-group>
-                </eq>
-                
-                <busy-form-group label="菜单上级" col="2,4" desc="请选择上级菜单">
-                    <select class="form-control" name="parent_id">
-                        <option value="0">面板菜单</option>
-                        {$info.tree_options}
-                    </select>
-                </busy-form-group>
+        <eq name="info.debug" value="1">
+            <busy-form-group label="系统菜单" col="2,4" desc="选择菜单类型，分组可以创建子菜单，菜单不能创建子菜单">
+                <label class="radio-inline">
+                    <input name="is_system" type="radio" value="1" <?=is_checked(($info['is_system'] ?? 0) == 1)?>/>
+                    是
+                </label>
+                <label class="radio-inline">
+                    <input name="is_system" type="radio" value="0" <?=is_checked(($info['is_system'] ?? 0) == 0)?>/>
+                    否
+                </label>
+            </busy-form-group>
+        </eq>
 
-                <busy-form-group label="菜单类型" col="2,4" desc="选择菜单类型，分组可以创建子菜单，菜单不能创建子菜单" id="type">
-                    <label class="radio-inline">
-                        <input name="type" type="radio" id="type0" value="0" <?=is_checked(($info['type'] ?? 0) == 0)?>/>
-                        分组
-                    </label>
-                    <label class="radio-inline">
-                        <input name="type" type="radio" id="type1" value="1" <?=is_checked(($info['type'] ?? 0) == 1)?>/>
-                        菜单
-                    </label>
-                </busy-form-group>
+        <busy-form-group label="菜单上级" col="2,4" desc="请选择上级菜单">
+            <select class="form-control" name="parent_id">
+                <option value="0">面板菜单</option>
+                {$info.tree_options}
+            </select>
+        </busy-form-group>
 
-                <busy-form-group label="菜单名称" col="2,4" must="1" desc="设置菜单名称">
-                    <input type="text" name="name" class="form-control" value="{$info.name|default=''}" placeholder="请输入菜单名称"/>
-                </busy-form-group>
+        <busy-form-group label="菜单类型" col="2,4" desc="选择菜单类型，分组可以创建子菜单，菜单不能创建子菜单" id="type">
+            <label class="radio-inline">
+                <input name="type" type="radio" id="type0" value="0" <?=is_checked(($info['type'] ?? 0) == 0)?>/>
+                分组
+            </label>
+            <label class="radio-inline">
+                <input name="type" type="radio" id="type1" value="1" <?=is_checked(($info['type'] ?? 0) == 1)?>/>
+                菜单
+            </label>
+        </busy-form-group>
 
-                <busy-form-group label="面板分组" col="2,4" must="1" desc="设置面板分组，英文数字下划线，不能为数字开头" id="module">
-                    <input type="text" name="module" value="{$info.module|default=''}" class="form-control" placeholder="设置面板分组"/>
-                </busy-form-group>
+        <busy-form-group label="菜单名称" col="2,4" must="1" desc="设置菜单名称">
+            <input type="text" name="name" class="form-control" value="{$info.name|default=''}" placeholder="请输入菜单名称"/>
+        </busy-form-group>
 
-                <busy-form-group label="控制器" col="2,4" must="1" desc="设置分组所属控制器，英文数字下划线，不能为数字开头" id="control">
-                    <input type="text" name="control" value="{$info.control|default=''}" class="form-control" placeholder="设置所属控制器"/>
-                </busy-form-group>
+        <busy-form-group label="面板分组" col="2,4" must="1" desc="设置面板分组，英文数字下划线，不能为数字开头" id="module">
+            <input type="text" name="module" value="{$info.module|default=''}" class="form-control" placeholder="设置面板分组"/>
+        </busy-form-group>
 
-                <busy-form-group label="执行方法" col="2,4" must="1" desc="设置执行方法，英文数字下划线，不能为数字开头" id="action">
-                    <input type="text" name="action" value="{$info.action|default=''}" class="form-control" placeholder="设置执行方法"/>
-                    <div class="space-5"></div>
-                    <div class="alert alert-primary alert-xs no-margin-bottom">菜单地址：<span id="route"></span></div>
-                </busy-form-group>
+        <busy-form-group label="控制器" col="2,4" must="1" desc="设置分组所属控制器，英文数字下划线，不能为数字开头" id="control">
+            <input type="text" name="control" value="{$info.control|default=''}" class="form-control" placeholder="设置所属控制器"/>
+        </busy-form-group>
 
-                <busy-form-group label="菜单图标" col="2,4" desc="为菜单设置一个合理的图标">
-                    <input type="text" name="icon" value="{$info.icon|default=''}" data-toggle="busy-icon-picker" class="form-control" placeholder="请选择图标"/>
-                </busy-form-group>
+        <busy-form-group label="执行方法" col="2,4" must="1" desc="设置执行方法，英文数字下划线，不能为数字开头" id="action">
+            <input type="text" name="action" value="{$info.action|default=''}" class="form-control" placeholder="设置执行方法"/>
+            <div class="space-5"></div>
+            <div class="alert alert-primary alert-xs no-margin-bottom">菜单地址：<span id="route"></span></div>
+        </busy-form-group>
 
-                <busy-form-group label="默认面板" col="2,4" desc="设置默认展示面板" id="is_default">
-                    <label class="radio-inline">
-                        <input name="is_default" type="radio" value="1" <?=is_checked(($info['is_default'] ?? 0) == 1)?>/>
-                        是
-                    </label>
-                    <label class="radio-inline">
-                        <input name="is_default" type="radio" value="0" <?=is_checked(($info['is_default'] ?? 0) == 0)?>/>
-                        否
-                    </label>
-                </busy-form-group>
+        <busy-form-group label="菜单图标" col="2,4" desc="为菜单设置一个合理的图标">
+            <input type="text" name="icon" value="{$info.icon|default=''}" data-toggle="busy-icon-picker" class="form-control" placeholder="请选择图标"/>
+        </busy-form-group>
 
-                <busy-form-group label="是否禁用" col="2,4" desc="禁用后将无法使用该菜单">
-                    <label class="radio-inline">
-                        <input name="is_disabled" type="radio" value="1" <?=is_checked(($info['is_disabled'] ?? 0) == 1)?>/>
-                        是
-                    </label>
-                    <label class="radio-inline">
-                        <input name="is_disabled" type="radio" value="0" <?=is_checked(($info['is_disabled'] ?? 0) == 0)?>/>
-                        否
-                    </label>
-                </busy-form-group>
+        <busy-form-group label="默认面板" col="2,4" desc="设置默认展示面板" id="is_default">
+            <label class="radio-inline">
+                <input name="is_default" type="radio" value="1" <?=is_checked(($info['is_default'] ?? 0) == 1)?>/>
+                是
+            </label>
+            <label class="radio-inline">
+                <input name="is_default" type="radio" value="0" <?=is_checked(($info['is_default'] ?? 0) == 0)?>/>
+                否
+            </label>
+        </busy-form-group>
 
-                <busy-form-group label="是否隐藏" col="2,4" desc="隐藏的菜单不会再导航和菜单栏展示" id="is_hide">
-                    <label class="radio-inline">
-                        <input name="is_hide" type="radio" value="1" <?=is_checked(($info['is_hide'] ?? 0) == 1)?>/>
-                        是
-                    </label>
-                    <label class="radio-inline">
-                        <input name="is_hide" type="radio" value="0" <?=is_checked(($info['is_hide'] ?? 0) == 0)?>/>
-                        否
-                    </label>
-                </busy-form-group>
+        <busy-form-group label="是否禁用" col="2,4" desc="禁用后将无法使用该菜单">
+            <label class="radio-inline">
+                <input name="is_disabled" type="radio" value="1" <?=is_checked(($info['is_disabled'] ?? 0) == 1)?>/>
+                是
+            </label>
+            <label class="radio-inline">
+                <input name="is_disabled" type="radio" value="0" <?=is_checked(($info['is_disabled'] ?? 0) == 0)?>/>
+                否
+            </label>
+        </busy-form-group>
 
-                <busy-form-group label="高亮菜单" col="2,4" desc="隐藏的菜单不会在菜单中显示，当被访问的时候显示的选中菜单" id="higher">
-                    <select class="form-control" name="higher"></select>
-                </busy-form-group>
+        <busy-form-group label="是否隐藏" col="2,4" desc="隐藏的菜单不会再导航和菜单栏展示" id="is_hide">
+            <label class="radio-inline">
+                <input name="is_hide" type="radio" value="1" <?=is_checked(($info['is_hide'] ?? 0) == 1)?>/>
+                是
+            </label>
+            <label class="radio-inline">
+                <input name="is_hide" type="radio" value="0" <?=is_checked(($info['is_hide'] ?? 0) == 0)?>/>
+                否
+            </label>
+        </busy-form-group>
 
-                <busy-form-group label="面包屑参数名" col="2,4" desc="设置面包屑参数名，多个用英文逗号隔开" id="params">
-                    <input type="text" name="params" class="form-control" placeholder="设置面包屑参数名" value="{$info.params|default=''}"/>
-                </busy-form-group>
+        <busy-form-group label="高亮菜单" col="2,4" desc="隐藏的菜单不会在菜单中显示，当被访问的时候显示的选中菜单" id="higher">
+            <select class="form-control" name="higher"></select>
+        </busy-form-group>
 
-                <busy-form-group type="title">扩展设置</busy-form-group>
+        <busy-form-group label="面包屑参数名" col="2,4" desc="设置面包屑参数名，多个用英文逗号隔开" id="params">
+            <input type="text" name="params" class="form-control" placeholder="设置面包屑参数名" value="{$info.params|default=''}"/>
+        </busy-form-group>
 
-                <busy-form-group label="打开方式" col="2,4" desc="设置链接打开方式">
-                    <select class="form-control" name="target">{$info.target_options}</select>
-                </busy-form-group>
+        <busy-form-group type="title">扩展设置</busy-form-group>
 
-                <busy-form-group label="打开链接" col="2,4" desc="指定打开链接，http:// 或 / 开头，设置后当前路由地址失效，点击将访问该地址">
-                    <input type="text" name="link" class="form-control" placeholder="设置打开链接地址" value="{$info.link|default=''}"/>
-                </busy-form-group>
+        <busy-form-group label="打开方式" col="2,4" desc="设置链接打开方式">
+            <select class="form-control" name="target">{$info.target_options}</select>
+        </busy-form-group>
 
-                <busy-form-group type="action" col="2,4">
-                    <input type="submit" class="btn btn-primary" value="{$submit_name|default='提交'}"/>
-                    <input type="reset" class="btn btn-default" value="重置"/>
-                </busy-form-group>
-            </form>
-        </div>
-    </div>
+        <busy-form-group label="打开链接" col="2,4" desc="指定打开链接，http:// 或 / 开头，设置后当前路由地址失效，点击将访问该地址">
+            <input type="text" name="link" class="form-control" placeholder="设置打开链接地址" value="{$info.link|default=''}"/>
+        </busy-form-group>
+    </form>
 </block>
 <block name="foot">
     <script>
