@@ -12,7 +12,7 @@
 
                 <div class="login-form">
                     <h2>用户登录<small>User Login</small></h2>
-                    <form action="__SELF__" method="post" data-toggle="busy-form" data-on-success="@app.redirect">
+                    <form action="__SELF__" method="post" data-toggle="busy-form" data-on-success="@app.redirect" data-on-error="onLoginError">
                         <div class="form-group">
                             <div class="input-group">
                                 <div class="input-group-addon">
@@ -57,4 +57,10 @@
             &copy; CopyRight 2015-{$year} {$version}
         </div>
     </div>
+    
+    <script>
+        busyAdmin.data.onLoginError = function () {
+            $('[data-toggle="busy-change-verify"]').trigger('click');
+        };
+    </script>
 </block>
