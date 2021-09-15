@@ -4,10 +4,6 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\SystemFileUpload;
-use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\exception\AppException;
-use Exception;
-use think\helper\Str;
 
 /**
  * 后台公共，不验证登录
@@ -20,19 +16,6 @@ class ActionController extends InsideController
     public function initialize($checkLogin = false)
     {
         parent::initialize($checkLogin);
-    }
-    
-    
-    /**
-     * 获取随机数
-     * 默认6位随机参数
-     */
-    public function rand()
-    {
-        $line = $this->iRequest('line', 'intval');
-        $line = $line > 0 ? $line : 6;
-        
-        return $this->success('', '', Str::random($line));
     }
     
     
@@ -81,18 +64,5 @@ class ActionController extends InsideController
             
             return $this->success('上传成功', '', $return);
         });
-    }
-    
-    
-    /**
-     * 获取菜单
-     */
-    public function nav()
-    {
-        $this->checkLogin();
-        
-        return $this->success('', '', [
-            'tree' => SystemMenu::init()->getAdminNav($this->adminPermissionId)
-        ]);
     }
 }

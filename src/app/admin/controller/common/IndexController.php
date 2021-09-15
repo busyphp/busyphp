@@ -8,6 +8,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\message\provide\MessageListParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
 use BusyPHP\helper\util\Transform;
@@ -25,18 +26,30 @@ class IndexController extends InsideController
      */
     public function index()
     {
-        $model            = new AdminUser();
-        $mysqlVersionInfo = $model->query("select VERSION()");
-        $mysqlVersion     = $mysqlVersionInfo[0]['VERSION()'];
-        $softNames        = explode(' ', $_SERVER['SERVER_SOFTWARE']);
-        $this->assign('mysql_version', $mysqlVersion);
-        $this->assign('max_upload_size', ini_get('upload_max_filesize'));
-        $this->assign('system_name', php_uname('s'));
-        $this->assign('soft_name', $softNames[0]);
-        $this->assign('framework_name', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
-        $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
-        
-        return $this->display();
+        // 输出程序信息
+        if ($this->requestPluginName === 'AppInfo') {
+            $menuStruct = SystemMenu::init()->getAdminMenu($this->adminPermissionId);
+            
+            return $this->success([
+                'menu_default' => $menuStruct->defaultPath,
+                'menu_list'    => SystemMenu::init()->getAdminNav($this->adminPermissionId),
+                'user_id'      => $this->adminUserId,
+                'username'     => $this->adminUsername
+            ]);
+        } else {
+            $model            = new AdminUser();
+            $mysqlVersionInfo = $model->query("select VERSION()");
+            $mysqlVersion     = $mysqlVersionInfo[0]['VERSION()'];
+            $softNames        = explode(' ', $_SERVER['SERVER_SOFTWARE']);
+            $this->assign('mysql_version', $mysqlVersion);
+            $this->assign('max_upload_size', ini_get('upload_max_filesize'));
+            $this->assign('system_name', php_uname('s'));
+            $this->assign('soft_name', $softNames[0]);
+            $this->assign('framework_name', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
+            $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
+            
+            return $this->display();
+        }
     }
     
     
