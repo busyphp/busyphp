@@ -470,7 +470,7 @@ abstract class AdminController extends Controller
      * @param array        $data 成功数据
      * @return Response
      */
-    protected function success($message, $jumpUrl = '', array $data = [])
+    protected function success($message = '', $jumpUrl = '', array $data = [])
     {
         if (is_array($jumpUrl)) {
             $data    = $jumpUrl;
