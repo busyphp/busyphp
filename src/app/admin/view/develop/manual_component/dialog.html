@@ -85,6 +85,11 @@ busyAdmin.ready(function() {
 ```demo:实例
 #demo7
 ```
+
+#### 通知
+```demo:实例
+#demo8
+```
             </script>
         </div>
     </div>
@@ -277,10 +282,56 @@ busyAdmin.ready(function() {
             busyAdmin.ready(function () {
                 $('#demo7_btn1').on('click', function () {
                     var pending = busyAdmin.dialog.pending('请稍候...');
-                    
+
                     setTimeout(function () {
                         pending.close();
                     }, 5000);
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo8" class="hide">
+        <button class="btn btn-success" id="demo8_btn1">成功通知</button>
+        <button class="btn btn-danger" id="demo8_btn2">失败通知</button>
+        <button class="btn btn-warning" id="demo8_btn3">警告通知</button>
+        <button class="btn btn-info" id="demo8_btn4">信息通知</button>
+        <button class="btn btn-info" id="demo8_btn5">左下角通知</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo8_btn1').on('click', function () {
+                    busyAdmin.dialog.notifySuccess('操作成功', {
+                        onShown      : function () {
+                            busyAdmin.dialog.toast('已显示');
+                        },
+                        onHidden     : function () {
+                            busyAdmin.dialog.toast('已关闭');
+                        },
+                        onclick      : function () {
+                            busyAdmin.dialog.toast('点击');
+                        },
+                        onCloseClick : function () {
+                            busyAdmin.dialog.toast('点击关闭按钮');
+                        }
+                    });
+                });
+                $('#demo8_btn2').on('click', function () {
+                    busyAdmin.dialog.notifyError('消息', '操作失败', function () {
+                        busyAdmin.dialog.alert('失败通知已关闭');
+                    });
+                });
+                $('#demo8_btn3').on('click', function () {
+                    busyAdmin.dialog.notifyWarning('警告', '这是一条警告消息', function () {
+                        busyAdmin.dialog.alert('警告通知已关闭');
+                    });
+                });
+                $('#demo8_btn4').on('click', function () {
+                    busyAdmin.dialog.notifyInfo('最新消息', '震惊了我的国！');
+                });
+                $('#demo8_btn5').on('click', function () {
+                    busyAdmin.dialog.notifyInfo('最新消息', {
+                        positionClass: "toast-bottom-left"
+                    });
                 });
             });
         </script>
