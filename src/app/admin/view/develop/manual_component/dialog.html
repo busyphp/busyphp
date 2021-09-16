@@ -1,0 +1,288 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$panel_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+```js
+busyAdmin.ready(function() {
+    // Alert弹窗
+    busyAdmin.dialog.alert();
+    
+    // 成功Alert
+    busyAdmin.dialog.alertSuccess();
+    
+    // 失败Alert
+    busyAdmin.dialog.alertError();
+    
+    // Confirm对话框
+    busyAdmin.dialog.confirm();
+    
+    // Prompt输入对话框
+    busyAdmin.dialog.prompt();
+    
+    // Toast提示
+    busyAdmin.dialog.toast();
+    
+    // 成功Toast提示
+    busyAdmin.dialog.toastSuccess();
+    
+    // 失败Toast提示
+    busyAdmin.dialog.toastError();
+    
+    // 等待提示
+    busyAdmin.dialog.pending();
+    
+    // 打开iframe对话框
+    busyAdmin.dialog.iframe();
+    
+    // 打开一个右侧边栏对话框
+    busyAdmin.dialog.fullRight();
+})
+```
+
+### 使用示例
+
+#### Alert对话框
+```demo:实例
+#demo1
+```
+
+#### Confirm对话框
+```demo:实例
+#demo2
+```
+
+#### Prompt输入对话框
+```demo:实例
+#demo3
+```
+
+#### Toast
+```demo:实例
+#demo4
+```
+
+#### 打开iframe对话框
+```demo:实例
+#demo5
+```
+
+#### 右侧边栏
+```demo:实例
+#demo6
+```
+
+#### Loading
+```demo:实例
+#demo7
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <button class="btn btn-default" id="demo1_btn1">默认Alert</button>
+        <button class="btn btn-success" id="demo1_btn2">成功Alert</button>
+        <button class="btn btn-danger" id="demo1_btn3">失败Alert</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo1_btn1').on('click', function () {
+                    busyAdmin.dialog.alert('什么也没有');
+                });
+
+                $('#demo1_btn2').on('click', function () {
+                    busyAdmin.dialog.alertSuccess('做的不错！', function () {
+                        busyAdmin.dialog.toast('继续努力！');
+                    });
+                });
+
+                $('#demo1_btn3').on('click', function () {
+                    busyAdmin.dialog.alertError('再接再励！', function () {
+                        busyAdmin.dialog.toast('加油！');
+                    });
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo2" class="hide">
+        <button class="btn btn-default" id="demo2_btn1">询问对话框</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo2_btn1').on('click', function () {
+                    busyAdmin.dialog.confirm('你吃饭了吗？', function () {
+                        busyAdmin.dialog.toast('多吃点！');
+                    }, function () {
+                        busyAdmin.dialog.toast('赶紧吃饭！');
+                    });
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo3" class="hide">
+        <button class="btn btn-default" id="demo3_btn1">普通输入对话框</button>
+        <button class="btn btn-default" id="demo3_btn2">下拉选择对话框</button>
+        <button class="btn btn-default" id="demo3_btn3">多选对话框</button>
+        <button class="btn btn-default" id="demo3_btn4">密码输入框</button>
+        <button class="btn btn-default" id="demo3_btn5">数字输入框</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo3_btn1').on('click', function () {
+                    busyAdmin.dialog.prompt('怎么称呼？', '', function (value) {
+                        busyAdmin.dialog.toast('姓名为：' + value);
+
+                        // 返回false可以阻止对话框关闭
+                    }, function () {
+                        busyAdmin.dialog.toast('大家都不喜欢没有名字的人');
+                    });
+                });
+
+                $('#demo3_btn5').on('click', function () {
+                    busyAdmin.dialog.prompt('请输入年龄', '18', {
+                        formType   : "number",
+                        numberStep : 1,
+                        maxlength  : 99,
+                        minlength  : 18
+                    }, function (value) {
+                        busyAdmin.dialog.toast('数值：' + value);
+                    });
+                });
+
+                $('#demo3_btn4').on('click', function () {
+                    busyAdmin.dialog.prompt('请输入密码', '', {
+                        formType  : "password",
+                        minlength : 6,
+                        maxlength : 20
+                    }, function (value) {
+                        busyAdmin.dialog.toast('密码为：' + value);
+                    });
+                });
+
+                var selectOptions = [
+                    {
+                        name  : '请选择',
+                        value : '0'
+                    },
+                    {
+                        name  : '足球',
+                        value : '1'
+                    },
+                    {
+                        name  : '篮球',
+                        value : '2'
+                    },
+                    {
+                        name  : '羽毛球',
+                        value : '3'
+                    }
+                ];
+                $('#demo3_btn2').on('click', function () {
+                    busyAdmin.dialog.prompt('请选择爱好', "2", {
+                        formType      : "select",
+                        selectOptions : selectOptions,
+                        minlength     : 1
+                    }, function (value) {
+
+                        var name = '';
+                        $.map(selectOptions, function (item) {
+                            if (item.value == value) {
+                                name = item.name;
+                            }
+                        });
+
+                        busyAdmin.dialog.toast('您选择了：' + name);
+                    });
+                });
+
+                $('#demo3_btn3').on('click', function () {
+                    busyAdmin.dialog.prompt('请选择爱好', ["1", "3"], {
+                        formType      : "select",
+                        selectOptions : selectOptions,
+                        rows          : 5,
+                        minlength     : 1,
+                        maxlength     : 2
+                    }, function (value) {
+
+                        var name = '';
+                        $.map(selectOptions, function (item) {
+                            if (-1 !== value.indexOf(item.value)) {
+                                name += item.name + ",";
+                            }
+                        });
+
+                        busyAdmin.dialog.toast('您选择了：' + name);
+                    });
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo4" class="hide">
+        <button class="btn btn-default" id="demo4_btn1">普通Toast</button>
+        <button class="btn btn-success" id="demo4_btn2">成功Toast</button>
+        <button class="btn btn-danger" id="demo4_btn3">失败Toast</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo4_btn1').on('click', function () {
+                    busyAdmin.dialog.toast('普通的');
+                });
+                $('#demo4_btn2').on('click', function () {
+                    busyAdmin.dialog.toastSuccess('成功');
+                });
+                $('#demo4_btn3').on('click', function () {
+                    busyAdmin.dialog.toastError('失败');
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo5" class="hide">
+        <button class="btn btn-success" id="demo5_btn2">腾讯</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo5_btn2').on('click', function () {
+                    busyAdmin.dialog.iframe('https://www.qq.com', {
+                        area   : ['500px', '500px'],
+                        maxmin : true
+                    });
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo6" class="hide">
+        <button class="btn btn-default" id="demo6_btn1">右侧来一个</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo6_btn1').on('click', function () {
+                    busyAdmin.dialog.fullRight('你好');
+                });
+            });
+        </script>
+    </template>
+
+    <template id="demo7" class="hide">
+        <button class="btn btn-default" id="demo7_btn1">显示，5秒后关闭</button>
+        <script>
+            busyAdmin.ready(function () {
+                $('#demo7_btn1').on('click', function () {
+                    var pending = busyAdmin.dialog.pending('请稍候...');
+                    
+                    setTimeout(function () {
+                        pending.close();
+                    }, 5000);
+                });
+            });
+        </script>
+    </template>
+</block>

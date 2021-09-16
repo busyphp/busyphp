@@ -286,4 +286,13 @@ class ManualComponentController extends InsideController
         
         return $this->display();
     }
+    
+    
+    /**
+     * 对话框
+     */
+    public function dialog()
+    {
+        return $this->display();
+    }
 }
