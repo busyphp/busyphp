@@ -34,6 +34,10 @@ class Arr extends \think\helper\Arr
      */
     public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null)
     {
+        $pkKey     = (string) $pkKey;
+        $parentKey = (string) $parentKey;
+        $childKey  = (string) $childKey;
+        
         // 创建Tree
         $tree = [];
         if (is_array($list)) {
