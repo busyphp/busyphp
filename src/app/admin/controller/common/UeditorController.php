@@ -3,11 +3,12 @@
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\file\SystemFileUpload;
-use BusyPHP\app\admin\setting\FileSetting;
+use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\exception\AppException;
+use BusyPHP\file\upload\Base64Upload;
+use BusyPHP\file\upload\LocalUpload;
+use BusyPHP\file\upload\RemoteUpload;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -172,28 +173,27 @@ class UeditorController extends InsideController
             }
             
             // 上传
+            $classType  = $this->request->post('class_type', '', 'trim');
+            $classValue = $this->request->post('class_value', '', 'trim');
             if ($isBase64) {
-                $upload = new SystemFileUpload();
-                $upload->setType($upload::TYPE_BASE64);
-                $upload->setBase64DefaultExtension('jpg', 'image/jpg');
-                $upload->setIsAdmin(true);
-                $upload->setUserId($this->adminUserId);
-                $upload->setMark($this->iRequest('mark_type'), $this->iRequest('mark_value'));
-                $result = $upload->upload($_POST['upload']);
+                $upload = new Base64Upload();
+                $upload->setClient(0, $this->adminUserId);
+                $upload->setClassType($classType, $classValue);
+                $upload->setDefaultMimeType('image/jpg');
+                $upload->setDefaultExtension('jpg');
+                $result = $upload->upload($this->request->post('upload'));
             } else {
-                $upload = new SystemFileUpload();
-                $upload->setType($upload::TYPE_CHUNK);
-                $upload->setIsAdmin(true);
-                $upload->setUserId($this->adminUserId);
-                $upload->setMark($this->iRequest('mark_type'), $this->iRequest('mark_value'));
-                $result = $upload->upload($_FILES['upload']);
+                $upload = new LocalUpload();
+                $upload->setClient(0, $this->adminUserId);
+                $upload->setClassType($classType, $classValue);
+                $result = $upload->upload($this->request->file('upload'));
             }
             
             $jsonData['url']      = $result->url;
             $jsonData['title']    = $result->name;
             $jsonData['original'] = $result->name;
-            $jsonData['type']     = $result->extension;
-            $jsonData['size']     = $result->size;
+            $jsonData['type']     = $result->file->getExtension();
+            $jsonData['size']     = $result->file->getSize();
         } catch (Exception $e) {
             $jsonData['state'] = $e->getMessage();
         }
@@ -227,28 +227,27 @@ class UeditorController extends InsideController
                 throw new AppException('请登录后上传');
             }
             
-            // 上传
-            $upload = new SystemFileUpload();
-            $upload->setType($upload::TYPE_REMOTE);
-            $upload->setRemoteFilterHost($_SERVER['HTTP_HOST']);
-            $upload->setRemoteDefaultExtension('jpg', 'image/jpg');
-            $upload->setIsAdmin(true);
-            $upload->setUserId($this->adminUserId);
-            $upload->setMark($this->iRequest('mark_image_type'), $this->iRequest('mark_value'));
-            
-            $list = [];
+            $classType  = $this->request->post('mark_image_type', '', 'trim');
+            $classValue = $this->request->post('mark_value', '', 'trim');
+            $list       = [];
             foreach ($this->iPost('upload') as $i => $url) {
                 $url = str_replace('&amp;', '&', $url);
                 try {
-                    $result   = $upload->upload($url);
+                    $upload = new RemoteUpload();
+                    $upload->setClient(0, $this->adminUserId);
+                    $upload->setClassType($classType, $classValue);
+                    $upload->setDefaultExtension('jpg');
+                    $upload->setDefaultMimeType('image/jpg');
+                    $result = $upload->upload($url);
+                    
                     $list[$i] = ['state' => 'SUCCESS', 'source' => $url, 'url' => $result->url];
-                } catch (AppException $e) {
+                } catch (Exception $e) {
                     $list[$i] = ['state' => $e->getMessage(), 'source' => '', 'url' => ''];
                 }
             }
             
             $jsonData['list'] = $list;
-        } catch (AppException $e) {
+        } catch (Exception $e) {
             $jsonData['state'] = $e->getMessage();
         }
         
@@ -279,21 +278,16 @@ class UeditorController extends InsideController
      */
     private function getFileConfig()
     {
-        $fileSet = FileSetting::init();
+        $fileSet = UploadSetting::init();
         $list    = SystemFileClass::init()->getList();
         $array   = [];
         foreach ($list as $key => $value) {
-            $fileSet->setClassify($key);
             $array[$key] = [
-                'suffix'  => $fileSet->getAdminType(),
-                'size'    => $fileSet->getAdminSize(),
-                'mime'    => $fileSet->getMimeType(),
-                'width'   => $fileSet->getThumbWidth(),
-                'height'  => $fileSet->getThumbHeight(),
-                'isThumb' => $fileSet->isThumb(),
-                'thumb'   => Transform::boolToNumber($fileSet->isThumb()),
-                'type'    => $value['type'],
-                'name'    => $value['name']
+                'suffix' => $fileSet->getAllowExtensions(0, $key),
+                'size'   => $fileSet->getMaxSize(0, $key),
+                'mime'   => $fileSet->getMimeType($key),
+                'type'   => $value->type,
+                'name'   => $value->name
             ];
         }
         

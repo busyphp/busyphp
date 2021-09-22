@@ -1,7 +1,7 @@
 <?php
 
 use BusyPHP\App;
-use BusyPHP\image\Image;
+use BusyPHP\file\Image;
 
 // +----------------------------------------------------
 // + 动态缩图配置

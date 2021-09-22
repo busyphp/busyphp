@@ -14,12 +14,6 @@ use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 class AdminUserInfo extends AdminUserField
 {
     /**
-     * 是否审核
-     * @var bool
-     */
-    public $isChecked;
-    
-    /**
      * 所在用户组信息
      * @var AdminGroupInfo|null
      */
@@ -38,8 +32,8 @@ class AdminUserInfo extends AdminUserField
             static::$_groupList = AdminGroup::init()->getList();
         }
         
-        $this->isChecked = $this->checked > 0;
-        $this->isSystem  = $this->isSystem > 0;
-        $this->group     = static::$_groupList[$this->groupId] ?? null;
+        $this->checked = $this->checked > 0;
+        $this->system  = $this->system > 0;
+        $this->group   = static::$_groupList[$this->groupId] ?? null;
     }
 }

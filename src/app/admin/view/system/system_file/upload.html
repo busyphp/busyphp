@@ -1,0 +1,30 @@
+<extend name="@admin:layout"/>
+<block name="head">
+</block>
+<block name="content">
+    <div class="alert alert-warning">温馨提示：您可以尝试文件拖拽，使用QQ截屏工具，然后激活窗口后粘贴来上传附件</div>
+    <div id="systemFileUpload"
+         data-toggle="busy-upload"
+         data-type="files"
+         data-class-type="file"
+         data-select="false"
+         data-dnd="true"
+         data-paste="true"
+         data-files-result="false"
+         data-auto="false"></div>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.ready(function () {
+            $('#systemFileUpload').on(busyAdmin.e.uploadComplete + ' ' + busyAdmin.e.uploadFileQueued + ' ' + busyAdmin.e.uploadFileDequeued, function () {
+                $(window).trigger('resize');
+            });
+
+            $(document).one(busyAdmin.e.appPluginReady, function (e, $el, name, plugin) {
+                if (plugin instanceof busyAdmin.plugins.Upload) {
+                    $(window).trigger('resize');
+                }
+            });
+        });
+    </script>
+</block>

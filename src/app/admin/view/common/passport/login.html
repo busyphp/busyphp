@@ -1,14 +1,14 @@
-<extend name="@admin:page" />
+<extend name="@admin:page"/>
 <block name="content">
     <div class="login">
         <div class="login-bg" style="background-image: url({$bg})"></div>
         <div class="login-body">
             <div class="login-box">
-                <notempty name="logo">
-                    <div class="logo"><img src="{$logo}"/></div>
+                <notempty name="system.logo_horizontal">
+                    <div class="logo"><img src="{$system.logo_horizontal}"/></div>
                 </notempty>
 
-                <h1 class="text-center">{$page_title}后台管理系统</h1>
+                <h1 class="text-center">{$system.title}</h1>
 
                 <div class="login-form">
                     <h2>用户登录<small>User Login</small></h2>
@@ -39,13 +39,13 @@
                                 </div>
                             </div>
                         </eq>
-                        
+
                         <eq name="save_login" value="1">
                             <div class="form-group">
-                                <input type="checkbox" data-toggle="busy-checkbox" title="记住登录"/>
+                                <input type="checkbox" data-toggle="busy-checkbox" name="save_login" value="1" title="记住登录"/>
                             </div>
                         </eq>
-                        
+
                         <div class="form-group no-margin-bottom">
                             <button class="btn btn-primary btn-block">立即登录</button>
                         </div>
@@ -54,10 +54,24 @@
             </div>
         </div>
         <div class="login-footer">
-            &copy; CopyRight 2015-{$year} {$version}
+            {$copyright}
+
+            <span>
+                <notempty name="icp_no">
+                    <span>
+                        <a target="_blank" href="https://beian.miit.gov.cn/">{$icp_no}</a>
+                    </span>
+                </notempty>
+            
+                <notempty name="police_no">
+                    <span>
+                        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode={$police_no}"><img src="{$skin.images}beian.png"/>{$police_no}</a>
+                    </span>
+                </notempty>
+            </span>
         </div>
     </div>
-    
+
     <script>
         busyAdmin.data.onLoginError = function () {
             $('[data-toggle="busy-change-verify"]').trigger('click');

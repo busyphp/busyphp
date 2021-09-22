@@ -37,6 +37,8 @@ class InsideController extends AdminCurdController
         $group = '';
         if ($groupName = $this->request->group()) {
             $group = Str::snake($groupName) . DIRECTORY_SEPARATOR;
+        } else if ($groupName = $this->request->param('dir')) {
+            $group = Str::snake($groupName) . DIRECTORY_SEPARATOR;
         }
         
         return $this->getViewPath() . $group . Str::snake($this->request->controller(false, true)) . DIRECTORY_SEPARATOR;

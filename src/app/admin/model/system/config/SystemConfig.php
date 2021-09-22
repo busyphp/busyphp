@@ -4,10 +4,11 @@ namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\Handle;
 use BusyPHP\model;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
-use think\facade\Log;
 
 /**
  * 系统键值对配置数据模型
@@ -113,18 +114,18 @@ class SystemConfig extends Model
      * @param string $key 数据名称
      * @param bool   $must 强制更新缓存
      * @return mixed
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function get($key, $must = false)
     {
         $cache = $this->getCache($key);
         if (!$cache || $must) {
-            $cache = $this->whereEntity(SystemConfigField::type($key))->findInfo();
-            if (!$cache) {
+            try {
+                $cache = $this->whereEntity(SystemConfigField::type($key))
+                    ->failException(true)
+                    ->findInfo(null, "找不到配置[{$key}]的数据");
+            } catch (Exception $e) {
+                Handle::log($e);
                 $this->deleteCache($key);
-                
-                Log::record('SystemConfig配置不存在[' . $key . ']', 'error');
                 
                 return null;
             }

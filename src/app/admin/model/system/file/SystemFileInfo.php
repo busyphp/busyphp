@@ -18,7 +18,7 @@ class SystemFileInfo extends SystemFileField
      * 附件类型名称
      * @var string
      */
-    public $classifyName;
+    public $typeName;
     
     /**
      * 格式化的创建时间
@@ -53,9 +53,9 @@ class SystemFileInfo extends SystemFileField
     
     public function onParseAfter()
     {
-        $this->classifyName     = SystemFile::getTypes($this->classify);
+        $this->typeName         = SystemFile::getTypes($this->type);
         $this->formatCreateTime = Transform::date($this->createTime);
-        $this->isAdmin          = $this->isAdmin > 0;
+        $this->client       = $this->client > 0;
         
         $sizes            = Transform::formatBytes($this->size, true);
         $this->sizeUnit   = $sizes['unit'];

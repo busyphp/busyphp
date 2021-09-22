@@ -3,8 +3,8 @@
 // + 公共助手函数库
 // +----------------------------------------------------
 
-use BusyPHP\image\url\QRCodeUrl;
-use BusyPHP\image\url\ThumbUrl;
+use BusyPHP\file\qrcode\QRCodeUrl;
+use BusyPHP\file\image\ThumbUrl;
 
 if (!function_exists('is_android')) {
     /**
@@ -110,9 +110,9 @@ if (!function_exists('thumb_url')) {
      * @param string $type 缩图类型
      * @return ThumbUrl
      */
-    function thumb_url($url, $size, $type = BusyPHP\image\Image::THUMB_CORP) : ThumbUrl
+    function thumb_url($url, $size, $type = BusyPHP\file\Image::THUMB_CORP) : ThumbUrl
     {
-        return BusyPHP\image\url\facade\ThumbUrl::url($url)->type($type)->size($size);
+        return BusyPHP\facade\ThumbUrl::url($url)->type($type)->size($size);
     }
 }
 
@@ -126,6 +126,6 @@ if (!function_exists('qr_code_url')) {
      */
     function qr_code_url($text, $logo = '') : QRCodeUrl
     {
-        return BusyPHP\image\url\facade\QRCodeUrl::text($text)->logo($logo);
+        return BusyPHP\facade\QRCodeUrl::text($text)->logo($logo);
     }
 }

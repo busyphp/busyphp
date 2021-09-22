@@ -23,4 +23,56 @@ class PublicSetting extends Setting
     {
         return $data;
     }
+    
+    
+    /**
+     * 获取站点名称
+     * @return string
+     */
+    public function getTitle() : string
+    {
+        return $this->get('title', '') ?: $this->app->getBusyName();
+    }
+    
+    
+    /**
+     * 获取公网安备号
+     * @return string
+     */
+    public function getPoliceNo() : string
+    {
+        return $this->get('police_no', '') ?: '';
+    }
+    
+    
+    /**
+     * 获取域名备案号
+     * @return string
+     */
+    public function getIcpNo() : string
+    {
+        return $this->get('icp_no', '') ?: '';
+    }
+    
+    
+    /**
+     * 获取网站图标
+     * @return string
+     */
+    public function getFavicon() : string
+    {
+        return $this->get('favicon', '') ?: '';
+    }
+    
+    
+    /**
+     * 获取站点名称
+     * @return string
+     */
+    public function getCopyright() : string
+    {
+        $year = date('Y');
+        
+        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP'>{$this->app->getBusyName()}</a>  V{$this->app->getBusyVersion()}";
+    }
 }

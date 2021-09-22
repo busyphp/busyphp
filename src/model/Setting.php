@@ -9,6 +9,7 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\file\File;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\util\Str;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -30,9 +31,16 @@ abstract class Setting
      */
     private static $inits = [];
     
+    /**
+     * @var App
+     */
+    protected $app;
+    
     
     public function __construct()
     {
+        $this->app = Container::getInstance()->make(App::class);
+        
         if (!$this->key) {
             $this->getKey();
         }
@@ -91,9 +99,7 @@ abstract class Setting
      * 获取数据
      * @param string $name 数据名称
      * @param mixed  $default 默认值
-     * @return mixed|null
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @return mixed
      */
     final public function get($name = '', $default = null)
     {

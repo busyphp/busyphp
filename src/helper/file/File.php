@@ -58,7 +58,7 @@ class File
             return pathinfo($path);
         }
         
-        $pathParts              = array();
+        $pathParts              = [];
         $pathParts['dirname']   = rtrim(substr($path, 0, strrpos($path, '/')), "/") . "/";
         $pathParts['basename']  = ltrim(substr($path, strrpos($path, '/')), "/");
         $pathParts['extension'] = substr(strrchr($path, '.'), 1);
@@ -150,6 +150,10 @@ class File
      */
     public static function deleteDir(string $dirPath, bool $isRetainDir = false) : bool
     {
+        if (!is_dir($dirPath)) {
+            return false;
+        }
+        
         $handle = opendir($dirPath);
         while ($file = readdir($handle)) {
             if ($file === '.' || $file === '..') {

@@ -3,9 +3,12 @@
 namespace BusyPHP\helper\net;
 
 use BusyPHP\helper\file\File;
-use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Transform;
 use CURLFile;
+use think\Exception;
+use think\exception\FileException;
+use think\exception\InvalidArgumentException;
+use think\exception\ValidateException;
 
 /**
  * HTTP请求类
@@ -24,12 +27,12 @@ class Http
     
     /**
      * Http constructor.
-     * @throws AppException
+     * @throws Exception
      */
     public function __construct()
     {
         if (!function_exists('curl_init')) {
-            throw new AppException('curl未开启');
+            throw new Exception('未开启curl');
         }
         
         // 超时时间
@@ -105,7 +108,7 @@ class Http
      * @param string       $url 请求地址
      * @param array|string $params 附加请求参数
      * @return $this
-     * @throws AppException
+     * @throws InvalidArgumentException
      */
     public function setUrl($url, $params = [])
     {
@@ -283,7 +286,7 @@ class Http
      * @param string|array $name 附件字段
      * @param string       $filename 附件路径
      * @return $this
-     * @throws AppException
+     * @throws FileException
      */
     public function addFile($name, $filename = '')
     {
@@ -293,19 +296,15 @@ class Http
         
         if (is_array($name)) {
             foreach ($name as $k => $v) {
-                try {
-                    $this->addFile($k, $v);
-                } catch (AppException $e) {
-                    throw new AppException($k . '参数对应的附件无效');
-                }
+                $this->addFile($k, $v);
             }
         } else {
             if (!$filename) {
-                throw new AppException('请检查附件的有效性');
+                throw new InvalidArgumentException('附件路径不能为空');
             }
             $filename = realpath(ltrim($filename, '@'));
             if (!is_file($filename)) {
-                throw new AppException('请检查附件的有效性');
+                throw new FileException("附件不存在: {$filename}");
             }
             
             if (version_compare(PHP_VERSION, '5.5.0', '<')) {
@@ -324,23 +323,21 @@ class Http
      * @param string       $url 要解析的地址
      * @param array|string $query 追加Query参数会覆盖url中包含的参数
      * @return string
-     * @throws AppException
+     * @throws ValidateException
      */
     protected function parseUrl($url, $query = [])
     {
         // 地址
         $url = $url ? $url : $this->options['url'];
         if (!$url) {
-            throw new AppException('提交地址不能为空');
+            throw new InvalidArgumentException('提交地址不能为空');
         }
         
         if (!$array = parse_url($url)) {
-            throw new AppException('请检查提交地址是否有效');
+            throw new InvalidArgumentException('请检查提交地址是否有效');
         }
         
-        
         $urlTemp = '';
-        
         // 请求协议
         if (isset($array['scheme']) && $array['scheme'] === 'https') {
             $this->options['is_ssl'] = true;
@@ -394,7 +391,9 @@ class Http
     /**
      * 执行请求
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public function request()
     {
@@ -457,7 +456,7 @@ class Http
                 break;
             }
             
-            throw new AppException($errorMessage, $errorCode);
+            throw new Exception($errorMessage, $errorCode);
         }
         
         curl_close($curl);
@@ -539,7 +538,9 @@ class Http
      * @param string|array $params POST参数
      * @param Http|null    $http 指定实例化好的请求类
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public static function get($url, $params = [], $http = null)
     {
@@ -559,7 +560,9 @@ class Http
      * @param string|array $params POST参数
      * @param Http|null    $http 指定实例化好的请求类
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public static function post($url, $params = [], $http = null)
     {
@@ -586,7 +589,9 @@ class Http
      * @param string    $contentType 字符串类型
      * @param Http|null $http 指定实例化好的请求类
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public static function postString($url, $string = '', $contentType = '', $http = null)
     {
@@ -611,7 +616,9 @@ class Http
      * @param Http|null    $http 指定实例化好的请求类
      * @param bool         $unescapedUnicode JSON遇到中文是否保留中文，针对$json为数组的时候有效，默认保留
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public static function postJSON($url, $json = '', $http = null, $unescapedUnicode = false)
     {
@@ -635,7 +642,9 @@ class Http
      * @param string|false $root 根节点名称，默认为root,针对$xml为数组的时候有效
      * @param string|false $encode XML ENCode 编码
      * @return string
-     * @throws AppException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
     public static function postXML($url, $xml = '', $http = null, $root = 'root', $encode = 'utf-8')
     {
@@ -657,45 +666,65 @@ class Http
      * @param string $filename 保存路径
      * @param array  $params 附件参数
      * @param Http   $http Http实例
-     * @throws AppException
+     * @param int    $mode 文件夹权限
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws FileException
      */
-    public static function download($url, $filename, $params = [], $http = null)
+    public static function download($url, $filename, $params = [], $http = null, $mode = 0775)
     {
-        $resource = null;
-        try {
-            if (is_null($http)) {
-                $http = new Http();
+        if (!$http instanceof Http) {
+            $http = new Http();
+        }
+        
+        // 创建文件夹
+        $dir = File::pathInfo($filename, PATHINFO_DIRNAME);
+        if (!is_dir($dir)) {
+            if (!mkdir($dir, $mode, true)) {
+                throw new FileException("创建文件夹失败: {$dir}");
             }
-            
-            // 创建文件夹
-            $dir = File::pathInfo($filename, PATHINFO_DIRNAME);
-            if (!is_dir($dir)) {
-                if (!mkdir($dir, 0777, true)) {
-                    throw new AppException('无写权限[' . $dir . ']');
-                }
-            }
-            
-            $resource = fopen($filename, 'w');
+        }
+        
+        $http->setUrl($url, $params);
+        $http->setOpt(CURLOPT_POST, false);
+        $http->setOpt(CURLOPT_HEADER, false);
+        $http->setOpt(CURLOPT_WRITEFUNCTION, function($ch, $string) use ($filename) {
+            $resource = fopen($filename, 'ab');
             if (!$resource) {
-                throw new AppException('无写权限[' . $filename . ']');
+                throw new FileException("打开文件失败: {$filename}");
             }
-            
-            $http->setUrl($url, $params);
-            $http->setOpt(CURLOPT_FILE, $resource);
-            $http->setOpt(CURLOPT_HEADER, false);
-            $http->request();
-            
+            $length = fwrite($resource, $string);
             fclose($resource);
             
-            if (!is_file($filename)) {
-                throw new AppException('下载失败[' . $filename . ']');
-            }
-        } catch (AppException $e) {
-            if ($resource != null) {
-                fclose($resource);
+            return $length;
+        });
+        $http->request();
+    }
+    
+    
+    /**
+     * 解析HTTP响应头
+     * @param string $header
+     * @return array
+     */
+    public static function parseResponseHeaders(string $header) : array
+    {
+        $header = explode("\r\n", $header);
+        $list   = [];
+        foreach ($header as $item) {
+            if (false === $index = strpos($item, ':')) {
+                continue;
             }
             
-            throw new AppException($e);
+            $key   = trim(substr($item, 0, $index));
+            $value = trim(substr($item, $index + 1));
+            if (!$key || !$value) {
+                continue;
+            }
+            
+            $list[$key] = $value;
         }
+        
+        return $list;
     }
 }

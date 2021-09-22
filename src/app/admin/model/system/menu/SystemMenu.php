@@ -6,8 +6,6 @@ use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\menu\provide\AdminMenuStruct;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Regex;
-use BusyPHP\helper\util\Str;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
@@ -31,7 +29,7 @@ class SystemMenu extends Model
     //| 外部链接打开方式
     //+--------------------------------------
     /** @var string 当前窗口 */
-    const TARGET_SELF = '_self';
+    const TARGET_SELF = '';
     
     /** @var string 新建窗口 */
     const TARGET_BLANK = '_blank';
@@ -40,19 +38,10 @@ class SystemMenu extends Model
     const TARGET_IFRAME = 'iframe';
     
     //+--------------------------------------
-    //| 类型
-    //+--------------------------------------
-    /** 分组 */
-    const TYPE_GROUP = 0;
-    
-    /** 菜单 */
-    const TYPE_NAV = 1;
-    
-    //+--------------------------------------
     //| 其它
     //+--------------------------------------
     /** 开发模式分组 */
-    const DEVELOP = 'Develop';
+    const DEVELOP = '#developer';
     
     /** 保留分组 */
     const RETAIN_GROUP = 'Develop,Common';
@@ -69,16 +58,58 @@ class SystemMenu extends Model
     
     /**
      * 添加菜单
-     * @param SystemMenuField $data
-     * @return int
-     * @throws DbException
-     * @throws VerifyException
+     * @param SystemMenuField $data 添加的数据
+     * @param array           $auto 自动构建的菜单
+     * @param string          $autoSuffix 自动创建菜单的后缀
+     * @return array 增加成功的ID集合
+     * @throws Exception
      */
-    public function createMenu(SystemMenuField $data)
+    public function createMenu(SystemMenuField $data, array $auto = [], string $autoSuffix = '')
     {
-        $this->buildData($data);
-        
-        return $this->addData($data);
+        $this->startTrans();
+        try {
+            $this->checkReplace($data->path);
+            $ids   = [];
+            $ids[] = $this->addData($data);
+            
+            // 自动创建
+            if ($auto) {
+                if (false !== strpos($data->path, '#') || false !== strpos($data->path, '://')) {
+                    throw new VerifyException('分组和外部连接不支持自动创建');
+                }
+                
+                $parentPath = $data->path;
+                $paths      = explode('/', $parentPath);
+                array_pop($paths);
+                $path = implode('/', $paths) . '/';
+                $map  = [
+                    'add'    => '添加',
+                    'edit'   => '修改',
+                    'delete' => '删除',
+                    'sort'   => '排序',
+                    'export' => '导出',
+                    'import' => '导入',
+                    'detail' => '查看',
+                ];
+                
+                foreach ($auto as $item) {
+                    $data->path       = $path . $item;
+                    $data->name       = $map[$item] . $autoSuffix;
+                    $data->hide       = true;
+                    $data->parentPath = $parentPath;
+                    $data->icon       = '';
+                    $ids[]            = $this->addData($data);
+                }
+            }
+            
+            $this->commit();
+            
+            return $ids;
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
     }
     
     
@@ -93,51 +124,13 @@ class SystemMenu extends Model
             throw new ParamInvalidException('id');
         }
         
-        $this->buildData($data);
-        
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($data->id);
             
-            if (!self::DEBUG) {
-                if ($info->isSystem) {
-                    throw new VerifyException('禁止修改系统菜单');
-                }
-            }
-            
-            // 找到该分类下的所有下级ID
-            $list  = $this->getChildList($info->id);
-            $inIds = array_keys(Arr::listByKey($list, SystemMenuField::id()));
-            
-            // 有下级菜单的无法转为菜单
-            if ($data->type == self::TYPE_NAV && $inIds) {
-                throw new VerifyException('该菜单包涵子菜单，无法从分组转为菜单');
-            }
-            
-            // 不能选下级为上级
-            if (in_array($data->parentId, $inIds)) {
-                throw new VerifyException('不能选择下级做为上级');
-            }
-            
-            // 分组则更新下级
-            if ($data->type == self::TYPE_GROUP && $inIds) {
-                // 1. 原来不是顶级，现在是顶级
-                // 2. 原来是顶级，现在不是顶级
-                if ($data->parentId == 0 || $info->parentId == 0) {
-                    $this->whereEntity(SystemMenuField::id('in', $inIds))
-                        ->setField(SystemMenuField::module(), $data->module);
-                }
-                
-                // 1. 现在不是顶级
-                // 2. 原来不是顶级
-                elseif ($data->parentId > 0 || $info->parentId > 0) {
-                    $save          = SystemMenuField::init();
-                    $save->module  = $data->module;
-                    $save->control = $data->control;
-                    $this->whereEntity(SystemMenuField::id('in', $inIds))->saveData($save);
-                }
-            }
-            
+            // 更新子菜单关系
+            $this->whereEntity(SystemMenuField::parentPath($info->path))
+                ->setField(SystemMenuField::parentPath(), $data->path);
             
             $this->whereEntity(SystemMenuField::id($data->id))->saveData($data);
             
@@ -151,79 +144,20 @@ class SystemMenu extends Model
     
     
     /**
-     * 过滤数据
-     * @param SystemMenuField $data
-     * @throws DataNotFoundException
-     * @throws DbException
+     * 菜单连接查重
+     * @param string $path 菜单连接
+     * @param int    $id 菜单ID
      * @throws VerifyException
      */
-    private function buildData(SystemMenuField $data)
+    protected function checkReplace($path, $id = 0)
     {
-        // 面板
-        if ($data->parentId < 1) {
-            $data->module  = self::verify($data->module, 'module', '面板分组');
-            $data->type    = self::TYPE_GROUP;
-            $data->control = '';
-            $data->action  = '';
-            $data->params  = '';
-            $data->isHide  = false;
-            
-            if (!$data->icon) {
-                throw new VerifyException('请选择面板分组图标', 'icon');
-            }
-        } else {
-            $parentInfo = $this->getInfo($data->parentId);
-            if ($parentInfo->type == self::TYPE_NAV) {
-                throw new VerifyException('上级菜单必须是分组', 'parent_id');
-            }
-            
-            // 菜单
-            if ($data->type == self::TYPE_NAV) {
-                $data->module = Str::studly($parentInfo->module);
-                
-                if ($parentInfo->control) {
-                    $data->control = Str::studly($parentInfo->control);
-                } else {
-                    $data->control = self::verify($data->control, 'control', '控制器');
-                }
-                
-                $data->action = trim($data->action);
-                self::verify($data->action, 'action', '执行方法');
-                
-                if (!$data->isHide && !$data->icon) {
-                    throw new VerifyException('请选择菜单图标', 'icon');
-                }
-            }
-            
-            //
-            // 分组
-            else {
-                $data->module  = Str::studly($parentInfo->module);
-                $data->control = self::verify($data->control, 'control', '控制器');
-                $data->action  = '';
-                
-                if (!$data->icon) {
-                    throw new VerifyException('请选择分组图标', 'icon');
-                }
-            }
+        $this->whereEntity(SystemMenuField::path($path));
+        if ($id > 0) {
+            $this->whereEntity(SystemMenuField::id('<>', $id));
         }
         
-        // 新增校验保留面板
-        if ($data->id < 1 && $data->parentId == 0) {
-            if (in_array($data->module, array_map(function($item) {
-                return Str::studly($item);
-            }, explode(',', self::RETAIN_GROUP)))) {
-                throw new VerifyException("{$data->module}为系统保留面板，请勿使用", 'module');
-            }
-        }
-        
-        // 查重
-        $this->whereEntity(SystemMenuField::module($data->module), SystemMenuField::control($data->control), SystemMenuField::action($data->action));
-        if ($data->id > 0) {
-            $this->whereEntity(SystemMenuField::id('<>', $data->id));
-        }
-        if ($this->findInfo()) {
-            throw new VerifyException('该菜单已存在，请勿重复添加');
+        if ($this->count() > 0) {
+            throw new VerifyException('该菜单连接已存在', 'path');
         }
     }
     
@@ -241,12 +175,12 @@ class SystemMenu extends Model
             $info = $this->lock(true)->getInfo($data);
             
             // 系统菜单不能删除
-            if ($info->isSystem) {
+            if ($info->system) {
                 throw new VerifyException('系统菜单禁止删除');
             }
             
             // 删除子菜单
-            $childIds = array_keys(Arr::listByKey($this->getChildList($info->id), SystemMenuField::id()));
+            $childIds = array_keys(Arr::listByKey($this->getChildList($info->path), SystemMenuField::id()));
             if ($childIds) {
                 $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
             }
@@ -265,14 +199,14 @@ class SystemMenu extends Model
     
     /**
      * 获取某菜单的所有子菜单
-     * @param int $id 菜单ID
+     * @param int $path 菜单连接
      * @return SystemMenuInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getChildList($id) : array
+    public function getChildList($path) : array
     {
-        $list = Arr::listToTree($this->selectList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), $id);
+        $list = Arr::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
         $list = Arr::treeToList($list, SystemMenuInfo::child());
         
         return $list;
@@ -346,7 +280,7 @@ class SystemMenu extends Model
         $cacheName = 'tree';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child());
+            $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "");
             $this->setCache($cacheName, $list);
         }
         
@@ -366,8 +300,8 @@ class SystemMenu extends Model
         $cacheName = 'safe_tree';
         $tree      = $this->getCache($cacheName);
         if (!$tree || $must) {
-            $tree = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $item) {
-                if ($item->isDisabled || $item->path == self::DEVELOP) {
+            $tree = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $item) {
+                if ($item->disabled || $item->path == self::DEVELOP) {
                     return false;
                 }
                 
@@ -402,13 +336,13 @@ class SystemMenu extends Model
             if ($groupInfo->isSystem) {
                 foreach ($treeList as $item) {
                     // 禁用的
-                    if ($item->isDisabled) {
+                    if ($item->disabled) {
                         continue;
                     }
                     
-                    if ($item->isDefault) {
+                    /*TODO if ($item->isDefault) {
                         $struct->defaultPath = $item->path;
-                    }
+                    }*/
                     
                     $item->child        = [];
                     $struct->paths[]    = $item->path;
@@ -417,13 +351,13 @@ class SystemMenu extends Model
             } else {
                 foreach ($treeList as $i => $item) {
                     // 禁用的，不包含在群组规则的
-                    if ($item->isDisabled || !in_array($item->path, $groupInfo->ruleArray)) {
+                    if ($item->disabled || !in_array($item->path, $groupInfo->ruleArray)) {
                         continue;
                     }
                     
-                    if ($item->isDefault) {
+                    /*TODO if ($item->isDefault) {
                         $struct->defaultPath = $item->path;
-                    }
+                    }*/
                     
                     $item->child        = [];
                     $struct->paths[]    = $item->path;
@@ -472,16 +406,16 @@ class SystemMenu extends Model
         if (!$list || $must) {
             // 系统用户组则输出所有菜单
             if ($groupInfo->isSystem) {
-                $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $info) {
-                    if ($info->isDisabled || $info->isHide) {
+                $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) {
+                    if ($info->disabled || $info->hide) {
                         return false;
                     }
                     
                     return true;
                 });
             } else {
-                $list = Arr::listToTree($this->getList(), SystemMenuField::id(), SystemMenuField::parentId(), SystemMenuInfo::child(), 0, function(SystemMenuInfo $info) use ($groupInfo) {
-                    if ($info->isDisabled || !in_array($info->path, $groupInfo->ruleArray) || $info->isHide) {
+                $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($groupInfo) {
+                    if ($info->disabled || !in_array($info->path, $groupInfo->ruleArray) || $info->hide) {
                         return false;
                     }
                     
@@ -542,7 +476,7 @@ class SystemMenu extends Model
             return true;
         }
         
-        return $info->isDisabled;
+        return $info->disabled;
     }
     
     
@@ -579,40 +513,7 @@ class SystemMenu extends Model
      */
     public static function createUrlPath(SystemMenuInfo $info)
     {
-        if ($info->module && $info->control && $info->action) {
-            return "{$info->module}.{$info->control}/{$info->action}";
-        } elseif ($info->module && $info->control) {
-            return "{$info->module}.{$info->control}";
-        } else {
-            return $info->module;
-        }
-    }
-    
-    
-    /**
-     * 校验输入值是否正确
-     * @param $value
-     * @param $field
-     * @param $name
-     * @return string
-     * @throws VerifyException
-     */
-    public static function verify($value, $field, $name)
-    {
-        $value = Str::studly(trim($value));
-        if (!$value) {
-            throw new VerifyException("请输入{$name}", $field);
-        }
-        
-        if (!Regex::account($value)) {
-            throw new VerifyException("{$name}只能包含字母、数字及下划线", $field);
-        }
-        
-        if (!Regex::english(substr($value, 0, 1))) {
-            throw new VerifyException("{$name}开始只能是英文", $field);
-        }
-        
-        return $value;
+        return $info->path;
     }
     
     
@@ -624,7 +525,7 @@ class SystemMenu extends Model
      */
     public function setDisabled($id, $status)
     {
-        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::isDisabled(), $status ? 1 : 0);
+        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::disabled(), $status ? 1 : 0);
     }
     
     
@@ -636,20 +537,20 @@ class SystemMenu extends Model
      */
     public function setHide($id, $status)
     {
-        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::isHide(), $status ? 1 : 0);
+        $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::hide(), $status ? 1 : 0);
     }
     
     
     /**
      * 获取菜单选项
-     * @param string $selectedValue
+     * @param string $selectedPath
      * @param array  $list
      * @param string $space
      * @return string
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getTreeOptions($selectedValue = '', $list = [], $space = '')
+    public function getTreeOptions($selectedPath = '', $list = [], $space = '')
     {
         $push = '├';
         if (!$list) {
@@ -659,33 +560,20 @@ class SystemMenu extends Model
         
         $options = '';
         foreach ($list as $item) {
-            if ($item->type == self::TYPE_NAV || (!self::DEBUG && $item->module == self::DEVELOP)) {
+            if (!self::DEBUG && $item->path == self::DEVELOP) {
                 continue;
             }
             
             $selected = '';
-            if ($item->id == $selectedValue) {
+            if ($item->path == $selectedPath) {
                 $selected = ' selected="selected"';
             }
-            $options .= '<option value="' . $item['id'] . '"' . $selected . '>' . $space . $push . $item->name . ' - [' . $item->path . ']</option>';
+            $options .= '<option value="' . $item->path . '"' . $selected . '>' . $space . $push . $item->name . ' - [' . $item->path . ']</option>';
             if ($item->child) {
-                $options .= $this->getTreeOptions($selectedValue, $item->child, '┊　' . $space);
+                $options .= $this->getTreeOptions($selectedPath, $item->child, '┊　' . $space);
             }
         }
         
         return $options;
-    }
-    
-    
-    /**
-     * @param string $method
-     * @param mixed  $id
-     * @param array  $options
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function onChanged(string $method, $id, array $options)
-    {
-        $this->updateCache();
     }
 }

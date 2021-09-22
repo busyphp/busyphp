@@ -3,9 +3,6 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
-use BusyPHP\exception\AppException;
-use BusyPHP\exception\SQLException;
-use BusyPHP\exception\VerifyException;
 use think\Exception;
 use think\exception\ValidateException;
 use think\Response;
@@ -93,11 +90,22 @@ abstract class Controller
         $this->view    = Response::create('', 'view', 200);
         
         // 控制器初始化
+        $this->initializeBefore();
         $this->initialize();
     }
     
     
-    // 初始化
+    /**
+     * 初始化控制基本事物前
+     */
+    protected function initializeBefore()
+    {
+    }
+    
+    
+    /**
+     * 初始化控制基本事物
+     */
     protected function initialize()
     {
     }
@@ -364,53 +372,5 @@ abstract class Controller
         }
         
         return $this->display($template);
-    }
-    
-    
-    /**
-     * 解析消息字符
-     * @param mixed $message
-     * @return string
-     */
-    protected function parseMessage($message)
-    {
-        $debug = '';
-        if ($message instanceof \Exception) {
-            $debug = ' : ' . $message->getFile() . ' : ' . $message->getLine();;
-        }
-        
-        // SQLException
-        if ($message instanceof SQLException) {
-            $errorSQL = $message->getErrorSQL();
-            $message  = $message->getMessage();
-            $message  .= $this->app->isDebug() ? PHP_EOL . $errorSQL : '';
-        }
-        
-        //
-        // VerifyException
-        elseif ($message instanceof VerifyException) {
-            $field   = $message->getField();
-            $code    = $message->getCode();
-            $message = $message->getMessage();
-            $message .= $this->app->isDebug() ? PHP_EOL . "Error Field : {$field}, Error Code : {$code}" : '';
-        }
-        
-        //
-        // AppException
-        elseif ($message instanceof AppException) {
-            $message = $message->getMessage();
-        }
-        
-        //
-        // \Exception
-        elseif ($message instanceof \Exception) {
-            $message = $message->getMessage();
-        }
-        
-        if ($this->app->isDebug()) {
-            $message .= $debug;
-        }
-        
-        return $message;
     }
 }

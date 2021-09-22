@@ -4,12 +4,14 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\general\controller\VerifyController;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
-use think\facade\Session;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 登录
@@ -33,19 +35,22 @@ class PassportController extends InsideController
     
     /**
      * 登录
+     * @return Response
+     * @throws VerifyException
+     * @throws DbException
      */
     public function login()
     {
-        return $this->submit('post', function($data) {
-            $username = $data['username'];
-            $password = $data['password'];
-            $verify   = $data['verify'] ?? '';
-            $isVerify = AdminSetting::init()->isVerify();
+        if ($this->isPost()) {
+            $username  = $this->request->post('username', '', 'trim');
+            $password  = $this->request->post('password', '', 'trim');
+            $verify    = $this->request->post('verify', '', 'trim');
+            $saveLogin = $this->request->post('save_login', 0, 'intval') > 0;
             
             try {
                 $adminModel = AdminUser::init();
-                $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify, $isVerify) {
-                    if ($isVerify) {
+                $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify) {
+                    if (AdminSetting::init()->isVerify()) {
                         try {
                             VerifyController::check('admin_login', $verify);
                             VerifyController::clear('admin_login');
@@ -55,14 +60,25 @@ class PassportController extends InsideController
                     }
                 });
                 
-                $user                = $adminModel->login($username, $password);
+                $user                = $adminModel->login($username, $password, $saveLogin);
                 $this->adminUserId   = $user['id'];
                 $this->adminUsername = $user['username'];
                 $this->log('登录成功');
-                $redirectUrl = Session::get(self::ADMIN_LOGIN_REDIRECT_URL);
-                $redirectUrl = $redirectUrl ?: $this->request->getAppUrl();
                 
-                return $this->success('登录成功', $redirectUrl);
+                // 回跳地址
+                $redirectUrl = $this->request->getRedirectUrl($this->request->getAppUrl(), false);
+                $path        = parse_url($redirectUrl, PHP_URL_PATH);
+                if ($path) {
+                    $path = ltrim($path, '/');
+                    $path = explode('.', $path);
+                    array_pop($path);
+                    $path = implode('/', $path);
+                    if (in_array($path, ['admin/login', 'admin/out'])) {
+                        $redirectUrl = $this->request->getAppUrl();
+                    }
+                }
+                
+                return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
             } catch (VerifyException $e) {
                 if ($e->getCode()) {
                     $this->log('密码输入错误', [
@@ -71,24 +87,30 @@ class PassportController extends InsideController
                     ]);
                 }
                 
-                throw new VerifyException($e);
+                throw $e;
             }
-        }, function() {
-            $list  = glob(App::getPublicPath('assets/admin/images/login') . '*.*');
-            $array = [];
-            foreach ($list as $item) {
-                $array[] = $this->request->getWebAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
-            }
-            
-            $this->assign('is_verify', AdminSetting::init()->isVerify());
-            $this->assign('save_login', false); // TODO 记住密码
-            $this->assign('bg', $array[rand(0, count($array) - 1)]);
-            $this->assign('page_title', $this->publicConfig['title']);
-            $this->assign('verify_url', VerifyController::url('admin_login'));
-            $this->assign('year', date('Y'));
-            $this->assign('version', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
-            $this->assign('logo', ''); // TODO logo
-        });
+        }
+        
+        $list  = glob(App::getPublicPath('assets/admin/images/login') . '*.*');
+        $array = [];
+        foreach ($list as $item) {
+            $array[] = $this->request->getWebAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
+        }
+        
+        $adminSetting  = AdminSetting::init();
+        $publicSetting = PublicSetting::init();
+        $this->assign('admin_title', $adminSetting->getTitle());
+        $this->assign('is_verify', $adminSetting->isVerify());
+        $this->assign('save_login', $adminSetting->getSaveLogin() > 0);
+        $this->assign('logo', $adminSetting->getLogoHorizontal());
+        $this->assign('bg', $array[rand(0, count($array) - 1)]);
+        $this->assign('verify_url', VerifyController::url('admin_login'));
+        $this->assign('copyright', $publicSetting->getCopyright());
+        $this->assign('icp_no', $publicSetting->getIcpNo());
+        $this->assign('police_no', $publicSetting->getPoliceNo());
+        $this->setPageTitle('登录');
+        
+        return $this->display();
     }
     
     
@@ -100,6 +122,6 @@ class PassportController extends InsideController
         $this->log('退出登录');
         AdminUser::outLogin();
         
-        return $this->success('退出成功', url('admin_login'));
+        return $this->success('退出成功', url('admin_login', [$this->request->getVarRedirectUrl() => $this->request->getRedirectUrl()]));
     }
 }

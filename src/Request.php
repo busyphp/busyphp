@@ -3,11 +3,27 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use think\Container;
+use think\facade\Config;
+use think\file\UploadedFile;
+
 /**
  * Request
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/27 下午8:32 上午 Request.php $
+ * @method mixed param($name = '', $default = null, callable $filter = '')
+ * @method mixed get($name = '', $default = null, callable $filter = '')
+ * @method mixed post($name = '', $default = null, callable $filter = '')
+ * @method mixed request($name = '', $default = null, callable $filter = '')
+ * @method mixed put($name = '', $default = null, callable $filter = '')
+ * @method mixed delete($name = '', $default = null, callable $filter = '')
+ * @method mixed patch($name = '', $default = null, callable $filter = '')
+ * @method mixed route($name = '', $default = null, callable $filter = '')
+ * @method mixed cookie(string $name = '', $default = null, callable $filter = '')
+ * @method mixed input(array $data = [], $name = '', $default = null, callable $filter = '')
+ * @method mixed only(array $name, $data = 'param', callable $filter = '') : array
+ * @method UploadedFile|UploadedFile[]|null file(string $name = '')
  */
 class Request extends \think\Request
 {
@@ -46,6 +62,16 @@ class Request extends \think\Request
      * @var string
      */
     protected $group;
+    
+    
+    /**
+     * 单例
+     * @return Request
+     */
+    public static function init() : self
+    {
+        return Container::getInstance()->make(self::class);
+    }
     
     
     /**
@@ -234,24 +260,35 @@ class Request extends \think\Request
     
     
     /**
-     * 获取来源地址
-     * @param string $default 默认地址
+     * 获取来源地址请求参数名称
      * @return string
      */
-    public function getRedirectUrl(string $default = null) : string
+    public function getVarRedirectUrl() : string
     {
-        $varRedirectUrl = config('route.var_redirect_url');
+        $varRedirectUrl = Config::get('route.var_redirect_url');
         $varRedirectUrl = $varRedirectUrl ?: $this->varRedirectUrl;
         
-        $url = $this->param($varRedirectUrl);
-        if (!$url) {
+        return $varRedirectUrl;
+    }
+    
+    
+    /**
+     * 获取来源地址
+     * @param string $default 默认地址
+     * @param bool   $byServer 如果无法从参数获取，是否从server中获取
+     * @return string
+     */
+    public function getRedirectUrl(string $default = null, $byServer = true) : string
+    {
+        $url = $this->param($this->getVarRedirectUrl(), '', 'rawurldecode');
+        if (!$url && $byServer) {
             $url = $this->server('HTTP_REFERER');
         }
         if (!$url) {
             $url = $default;
         }
         
-        return rawurlencode($url);
+        return $url;
     }
     
     

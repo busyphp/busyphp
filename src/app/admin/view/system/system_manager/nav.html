@@ -1,0 +1,11 @@
+<ul class="nav nav-lines">
+    <li class="<?=$url['action'] == 'index' ? 'active' : '';?>">
+        <a href="{:url('index')}"><i class="fa fa-cog"></i> 基本设置</a>
+    </li>
+    <li class="<?=$url['action'] == 'admin' ? 'active' : '';?>">
+        <a href="{:url('admin')}"><i class="fa fa-home"></i> 后台设置</a>
+    </li>
+    <li class="<?=$url['action'] == 'upload' ? 'active' : '';?>">
+        <a href="{:url('upload')}"><i class="fa fa-upload"></i> 上传设置</a>
+    </li>
+</ul>

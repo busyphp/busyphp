@@ -15,8 +15,8 @@
         onlineFile          = [],
         fileConfig          = eval('(<?=$file_config?>)'),
         serverParams        = editor.queryCommandValue('serverparam'),
-        markType            = serverParams.mark_video_type || 'video',
-        markValue           = serverParams.mark_value || '';
+        classType           = serverParams.class_video_type || 'video',
+        classValue          = serverParams.class_value || '';
 
     window.onload = function () {
         $focus($G("videoUrl"));
@@ -59,11 +59,11 @@
             }
 
             parent.$.fn.busyAdminFilePicker.call($(this), {
-                markType   : markType,
-                markValue  : markValue,
+                classType  : classType,
+                classValue : classValue,
                 multiple   : true,
                 count      : 0,
-                extensions : fileConfig[markType].suffix
+                extensions : fileConfig[classType].suffix
             });
         });
 
@@ -408,7 +408,7 @@
         },
         /* 初始化容器 */
         initUploader  : function () {
-            var config            = fileConfig[markType] || {};
+            var config            = fileConfig[classType] || {};
             var _this             = this,
                 $                 = jQuery,    // just in case. Make sure it's not an other libaray.
                 $wrap             = _this.$wrap,
@@ -789,8 +789,8 @@
                     case 'startUpload':
                         /* 添加额外的GET参数 */
                         var params = utils.serializeParam({
-                                mark_type  : markType,
-                                mark_value : markValue
+                                class_type  : classType,
+                                class_value : classValue
                             }) || '',
                             url    = utils.formatUrl(actionUrl + (actionUrl.indexOf('?') == -1 ? '?' : '&') + 'encode=utf-8&' + params);
                         uploader.option('server', url);

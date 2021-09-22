@@ -4,93 +4,105 @@
     <include file="@admin:head"/>
 </head>
 <body>
-<div data-busy-id="app" class="">
-    <div class="busy-admin-header navbar navbar-default" data-busy-id="header">
-        <div class="container-fluid">
-            <div class="navbar-header" data-busy-id="header-left">
+<div data-busy-id="app">
+    <div class="busy-admin-frame" data-busy-id="frame">
+        <div class="busy-admin-header navbar navbar-default" data-busy-id="header">
+            <div class="container-fluid">
+                <div class="navbar-header" data-busy-id="header-left">
                 <a class="navbar-brand" href="#">
-                    <div class="navbar-brand-title">BusyPHP后台管理系统</div>
-                    <!--<div class="navbar-brand-image" style="background-image: url(/assets/admin/images/11111.png)"></div>-->
-                    <div class="navbar-brand-logo" style="background-image: url(/assets/admin/images/logo_white.png)"></div>
+                    <notempty name="system.logo_horizontal">
+                         <div class="navbar-brand-image" style="background-image: url('{$system.logo_horizontal}')"></div>
+                    </notempty>
+                    <div class="navbar-brand-title">{$system.title}</div>
+                    <div class="navbar-brand-logo" style="background-image: url('{$system.logo_icon}')"></div>
                 </a>
-            </div>
+                </div>
 
-            <div class="collapse navbar-collapse" data-busy-id="header-right">
-                <ul class="nav navbar-nav navbar-left" data-busy-id="bar-left">
-                    <li>
+                <div class="collapse navbar-collapse" data-busy-id="header-right">
+                    <ul class="nav navbar-nav navbar-left" data-busy-id="bar-left">
+                        <li>
                         <a href="javascript:void(0)" data-busy-id="bar-control">
                             <i class="bicon bicon-menu-close"></i>
                         </a>
-                    </li>
-                </ul>
-                <div class="busy-admin-menu" data-busy-id="menu"></div>
-                <ul class="nav navbar-nav navbar-right" data-busy-id="bar-right">
-                    <li>
+                        </li>
+                    </ul>
+                    <div class="busy-admin-menu" data-busy-id="menu"></div>
+                    <ul class="nav navbar-nav navbar-right" data-busy-id="bar-right">
+                        <li>
                         <a href="javascript:void(0)" data-busy-id="bar-refresh">
                             <i class="bicon bicon-refresh"></i>
                         </a>
-                    </li>
-                    <li>
+                        </li>
+                        <li>
                         <a href="javascript:void(0)" data-busy-id="bar-fullscreen">
                             <i class="bicon bicon-full-screen"></i>
                         </a>
-                    </li>
-                    <li class="dropdown">
+                        </li>
+                        <li class="dropdown">
                         <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="bicon bicon-user"></i>
                             <span data-busy-id="bar-username"></span>
                             <span class="caret"></span>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{:url('System.User/personal_info')}"><i class="bicon bicon-user-profile"></i> 基本资料</a>
-                            </li>
-                            <li><a href="{:url('System.User/personal_password')}"><i class="bicon bicon-lock"></i> 修改密码</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{:url('system_user/personal_info')}"><i class="bicon bicon-user-profile"></i> 基本资料</a>
+                                </li>
+                                <li>
+                                    <a href="{:url('system_user/personal_password')}"><i class="bicon bicon-lock"></i> 修改密码</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="{:url('system_manager/cache_clear')}" data-toggle="busy-request" data-confirm="确认要清理缓存吗？<br />当系统发生错误的时候可以通过该方法尝试性修复" data-on-success="@app.reload"><i class="bicon bicon-user-profile"></i> 清理缓存</a>
+                                </li>
+                                <li>
+                                    <a href="{:url('system_manager/cache_create')}" data-toggle="busy-request" data-confirm="确认要生成缓存吗？<br />生成缓存后系统运行速度将会提升" data-on-success="@app.reload"><i class="bicon bicon-lock"></i> 生成缓存</a>
+                                </li>
+                                <li>
                                 <a href="{:url('admin_out')}" data-toggle="busy-request" data-confirm="确认要退出登录吗？" data-on-success="@app.redirect">
                                     <i class="bicon bicon-exit"></i>
                                     退出登录
                                 </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="busy-admin-left" data-busy-id="left">
-        <div class="busy-admin-nav" data-busy-id="nav"></div>
-    </div>
+        <div class="busy-admin-left" data-busy-id="left">
+            <div class="busy-admin-nav" data-busy-id="nav"></div>
+        </div>
 
-    <div class="busy-admin-content clearfix" data-busy-id="content">
-        <div class="busy-admin-content-bar clearfix" data-busy-id="content-header">
-            <ol class="breadcrumb clearfix">
-                <li class="title">
-                    <i class="icon icon-home"></i>
-                    <span>当前位置</span>
-                </li>
-                <li><a href="{$url.root}">首页</a></li>
-                <foreach name="system.breadcrumb" item="foreachUrl" key="foreachName">
-                    <li>
-                        <eq name="foreachUrl" value="">
-                            <span>{$foreachName}</span>
-                            <else/>
-                            <a href="{$foreachUrl}">{$foreachName}</a>
-                        </eq>
+        <div class="busy-admin-content clearfix" data-busy-id="content">
+            <div class="busy-admin-content-bar clearfix" data-busy-id="content-header">
+                <ol class="breadcrumb clearfix">
+                    <li class="title">
+                        <i class="icon icon-home"></i>
+                        <span>当前位置</span>
                     </li>
-                </foreach>
-            </ol>
-        </div>
+                    <li><a href="{$url.root}">首页</a></li>
+                    <foreach name="system.breadcrumb" item="foreachUrl" key="foreachName">
+                        <li>
+                            <eq name="foreachUrl" value="">
+                                <span>{$foreachName}</span>
+                                <else/>
+                                <a href="{$foreachUrl}">{$foreachName}</a>
+                            </eq>
+                        </li>
+                    </foreach>
+                </ol>
+            </div>
 
-        <div class="busy-admin-content-box busy-admin-content-pending clearfix" data-busy-id="content-body">
-            <block name="head"></block>
-            <block name="content"></block>
-            <block name="foot"></block>
-        </div>
+            <div class="busy-admin-content-box busy-admin-content-pending clearfix" data-busy-id="content-body">
+                <block name="head"></block>
+                <block name="content"></block>
+                <block name="foot"></block>
+            </div>
 
-        <div class="busy-admin-content-mask" data-busy-id="content-mask"></div>
+            <div class="busy-admin-content-mask" data-busy-id="content-mask"></div>
+        </div>
     </div>
 </div>
 </body>

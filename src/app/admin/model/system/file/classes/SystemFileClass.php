@@ -7,6 +7,7 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -21,7 +22,7 @@ use think\db\exception\DbException;
  */
 class SystemFileClass extends Model
 {
-    protected $dataNotFoundMessage = '附件分类不存在';
+    protected $dataNotFoundMessage = '文件分类不存在';
     
     protected $findInfoFilter      = 'intval';
     
@@ -33,9 +34,12 @@ class SystemFileClass extends Model
      * @param SystemFileClassField $insert
      * @return int
      * @throws DbException
+     * @throws VerifyException
      */
     public function insertData($insert)
     {
+        $this->checkRepeat($insert->var);
+        
         return $this->addData($insert);
     }
     
@@ -43,8 +47,8 @@ class SystemFileClass extends Model
     /**
      * 修改分类
      * @param SystemFileClassField $update
-     * @throws DbException
      * @throws ParamInvalidException
+     * @throws Exception
      */
     public function updateData($update)
     {
@@ -52,7 +56,43 @@ class SystemFileClass extends Model
             throw new ParamInvalidException('id');
         }
         
-        $this->saveData($update);
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo($update->id);
+            if ($info->system) {
+                $update->system = null;
+                $update->var    = $info->var;
+                $update->type   = $info->type;
+            }
+            
+            $this->checkRepeat($update->var, $update->id);
+            $this->saveData($update);
+            
+            $this->commit();
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 查重
+     * @param string $var
+     * @param int    $id
+     * @throws VerifyException
+     */
+    protected function checkRepeat($var, $id = 0)
+    {
+        $this->whereEntity(SystemFileClassField::var($var));
+        if ($id > 0) {
+            $this->whereEntity(SystemFileClassField::id('<>', $id));
+        }
+        
+        if ($this->count() > 0) {
+            throw new VerifyException('该文件分类标识已存在', 'var');
+        }
     }
     
     
@@ -66,8 +106,8 @@ class SystemFileClass extends Model
     public function deleteInfo($data) : int
     {
         $info = $this->getInfo($data);
-        if ($info->isSystem) {
-            throw new VerifyException('系统分类组禁止删除');
+        if ($info->system) {
+            throw new VerifyException('系统分类禁止删除');
         }
         
         return parent::deleteInfo($info->id);
@@ -89,7 +129,7 @@ class SystemFileClass extends Model
         $list  = $this->getList();
         $array = [];
         foreach ($list as $item) {
-            if (!$item->adminShow || ($type && $item->type != $type)) {
+            if ($type && $item->type != $type) {
                 continue;
             }
             
@@ -136,66 +176,6 @@ class SystemFileClass extends Model
     
     
     /**
-     * 获取后台可显示的图片分类
-     * @param int  $selectedValue
-     * @param bool $defaultText
-     * @param int  $defaultValue
-     * @return string
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getAdminImageOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
-    {
-        return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_IMAGE);
-    }
-    
-    
-    /**
-     * 获取后台可显示的附件分类
-     * @param int  $selectedValue
-     * @param bool $defaultText
-     * @param int  $defaultValue
-     * @return string
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getAdminFileOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
-    {
-        return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_FILE);
-    }
-    
-    
-    /**
-     * 获取后台可显示的视频分类
-     * @param int  $selectedValue
-     * @param bool $defaultText
-     * @param int  $defaultValue
-     * @return string
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getAdminVideoOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
-    {
-        return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_VIDEO);
-    }
-    
-    
-    /**
-     * 获取后台可显示的音频分类
-     * @param int  $selectedValue
-     * @param bool $defaultText
-     * @param int  $defaultValue
-     * @return string
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getAdminAudioOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
-    {
-        return $this->getAdminOptions($selectedValue, $defaultText, $defaultValue, SystemFile::FILE_TYPE_AUDIO);
-    }
-    
-    
-    /**
      * 获取分类缓存
      * @param bool $must
      * @return SystemFileClassInfo[]
@@ -214,25 +194,6 @@ class SystemFileClass extends Model
         }
         
         return $list;
-    }
-    
-    
-    /**
-     * 通过key获取信息
-     * @param $key
-     * @return SystemFileClassInfo
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getInfoByKey($key)
-    {
-        $list = $this->getList();
-        $info = $list[$key] ?? null;
-        if (!$info) {
-            throw new DataNotFoundException('附件类型[' . $key . ']不存在');
-        }
-        
-        return $info;
     }
     
     

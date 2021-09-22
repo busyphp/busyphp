@@ -10,6 +10,9 @@
            data-search="true"
            data-show-refresh="true"
            data-tree-show-field="name"
+           data-parent-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::parentHash();?>"
+           data-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::hash();?>"
+           data-root-parent-id=""
            data-tree-save-state="{$url.group}{$url.controller}{$url.action}"
            data-pagination="false"
            data-toolbar="#tableToolbar"
@@ -21,10 +24,10 @@
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
                 <th width="60" data-align="center" data-field="id">ID</th>
                 <th width="50" data-align="center" data-field="icon" data-formatter="@">图标</th>
-                <th data-align="left" data-halign="center" data-field="name" data-searchable="true">菜单名称</th>
-                <th width="100" data-align="center" data-field="is_disabled" data-formatter="@">状态</th>
-                <th width="100" data-align="center" data-field="is_hide" data-formatter="@">显示</th>
-                <th width="80" data-align="center" data-field="operate" data-formatter="@">操作</th>
+                <th data-align="left" data-halign="center" data-field="name" data-formatter="@" data-searchable="true">菜单名称</th>
+                <th width="100" data-align="center" data-field="disabled" data-formatter="@">状态</th>
+                <th width="100" data-align="center" data-field="hide" data-formatter="@">显示</th>
+                <th width="130" data-align="center" data-field="operate" data-formatter="@">操作</th>
             </tr>
         </thead>
     </table>
@@ -36,10 +39,12 @@
                 data-toggle="busy-modal"
                 data-size="lg"
                 data-ok="添加菜单"
-                data-url="{:url('add')}">
+                data-url="{:url('add')}"
+                data-on-success="@table.reload">
                 <i class="icon icon-plus"></i>
                  添加菜单
             </a>
+
             <a class="btn btn-warning"
                href="javascript:void(0)"
                data-url="{:url('set_sort')}"
@@ -58,10 +63,14 @@
     </script>
 
     <script type="text/html" id="icon">
-        <i class="icon icon-{{value}}"></i>
+        <i class="{{value || 'icon-placeholder'}}"></i>
+    </script>
+    
+    <script type="text/html" id="name">
+        {{value}} <code>{{item.path}}</code>
     </script>
 
-    <script type="text/html" id="is_disabled">
+    <script type="text/html" id="disabled">
         {{if item.is_system}}
         <span class="badge badge-default badge-pill">系统菜单</span>
         {{else}}
@@ -69,7 +78,7 @@
         {{/if}}
     </script>
 
-    <script type="text/html" id="is_hide">
+    <script type="text/html" id="hide">
         {{if item.is_system}}
         <span class="badge badge-default badge-pill">系统菜单</span>
         {{else}}
@@ -78,6 +87,16 @@
     </script>
 
     <script type="text/html" id="operate">
+        <a class="btn btn-default btn-xs"
+           data-url="{:url('add?id=')}{{item.id}}"
+           data-toggle="busy-modal"
+           data-size="lg"
+           data-ok="添加菜单"
+           data-form-on-success="@table.reload">
+            <i class="icon icon-plus"></i>
+            添加
+        </a>
+
         <a class="btn btn-success btn-xs"
            data-url="{:url('edit?id=')}{{item.id}}"
            data-toggle="busy-modal"

@@ -3,7 +3,7 @@
 // + 二维码生成配置
 // +----------------------------------------------------
 use BusyPHP\App;
-use BusyPHP\image\QRCode;
+use BusyPHP\file\QRCode;
 
 return [
     // 动态二维码绑定域名

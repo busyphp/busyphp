@@ -4,12 +4,10 @@ namespace BusyPHP\app\admin\model\system\file;
 
 use BusyPHP\App;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\exception\SQLException;
-use BusyPHP\helper\file\File;
 use BusyPHP\model;
-use BusyPHP\helper\util\Transform;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\facade\Filesystem;
 
 /**
  * 文件管理模型
@@ -56,7 +54,7 @@ class SystemFile extends Model
      * @return int
      * @throws DbException
      */
-    public function insertData($insert)
+    public function insertFile($insert)
     {
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
@@ -74,10 +72,10 @@ class SystemFile extends Model
      */
     public function updateMarkValueByTmp($type, $tmp, $value)
     {
-        $save            = SystemFileField::init();
-        $save->markValue = trim($value);
+        $save             = SystemFileField::init();
+        $save->classValue = trim($value);
         
-        $this->whereEntity(SystemFileField::markType(trim($type)), SystemFileField::markValue(trim($tmp)))
+        $this->whereEntity(SystemFileField::classType(trim($type)), SystemFileField::classValue(trim($tmp)))
             ->saveData($save);
     }
     
@@ -91,10 +89,10 @@ class SystemFile extends Model
      */
     public function updateMarkValueById($type, $id, $value)
     {
-        $save            = SystemFileField::init();
-        $save->markValue = trim($value);
+        $save             = SystemFileField::init();
+        $save->classValue = trim($value);
         
-        $this->whereEntity(SystemFileField::id(floatval($id)), SystemFileField::markValue(trim($type)))
+        $this->whereEntity(SystemFileField::id(floatval($id)), SystemFileField::classValue(trim($type)))
             ->saveData($save);
     }
     
@@ -108,12 +106,12 @@ class SystemFile extends Model
      */
     public function getUrlByMark($markType, $markValue)
     {
-        $where            = SystemFileField::init();
-        $where->markType  = trim($markType);
-        $where->markValue = trim($markValue);
+        $where             = SystemFileField::init();
+        $where->classType  = trim($markType);
+        $where->classValue = trim($markValue);
         
-        return $this->whereEntity(SystemFileField::markType(trim($markType)))
-            ->whereEntity(SystemFileField::markValue(trim($markValue)))
+        return $this->whereEntity(SystemFileField::classType(trim($markType)))
+            ->whereEntity(SystemFileField::classValue(trim($markValue)))
             ->failException(true)
             ->value(SystemFileField::url());
     }
@@ -184,10 +182,10 @@ class SystemFile extends Model
     public function delByMark($markType, $markValue = null)
     {
         $where = SystemFileField::init();
-        $this->whereEntity(SystemFileField::markType(trim($markType)));
-        $where->markType = trim($markType);
+        $this->whereEntity(SystemFileField::classType(trim($markType)));
+        $where->classType = trim($markType);
         if ($markValue) {
-            $where->markValue = SystemFileField::markValue(trim($markValue));
+            $where->classValue = SystemFileField::classValue(trim($markValue));
         }
         
         $fileInfo = $this->findInfo();
@@ -213,6 +211,25 @@ class SystemFile extends Model
         return self::parseVars(self::parseConst(self::class, 'FILE_TYPE_', [], function($item) {
             return $item['name'];
         }), $var);
+    }
+    
+    
+    /**
+     * 获取客户端配置
+     * @param int $var
+     * @return array
+     */
+    public static function getClients($var = null)
+    {
+        $clientsConfig = Filesystem::getConfig('clients', []);
+        if (!$clientsConfig) {
+            $clientsConfig = [];
+        }
+        if (!isset($clientsConfig[0])) {
+            $clientsConfig[0] = ['name' => '后台'];
+        }
+        
+        return self::parseVars($clientsConfig, $var);
     }
     
     

@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\model\system\file {
     set_time_limit(0);
     
     use BusyPHP\App;
+    use BusyPHP\app\admin\setting\WatermarkSetting;
     use BusyPHP\exception\AppException;
     use BusyPHP\exception\VerifyException;
     use BusyPHP\helper\file\File;
@@ -12,7 +13,7 @@ namespace BusyPHP\app\admin\model\system\file {
     use BusyPHP\helper\file\UploadFileResult;
     use BusyPHP\helper\image\Image;
     use BusyPHP\helper\image\Thumb;
-    use BusyPHP\app\admin\setting\FileSetting;
+    use BusyPHP\app\admin\setting\UploadSetting;
     use Exception;
     
     /**
@@ -56,7 +57,7 @@ namespace BusyPHP\app\admin\model\system\file {
         /** @var string 附件分类 */
         protected $classify = '';
         
-        /** @var FileSetting 上传配置 */
+        /** @var UploadSetting 上传配置 */
         protected $fileSetting = null;
         
         
@@ -67,7 +68,7 @@ namespace BusyPHP\app\admin\model\system\file {
         {
             parent::__construct();
             
-            $this->fileSetting = FileSetting::init();
+            $this->fileSetting = UploadSetting::init();
             
             // 基本目录
             $savePath = str_replace('/', DIRECTORY_SEPARATOR, $this->fileSetting->getSavePath());
@@ -81,7 +82,7 @@ namespace BusyPHP\app\admin\model\system\file {
             $this->setTmpPath(App::runtimeUploadPath());
             
             // 上传目录解析
-            $format = $this->fileSetting->getFormat();
+            $format = $this->fileSetting->getDirGenerateType();
             if (false !== stripos($format, 'hash-')) {
                 $arr = explode('-', $format);
                 $this->setFolderNameMethod(self::FOLDER_NAME_METHOD_HASH, intval($arr[1]));
@@ -157,15 +158,15 @@ namespace BusyPHP\app\admin\model\system\file {
                     throw new VerifyException('请登录后上传', 'login');
                 }
                 
-                $limitType = $this->fileSetting->getHomeType();
-                $limitSize = $this->fileSetting->getHomeSize();
+                $limitType = $this->fileSetting->getHomeExtensions();
+                $limitSize = $this->fileSetting->getHomeSizeLimit();
             } else {
                 if ($this->userId < 1) {
                     throw new VerifyException('请登录后上传', 'login');
                 }
                 
-                $limitType = $this->fileSetting->getAdminType();
-                $limitSize = $this->fileSetting->getAdminSize();
+                $limitType = $this->fileSetting->getAllowExtensions();
+                $limitSize = $this->fileSetting->getMaxSize();
             }
             
             $this->setLimitMaxSize($limitSize);
@@ -190,16 +191,17 @@ namespace BusyPHP\app\admin\model\system\file {
                 
                 // 加水印
                 if ($this->fileSetting->isWatermark()) {
+                    $watermarkSetting = WatermarkSetting::init();
                     // 缩放图片并删除原图
                     // 则在新图上添加水印
                     if ($this->fileSetting->isThumb() && $this->fileSetting->isThumbDeleteSource()) {
-                        Image::water($thumbResult->savePath, $this->fileSetting->getWatermarkFile(), $this->fileSetting->getWatermarkPosition());
+                        Image::water($thumbResult->savePath, $watermarkSetting->getFile(), $watermarkSetting->getPosition());
                     }
                     
                     // 不删除原图
                     // 在原图上添加水印
                     else {
-                        Image::water($uploadResult->savePath, $this->fileSetting->getWatermarkFile(), $this->fileSetting->getWatermarkPosition());
+                        Image::water($uploadResult->savePath, $watermarkSetting->getFile(), $$watermarkSetting->getPosition());
                     }
                 }
                 
@@ -221,7 +223,7 @@ namespace BusyPHP\app\admin\model\system\file {
                         ->setExtension($thumbResult->extension)
                         ->setHash($thumbResult->hash);
                     
-                    $fileId     = $fileModel->insertData($insert);
+                    $fileId     = $fileModel->insertFile($insert);
                     $returnData = $this->parseResult($thumbResult, $fileId);
                 } else {
                     // 先保存原图数据
@@ -231,7 +233,7 @@ namespace BusyPHP\app\admin\model\system\file {
                         ->setMimeType($uploadResult->mimeType)
                         ->setExtension($uploadResult->extension)
                         ->setHash($uploadResult->hash);
-                    $fileId     = $fileModel->insertData($insert);
+                    $fileId     = $fileModel->insertFile($insert);
                     $returnData = $this->parseResult($uploadResult, $fileId);
                     
                     // 保存缩图数据
@@ -247,7 +249,7 @@ namespace BusyPHP\app\admin\model\system\file {
                             ->setThumbHeight($this->fileSetting->getThumbWidth())
                             ->setThumbWidth($this->fileSetting->getThumbHeight());
                         
-                        $fileId            = $fileModel->insertData($insert);
+                        $fileId            = $fileModel->insertFile($insert);
                         $returnData->thumb = $this->parseResult($thumbResult, $fileId);
                     }
                 }

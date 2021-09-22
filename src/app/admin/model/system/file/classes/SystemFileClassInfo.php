@@ -14,18 +14,6 @@ use BusyPHP\helper\util\Filter;
 class SystemFileClassInfo extends SystemFileClassField
 {
     /**
-     * 允许后缀是否继承系统设置
-     * @var bool
-     */
-    public $suffixIsInherit;
-    
-    /**
-     * 允许上传大小是否继承系统设置
-     * @var bool
-     */
-    public $sizeIsInherit;
-    
-    /**
      * 类型
      * @var string
      */
@@ -52,20 +40,11 @@ class SystemFileClassInfo extends SystemFileClassField
     
     public function onParseAfter()
     {
-        $this->isSystem        = $this->isSystem > 0;
-        $this->homeShow        = $this->homeShow > 0;
-        $this->homeUpload      = $this->homeUpload > 0;
-        $this->homeLogin       = $this->homeLogin > 0;
-        $this->adminShow       = $this->adminShow > 0;
-        $this->size            = Filter::min(intval($this->size), -1);
-        $this->suffixIsInherit = $this->suffix <= -1;
-        $this->sizeIsInherit   = $this->size <= -1;
-        $this->typeName        = SystemFile::getTypes($this->type);
-        $this->isFile          = $this->type == SystemFile::FILE_TYPE_FILE;
-        $this->isImage         = $this->type == SystemFile::FILE_TYPE_IMAGE;
-        $this->isVideo         = $this->type == SystemFile::FILE_TYPE_VIDEO;
-        $this->isThumb         = $this->isImage && $this->isThumb > 0;
-        $this->watermark       = $this->isImage && $this->watermark > 0;
-        $this->deleteSource    = $this->isImage && $this->deleteSource > 0;
+        $this->system    = $this->system > 0;
+        $this->typeName  = SystemFile::getTypes($this->type);
+        $this->isFile    = $this->type == SystemFile::FILE_TYPE_FILE;
+        $this->isImage   = $this->type == SystemFile::FILE_TYPE_IMAGE;
+        $this->isVideo   = $this->type == SystemFile::FILE_TYPE_VIDEO;
+        $this->watermark = $this->isImage && $this->watermark > 0;
     }
 }

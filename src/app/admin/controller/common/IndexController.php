@@ -24,6 +24,17 @@ use think\Response;
  */
 class IndexController extends InsideController
 {
+    protected function initialize($checkLogin = true)
+    {
+        // 不记路操作
+        if ($this->requestPluginName === 'AppMessage') {
+            $this->setSaveOperate(false);
+        }
+        
+        parent::initialize($checkLogin);
+    }
+    
+    
     /**
      * 后台首页
      * @return Response

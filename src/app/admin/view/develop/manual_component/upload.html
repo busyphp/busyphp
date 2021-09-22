@@ -25,8 +25,8 @@
 | 基本属性:title |  |  |  |  |
 | data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传` |
 | data-name | string | `否` | - | 设置表单参数名称, 如果为 `input`标签，则可以直接设置`name`值 |
-| data-mark-type | string | `否` | `file` | 上传的文件类型 |
-| data-mark-value | string | `否` | - | 上传的文件标识 |
+| data-class-type | string | `否` | `file` | 上传的文件类型 |
+| data-class-value | string | `否` | - | 上传的文件标识 |
 | data-value | string | `否` | - | 默认值, 如果为 `input`标签，则可以直接设置`value`值 |
 | data-dnd | boolean | `否` | `false` | 是否启用拖拽上传，该功能在一个页面只能有一个组件启用，请谨慎使用 |
 | data-paste | boolean | `否` | `false` | 是否启用粘贴上传，此功能为通过粘贴来添加截屏的图片 |
@@ -100,7 +100,7 @@
 <h5>图片上传</h5>
 <input type="text" class="form-control" name="test"
        data-toggle="busy-upload"
-       data-mark-type="image"
+       data-class-type="image"
        data-auto="false"
        placeholder="可以将图片拖拽到这里上传，或使用粘贴功能"
        id="demo1_image"/>
@@ -108,21 +108,21 @@
 <h5>视频上传</h5>
 <div data-toggle="busy-upload"
      data-name="test1"
-     data-mark-type="video"
+     data-class-type="video"
      data-placeholder="请上传或选择mp4文件"
      id="demo1_video"></div>
 <hr/>
 <h5>音频上传</h5>
 <div data-toggle="busy-upload"
      data-name="test2"
-     data-mark-type="audio"
+     data-class-type="audio"
      data-placeholder="请上传或选择mp3文件"
      id="demo1_audio"></div>
 <hr/>
 <h5>文件上传</h5>
 <div data-toggle="busy-upload"
      data-name="test3"
-     data-mark-type="file"
+     data-class-type="file"
      data-placeholder="请上传文件"
      id="demo1_file"></div>
     </textarea>
@@ -132,7 +132,7 @@
 <div id="demo2_banner"
      data-toggle="busy-upload"
      data-type="files"
-     data-mark-type="banner"
+     data-class-type="banner"
      data-auto="false"
      data-name="demo2_banner"
      data-value="{$skin.root}images/login/1.jpg,{$skin.root}images/login/2.jpg,{$skin.root}images/login/3.jpg"></div>
@@ -141,7 +141,7 @@
 <div id="demo2_file"
      data-toggle="busy-upload"
      data-type="files"
-     data-mark-type="file"
+     data-class-type="file"
      data-auto="false"
      data-name="demo2_file"
      data-value='[{"url":"{$skin.root}images/login/1.jpg"},{"url":"{$skin.root}images/login/2.jpg"},{"url":"{$skin.root}images/login/3.jpg"}]'></div>
@@ -151,7 +151,7 @@
 <h5>图片上传</h5>
 <div style="width: 200px;" id="demo3_image" data-toggle="busy-upload"
      data-type="card"
-     data-mark-type="image"
+     data-class-type="image"
      data-auto="false"
      data-name="demo3_image"></div>
 <hr/>
@@ -160,7 +160,7 @@
 
 <div style="width: 200px;" id="demo3_video" data-toggle="busy-upload"
      data-type="card"
-     data-mark-type="video"
+     data-class-type="video"
      data-card-icon="icon icon-file-video-o"
      data-auto="false"
      data-name="demo3_video"></div>
@@ -170,7 +170,7 @@
 <h5>头像上传</h5>
 <div style="width: 200px;" id="demo3_avatar" data-toggle="busy-upload"
      data-type="card"
-     data-mark-type="avatar"
+     data-class-type="avatar"
      data-card-type="circle"
      data-card-icon="icon icon-image"
      data-auto="false"

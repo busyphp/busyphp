@@ -10,8 +10,8 @@ var scrawl = function (options) {
 };
 
 var serverParams = editor.queryCommandValue('serverparam'),
-    markType     = serverParams.mark_image_type || 'image',
-    markValue    = serverParams.mark_value || '';
+    classType    = serverParams.class_image_type || 'image',
+    classValue   = serverParams.class_value || '';
 
 (function () {
     var canvas        = $G("J_brushBoard"),
@@ -677,8 +677,8 @@ function exec(scrawlObj) {
 
             var actionUrl = '{$upload_url}',
                 params    = utils.serializeParam({
-                    mark_type  : markType,
-                    mark_value : markValue
+                    class_type  : classType,
+                    class_value : classValue
                 }) || '',
                 url       = utils.formatUrl(actionUrl + (actionUrl.indexOf('?') == -1 ? '?' : '&') + params);
             ajax.request(url, options);

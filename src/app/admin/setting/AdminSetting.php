@@ -6,21 +6,26 @@ use BusyPHP\model\Setting;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
+use BusyPHP\Request;
 
 /**
- * 后台安全配置
+ * 后台配置
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-18 上午11:25 AdminSetting.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/9/19 下午下午5:16 AdminSetting.php $
  */
 class AdminSetting extends Setting
 {
     protected function parseSet($data)
     {
-        $data                    = Filter::trim($data);
-        $data['verify']          = Transform::dataToBool($data['verify']);
-        $data['multiple_client'] = Transform::dataToBool($data['multiple_client']);
-        $data['often']           = intval($data['often']);
+        $data                            = Filter::trim($data);
+        $data['verify']                  = Transform::dataToBool($data['verify']);
+        $data['multiple_client']         = Transform::dataToBool($data['multiple_client']);
+        $data['often']                   = Filter::min(intval($data['often']), 0);
+        $data['save_login']              = Filter::min(intval($data['save_login']), 0);
+        $data['login_error_minute']      = Filter::min(intval($data['login_error_minute']), 0);
+        $data['login_error_max']         = Filter::min(intval($data['login_error_max']), 0);
+        $data['login_error_lock_minute'] = Filter::min(intval($data['login_error_lock_minute']), 0);
         
         // 切换多设备登录，则清理
         if ($data['multiple_client'] !== $this->get('multiple_client')) {
@@ -39,6 +44,36 @@ class AdminSetting extends Setting
     protected function parseGet($data)
     {
         return $data;
+    }
+    
+    
+    /**
+     * 获取后台标题
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->get('title', '') ?: 'BusyPHP后台管理系统';
+    }
+    
+    
+    /**
+     * 获取后台横向LOGO
+     * @return string
+     */
+    public function getLogoHorizontal() : string
+    {
+        return $this->get('logo_horizontal', '') ?: '';
+    }
+    
+    
+    /**
+     * 获取后台图标
+     * @return string
+     */
+    public function getLogoIcon() : string
+    {
+        return $this->get('logo_icon', '') ?: Request::init()->getWebAssetsUrl() . 'admin/images/busy-php-icon.png';
     }
     
     
@@ -63,13 +98,51 @@ class AdminSetting extends Setting
     
     
     /**
-     * 获取保持登录时常分钟数
-     * @return int|false
+     * 获取登录错误显示分钟数
+     * @return int
      */
-    public function getOften()
+    public function getLoginErrorMinute() : int
     {
-        $often = $this->get('often');
-        
-        return $often > 0 ? $often : false;
+        return (int) $this->get('login_error_minute', 0);
+    }
+    
+    
+    /**
+     * 获取登录错误最大次数
+     * @return int
+     */
+    public function getLoginErrorMax() : int
+    {
+        return (int) $this->get('login_error_max', 0);
+    }
+    
+    
+    /**
+     * 获取登录错误锁定分钟数
+     * @return int
+     */
+    public function getLoginErrorLockMinute() : int
+    {
+        return (int) $this->get('login_error_lock_minute', 0);
+    }
+    
+    
+    /**
+     * 获取记住登录的时长天数
+     * @return int
+     */
+    public function getSaveLogin() : int
+    {
+        return (int) $this->get('save_login', 0);
+    }
+    
+    
+    /**
+     * 获取保持登录分钟数
+     * @return int
+     */
+    public function getOften() : int
+    {
+        return intval($this->get('often', 0));
     }
 }

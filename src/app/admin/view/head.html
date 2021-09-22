@@ -1,14 +1,17 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
-<title data-title="{$panel_title}">{$page_title} - 后台管理系统</title>
+<title data-title="{$panel_title}">{$page_title}</title>
+<notempty name="system.favicon">
+    <link rel="shortcut icon" href="{$system.favicon}" type="image/x-icon"/>
+    <link rel="icon" sizes="any" mask href="{$system.favicon}">
+</notempty>
 <css href="{$skin.css}admin.css?{:time()}"/>
 <!--[if lt IE 9]>
 <js href="{$skin.lib}bootstrap/js/respond.min.js"/>
 <![endif]-->
 <script type="text/javascript" src="{$skin.js}admin.js?{:time()}"></script>
 <script>
-    window.MESSAGE_URL = '{$system.message_url|default=""}';
     busyAdmin.init({
         root       : '{$url.root}',
         moduleRoot : '{$skin.lib}',

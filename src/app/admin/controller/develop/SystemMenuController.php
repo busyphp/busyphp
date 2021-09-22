@@ -4,10 +4,10 @@ namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -62,127 +62,119 @@ class SystemMenuController extends InsideController
     
     
     /**
-     * 增加
+     * 增加菜单
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws VerifyException
+     * @throws Exception
      */
     public function add()
     {
-        return $this->submit('post', function($data) {
-            $insert = SystemMenuField::init();
+        if ($this->isPost()) {
+            $data = SystemMenuField::init();
+            $data->setParentPath($this->request->post('parent_path', '', 'trim'));
+            $data->setName($this->request->post('name', '', 'trim'));
+            $data->setIcon($this->request->post('icon', '', 'trim'));
+            $data->setPath($this->request->post('path', '', 'trim'));
+            $data->setParams($this->request->post('params', '', 'trim'));
+            $data->setTarget($this->request->post('target', '', 'trim'));
+            $data->setHide(!$this->request->post('show', 0, 'intval'));
+            $data->setDisabled(!$this->request->post('enable', 0, 'intval'));
+            $data->setSystem($this->request->post('system', 0, 'intval'));
             
-            if (SystemMenu::DEBUG) {
-                $insert->setIsSystem($data['is_system']);
-            }
-            
-            $insert->setParentId($data['parent_id']);
-            $insert->setType($data['type']);
-            $insert->setName($data['name']);
-            $insert->setModule($data['module']);
-            $insert->setControl($data['control']);
-            $insert->setAction($data['action']);
-            $insert->setIcon($data['icon']);
-            $insert->setIsDefault($data['is_default']);
-            $insert->setIsDisabled($data['is_disabled']);
-            $insert->setIsHide($data['is_hide']);
-            $insert->setHigher($data['higher']);
-            $insert->setParams($data['params']);
-            $insert->setTarget($data['target']);
-            $insert->setLink($data['link']);
-            $this->model->createMenu($insert);
-            $this->log('增加系统菜单', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->model->createMenu($data, $this->request->post('auto', []), $this->request->post('auto_suffix', '', 'trim'));
             $this->updateCache();
             
-            return '添加成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $array                   = [];
-                $array['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
-                $array['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
-                $array['target_options'] = Transform::arrayToOption(SystemMenu::getTargets());
-                $array['tree_options']   = $this->model->getTreeOptions();
-                $array['debug']          = SystemMenu::DEBUG;
-                
-                return $array;
-            });
+            return $this->success('添加菜单成功');
+        } else {
+            $id         = $this->request->get('id', 0, 'intval');
+            $parentPath = '';
+            if ($id > 0) {
+                $info       = $this->model->getInfo($id);
+                $parentPath = $info->path;
+            }
             
-            $this->setRedirectUrl(url('index'));
-            $this->submitName = '添加';
-        });
+            $this->assign('parent_options', $this->model->getTreeOptions($parentPath));
+            $this->assign('target_list', SystemMenu::getTargets());
+            $this->assign('info', [
+                'target'   => '',
+                'hide'     => 0,
+                'disabled' => 0,
+                'system'   => 0
+            ]);
+            
+            return $this->display();
+        }
     }
     
     
     /**
-     * 修改
+     * 修改菜单
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws VerifyException
+     * @throws ParamInvalidException
+     * @throws Exception
      */
     public function edit()
     {
-        return $this->submit('post', function($data) {
-            $update = SystemMenuField::init();
+        if ($this->isPost()) {
+            $data = SystemMenuField::init();
+            $data->setId($this->request->post('id', '', 'intval'));
+            $data->setParentPath($this->request->post('parent_path', '', 'trim'));
+            $data->setName($this->request->post('name', '', 'trim'));
+            $data->setIcon($this->request->post('icon', '', 'trim'));
+            $data->setPath($this->request->post('path', '', 'trim'));
+            $data->setParams($this->request->post('params', '', 'trim'));
+            $data->setTarget($this->request->post('target', '', 'trim'));
+            $data->setHide(!$this->request->post('show', 0, 'intval'));
+            $data->setDisabled(!$this->request->post('enable', 0, 'intval'));
+            $data->setSystem($this->request->post('system', 0, 'intval'));
             
-            if (SystemMenu::DEBUG) {
-                $update->setIsSystem($data['is_system']);
-            }
-            
-            $update->setId($data['id']);
-            $update->setParentId($data['parent_id']);
-            $update->setType($data['type']);
-            $update->setName($data['name']);
-            $update->setModule($data['module']);
-            $update->setControl($data['control']);
-            $update->setAction($data['action']);
-            $update->setIcon($data['icon']);
-            $update->setIsDefault($data['is_default']);
-            $update->setIsDisabled($data['is_disabled']);
-            $update->setIsHide($data['is_hide']);
-            $update->setHigher($data['higher']);
-            $update->setParams($data['params']);
-            $update->setTarget($data['target']);
-            $update->setLink($data['link']);
-            $this->model->updateMenu($update);
-            $this->log('修改系统菜单', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->model->updateMenu($data);
             $this->updateCache();
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info                   = $this->model->getInfo($this->iGet('id'));
-                $info['list']           = json_encode(Arr::listByKey($this->model->getList(), SystemMenuField::id()), JSON_UNESCAPED_UNICODE);
-                $info['tree']           = json_encode($this->model->getTreeList(), JSON_UNESCAPED_UNICODE);
-                $info['target_options'] = Transform::arrayToOption(SystemMenu::getTargets(), '', '', $info->target);
-                $info['tree_options']   = $this->model->getTreeOptions($info->parentId);
-                $info['debug']          = SystemMenu::DEBUG;
-                
-                return $info;
-            });
+            return $this->success('添加菜单成功');
+        } else {
+            $info = $this->model->getInfo($this->request->get('id'));
             
+            $this->assign('parent_options', $this->model->getTreeOptions($info->parentPath));
+            $this->assign('target_list', SystemMenu::getTargets());
+            $this->assign('info', $info);
             
-            $this->setRedirectUrl();
-            $this->submitName   = '修改';
-            $this->templateName = 'add';
-        });
+            return $this->display('add');
+        }
     }
     
     
     /**
      * 快速设置属性
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws VerifyException
      */
     public function set_attr()
     {
-        return $this->submit('request', function() {
-            $type   = $this->request->get('type', '', 'trim');
-            $id     = $this->request->get('id', '', 'intval');
-            $status = $this->request->get('status', 0, 'intval') > 0;
-            
-            switch ($type) {
-                case 'disabled':
-                    $this->model->setDisabled($id, !$status);
-                break;
-                case 'hide':
-                    $this->model->setHide($id, !$status);
-                break;
-                default:
-                    throw new VerifyException('未知类型');
-            }
-        });
+        $type   = $this->request->get('type', '', 'trim');
+        $id     = $this->request->get('id', '', 'intval');
+        $status = $this->request->get('status', 0, 'intval') > 0;
+        
+        switch ($type) {
+            case 'disabled':
+                $this->model->setDisabled($id, !$status);
+            break;
+            case 'hide':
+                $this->model->setHide($id, !$status);
+            break;
+            default:
+                throw new VerifyException('未知类型');
+        }
+        
+        $this->updateCache();
+        
+        return $this->success('设置成功');
     }
     
     

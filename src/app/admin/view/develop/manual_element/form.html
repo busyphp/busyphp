@@ -357,13 +357,6 @@
         <input type="checkbox" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
         <input type="checkbox" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
 
-        <hr />
-        <p>在 <code>type="checkbox"</code> 上添加 <code>.block</code> 使控件变成垂直排列，对胶囊和开关无效</p>
-        <input type="checkbox" class="block" data-toggle="busy-checkbox" value="" title="选项1">
-        <input type="checkbox" class="block" data-toggle="busy-checkbox" checked value="" title="选项2">
-        <input type="checkbox" class="block" data-toggle="busy-checkbox" value="" title="选项3">
-        <input type="checkbox" class="block" data-toggle="busy-checkbox" value="" title="选项4">
-        
         
         <hr />
         <input type="checkbox" data-toggle="busy-checkbox" value="" checked title="选项1">
@@ -386,6 +379,7 @@
         <p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
 
         <input type="checkbox" class="pill input-lg" checked data-toggle="busy-checkbox" value="" title="大">
+        <input type="checkbox" class="pill" checked data-toggle="busy-checkbox" value="" title="普通">
         <input type="checkbox" class="pill input-sm" checked data-toggle="busy-checkbox" value="" title="小">
         <input type="checkbox" class="pill input-xs" checked data-toggle="busy-checkbox" value="" title="极小">
 
@@ -412,6 +406,7 @@
         <p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
 
         <input type="checkbox" class="switch input-lg" checked data-toggle="busy-checkbox" value="" title="开,关">
+        <input type="checkbox" class="switch" checked data-toggle="busy-checkbox" value="" title="开,关">
         <input type="checkbox" class="switch input-sm" checked data-toggle="busy-checkbox" value="" title="开,关">
         <input type="checkbox" class="switch input-xs" checked data-toggle="busy-checkbox" value="" title="开,关">
         
@@ -425,11 +420,11 @@
         <input type="checkbox" class="switch secondary" data-toggle="busy-checkbox" checked value="" title="开,关">
 
         <hr />
-        <p>在 <code>type="checkbox"</code> 上添加 <code>data-toggle="busy-radio"</code> 将美化radio</p>
+        <p>在 <code>type="radio"</code> 上添加 <code>data-toggle="busy-radio"</code> 将美化radio</p>
 
         <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项1">
-        <input type="radio" data-toggle="busy-radio" name="radioName" checked value="" title="选项2">
-        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项3">
+        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项2">
+        <input type="radio" data-toggle="busy-radio" name="radioName" checked disabled value="" title="选项3">
         <input type="radio" data-toggle="busy-radio" name="radioName" disabled value="" title="禁用状态">
 
         <hr />
@@ -507,6 +502,9 @@
         <hr/>
 
         <input class="form-control input-sm" type="text" placeholder=".input-sm">
+        <hr/>
+
+        <input class="form-control input-xs" type="text" placeholder=".input-xs">
         <hr/>
 
         <select class="form-control input-lg">...</select>

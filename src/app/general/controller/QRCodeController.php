@@ -6,7 +6,7 @@ use BusyPHP\App;
 use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Transform;
-use BusyPHP\image\QRCode;
+use BusyPHP\file\QRCode;
 
 /**
  * 动态二维码生成

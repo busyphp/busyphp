@@ -3,11 +3,11 @@
 namespace BusyPHP\app\general\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
-use BusyPHP\image\Image;
-use BusyPHP\image\url\ThumbUrl;
-use BusyPHP\app\admin\setting\FileSetting;
+use BusyPHP\file\Image;
+use BusyPHP\file\image\ThumbUrl;
 use think\Exception;
 
 /**
@@ -104,11 +104,11 @@ class ThumbController extends Controller
             
             // 水印
             if (($config['watermark_status'] ?? false) && !$noWatermark) {
-                $fileSetting   = FileSetting::init();
+                $setting       = WatermarkSetting::init();
                 $waterPath     = $config['watermark_image_path'] ?: '';
                 $waterPosition = $config['watermark_position'] ?: '';
                 if (!$waterPosition) {
-                    switch ($fileSetting->getWatermarkPosition()) {
+                    switch ($setting->getPosition()) {
                         case 4:
                         case 1:
                             $waterPosition = Image::P_TOP_LEFT;
@@ -138,7 +138,7 @@ class ThumbController extends Controller
                     }
                 }
                 if (!$waterPath) {
-                    $waterPath = App::urlToPath($fileSetting->getWatermarkFile());
+                    $waterPath = App::urlToPath($setting->getFile());
                 }
                 
                 if (is_file($waterPath)) {

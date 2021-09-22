@@ -38,25 +38,6 @@ class Query extends \think\db\Query
     
     
     /**
-     * 单个条件查询
-     * @param string|int|array $key 条件字段
-     * @param mixed            $value 条件值
-     * @return $this
-     * @deprecated
-     */
-    public function one($key, $value = null)
-    {
-        if (is_null($value)) {
-            $this->where($this->getPk(), '=', $key);
-        } else {
-            $this->where($key, '=', $value);
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
      * 查询条件兼容TP3.1的查询语句
      * @param mixed|Field $where
      * @return $this

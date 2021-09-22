@@ -23,8 +23,8 @@
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
 | 基本属性:title |  |  |  |  |
-| data-mark-type | string | `否` | `file` | 文件类型 |
-| data-mark-value | string | `否` | - | 文件标识 |
+| data-class-type | string | `否` | `file` | 文件类型 |
+| data-class-value | string | `否` | - | 文件标识 |
 | data-multiple | boolean | `否` | `false` | 是否允许多选 |
 | data-count | number | `否` | 9 | 多选情况单次最多允许选择数，0为不限 |
 | data-extensions | string | `否` | - | 允许的文件后缀，多个用英文逗号隔开，不包含`.` |
@@ -48,8 +48,8 @@
     </div>
 
     <textarea class="hide" id="demo1">
-<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-mark-type="image" data-title="请选择图片">选择图片</button>
-<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-mark-type="file" data-title="请选择文件">选择文件</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-class-type="image" data-title="请选择图片">选择图片</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-class-type="file" data-title="请选择文件">选择文件</button>
 <script>
     $(function () {
         $('.file-picker1').on(busyAdmin.e.filePickerSuccess, function (e, files) {

@@ -122,7 +122,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setMarkType($markType)
     {
-        $this->markType = trim($markType);
+        $this->classType = trim($markType);
         
         return $this;
     }
@@ -135,7 +135,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setMarkValue($markValue)
     {
-        $this->markValue = trim($markValue);
+        $this->classValue = trim($markValue);
         
         return $this;
     }
@@ -161,7 +161,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setUserid($userid)
     {
-        $this->userid = floatval($userid);
+        $this->userId = floatval($userid);
         
         return $this;
     }
@@ -174,7 +174,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setIsAdmin($isAdmin)
     {
-        $this->isAdmin = Transform::dataToBool($isAdmin);
+        $this->client = Transform::dataToBool($isAdmin);
         
         return $this;
     }
@@ -187,7 +187,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setClassify($classify)
     {
-        $this->classify = trim($classify);
+        $this->type = trim($classify);
         
         return $this;
     }
@@ -230,7 +230,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setThumbWidth($thumbWidth)
     {
-        $this->thumbWidth = intval($thumbWidth);
+        $this->width = intval($thumbWidth);
         
         return $this;
     }
@@ -243,7 +243,7 @@ class SystemFileCreate extends SystemFileField
      */
     public function setThumbHeight($thumbHeight)
     {
-        $this->thumbHeight = intval($thumbHeight);
+        $this->height = intval($thumbHeight);
         
         return $this;
     }
@@ -277,8 +277,8 @@ class SystemFileCreate extends SystemFileField
         
         
         // 附件类型
-        if (!$this->classify) {
-            $this->classify = SystemFile::FILE_TYPE_FILE;
+        if (!$this->type) {
+            $this->type = SystemFile::FILE_TYPE_FILE;
         }
         
         return parent::getDBData();

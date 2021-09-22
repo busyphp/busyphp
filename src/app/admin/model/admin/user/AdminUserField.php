@@ -21,18 +21,21 @@ use think\Exception;
  * @method static Entity email($op = null, $value = null) 邮箱
  * @method static Entity phone($op = null, $value = null) 联系方式
  * @method static Entity qq($op = null, $value = null) QQ号码
- * @method static Entity loginIp($op = null, $value = null) 本次登录IP
- * @method static Entity loginTime($op = null, $value = null) 本次登录时间
  * @method static Entity lastIp($op = null, $value = null) 最后一次登录IP地址
  * @method static Entity lastTime($op = null, $value = null) 最后一次登录时间
+ * @method static Entity loginIp($op = null, $value = null) 本次登录IP
+ * @method static Entity loginTime($op = null, $value = null) 本次登录时间
+ * @method static Entity loginTotal($op = null, $value = null) 登录次数
  * @method static Entity createTime($op = null, $value = null) 创建时间
  * @method static Entity updateTime($op = null, $value = null) 更新时间
  * @method static Entity groupId($op = null, $value = null) 用户组权限ID
  * @method static Entity sectionId($op = null, $value = null) 所属部门ID
  * @method static Entity checked($op = null, $value = null) 是否审核
- * @method static Entity loginTotal($op = null, $value = null) 登录次数
- * @method static Entity isSystem($op = null, $value = null) 是否系统管理员
+ * @method static Entity system($op = null, $value = null) 是否系统管理员
  * @method static Entity token($op = null, $value = null) 密钥
+ * @method static Entity errorTotal($op = null, $value = null) 密码错误次数统计
+ * @method static Entity errorTime($op = null, $value = null) 密码错误开始时间
+ * @method static Entity errorRelease($op = null, $value = null) 密码错误锁定释放时间
  */
 class AdminUserField extends Field
 {
@@ -73,6 +76,18 @@ class AdminUserField extends Field
     public $qq;
     
     /**
+     * 最后一次登录IP地址
+     * @var string
+     */
+    public $lastIp;
+    
+    /**
+     * 最后一次登录时间
+     * @var int
+     */
+    public $lastTime;
+    
+    /**
      * 本次登录IP
      * @var string
      */
@@ -85,16 +100,10 @@ class AdminUserField extends Field
     public $loginTime;
     
     /**
-     * 最后一次登录IP地址
-     * @var string
-     */
-    public $lastIp;
-    
-    /**
-     * 最后一次登录时间
+     * 登录次数
      * @var int
      */
-    public $lastTime;
+    public $loginTotal;
     
     /**
      * 创建时间
@@ -127,22 +136,34 @@ class AdminUserField extends Field
     public $checked;
     
     /**
-     * 登录次数
-     * @var int
-     */
-    public $loginTotal;
-    
-    /**
      * 是否系统管理员
      * @var int
      */
-    public $isSystem;
+    public $system;
     
     /**
      * 密钥
      * @var string
      */
     public $token;
+    
+    /**
+     * 密码错误次数统计
+     * @var int
+     */
+    public $errorTotal;
+    
+    /**
+     * 密码错误开始时间
+     * @var int
+     */
+    public $errorTime;
+    
+    /**
+     * 密码错误锁定释放时间
+     * @var int
+     */
+    public $errorRelease;
     
     
     /**
@@ -205,6 +226,7 @@ class AdminUserField extends Field
     public function setPassword($password, $confirmPassword)
     {
         $this->password = AdminUser::checkPassword($password, $confirmPassword);
+        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         
         return $this;
     }
@@ -293,12 +315,12 @@ class AdminUserField extends Field
     
     /**
      * 设置是否系统管理员
-     * @param int $isSystem
+     * @param int $system
      * @return $this
      */
-    public function setIsSystem($isSystem)
+    public function setSystem($system)
     {
-        $this->isSystem = Transform::dataToBool($isSystem);
+        $this->system = Transform::dataToBool($system);
         
         return $this;
     }

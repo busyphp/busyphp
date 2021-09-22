@@ -8,12 +8,12 @@ use BusyPHP\app\admin\js\SelectPickerPlugin;
 use BusyPHP\app\admin\js\TablePlugin;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\setting\AdminSetting;
+use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
-use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model\Setting;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\page\Page;
@@ -21,14 +21,15 @@ use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\Url;
+use Exception;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
-use think\Exception;
 use think\exception\HttpResponseException;
 use think\facade\Cache;
-use think\facade\Session;
 use think\Response;
+use Throwable;
 
 /**
  * 后台基础类
@@ -126,10 +127,16 @@ abstract class AdminController extends Controller
     private $breadcrumb = [];
     
     /**
-     * 自定义左侧菜单高亮栏目路径
+     * 页面名称
      * @var string
      */
-    private $layoutLeftNavActive = '';
+    private $pageTitle;
+    
+    /**
+     * 是否记录操作时长
+     * @var bool
+     */
+    private $saveOperate = true;
     
     /**
      * 请求的插件名称
@@ -156,17 +163,28 @@ abstract class AdminController extends Controller
     protected $pluginTable;
     
     
+    public function __construct(App $app)
+    {
+        parent::__construct($app);
+    }
+    
+    
+    protected function initializeBefore()
+    {
+        $this->requestPluginName = $this->request->header('Busy-Admin-Plugin', '');
+    }
+    
+    
     /**
-     * 在控制器中初始化基本事物
+     * 初始化
      * @param bool $checkLogin 是否验证登录，默认验证
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function initialize($checkLogin = true)
+    protected function initialize($checkLogin = true)
     {
-        $this->publicConfig      = config('user.public');
-        $this->urlPath           = SystemMenu::getUrlPath();
-        $this->requestPluginName = $this->request->header('Busy-Admin-Plugin', '');
+        $this->publicConfig = config('user.public');
+        $this->urlPath      = SystemMenu::getUrlPath();
         
         // 验证登录
         if ($checkLogin) {
@@ -178,7 +196,7 @@ abstract class AdminController extends Controller
             case 'SelectPicker':
                 $this->pluginSelectPicker = new SelectPickerPlugin();
                 if ($result = $this->pluginSelectPicker->build()) {
-                    throw new HttpResponseException($this->success('', '', $result));
+                    throw new HttpResponseException($this->success($result));
                 }
             break;
             
@@ -186,7 +204,7 @@ abstract class AdminController extends Controller
             case 'Autocomplete':
                 $this->pluginAutocomplete = new AutocompletePlugin();
                 if ($result = $this->pluginAutocomplete->build()) {
-                    throw new HttpResponseException($this->success('', '', $result));
+                    throw new HttpResponseException($this->success($result));
                 }
             break;
             
@@ -194,7 +212,7 @@ abstract class AdminController extends Controller
             case 'Table':
                 $this->pluginTable = new TablePlugin();
                 if ($result = $this->pluginTable->build()) {
-                    throw new HttpResponseException($this->success('', '', $result));
+                    throw new HttpResponseException($this->success($result));
                 }
             break;
         }
@@ -218,19 +236,19 @@ abstract class AdminController extends Controller
                 // 记录返回地址
                 // POST/AJAX 记录来源操作地址为返回地址
                 if ($this->isPost() || $this->isAjax()) {
-                    Session::set(self::ADMIN_LOGIN_REDIRECT_URL, $this->request->getRedirectUrl());
+                    $redirectUrl = $this->request->getRedirectUrl();
                 } else {
-                    Session::set(self::ADMIN_LOGIN_REDIRECT_URL, $this->request->url());
+                    $redirectUrl = $this->request->url();
                 }
                 
                 $message     = '请登录后操作';
-                $redirectUrl = url('admin_login');
+                $redirectUrl = url('admin_login', [$this->request->getVarRedirectUrl() => $redirectUrl]);
                 $isRedirect  = true;
             }
             
             // 抛出错误
             if ($this->isAjax()) {
-                $result = $this->error($message, (string) $redirectUrl);
+                $result = $this->error($message, $redirectUrl);
             } else {
                 if ($isRedirect) {
                     $result = $this->redirect($redirectUrl);
@@ -239,8 +257,7 @@ abstract class AdminController extends Controller
                 }
             }
             
-            $result->send();
-            exit;
+            throw new HttpResponseException($result);
         }
     }
     
@@ -252,7 +269,7 @@ abstract class AdminController extends Controller
     protected function checkLogin()
     {
         try {
-            $this->adminUser         = AdminUser::init()->checkLogin();
+            $this->adminUser         = AdminUser::init()->checkLogin($this->saveOperate);
             $this->adminUserId       = $this->adminUser->id;
             $this->adminUsername     = $this->adminUser->username;
             $this->adminPermission   = $this->adminUser->group;
@@ -328,16 +345,6 @@ abstract class AdminController extends Controller
     
     
     /**
-     * 设置左侧栏目高亮路径
-     * @param string $path 路径
-     */
-    protected function setLayoutLeftNavActive($path)
-    {
-        $this->layoutLeftNavActive = $path;
-    }
-    
-    
-    /**
      * 记录操作记录
      * @param string $name 操作名称
      * @param mixed  $value 操作内容
@@ -376,6 +383,13 @@ abstract class AdminController extends Controller
         ]);
         
         
+        $systemInfo = [
+            'title'           => AdminSetting::init()->getTitle(),
+            'favicon'         => PublicSetting::init()->getFavicon(),
+            'logo_icon'       => AdminSetting::init()->getLogoIcon(),
+            'logo_horizontal' => AdminSetting::init()->getLogoHorizontal(),
+        ];
+        
         if ($this->adminUser) {
             // 顶部栏目
             $menuModel    = SystemMenu::init();
@@ -401,14 +415,14 @@ abstract class AdminController extends Controller
             
             
             // 如果是隐藏菜单则创建高亮激活选项
-            if ($navInfo && $navInfo->isMenu && $navInfo->isHide && $navInfo->higher) {
+            /*if ($navInfo && $navInfo->isMenu && $navInfo->isHide && $navInfo->higher) {
                 $navInfo->action = $navInfo->higher;
                 $navInfo->path   = SystemMenu::createUrlPath($navInfo);
                 $navParentInfo   = $menuPathList[$navInfo->path] ?? null;
                 $navActive       = $navParentInfo->path;
                 $this->addBreadcrumb($navParentInfo->name, $navParentInfo->url);
             }
-            
+            */
             
             if ($navInfo) {
                 $params = [];
@@ -429,37 +443,26 @@ abstract class AdminController extends Controller
             }
             
             // 系统变量
-            $this->assign('system', [
-                'menu'                  => $menuStruct->menuList,
-                'menu_active'           => $menuActive,
-                'nav'                   => $menuModel->getAdminNav($this->adminPermissionId),
-                'nav_active'            => $this->layoutLeftNavActive ? $this->layoutLeftNavActive : $navActive,
-                'user'                  => $this->adminUser,
-                'user_id'               => $this->adminUserId,
-                'username'              => $this->adminUsername,
-                'url_path'              => $this->urlPath,
-                'public_config'         => $this->publicConfig,
-                'breadcrumb'            => $this->breadcrumb,
-                'permission'            => $this->adminPermission,
-                'message_url'           => url('Common.Index/message'),
-                'message_notice_status' => MessageNoticeSubscribe::hasSubscribe(),
-                'message_agency_status' => MessageAgencySubscribe::hasSubscribe(),
-            ]);
+            $systemInfo['menu_active'] = $menuActive;
+            $systemInfo['nav_active']  = $navActive;
+            $systemInfo['user']        = $this->adminUser;
+            $systemInfo['user_id']     = $this->adminUserId;
+            $systemInfo['username']    = $this->adminUsername;
+            $systemInfo['breadcrumb']  = $this->breadcrumb;
+            $systemInfo['permission']  = $this->adminPermission;
         }
+        $this->assign('system', $systemInfo);
         
         
         // 页面名称
-        $panelTitle = '';
-        if ($this->breadcrumb) {
-            $keyArray   = array_keys($this->breadcrumb);
-            $panelTitle = end($keyArray);
+        if (!$this->pageTitle) {
+            if ($this->breadcrumb) {
+                $keyArray        = array_keys($this->breadcrumb);
+                $this->pageTitle = end($keyArray);
+            }
         }
-        $pageTitle = $this->publicConfig['title'];
-        if ($panelTitle) {
-            $pageTitle = $panelTitle . ' - ' . $this->publicConfig['title'];
-        }
-        $this->assign('page_title', $pageTitle);
-        $this->assign('panel_title', $panelTitle);
+        $this->assign('page_title', $this->pageTitle . ' - ' . AdminSetting::init()->getTitle());
+        $this->assign('panel_title', $this->pageTitle);
     }
     
     
@@ -482,14 +485,8 @@ abstract class AdminController extends Controller
             $message = '';
         }
         
-        $jumpUrl = (string) $jumpUrl;
         if ($this->isAjax() || $data) {
-            return $this->json($this->parseAjaxReturn([
-                'info'   => $this->parseMessage($message),
-                'status' => true,
-                'url'    => $jumpUrl,
-                'data'   => $data
-            ]));
+            return AdminHandle::restResponseSuccess($message, $data, $jumpUrl);
         }
         
         return parent::success($message, $jumpUrl);
@@ -498,69 +495,22 @@ abstract class AdminController extends Controller
     
     /**
      * 错误提示
-     * @param mixed  $message 错误消息
-     * @param string $jumpUrl 返回地址
-     * @param mixed  $data 错误数据
+     * @param string|Throwable $message 错误消息或异常对象
+     * @param string|Url|int   $jumpUrl 跳转地址或错误代码
+     * @param int              $code 错误码
      * @return Response
      */
-    protected function error($message, $jumpUrl = '', $data = '')
-    {
-        if ($message instanceof VerifyException) {
-            return $this->fieldError($message);
-        }
-        
-        if ($this->isAjax()) {
-            return $this->json($this->parseAjaxReturn([
-                'info'   => $this->parseMessage($message),
-                'status' => false,
-                'url'    => $jumpUrl,
-                'data'   => $data
-            ]));
-        } else {
-            return parent::error($message, $jumpUrl);
-        }
-    }
-    
-    
-    /**
-     * 字段错误
-     * @param string $message 错误消息
-     * @param string $name 字段名称
-     * @return Response
-     */
-    protected function fieldError($message, $name = '')
+    protected function error($message, $jumpUrl = '', int $code = 0)
     {
         if ($this->isAjax()) {
-            if ($message instanceof VerifyException) {
-                $name    = $message->getField();
-                $message = $message->getMessage();
-            }
-            
-            return $this->json($this->parseAjaxReturn([
-                'info'   => $this->parseMessage($message),
-                'status' => false,
-                'url'    => '',
-                'data'   => [],
-                'name'   => $name
-            ]));
-        } else {
-            return parent::error($message);
-        }
-    }
-    
-    
-    /**
-     * 解析ajax返回内容
-     * @param array $return
-     * @return array
-     */
-    private function parseAjaxReturn(array $return = []) : array
-    {
-        if ($this->app->isDebug()) {
-            $return['trace'] = trace();
+            return AdminHandle::restResponseError($message, $jumpUrl, $code);
         }
         
-        return $return;
+        if ($message instanceof Throwable) {
+            $message = $message->getMessage();
+        }
+        
+        return parent::error($message, $jumpUrl);
     }
     
     
@@ -585,6 +535,8 @@ abstract class AdminController extends Controller
     /**
      * 清空缓存
      * @param bool|array $names
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     protected function clearCache($names)
     {
@@ -693,12 +645,6 @@ HTML;
     }
     
     
-    protected function parseMessage($message)
-    {
-        return str_replace(PHP_EOL, '<br />', parent::parseMessage($message));
-    }
-    
-    
     /**
      * 检测权限，供模板使用
      * @param $path
@@ -719,5 +665,25 @@ HTML;
     protected function responseJsTree($data)
     {
         return $this->success('', '', ['data' => $data]);
+    }
+    
+    
+    /**
+     * 设置页面标题
+     * @param string $pageTitle
+     */
+    protected function setPageTitle(string $pageTitle)
+    {
+        $this->pageTitle = $pageTitle;
+    }
+    
+    
+    /**
+     * 设置是否记录操作，以配合保持登录功能
+     * @param bool $saveOperateTime
+     */
+    protected function setSaveOperate(bool $saveOperateTime) : void
+    {
+        $this->saveOperate = $saveOperateTime;
     }
 }

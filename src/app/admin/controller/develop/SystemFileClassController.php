@@ -6,7 +6,8 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClass as Model;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\model\Map;
 
 /**
  * 开发模式-系统附件分类管理
@@ -17,7 +18,7 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass as Model;
 class SystemFileClassController extends InsideController
 {
     /**
-     * @var Model
+     * @var SystemFileClass
      */
     private $model;
     
@@ -30,7 +31,7 @@ class SystemFileClassController extends InsideController
         
         parent::initialize($checkLogin);
         
-        $this->model = Model::init();
+        $this->model = SystemFileClass::init();
     }
     
     
@@ -39,11 +40,23 @@ class SystemFileClassController extends InsideController
      */
     public function index()
     {
-        $this->assign('type_options', Transform::arrayToOption(SystemFile::getTypes()));
-        $this->setSelectLimit(false);
-        $this->setSelectOrder('sort ASC,id DESC');
+        if ($this->pluginTable) {
+            $this->pluginTable->setQueryHandler(function(SystemFileClass $model, Map $data) {
+                if (!$data->get('type')) {
+                    $data->remove('type');
+                }
+                
+                $model->order(SystemFileClassField::sort(), 'asc');
+                $model->order(SystemFileClassField::id(), 'desc');
+            });
+            
+            return $this->success($this->pluginTable->build($this->model));
+        }
         
-        return $this->select($this->model);
+        
+        $this->assign('type_options', Transform::arrayToOption(SystemFile::getTypes()));
+        
+        return $this->display();
     }
     
     
@@ -57,22 +70,15 @@ class SystemFileClassController extends InsideController
             $insert->setName($data['name']);
             $insert->setVar($data['var']);
             $insert->setType($data['type']);
-            $insert->setAdminShow($data['admin_show']);
-            $insert->setHomeShow($data['home_show']);
-            $insert->setHomeUpload($data['home_upload']);
-            $insert->setHomeLogin($data['home_login']);
-            $insert->setIsSystem($data['is_system']);
-            $insert->setSort($data['sort']);
+            $insert->setSystem($data['system'] ?? 0);
             $this->model->insertData($insert);
-            $this->log('增加系统附件分类', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->log('增加文件分类', $this->model->getHandleData(), self::LOG_INSERT);
             
             return '添加成功';
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
-                $array['sort']         = 50;
-                $array['is_system']    = 0;
-                $array['admin_show']   = 1;
                 $array['type_options'] = Transform::arrayToOption(SystemFile::getTypes());
+                $array['system']       = 0;
                 
                 return $array;
             });
@@ -92,20 +98,17 @@ class SystemFileClassController extends InsideController
             $update = SystemFileClassField::init();
             $update->setId($data['id']);
             $update->setName($data['name']);
-            $update->setAdminShow($data['admin_show']);
-            $update->setHomeShow($data['home_show']);
-            $update->setHomeUpload($data['home_upload']);
-            $update->setHomeLogin($data['home_login']);
-            $update->setSort($data['sort']);
+            $update->setVar($data['var']);
+            $update->setType($data['type']);
+            $update->setSystem($data['system'] ?? 0);
             $this->model->updateData($update);
-            $this->log('修改系统附件分类', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->log('修改文件分类', $this->model->getHandleData(), self::LOG_UPDATE);
             
             return '修改成功';
         }, function() {
             $this->bind(self::CALL_DISPLAY, function() {
                 $info                 = $this->model->getInfo($this->iGet('id'));
                 $info['type_options'] = Transform::arrayToOption(SystemFile::getTypes(), '', '', $info['type']);
-                $info['type_name']    = SystemFile::getTypes($info['type']);
                 
                 return $info;
             });
@@ -120,13 +123,13 @@ class SystemFileClassController extends InsideController
     /**
      * 定义排序
      */
-    public function set_sort()
+    public function sort()
     {
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
             foreach ($params as $id => $value) {
                 $this->model->setSort($id, $value);
             }
-            $this->log('排序系统附件分类', $params, self::LOG_UPDATE);
+            $this->log('排序文件分类', $params, self::LOG_UPDATE);
             
             return '排序成功';
         });
@@ -144,7 +147,7 @@ class SystemFileClassController extends InsideController
             $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除系统附件分类', ['id' => $params], self::LOG_DELETE);
+            $this->log('删除文件分类', ['id' => $params], self::LOG_DELETE);
             
             return '删除成功';
         });

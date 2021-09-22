@@ -1,0 +1,37 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <table class="table table-hover table-bordered table-striped"
+           id="fileClassTable"
+           data-toggle="busy-table"
+           data-pagination="false"
+           data-url="{$url.self}">
+        <thead>
+            <tr>
+                <th data-field="id" data-align="center" width="50">ID</th>
+                <th data-field="name" data-halign="center" data-align="left">分类名称</th>
+                <th data-field="var" data-align="center" width="120">分类标识</th>
+                <th data-field="operate" data-align="center" data-formatter="@#fileClassOperate" width="60">操作</th>
+            </tr>
+        </thead>
+    </table>
+
+    <script id="fileClassOperate" type="text/html">
+        <a class="btn btn-success btn-xs"
+           data-toggle="busy-modal"
+           data-ok="设置"
+           data-url="{:url('?action=edit&id=')}{{item.id}}"
+           data-size="lg"
+           data-form-on-success="@table.reload">
+            <i class="fa fa-pencil"></i>
+        </a>
+    </script>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.ready(function () {
+            $('#fileClassTable').on(busyAdmin.e.tableBodyReady, function () {
+                $(window).trigger('resize');
+            });
+        })
+    </script>
+</block>

@@ -3,6 +3,17 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\app\admin\controller\AdminHandle;
+use BusyPHP\app\admin\controller\develop\ManualComponentController;
+use BusyPHP\app\admin\controller\develop\ManualElementController;
+use BusyPHP\app\admin\controller\develop\SystemConfigController;
+use BusyPHP\app\admin\controller\develop\SystemFileClassController;
+use BusyPHP\app\admin\controller\develop\SystemMenuController;
+use BusyPHP\app\admin\controller\system\SystemFileController;
+use BusyPHP\app\admin\controller\system\SystemLogsController;
+use BusyPHP\app\admin\controller\system\SystemManagerController;
+use BusyPHP\app\admin\controller\system\SystemUserController;
+use BusyPHP\app\admin\controller\system\SystemGroupController;
 use BusyPHP\app\admin\taglib\Admin;
 use BusyPHP\app\general\controller\InstallController;
 use BusyPHP\app\general\controller\QRCodeController;
@@ -211,6 +222,9 @@ class Service extends ThinkService
         
         // 针对后台配置
         if ($this->app->http->getName() === 'admin') {
+            // 绑定错误处理程序
+            $this->app->bind(Handle::class, AdminHandle::class);
+            
             $taglibPreLoad               = $this->value($view, 'taglib_pre_load', '');
             $view['taglib_pre_load']     = Admin::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
             $route['group']              = true;
@@ -255,46 +269,30 @@ class Service extends ThinkService
         
         // 后台路由
         if ($this->app->http->getName() === 'admin') {
+            $routeConfig = [
+                'system_menu'       => ['group' => 'develop', 'class' => SystemMenuController::class,],
+                'system_config'     => ['group' => 'develop', 'class' => SystemConfigController::class],
+                'system_file_class' => ['group' => 'develop', 'class' => SystemFileClassController::class],
+                'manual_component'  => ['group' => 'develop', 'class' => ManualComponentController::class],
+                'manual_element'    => ['group' => 'develop', 'class' => ManualElementController::class],
+                'system_file'       => ['group' => 'system', 'class' => SystemFileController::class],
+                'system_user'       => ['group' => 'system', 'class' => SystemUserController::class],
+                'system_group'      => ['group' => 'system', 'class' => SystemGroupController::class],
+                'system_logs'       => ['group' => 'system', 'class' => SystemLogsController::class],
+                'system_manager'    => ['group' => 'system', 'class' => SystemManagerController::class],
+            ];
+            
+            foreach ($routeConfig as $key => $item) {
+                $roleItem = $route->rule("{$key}/<action>", "{$item['class']}@<action>");
+                $roleItem->append(['dir' => $item['group'], 'type' => 'plugin', 'control' => $key]);
+                if (isset($item['actions'])) {
+                    $roleItem->pattern([
+                        'action' => $item['actions']
+                    ]);
+                }
+            }
+            
             $route->group(function() use ($route) {
-                $route->rule('Develop.<control>/<action>', 'develop\<control>Controller@<action>')->append([
-                    'group' => 'Develop'
-                ]);
-                
-                $route->rule('System.Update/<action>', 'system\UpdateController@<action>')->append([
-                    'group'   => 'System',
-                    'control' => 'Update',
-                ])->pattern([
-                    'action' => '[cache|index]+'
-                ]);
-                
-                $route->rule('System.Index/<action>', 'system\IndexController@<action>')->append([
-                    'group'   => 'System',
-                    'control' => 'Index',
-                ])->pattern([
-                    'action' => '[index|admin|logs|view_logs|clear_logs]+'
-                ]);
-                
-                $route->rule('System.User/<action>', 'system\UserController@<action>')->append([
-                    'group'   => 'System',
-                    'control' => 'User',
-                ])->pattern([
-                    'action' => '[index|add|edit|delete|personal_info|personal_password|password]+'
-                ]);
-                
-                $route->rule('System.Group/<action>', 'system\GroupController@<action>')->append([
-                    'group'   => 'System',
-                    'control' => 'Group',
-                ])->pattern([
-                    'action' => '[index|add|edit|delete]+'
-                ]);
-                
-                $route->rule('System.File/<action>', 'system\FileController@<action>')->append([
-                    'group'   => 'System',
-                    'control' => 'File',
-                ])->pattern([
-                    'action' => '[setting|index|delete|upload|picker]+'
-                ]);
-                
                 $route->rule('Common.<control>/<action>', 'common\<control>Controller@<action>')->append([
                     'group' => 'Common',
                 ])->pattern([
