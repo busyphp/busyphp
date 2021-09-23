@@ -3,10 +3,10 @@
 namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Filter;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Transform;
-
 
 /**
  * 用户组模型字段
@@ -14,10 +14,13 @@ use BusyPHP\helper\util\Transform;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午12:54 AdminGroupField.php $
  * @method static Entity id($op = null, $value = null) ID
+ * @method static Entity parentId($op = null, $value = null) 上级权限ID
  * @method static Entity name($op = null, $value = null) 权限名称
- * @method static Entity rule($op = null, $value = null) 权限规则
- * @method static Entity isSystem($op = null, $value = null) 是否系统权限
- * @method static Entity defaultGroup($op = null, $value = null) 默认面板
+ * @method static Entity rule($op = null, $value = null) 权限规则ID集合，英文逗号分割，左右要有逗号
+ * @method static Entity system($op = null, $value = null) 是否系统权限
+ * @method static Entity defaultMenuId($op = null, $value = null) 默认菜单ID
+ * @method static Entity status($op = null, $value = null) 是否启用
+ * @method static Entity sort($op = null, $value = null) 排序
  */
 class AdminGroupField extends Field
 {
@@ -28,14 +31,20 @@ class AdminGroupField extends Field
     public $id;
     
     /**
+     * 上级权限ID
+     * @var int
+     */
+    public $parentId;
+    
+    /**
      * 权限名称
      * @var string
      */
     public $name;
     
     /**
-     * 权限规则
-     * @var string
+     * 权限规则ID集合，英文逗号分割，左右要有逗号
+     * @var string|array
      */
     public $rule;
     
@@ -43,13 +52,25 @@ class AdminGroupField extends Field
      * 是否系统权限
      * @var int
      */
-    public $isSystem;
+    public $system;
     
     /**
-     * 默认面板
+     * 默认菜单
      * @var string
      */
-    public $defaultGroup;
+    public $defaultMenuId;
+    
+    /**
+     * 是否启用
+     * @var int
+     */
+    public $status;
+    
+    /**
+     * 排序
+     * @var int
+     */
+    public $sort;
     
     
     /**
@@ -58,7 +79,7 @@ class AdminGroupField extends Field
      * @return $this
      * @throws VerifyException
      */
-    public function setId($id)
+    public function setId($id) : self
     {
         $this->id = floatval($id);
         if ($this->id < 1) {
@@ -75,11 +96,11 @@ class AdminGroupField extends Field
      * @return $this
      * @throws VerifyException
      */
-    public function setName($name)
+    public function setName($name) : self
     {
         $this->name = trim($name);
         if (!$this->name) {
-            throw new VerifyException('请输入权限组名称', 'name');
+            throw new VerifyException('请输入角色名称', 'name');
         }
         
         return $this;
@@ -88,29 +109,32 @@ class AdminGroupField extends Field
     
     /**
      * 设置权限规则
-     * @param string|array $rule
+     * @param array $rule
      * @return $this
+     * @throws VerifyException
      */
-    public function setRule($rule)
+    public function setRule(array $rule) : self
     {
-        if (is_array($rule)) {
-            $this->rule = implode(',', $rule);
-        } else {
-            $this->rule = trim($rule);
+        $rule = array_map('intval', $rule);
+        $rule = Filter::trimArray($rule);
+        if (!$rule) {
+            throw new VerifyException('请选择角色权限', 'rule');
         }
+        
+        $this->rule = "," . implode(',', $rule) . ",";
         
         return $this;
     }
     
     
     /**
-     * 设置是否系统权限
-     * @param int $isSystem
+     * 设置父角色组
+     * @param int $parentId
      * @return $this
      */
-    public function setIsSystem($isSystem)
+    public function setParentId($parentId) : self
     {
-        $this->isSystem = Transform::dataToBool($isSystem);
+        $this->parentId = intval($parentId);
         
         return $this;
     }
@@ -118,16 +142,29 @@ class AdminGroupField extends Field
     
     /**
      * 设置默认面板
-     * @param string $defaultGroup
+     * @param string $defaultMenuId
      * @return $this
      * @throws VerifyException
      */
-    public function setDefaultGroup($defaultGroup)
+    public function setDefaultMenuId($defaultMenuId) : self
     {
-        $this->defaultGroup = trim($defaultGroup);
-        if (!$this->defaultGroup) {
-            throw new VerifyException('请选择默认面板', 'default_group');
+        $this->defaultMenuId = trim($defaultMenuId);
+        if (!$this->defaultMenuId) {
+            throw new VerifyException('请选择默认菜单', 'default_group');
         }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置状态
+     * @param int $status
+     * @return $this
+     */
+    public function setStatus($status) : self
+    {
+        $this->status = Transform::dataToBool($status);
         
         return $this;
     }

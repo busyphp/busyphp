@@ -143,6 +143,8 @@ class Transform
         $defaultKey    = '__index';
         $value         = $value ?: $defaultKey;
         $name          = $name ?: $defaultKey;
+        $value         = (string) $value;
+        $name          = (string) $name;
         $string        = '';
         $selectedValue = !is_null($selectedValue) ? is_array($selectedValue) ? $selectedValue : explode(',', $selectedValue) : null;
         foreach ($array as $index => $item) {

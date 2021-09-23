@@ -3,9 +3,20 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\js\struct\TreeFlatItemStruct;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
+use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
+use BusyPHP\exception\ParamInvalidException;
+use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Transform;
+use BusyPHP\model\Map;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 后台用户组权限管理
@@ -30,77 +41,222 @@ class SystemGroupController extends InsideController
     
     
     /**
-     * 权限管理列表
+     * 角色列表
+     * @return Response
+     * @throws DbException
+     * @throws DataNotFoundException
      */
     public function index()
     {
-        return $this->select($this->model);
+        // 角色列表数据
+        if ($this->pluginTable) {
+            $this->pluginTable->sortField = '';
+            $this->pluginTable->sortOrder = '';
+            $this->pluginTable->setQueryHandler(function(AdminGroup $model, Map $data) {
+                $model->order(AdminGroupField::sort(), 'asc');
+                $model->order(AdminGroupField::id(), 'desc');
+            });
+            
+            return $this->success($this->pluginTable->build($this->model));
+        }
+        
+        return $this->display();
     }
     
     
     /**
-     * 增加权限
+     * 增加管理角色
+     * @return Response
+     * @throws VerifyException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function add()
     {
-        return $this->submit('post', function($data) {
+        // 添加
+        if ($this->isPost()) {
             $insert = AdminGroupField::init();
-            $insert->setName($data['name']);
-            $insert->setRule($data['rule']);
-            $insert->setDefaultGroup($data['default_group']);
+            $insert->setParentId($this->request->post('parent_id', 0, 'intval'));
+            $insert->setName($this->request->post('name', '', 'trim'));
+            $insert->setDefaultMenuId($this->request->post('default_menu_id', 0, 'intval'));
+            $insert->setRule($this->hashToId($this->request->post('rule', [])));
+            $insert->setStatus($this->request->post('status', 0, 'intval') > 0);
             $this->model->insertData($insert);
-            $this->log('增加后台管理权限', $this->model->getHandleData(), self::LOG_INSERT);
             
-            return '添加成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info              = [];
-                $info['rule']      = $this->createCheckbox(SystemMenu::init()->getSafeTree());
-                $info['is_system'] = 0;
-                
-                return $info;
-            });
+            $this->log('增加管理角色', $this->model->getHandleData(), self::LOG_INSERT);
             
-            $this->setRedirectUrl(url('index'));
-            $this->submitName = '添加';
-        });
+            return $this->success('添加成功');
+        }
+        
+        
+        // 权限
+        if ($this->pluginTree) {
+            return $this->ruleList();
+        }
+        
+        // 默认菜单选项
+        if ($this->pluginSelectPicker) {
+            return $this->menuList();
+        }
+        
+        // 显示修改
+        $this->assign('info', ['status' => true]);
+        $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
+            ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name()));
+        $this->assign('group_options', $this->model->getTreeOptions());
+        
+        return $this->display();
     }
     
     
     /**
-     * 编辑权限
+     * 修改管理角色
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
+     * @throws VerifyException
      */
     public function edit()
     {
-        return $this->submit('post', function($data) {
-            $insert = AdminGroupField::init();
-            $insert->setId($data['id']);
-            $insert->setName($data['name']);
-            $insert->setRule($data['rule']);
-            $insert->setDefaultGroup($data['default_group']);
-            $this->model->updateData($insert);
-            $this->log('修改后台管理权限', $this->model->getHandleData(), self::LOG_UPDATE);
+        // 修改
+        if ($this->isPost()) {
+            $update = AdminGroupField::init();
+            $update->setId($this->request->post('id', 0, 'intval'));
+            $update->setParentId($this->request->post('parent_id', 0, 'intval'));
+            $update->setName($this->request->post('name', '', 'trim'));
+            $update->setDefaultMenuId($this->request->post('default_menu_id', 0, 'intval'));
+            $update->setRule($this->hashToId($this->request->post('rule', [])));
+            $update->setStatus($this->request->post('status', 0, 'intval') > 0);
+            $this->model->updateData($update);
+            $this->log('修改管理角色', $this->model->getHandleData(), self::LOG_UPDATE);
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info         = AdminGroup::init()->getInfo($this->iGet('id'));
-                $rule         = $this->createCheckbox(SystemMenu::init()
-                    ->getSafeTree(), $info['default_group'], $info['rule_array']);
-                $info['rule'] = $rule;
-                
-                return $info;
-            });
-            
-            $this->setRedirectUrl();
-            $this->submitName   = '修改';
-            $this->templateName = 'add';
-        });
+            return $this->success('修改成功');
+        }
+        
+        // 权限列表
+        $id   = $this->request->get('id', 0, 'intval');
+        $info = $this->model->getInfo($id);
+        if ($this->pluginTree) {
+            return $this->ruleList($info);
+        }
+        
+        // 默认菜单选项
+        if ($this->pluginSelectPicker) {
+            return $this->menuList();
+        }
+        
+        // 修改显示
+        $this->assign('info', $info);
+        $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
+            ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name(), $info->defaultMenuId));
+        $this->assign('group_options', $this->model->getTreeOptions($info->parentId, $info->id));
+        
+        return $this->display('add');
     }
     
     
     /**
-     * 删除权限
+     * Hash转ID集合
+     * @param $rule
+     * @return mixed
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    private function hashToId(array $rule) : array
+    {
+        $idRule   = [];
+        $hashList = SystemMenu::init()->getHashList(true);
+        foreach ($rule as $item) {
+            if (!isset($hashList[$item])) {
+                continue;
+            }
+            
+            $idRule[] = $hashList[$item]->id;
+        }
+        
+        return $idRule;
+    }
+    
+    
+    /**
+     * 顶级菜单列表
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    private function menuList()
+    {
+        $this->pluginSelectPicker->setQueryHandler(function(SystemMenu $model) {
+            // 继承父角色节点
+            $groupId = $this->request->get('group_id', 0, 'intval');
+            if ($groupId > 1) {
+                $groupInfo = $this->model->getInfo($groupId);
+                $model->whereEntity(SystemMenuField::id('in', $groupInfo->ruleIds));
+            }
+            
+            $model->whereSafe()->orderSort();
+            $model->whereEntity(SystemMenuField::parentPath(''));
+        });
+        
+        return $this->success($this->pluginSelectPicker->build(SystemMenu::init()));
+    }
+    
+    
+    /**
+     * 权限列表
+     * @param AdminGroupInfo $info
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    private function ruleList(?AdminGroupInfo $info = null) : Response
+    {
+        $this->pluginTree->setQueryHandler(function(SystemMenu $model) use ($info) {
+            // 继承父角色节点
+            $groupId = $this->request->get('group_id', 0, 'intval');
+            if ($info && $groupId == $info->id) {
+                throw new VerifyException('父角色不能是自己');
+            }
+            
+            if ($groupId > 1) {
+                $groupInfo = $this->model->getInfo($groupId);
+                if ($groupInfo->ruleIds) {
+                    $model->whereEntity(SystemMenuField::id('in', $groupInfo->ruleIds));
+                } else {
+                    throw new VerifyException('该角色权限信息异常');
+                }
+            }
+            
+            $model->whereSafe()->orderSort();
+        });
+        $this->pluginTree->setNodeHandler(function(SystemMenuInfo $item, TreeFlatItemStruct $node) use ($info) {
+            $node->setParent($item->parentHash);
+            $node->setText($item->name);
+            $node->setId($item->hash);
+            $node->setIcon($item->icon);
+            
+            if (!$info) {
+                return;
+            }
+            
+            // 展开选中项的父节点
+            if (in_array($item->id, $info->ruleIndeterminate)) {
+                $node->state->setOpened(true);
+            }
+            
+            // 设为选中
+            if (in_array($item->id, $info->rule)) {
+                $node->state->setSelected(true);
+            }
+        });
+        
+        return $this->success($this->pluginTree->build(SystemMenu::init()));
+    }
+    
+    
+    /**
+     * 删除管理角色
      */
     public function delete()
     {
@@ -109,7 +265,7 @@ class SystemGroupController extends InsideController
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除后台管理权限', ['id' => $params], self::LOG_DELETE);
+            $this->log('删除管理角色', ['id' => $params], self::LOG_DELETE);
             
             return '删除成功';
         });
@@ -118,51 +274,26 @@ class SystemGroupController extends InsideController
     }
     
     
-    private function createCheckbox($list, $defaultGroup = '', $data = [], $level = 0, $parent = '')
+    /**
+     * 排序
+     */
+    public function sort()
     {
-        $checkbox = '';
-        foreach ($list as $i => $r) {
-            $checked = is_checked(in_array($r['path'], $data));
-            
-            
-            $label = <<<HTML
-<label>
-    <input type="checkbox" name="rule[]" data-level="{$level}" data-parent="{$parent}" data-module="{$r['module']}" data-control="{$r['control']}" value="{$r['path']}" {$checked}/>
-    {$r['name']}
-</label>
-HTML;
-            switch ($level) {
-                case 0:
-                    $defChecked = is_checked($r['module'] === $defaultGroup);
-                    $checkbox   .= <<<HTML
-<thead>
-    <tr>
-        <th>{$label}</th>
-        <th><label class="pull-right"><input type="radio" name="default_group" value="{$r['module']}"{$defChecked}/> 设为默认</label></th>
-    </tr>
-</thead>
-HTML;
-                break;
-                case 1:
-                    $checkbox .= '<tr><td class="module">' . $label . '</td><td>';
-                break;
-                default:
-                    $checkbox .= $label;
+        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
+            $data = [];
+            foreach ($params as $key => $value) {
+                $data[] = [
+                    AdminGroupField::id()->field()   => $key,
+                    AdminGroupField::sort()->field() => $value
+                ];
             }
+            $this->model->saveAll($data);
+            $this->log('排序管理角色', $params, self::LOG_BATCH);
+            $this->updateCache();
             
-            if ($r['child']) {
-                $checkbox .= $this->createCheckbox($r['child'], $defaultGroup, $data, $level + 1, $r['path']);
-            }
-            
-            if ($level === 1) {
-                $checkbox .= '</td></tr>';
-            }
-        }
+            return '排序成功';
+        });
         
-        if ($level == 0) {
-            $checkbox = '<table class="table table-bordered table-hover table-checkbox">' . $checkbox . '</table>';
-        }
-        
-        return $checkbox;
+        return $this->batch('sort');
     }
 }

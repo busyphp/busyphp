@@ -204,6 +204,7 @@ class Arr extends \think\helper\Arr
      */
     public static function listByKey($list, $key)
     {
+        $key          = (string) $key;
         $isCollection = $list instanceof Collection;
         $list         = is_array($list) || $isCollection ? $list : [];
         $newList      = [];

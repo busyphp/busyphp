@@ -6,6 +6,7 @@ use BusyPHP\App;
 use BusyPHP\app\admin\js\AutocompletePlugin;
 use BusyPHP\app\admin\js\SelectPickerPlugin;
 use BusyPHP\app\admin\js\TablePlugin;
+use BusyPHP\app\admin\js\TreePlugin;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\setting\AdminSetting;
@@ -162,6 +163,12 @@ abstract class AdminController extends Controller
      */
     protected $pluginTable;
     
+    /**
+     * Js Tree 插件
+     * @var TreePlugin
+     */
+    protected $pluginTree;
+    
     
     public function __construct(App $app)
     {
@@ -191,30 +198,37 @@ abstract class AdminController extends Controller
             $this->isLogin();
         }
         
+        // 自动处理
         switch ($this->requestPluginName) {
-            // 自动处理SelectPicker插件
+            // SelectPicker插件
             case 'SelectPicker':
                 $this->pluginSelectPicker = new SelectPickerPlugin();
-                if ($result = $this->pluginSelectPicker->build()) {
-                    throw new HttpResponseException($this->success($result));
-                }
+                $result                   = $this->pluginSelectPicker->build();
             break;
             
-            // 自动处理Autocomplete插件
+            // Autocomplete插件
             case 'Autocomplete':
                 $this->pluginAutocomplete = new AutocompletePlugin();
-                if ($result = $this->pluginAutocomplete->build()) {
-                    throw new HttpResponseException($this->success($result));
-                }
+                $result                   = $this->pluginAutocomplete->build();
             break;
             
-            // 自动处理Table插件
+            // Table插件
             case 'Table':
                 $this->pluginTable = new TablePlugin();
-                if ($result = $this->pluginTable->build()) {
-                    throw new HttpResponseException($this->success($result));
-                }
+                $result            = $this->pluginTable->build();
             break;
+            
+            // Tree插件
+            case 'Tree':
+                $this->pluginTree = new TreePlugin();
+                $result           = $this->pluginTree->build();
+            break;
+            default:
+                $result = null;
+        }
+        
+        if ($result) {
+            throw new HttpResponseException($this->success($result));
         }
     }
     
@@ -312,12 +326,12 @@ abstract class AdminController extends Controller
         }
         
         // 系统权限组允许任何权限
-        if ($this->adminPermission->isSystem) {
+        if ($this->adminPermission->system) {
             return true;
         }
         
         // 校验是否包含权限
-        if (!in_array($this->urlPath, $this->adminPermission->ruleArray)) {
+        if (!in_array($this->urlPath, $this->adminPermission->rule)) {
             return false;
         }
         
@@ -399,8 +413,8 @@ abstract class AdminController extends Controller
             // 当前激活面板
             $menuActive = $this->request->group();
             if (!in_array($menuActive, $menuStruct->paths)) {
-                if ($this->adminPermission->defaultGroup) {
-                    $menuActive = Str::studly($this->adminPermission->defaultGroup);
+                if ($this->adminPermission->defaultMenuId) {
+                    $menuActive = Str::studly($this->adminPermission->defaultMenuId);
                 }
                 
                 $menuActive = $menuActive ?: $menuStruct->defaultPath;

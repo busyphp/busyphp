@@ -6,7 +6,6 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -30,25 +29,7 @@ class AdminGroup extends Model
     
     
     /**
-     * 获取用户组缓存
-     * @param int $id
-     * @return AdminGroupInfo
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getInfoByCache($id)
-    {
-        $groupList = $this->getList();
-        if ($info = $groupList[$id] ?? false) {
-            throw new DataNotFoundException($this->dataNotFoundMessage);
-        }
-        
-        return $info;
-    }
-    
-    
-    /**
-     * 获取会员组缓存列表
+     * 获取列表
      * @param bool $must
      * @return AdminGroupInfo[]
      * @throws DataNotFoundException
@@ -59,7 +40,7 @@ class AdminGroup extends Model
         $list = $this->getCache('list');
         if (!$list || $must) {
             $list = $this->order(AdminGroupField::id(), 'asc')->selectList();
-            $list = Arr::listByKey($list, AdminGroupField::id()->field());
+            $list = Arr::listByKey($list, AdminGroupField::id());
             $this->setCache('list', $list);
         }
         
@@ -68,30 +49,74 @@ class AdminGroup extends Model
     
     
     /**
-     * 添加用户组
+     * 获取id为下标的列表
+     * @return AdminGroupInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getIdList() : array
+    {
+        return Arr::listByKey($this->getList(), AdminGroupField::id());
+    }
+    
+    
+    /**
+     * 添加管理角色
      * @param AdminGroupField $insert
      * @return int
      * @throws DbException
+     * @throws ParamInvalidException
+     * @throws VerifyException
      */
-    public function insertData($insert)
+    public function insertData(AdminGroupField $insert)
     {
+        $this->checkData($insert);
+        
         return $this->addData($insert);
     }
     
     
     /**
-     * 修改用户组
+     * 修改管理角色
      * @param AdminGroupField $update $id
      * @throws ParamInvalidException
      * @throws DbException
+     * @throws VerifyException
      */
-    public function updateData($update)
+    public function updateData(AdminGroupField $update)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('id');
         }
         
+        $this->checkData($update);
         $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
+    }
+    
+    
+    /**
+     * 校验数据
+     * @param AdminGroupField $data
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
+     * @throws VerifyException
+     */
+    protected function checkData(AdminGroupField $data)
+    {
+        if (!$data->rule || !$data->name || !$data->defaultMenuId) {
+            throw new ParamInvalidException('rule,name,default_menu_id');
+        }
+        
+        $idList  = SystemMenu::init()->getIdList();
+        $newRule = [];
+        foreach (explode(',', $data->rule) as $id) {
+            if (!isset($idList[$id])) {
+                continue;
+            }
+            $newRule[] = $id;
+        }
+        $data->setRule($newRule);
     }
     
     
@@ -106,7 +131,7 @@ class AdminGroup extends Model
     public function deleteInfo($data) : int
     {
         $info = $this->getInfo($data);
-        if ($info->isSystem) {
+        if ($info->system) {
             throw new VerifyException('系统管理权限组禁止删除');
         }
         
@@ -115,22 +140,50 @@ class AdminGroup extends Model
     
     
     /**
-     * 获取用户组选项
-     * @param int         $selectedValue 当前选中值
-     * @param bool|string $defaultText 默认选项名称 true或者不为空则输出选项
-     * @param int         $defaultValue 模型选项值
+     * 获取树状结构角色组
+     * @return AdminGroupInfo[]
+     * @throws DbException
+     * @throws DataNotFoundException
+     */
+    public function getTreeList() : array
+    {
+        return Arr::listToTree($this->getList(), AdminGroupField::id(), AdminGroupField::parentId(), AdminGroupInfo::child(), 0);
+    }
+    
+    
+    /**
+     * 获取菜单选项
+     * @param string $selectedId
+     * @param string $disabled
+     * @param array  $list
+     * @param string $space
      * @return string
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getSelectOptions($selectedValue = 0, $defaultText = true, $defaultValue = 0)
+    public function getTreeOptions($selectedId = '', $disabledId = '', $list = [], $space = '')
     {
-        $options = Transform::arrayToOption($this->getList(), AdminGroupField::id(), AdminGroupField::name(), $selectedValue);
-        if ($defaultText) {
-            if (true === $defaultText) {
-                $defaultText = '请选择';
+        $push = '├';
+        if (!$list) {
+            $list = $this->getTreeList();
+            $push = '';
+        }
+        
+        $options = '';
+        foreach ($list as $item) {
+            $disabled = '';
+            if ($disabledId == $item->id) {
+                $disabled = ' disabled';
             }
-            $options = '<option value="' . $defaultValue . '">' . $defaultText . '</option>' . $options;
+            
+            $selected = '';
+            if ($item->id == $selectedId) {
+                $selected = ' selected="selected"';
+            }
+            $options .= '<option value="' . $item->id . '"' . $selected . $disabled . '>' . $space . $push . $item->name . '</option>';
+            if ($item->child) {
+                $options .= $this->getTreeOptions($selectedId, $disabledId, $item->child, '┊　' . $space);
+            }
         }
         
         return $options;
@@ -145,11 +198,18 @@ class AdminGroup extends Model
     public function updateCache()
     {
         $this->clearCache();
+        
         $list      = $this->getList(true);
         $menuModel = SystemMenu::init();
         foreach ($list as $id => $r) {
-            $menuModel->getAdminMenu($r['id'], true);
-            $menuModel->getAdminNav($r['id'], true);
+            $menuModel->getAdminMenu($r->id, true);
+            $menuModel->getAdminNav($r->id, true);
         }
+    }
+    
+    
+    public function onChanged(string $method, $id, array $options)
+    {
+        $this->getList(true);
     }
 }

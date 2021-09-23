@@ -4,6 +4,8 @@ namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 管理员信息结构
@@ -26,10 +28,14 @@ class AdminUserInfo extends AdminUserField
     private static $_groupList;
     
     
+    /**
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
     public function onParseAfter()
     {
         if (!isset(static::$_groupList)) {
-            static::$_groupList = AdminGroup::init()->getList();
+            static::$_groupList = AdminGroup::init()->getIdList();
         }
         
         $this->checked = $this->checked > 0;

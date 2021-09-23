@@ -2,6 +2,7 @@
 
 namespace BusyPHP\app\admin\model\system\menu;
 
+use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\menu\provide\AdminMenuStruct;
 use BusyPHP\exception\ParamInvalidException;
@@ -9,7 +10,6 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
-use BusyPHP\Request;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -224,7 +224,6 @@ class SystemMenu extends Model
         $this->getList(true);
         $this->getTreeList(true);
         $this->getSafeTree(true);
-        $this->getPathList(true);
     }
     
     
@@ -249,22 +248,62 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取按照path为下标的列表
-     * @param bool $must 是否强制更新缓存
+     * 获取不包含禁用和系统的菜单数据
      * @return SystemMenuInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getPathList(bool $must = false) : array
+    public function getSafeList() : array
     {
-        $cacheName = 'path';
-        $list      = $this->getCache($cacheName);
-        if (!$list || $must) {
-            $list = Arr::listByKey($this->getList(), SystemMenuInfo::path());
-            $this->setCache($cacheName, $list);
+        $list = [];
+        foreach ($this->getList() as $item) {
+            if ($item->system || $item->disabled) {
+                continue;
+            }
+            
+            $list[] = $item;
         }
         
         return $list;
+    }
+    
+    
+    /**
+     * 获取按照path为下标的列表
+     * @param bool $safe 是否获取不包含禁用和系统的菜单数据
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getPathList(bool $safe = false) : array
+    {
+        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::path());
+    }
+    
+    
+    /**
+     * 获取按照id为下标的列表
+     * @param bool $safe 是否获取不包含禁用和系统的菜单数据
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getIdList(bool $safe = false) : array
+    {
+        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::id());
+    }
+    
+    
+    /**
+     * 获取按照hash为下标的列表
+     * @param bool $safe 是否获取不包含禁用和系统的菜单数据
+     * @return SystemMenuInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getHashList(bool $safe = false) : array
+    {
+        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuInfo::hash());
     }
     
     
@@ -289,6 +328,65 @@ class SystemMenu extends Model
     
     
     /**
+     * 获取按照ID为下标的上级ID集合
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getIdParens() : array
+    {
+        $arr  = [];
+        $list = $this->getHashList();
+        foreach ($list as $item) {
+            $arr[$item->id] = [];
+            $this->upwardRecursion($list, $item, SystemMenuField::id(), $arr[$item->id]);
+        }
+        
+        return $arr;
+    }
+    
+    
+    /**
+     * 获取按照hash为下标的上级hash集合
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getHashParents() : array
+    {
+        $arr  = [];
+        $list = $this->getHashList();
+        foreach ($list as $item) {
+            $arr[$item->hash] = [];
+            $this->upwardRecursion($list, $item, SystemMenuInfo::parentHash(), $arr[$item->hash]);
+        }
+        
+        return $arr;
+    }
+    
+    
+    /**
+     * 向上递归获取ID集合
+     * @param SystemMenuInfo[] $list hash为下标的列表
+     * @param SystemMenuInfo   $item 菜单数据
+     * @param string           $key 取值字段
+     * @param array            $gather 集合
+     */
+    protected function upwardRecursion(array $list, SystemMenuInfo $item, $key, array &$gather = [])
+    {
+        if (!is_string($key)) {
+            $key = (string) $key;
+        }
+        
+        if (isset($list[$item->parentHash])) {
+            $newItem  = $list[$item->parentHash];
+            $gather[] = $newItem->{$key};
+            $this->upwardRecursion($list, $newItem, $key, $gather);
+        }
+    }
+    
+    
+    /**
      * 获取安全的权限树
      * @param bool $must 是否强制更新缓存
      * @return SystemMenuInfo[]
@@ -301,7 +399,7 @@ class SystemMenu extends Model
         $tree      = $this->getCache($cacheName);
         if (!$tree || $must) {
             $tree = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $item) {
-                if ($item->disabled || $item->path == self::DEVELOP) {
+                if ($item->disabled || $item->system) {
                     return false;
                 }
                 
@@ -333,7 +431,7 @@ class SystemMenu extends Model
             $struct   = AdminMenuStruct::init();
             
             // 系统用户组则输出所有菜单
-            if ($groupInfo->isSystem) {
+            if ($groupInfo->system) {
                 foreach ($treeList as $item) {
                     // 禁用的
                     if ($item->disabled) {
@@ -351,7 +449,7 @@ class SystemMenu extends Model
             } else {
                 foreach ($treeList as $i => $item) {
                     // 禁用的，不包含在群组规则的
-                    if ($item->disabled || !in_array($item->path, $groupInfo->ruleArray)) {
+                    if ($item->disabled || !in_array($item->path, $groupInfo->rule)) {
                         continue;
                     }
                     
@@ -373,7 +471,7 @@ class SystemMenu extends Model
         }
         
         // 不是系统管理员则不输出开发模式
-        if (!$groupInfo->isSystem || ($groupInfo->isSystem && !app()->isDebug())) {
+        if (!$groupInfo->system || ($groupInfo->system && !app()->isDebug())) {
             $list = [];
             foreach ($struct->menuList as $item) {
                 if ($item->path == self::DEVELOP) {
@@ -405,7 +503,7 @@ class SystemMenu extends Model
         $list = $this->getCache($cacheName);
         if (!$list || $must) {
             // 系统用户组则输出所有菜单
-            if ($groupInfo->isSystem) {
+            if ($groupInfo->system) {
                 $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) {
                     if ($info->disabled || $info->hide) {
                         return false;
@@ -415,7 +513,7 @@ class SystemMenu extends Model
                 });
             } else {
                 $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($groupInfo) {
-                    if ($info->disabled || !in_array($info->path, $groupInfo->ruleArray) || $info->hide) {
+                    if ($info->disabled || !in_array($info->path, $groupInfo->rule) || $info->hide) {
                         return false;
                     }
                     
@@ -427,7 +525,7 @@ class SystemMenu extends Model
         }
         
         // 不是系统管理员则不输出开发模式
-        if (!$groupInfo->isSystem || ($groupInfo->isSystem && !app()->isDebug())) {
+        if (!$groupInfo->system || ($groupInfo->system && !app()->isDebug())) {
             $temp = [];
             foreach ($list as $item) {
                 if ($item->path == self::DEVELOP) {
@@ -440,6 +538,32 @@ class SystemMenu extends Model
         }
         
         return $list;
+    }
+    
+    
+    /**
+     * 不包含禁用和系统
+     * @return $this
+     */
+    public function whereSafe() : self
+    {
+        $this->whereEntity(SystemMenuField::disabled(0));
+        $this->whereEntity(SystemMenuField::system(0));
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 排序
+     * @return $this
+     */
+    public function orderSort() : self
+    {
+        $this->order(SystemMenuField::sort(), 'asc');
+        $this->order(SystemFileField::id(), 'desc');
+        
+        return $this;
     }
     
     
@@ -499,21 +623,9 @@ class SystemMenu extends Model
      */
     public static function getUrlPath()
     {
-        /** @var Request $request */
-        $request = request();
+        $request = App::getInstance()->request;
         
         return "{$request->controller()}/{$request->action()}";
-    }
-    
-    
-    /**
-     * 生成URL PATH
-     * @param SystemMenuInfo $info
-     * @return string
-     */
-    public static function createUrlPath(SystemMenuInfo $info)
-    {
-        return $info->path;
     }
     
     

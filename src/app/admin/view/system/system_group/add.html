@@ -1,106 +1,99 @@
 <extend name="@admin:layout"/>
-<block name="head">
-    <style>
-        .table-checkbox {}
-        .table-checkbox label { margin: 0; margin-right: 15px; white-space: nowrap; float: left; cursor: pointer; font-weight: normal;}
-        .table-checkbox .module label { margin-right: 0;}
-        .table-checkbox label.pull-right { margin: 0;}
-    </style>
-</block>
 <block name="content">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <div class="pull-left"><h3 class="panel-title">{$panel_title}</h3></div>
-            <div class="clearfix"></div>
+    <div class="form-horizontal">
+        <input type="hidden" value="{$info.id|default=''}" name="id"/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">父角色组</label>
+            <div class="col-sm-9">
+                <select class="form-control font-tabs" name="parent_id">
+                    <option value="0">顶级角色组</option>
+                    {$group_options}
+                </select>
+                <span class="help-block">选择父角色组，将直接继承父角色组的权限规则</span>
+            </div>
         </div>
-        <div class="panel-body">
-            <form action="{$url.self}" method="post" class="form-horizontal" data-busy-form="">
-                <input type="hidden" value="{$info.id|default=''}" name="id"/>
-                <neq name="info.is_system" value="1">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label must">用户组名称</label>
-                        <div class="col-sm-4">
-                            <input type="text" class="form-control" name="name" value="{$info.name|default=''}"/>
-                        </div>
-                        <div class="col-sm-6"><span class="help-block"></span></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label must">规则</label>
-                        <div class="col-sm-10">
-                            <div class="table-responsive">
-                                {$info.rule}
-                            </div>
-                        </div>
-                    </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">角色名称</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="name" value="{$info.name|default=''}" placeholder="请输入角色名称" required/>
+                <span class="help-block">设置角色名称，如: 管理部</span>
+            </div>
+        </div>
 
-                    <div class="form-group m-b-0">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-primary" value="{$submit_name}"/>
-                            <input type="reset" class="btn btn-default" value="重置"/>
-                        </div>
-                    </div>
-                    <else />
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">用户组名称</label>
-                        <div class="col-sm-4">
-                            <div class="form-control-static">{$info.name}</div>
-                        </div>
-                    </div>
-                </neq>
-            </form>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">默认菜单</label>
+            <div class="col-sm-9">
+                <select class="form-control" name="default_menu_id" data-toggle="busy-select-picker" data-url="{:url()}" data-search="false" data-params="busyAdmin.data.treeParams" data-value="{$info.default_menu_id|default=0}" data-placeholder="请选择默认菜单">
+                </select>
+                <span class="help-block">设置默认菜单，用户登录后将默认展开该菜单</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label">角色权限</label>
+            <div class="col-sm-9">
+                <div class="checkbox-group">
+                    <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="groupAddCheckedAll" title="选中全部"/>
+                    <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="groupAddOpenAll" title="展开全部"/>
+                </div>
+
+                <div class="space-10"></div>
+                <div id="groupAddTree"
+                     data-toggle="busy-tree"
+                     data-block="true"
+                     data-name="rule[]"
+                     data-url="{:url()}"
+                     data-params="busyAdmin.data.treeParams"
+                     data-checkbox="true"></div>
+            </div>
+        </div>
+
+        <div class="form-group no-margin-bottom">
+            <label class="col-sm-2 control-label">启用角色</label>
+            <div class="col-sm-9">
+                <div class="radio">
+                    <input type="radio" name="status" value="1" data-toggle="busy-radio" title="启用" <?=is_checked(($info['status'] ?? 0) == 1)?>/>
+                    <input type="radio" name="status" value="0" data-toggle="busy-radio" title="禁用" <?=is_checked(($info['status'] ?? 0) == 0)?>/>
+                </div>
+                <span class="help-block">设置角色状态，禁用后将无法使用该角色</span>
+            </div>
         </div>
     </div>
 </block>
 <block name="foot">
     <script>
-        function hasChecked($list) {
-            for (var i = 0; i < $list.length; i++) {
-                if ($($list[i]).prop('checked')) {
-                    return true;
-                }
+        busyAdmin.data.treeParentGroupId = '{$info.parent_id|default=0}';
+        busyAdmin.data.treeParams        = function () {
+            return {
+                group_id : busyAdmin.data.treeParentGroupId,
+                id       : '{$info.id|default=""}'
             }
+        };
 
-            return false;
-        }
+        busyAdmin.ready(function () {
+            var $tree = $('#groupAddTree');
+            var $menu = $('[name="default_menu_id"]');
 
-        $(function () {
-            $('[name="rule[]"]').on('change', function () {
-                var $me = $(this);
-
-                switch ($me.data('level')) {
-                    case 0:
-                        $('[data-module="' + $me.data('module') + '"]').prop('checked', $me.prop('checked'));
-                        break;
-                    case 1:
-                        $('[data-parent="' + $me.val() + '"]').prop('checked', $me.prop('checked'));
-
-                        var $parent = $('[value="' + $me.data('parent') + '"]');
-                        var $list = $('[data-parent="' + $me.data('parent') + '"]');
-                        if (!hasChecked($list)) {
-                            $parent.prop('checked', false);
-                        } else {
-                            $parent.prop('checked', true);
-                        }
-                        break;
-                    case 2:
-                        var $list = $('[data-parent="' + $me.data('parent') + '"]');
-                        var status = hasChecked($list);
-                        var $parent = $('[value="' + $me.data('parent') + '"]');
-                        if (!status) {
-                            $parent.prop('checked', false);
-                        } else {
-                            $parent.prop('checked', true);
-                        }
-
-                        var $top = $('[value="' + $parent.data('parent') + '"]');
-                        var $topList = $('[data-parent="' + $parent.data('parent') + '"]');
-                        if (!status && !hasChecked($topList)) {
-                            $top.prop('checked', false);
-                        } else {
-                            $top.prop('checked', true);
-                        }
-                        break;
+            $('#groupAddCheckedAll').on('change', function () {
+                if ($(this).prop('checked')) {
+                    $tree.busyAdminTree('check_all');
+                } else {
+                    $tree.busyAdminTree('uncheck_all');
                 }
+            });
+
+            $('#groupAddOpenAll').on('change', function () {
+                if ($(this).prop('checked')) {
+                    $tree.busyAdminTree('open_all');
+                } else {
+                    $tree.busyAdminTree('close_all');
+                }
+            });
+
+            $('[name="parent_id"]').on('change', function () {
+                busyAdmin.data.treeParentGroupId = $(this).val();
+                $tree.busyAdminTree('refresh');
+                $menu.busyAdminSelectPicker('value', '{$info.default_menu_id|default=0}');
             });
         });
     </script>

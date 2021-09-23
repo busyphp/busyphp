@@ -94,14 +94,14 @@ class SelectPickerPlugin
     {
         $this->request = Container::getInstance()->make(Request::class);
         
-        $this->isValue   = $this->request->post('action', '', 'trim') === 'value';
-        $this->page      = $this->request->post('page', 1, 'intval');
-        $this->length    = $this->request->post('length', 0, 'intval');
-        $this->idField   = $this->request->post('id_field', '', 'trim');
-        $this->textField = $this->request->post('text_field', '', 'trim');
-        $this->order     = $this->request->post('order', '', 'trim');
-        $this->isExtend  = $this->request->post('extend', 0, 'intval') > 0;
-        $this->word      = $this->request->post('word');
+        $this->isValue   = $this->request->get('action', '', 'trim') === 'value';
+        $this->page      = $this->request->get('page', 1, 'intval');
+        $this->length    = $this->request->get('length', 0, 'intval');
+        $this->idField   = $this->request->get('id_field', '', 'trim');
+        $this->textField = $this->request->get('text_field', '', 'trim');
+        $this->order     = $this->request->get('order', '', 'trim');
+        $this->isExtend  = $this->request->get('extend', 0, 'intval') > 0;
+        $this->word      = $this->request->get('word');
         
         $this->idField   = $this->idField ?: 'id';
         $this->textField = $this->textField ?: 'name';
@@ -122,7 +122,7 @@ class SelectPickerPlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->post('model', '', 'trim');
+            $model = $this->request->get('model', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }

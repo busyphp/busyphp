@@ -34,6 +34,7 @@
 | data-max | number | `否` | 0 | 多选情况下，最大允许选择数，0为不限制 |
 | data-value | string,[string] | `否` | null | 设置默认选中项，多选模式传数组，单选模式传字符 |
 | data-url | boolean,string | `否` | `false` | 是否启用异步数据选项，设置字符串URL则从该地址获取，否则从当前网址获取 |
+| data-params | object,Function | `否` | - | 自定义请求参数，支持闭包 |
 | data-delay | number | `否` | `250` | 异步加载延迟毫秒 |
 | data-model | string | `否` | - | 设置自动获取选项的模型类名称 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
@@ -137,10 +138,10 @@
         <script>
             $(function () {
                 $('#demo1_btn1').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('open', true);
+                    $('#demo1_select').busyAdminSelectPicker('open', true);
                 });
                 $('#demo1_btn2').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('open', false);
+                    $('#demo1_select').busyAdminSelectPicker('open', false);
                 });
                 $('#demo1_btn3').on('click', function () {
                     $('#demo1_select').prop('disabled', false);
@@ -149,16 +150,16 @@
                     $('#demo1_select').prop('disabled', true);
                 });
                 $('#demo1_btn5').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('value', 2);
+                    $('#demo1_select').busyAdminSelectPicker('value', 2);
                 });
                 $('#demo1_btn6').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('value', null);
+                    $('#demo1_select').busyAdminSelectPicker('value', null);
                 });
                 $('#demo1_btn7').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
+                    $('#demo1_select').busyAdminSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
                 });
                 $('#demo1_btn8').on('click', function () {
-                    $('#demo1_select').busyAdminSelect('list', [
+                    $('#demo1_select').busyAdminSelectPicker('list', [
                         {
                             text     : 'BAT公司',
                             children : [
@@ -191,10 +192,10 @@
                 });
 
                 $('#demo1_btn9').on('click', function () {
-                    $('#demo1_select1').busyAdminSelect('value', [1, 2]);
+                    $('#demo1_select1').busyAdminSelectPicker('value', [1, 2]);
                 });
                 $('#demo1_btn10').on('click', function () {
-                    $('#demo1_select1').busyAdminSelect('value', null);
+                    $('#demo1_select1').busyAdminSelectPicker('value', null);
                 });
             });
         </script>
