@@ -2,11 +2,14 @@
 
 namespace BusyPHP\app\admin\model\system\file;
 
-use BusyPHP\App;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model;
+use Exception;
+use League\Flysystem\FileNotFoundException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\exception\FileException;
 use think\facade\Filesystem;
 
 /**
@@ -39,9 +42,9 @@ class SystemFile extends Model
     //| 其它
     //+--------------------------------------
     /** 临时附件前缀 */
-    const MARK_VALUE_TMP_PREFIX = 'tmp_';
+    const MARK_VALUE_TMP_PREFIX = 'temp_';
     
-    protected $dataNotFoundMessage = '附件不存在';
+    protected $dataNotFoundMessage = '文件数据不存在';
     
     protected $findInfoFilter      = 'intval';
     
@@ -49,12 +52,12 @@ class SystemFile extends Model
     
     
     /**
-     * 执行添加
+     * 添加文件
      * @param SystemFileField $insert
      * @return int
      * @throws DbException
      */
-    public function insertFile($insert)
+    public function insertFile(SystemFileField $insert)
     {
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
@@ -64,140 +67,117 @@ class SystemFile extends Model
     
     
     /**
-     * 通过临时文件标识转正
-     * @param string $type 文件分类
-     * @param string $tmp 临时文件分类值
-     * @param string $value 新文件分类值
-     * @throws DbException
-     */
-    public function updateMarkValueByTmp($type, $tmp, $value)
-    {
-        $save             = SystemFileField::init();
-        $save->classValue = trim($value);
-        
-        $this->whereEntity(SystemFileField::classType(trim($type)), SystemFileField::classValue(trim($tmp)))
-            ->saveData($save);
-    }
-    
-    
-    /**
-     * 通过文件ID转正
-     * @param string $type 文件分类
-     * @param int    $id 附件ID
-     * @param string $value 新文件分类值
-     * @throws DbException
-     */
-    public function updateMarkValueById($type, $id, $value)
-    {
-        $save             = SystemFileField::init();
-        $save->classValue = trim($value);
-        
-        $this->whereEntity(SystemFileField::id(floatval($id)), SystemFileField::classValue(trim($type)))
-            ->saveData($save);
-    }
-    
-    
-    /**
-     * 通过文件分类标识获取文件地址
-     * @param string $markType
-     * @param string $markValue
-     * @return string
-     * @throws DbException
-     */
-    public function getUrlByMark($markType, $markValue)
-    {
-        $where             = SystemFileField::init();
-        $where->classType  = trim($markType);
-        $where->classValue = trim($markValue);
-        
-        return $this->whereEntity(SystemFileField::classType(trim($markType)))
-            ->whereEntity(SystemFileField::classValue(trim($markValue)))
-            ->failException(true)
-            ->value(SystemFileField::url());
-    }
-    
-    
-    /**
-     * 通过ID获取文件地址
-     * @param $id
-     * @return string
-     * @throws DbException
-     */
-    public function getUrlById($id)
-    {
-        return $this->whereEntity(SystemFileField::id($id))->value(SystemFileField::url());
-    }
-    
-    
-    /**
-     * 执行删除
-     * @param int $data
+     * 通过文件分类和业务值更新业务值
+     * @param string $classType 文件分类
+     * @param mixed  $classValue 文件业务值
+     * @param mixed  $newValue 新文件分类值
      * @return int
      * @throws DbException
+     */
+    public function updateValueByClass(string $classType, $classValue, $newValue) : int
+    {
+        return $this->whereClass($classType, trim($classValue))
+            ->setField(SystemFileField::classValue(), trim($newValue));
+    }
+    
+    
+    /**
+     * 通过文件ID更新业务值
+     * @param int    $id 文件ID
+     * @param string $newValue 新文件分类值
+     * @return int
+     * @throws DbException
+     */
+    public function updateValueById($id, $newValue) : int
+    {
+        return $this->whereEntity(SystemFileField::id(floatval($id)))
+            ->setField(SystemFileField::classValue(), trim($newValue));
+    }
+    
+    
+    /**
+     * 查询分类条件
+     * @param string $classType 文件分类
+     * @param string $classValue 文件业务参数
+     * @param bool   $mustValue 是否强制查询业务参数
+     * @return $this
+     */
+    public function whereClass(string $classType, $classValue = null) : self
+    {
+        $classValue = trim($classValue);
+        $this->whereEntity(SystemFileField::classType(trim($classType)));
+        
+        if ($classValue !== null) {
+            $this->whereEntity(SystemFileField::classValue($classValue));
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 删除附件
+     * @param int $data
+     * @return int
      * @throws VerifyException
-     * @throws DataNotFoundException
+     * @throws Exception
      */
     public function deleteInfo($data) : int
     {
-        $fileInfo = $this->getInfo($data);
-        $filePath = App::urlToPath($fileInfo['url']);
-        $res      = parent::deleteInfo($data);
-        
-        if (is_file($filePath) && !unlink($filePath)) {
-            throw new VerifyException('无法删除附件', $filePath);
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo(intval($data));
+            
+            // 删除文件
+            if (!static::deleteFile($info)) {
+                throw new FileException("文件删除失败: {$info->path}");
+            }
+            
+            // 删除数据
+            $res = parent::deleteInfo($info->id);
+            
+            $this->commit();
+            
+            return $res;
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
         }
-        
-        return $res;
     }
     
     
     /**
-     * 通过附件地址删除附件
+     * 通过文件url删除
      * @param string $url 附件地址
+     * @return int
      * @throws DbException
      * @throws VerifyException
+     * @throws Exception
      */
-    public function delByUrl($url)
+    public function deleteByUrl(string $url) : int
     {
-        if (!$url) {
-            return;
-        }
+        $url = trim($url);
         
-        $this->whereEntity(SystemFileField::urlHash(md5(trim($url))))->delete();
-        $filePath = App::urlToPath($url);
-        if (is_file($filePath) && !unlink($filePath)) {
-            throw new VerifyException('无法删除附件', $filePath);
-        }
+        return $this->deleteInfo($this->whereEntity(SystemFileField::urlHash(md5($url)))
+            ->failException(true)
+            ->findInfo()->id);
     }
     
     
     /**
-     * 通过附件标识删除附件
-     * @param string      $markType 标识类型
-     * @param string|null $markValue 标识值
+     * 通过文件分类删除
+     * @param string $classType 标识类型
+     * @param string $classValue 标识值
+     * @return int
      * @throws DataNotFoundException
      * @throws DbException
      * @throws VerifyException
+     * @throws Exception
      */
-    public function delByMark($markType, $markValue = null)
+    public function deleteByClass($classType, $classValue = null)
     {
-        $where = SystemFileField::init();
-        $this->whereEntity(SystemFileField::classType(trim($markType)));
-        $where->classType = trim($markType);
-        if ($markValue) {
-            $where->classValue = SystemFileField::classValue(trim($markValue));
-        }
-        
-        $fileInfo = $this->findInfo();
-        if (!$fileInfo) {
-            return;
-        }
-        
-        $this->deleteInfo($fileInfo->id);
-        $filePath = App::urlToPath($fileInfo['url']);
-        if (is_file($filePath) && !unlink($filePath)) {
-            throw new VerifyException('无法删除附件', $filePath);
-        }
+        return $this->deleteInfo($this->whereClass($classType, $classValue)->failException(true)->findInfo()->id);
     }
     
     
@@ -234,12 +214,27 @@ class SystemFile extends Model
     
     
     /**
-     * 创建唯一临时文件标识
+     * 创建一个临时的业务参数
      * @param null|string $value
      * @return string
      */
-    public static function createTmpMarkValue($value = null)
+    public static function createTempClassValue($value = null)
     {
-        return self::MARK_VALUE_TMP_PREFIX . md5(($value ? $value : uniqid()) . $_SERVER['HTTP_USER_AGENT'] . request()->ip() . rand(1000000, 9999999));
+        return self::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . Str::random(32));
+    }
+    
+    
+    /**
+     * 通过信息删除文件
+     * @param SystemFileInfo $info
+     * @return bool
+     */
+    public static function deleteFile(SystemFileInfo $info) : bool
+    {
+        try {
+            return Filesystem::disk($info->disk)->delete($info->path);
+        } catch (FileNotFoundException $e) {
+            return true;
+        }
     }
 }
