@@ -18,7 +18,6 @@ use BusyPHP\helper\util\Transform;
  * @method static Entity path($op = null, $value = null) 路由地址
  * @method static Entity parentPath($op = null, $value = null) 上级路由
  * @method static Entity params($op = null, $value = null) 附加参数
- * @method static Entity higher($op = null, $value = null) 定义高亮上级
  * @method static Entity icon($op = null, $value = null) 图标
  * @method static Entity target($op = null, $value = null) 打开方式
  * @method static Entity hide($op = null, $value = null) 是否隐藏
@@ -57,12 +56,6 @@ class SystemMenuField extends Field
      * @var string
      */
     public $params;
-    
-    /**
-     * 定义高亮上级
-     * @var string
-     */
-    public $higher;
     
     /**
      * 图标
@@ -174,19 +167,6 @@ class SystemMenuField extends Field
     public function setParams($params)
     {
         $this->params = trim($params);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置定义高亮上级
-     * @param string $higher
-     * @return $this
-     */
-    public function setHigher($higher)
-    {
-        $this->higher = trim($higher);
         
         return $this;
     }
