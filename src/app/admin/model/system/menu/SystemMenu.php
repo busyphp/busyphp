@@ -409,9 +409,17 @@ class SystemMenu extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getAdminNav(AdminUserInfo $adminUserInfo) : array
+    public function getNav(AdminUserInfo $adminUserInfo) : array
     {
-        return Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo) {
+        $parentsIdsList = $this->getIdParens();
+        $list           = $this->getIdList();
+        
+        return Arr::listToTree($list, SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
+            if ($info->hide && isset($parentsIdsList[$info->id])) {
+                $parentId                   = array_shift($parentsIdsList[$info->id]);
+                $list[$parentId]->hides[] = $info;
+            }
+            
             // 禁用和隐藏的菜单不输出
             if ($info->disabled || $info->hide) {
                 return false;
@@ -430,6 +438,8 @@ class SystemMenu extends Model
                     return false;
                 }
             }
+            
+            $list[$info->id] = $info;
             
             return true;
         });

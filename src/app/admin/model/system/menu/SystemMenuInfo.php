@@ -15,13 +15,21 @@ use think\facade\Route;
  * @method static mixed parentHash();
  * @method static mixed paramList();
  * @method static mixed url();
+ * @method static mixed hides();
  */
 class SystemMenuInfo extends SystemMenuField
 {
     /**
+     * 下级菜单
      * @var SystemMenuInfo[]
      */
     public $child = [];
+    
+    /**
+     * 隐藏的下级菜单，只有在前端菜单中用到
+     * @var SystemMenuInfo[]
+     */
+    public $hides = [];
     
     /**
      * 菜单地址哈希值

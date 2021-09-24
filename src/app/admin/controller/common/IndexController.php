@@ -80,10 +80,10 @@ class IndexController extends InsideController
     {
         return $this->success([
             'menu_default'   => '',
-            'menu_list'      => SystemMenu::init()->getAdminNav($this->adminUser),
+            'menu_list'      => SystemMenu::init()->getNav($this->adminUser),
             'user_id'        => $this->adminUserId,
             'username'       => $this->adminUsername,
-            
+    
             // 用户菜单
             'user_dropdowns' => [
                 [
@@ -134,7 +134,7 @@ class IndexController extends InsideController
                     ]
                 ]
             ],
-            
+    
             // 消息启用状态
             'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
             'message_agency' => MessageAgencySubscribe::hasSubscribe(),
