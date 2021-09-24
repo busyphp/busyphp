@@ -107,7 +107,7 @@ class IndexController extends InsideController
                 ],
                 [
                     'text' => '清理缓存',
-                    'icon' => 'bicon bicon-user-profile',
+                    'icon' => 'bicon bicon-clear',
                     'attr' => [
                         'data-toggle'  => 'busy-request',
                         'data-url'     => (string) url('system_manager/cache_clear'),
@@ -116,7 +116,7 @@ class IndexController extends InsideController
                 ],
                 [
                     'text' => '生成缓存',
-                    'icon' => 'bicon bicon-lock',
+                    'icon' => 'bicon bicon-re-create',
                     'attr' => [
                         'data-toggle'  => 'busy-request',
                         'data-url'     => (string) url('system_manager/cache_create'),
