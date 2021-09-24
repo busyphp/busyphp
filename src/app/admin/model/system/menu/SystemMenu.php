@@ -416,8 +416,10 @@ class SystemMenu extends Model
         
         return Arr::listToTree($list, SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
             if ($info->hide && isset($parentsIdsList[$info->id])) {
-                $parentId                   = array_shift($parentsIdsList[$info->id]);
-                $list[$parentId]->hides[] = $info;
+                $parentId = array_shift($parentsIdsList[$info->id]);
+                if (isset($list[$parentId])) {
+                    $list[$parentId]->hides[] = $info;
+                }
             }
             
             // 禁用和隐藏的菜单不输出
