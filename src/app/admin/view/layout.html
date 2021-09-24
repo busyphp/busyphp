@@ -76,26 +76,25 @@
         </div>
 
         <div class="busy-admin-content clearfix" data-busy-id="content">
-            <div class="busy-admin-content-bar clearfix" data-busy-id="content-header">
-                <ol class="breadcrumb clearfix">
-                    <li class="title">
-                        <i class="icon icon-home"></i>
-                        <span>当前位置</span>
+            <div class="busy-admin-content-head" data-busy-id="content-header">
+                <ul class="breadcrumb">
+                    <li>
+                        <i class="fa fa-home"></i>
+                        <a href="{$url.app}">首页</a>
                     </li>
-                    <li><a href="{$url.root}">首页</a></li>
-                    <foreach name="system.breadcrumb" item="foreachUrl" key="foreachName">
+                    <foreach name="system.breadcrumb" item="_breadcrumbItem">
                         <li>
-                            <eq name="foreachUrl" value="">
-                                <span>{$foreachName}</span>
+                            <empty name="_breadcrumbItem.url">
+                                <span>{$_breadcrumbItem.name}</span>
                                 <else/>
-                                <a href="{$foreachUrl}">{$foreachName}</a>
-                            </eq>
+                                <a href="{$_breadcrumbItem.url}">{$_breadcrumbItem.name}</a>
+                            </empty>
                         </li>
                     </foreach>
-                </ol>
+                </ul>
             </div>
 
-            <div class="busy-admin-content-box busy-admin-content-pending clearfix" data-busy-id="content-body">
+            <div class="busy-admin-content-body busy-admin-content-pending clearfix" data-busy-id="content-body">
                 <block name="head"></block>
                 <block name="content"></block>
                 <block name="foot"></block>

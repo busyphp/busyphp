@@ -3,13 +3,16 @@ declare(strict_types = 1);
 
 namespace BusyPHP\exception;
 
+use RuntimeException;
+use Throwable;
+
 /**
  * 参数无效异常
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午11:25 上午 ParamInvalidException.php $
  */
-class ParamInvalidException extends AppException
+class ParamInvalidException extends RuntimeException
 {
     /**
      * 出错的参数
@@ -20,27 +23,15 @@ class ParamInvalidException extends AppException
     
     /**
      * 构造器
-     * @param mixed $param 出错的参数
-     * @param int   $code 错误代码
+     * @param mixed          $param 出错的参数
+     * @param int            $code 错误代码
+     * @param Throwable|null $previous
      */
-    public function __construct($param, $code = 0)
+    public function __construct(string $param, int $code = 0, Throwable $previous = null)
     {
-        if ($param instanceof self) {
-            $this->code  = $param->getCode();
-            $this->param = $param->getParam();
-            $param       = $this->param;
-            $code        = $this->code;
-        } else {
-            $this->param = $param;
-            $this->code  = $code;
-        }
+        $this->param = $param;
         
-        $this->setData('PARAM INVALID ERROR', [
-            'param' => $this->param,
-            'code'  => $this->code
-        ]);
-        
-        parent::__construct("参数无效: {$param}", $code);
+        parent::__construct("参数无效: {$param}", $code, $previous);
     }
     
     

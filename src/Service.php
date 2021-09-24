@@ -4,6 +4,8 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use BusyPHP\app\admin\controller\AdminHandle;
+use BusyPHP\app\admin\controller\common\IndexController;
+use BusyPHP\app\admin\controller\common\PassportController;
 use BusyPHP\app\admin\controller\develop\ManualComponentController;
 use BusyPHP\app\admin\controller\develop\ManualElementController;
 use BusyPHP\app\admin\controller\develop\SystemConfigController;
@@ -14,7 +16,7 @@ use BusyPHP\app\admin\controller\system\SystemLogsController;
 use BusyPHP\app\admin\controller\system\SystemManagerController;
 use BusyPHP\app\admin\controller\system\SystemUserController;
 use BusyPHP\app\admin\controller\system\SystemGroupController;
-use BusyPHP\app\admin\taglib\Admin;
+use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\app\general\controller\InstallController;
 use BusyPHP\app\general\controller\QRCodeController;
 use BusyPHP\app\general\controller\ThumbController;
@@ -225,11 +227,8 @@ class Service extends ThinkService
             // 绑定错误处理程序
             $this->app->bind(Handle::class, AdminHandle::class);
             
-            $taglibPreLoad               = $this->value($view, 'taglib_pre_load', '');
-            $view['taglib_pre_load']     = Admin::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
-            $route['group']              = true;
-            $route['default_group']      = 'Common';
-            $route['default_controller'] = 'Index';
+            $taglibPreLoad           = $this->value($view, 'taglib_pre_load', '');
+            $view['taglib_pre_load'] = Ba::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
         }
         
         
@@ -284,7 +283,7 @@ class Service extends ThinkService
             
             foreach ($routeConfig as $key => $item) {
                 $roleItem = $route->rule("{$key}/<action>", "{$item['class']}@<action>");
-                $roleItem->append(['dir' => $item['group'], 'type' => 'plugin', 'control' => $key]);
+                $roleItem->append(['group' => $item['group'], 'type' => 'plugin', 'control' => $key]);
                 if (isset($item['actions'])) {
                     $roleItem->pattern([
                         'action' => $item['actions']
@@ -292,38 +291,35 @@ class Service extends ThinkService
                 }
             }
             
+            // 通用注册
             $route->group(function() use ($route) {
-                $route->rule('Common.<control>/<action>', 'common\<control>Controller@<action>')->append([
-                    'group' => 'Common',
-                ])->pattern([
-                    'control' => '[Passport|Ueditor|Js|Action|Index]+'
-                ]);
+                // 全局
+                $route->rule('Common.<control>/<action>', 'BusyPHP\app\admin\controller\common\<control>Controller@<action>')
+                    ->pattern(['control' => '.+']);
                 
+                // 注册首页
                 $route->group(function() use ($route) {
-                    $index = 'common\IndexController@index';
+                    $index = IndexController::class . '@index';
                     $route->rule('/', $index);
                     $route->rule('index', $index);
                 })->append([
                     'action'  => 'index',
                     'control' => 'Index',
-                    'group'   => 'Common'
                 ]);
                 
-                
                 // 注册登录地址
-                $route->rule('login', 'common\PassportController@login')->append([
-                    'group'   => 'Common',
+                $passport = PassportController::class;
+                $route->rule('login', "{$passport}@login")->append([
                     'control' => 'Passport',
                     'action'  => 'login'
                 ])->name('admin_login');
                 
                 // 注册退出地址
-                $route->rule('out', 'common\PassportController@out')->append([
-                    'group'   => 'Common',
+                $route->rule('out', "{$passport}@out")->append([
                     'control' => 'Passport',
                     'action'  => 'out'
                 ])->name('admin_out');
-            })->prefix('BusyPHP\app\admin\controller\\')->append(['type' => 'plugin']);
+            })->append(['type' => 'plugin', 'group' => 'Common']);
         }
     }
     
@@ -337,7 +333,6 @@ class Service extends ThinkService
         // 通过插件方式引入
         if ($request->route('type') === 'plugin') {
             $group = $request->route('group');
-            $request->setGroup($group ?? '');
             $request->setController(($group ? $group . '.' : '') . $request->route('control'));
             $request->setAction($request->route('action'));
         }

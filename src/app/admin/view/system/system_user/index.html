@@ -1,90 +1,103 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <busy-search url="{$url.self}" fields="username:用户名,email:邮箱,phone:手机号,qq:QQ号码">
-        <busy-tpl type="search-toolbar">
-            <busy-btn url="add" icon="plus" style="warning">
-                增加管理员
-            </busy-btn>
-        </busy-tpl>
-    </busy-search>
-
-
-    <div class="table-responsive">
-        <form action="{:url('delete')}" method="post" onsubmit="return false;" id="checkForm" data-queue-post-confirm="" data-table-checkbox="">
-            <table class="table table-bordered table-hover table-striped">
-                <thead>
-                <tr>
-                    <th class="text-center" width="40">
-                        <input type="checkbox" role-checkbox="control"/>
-                    </th>
-                    <th class="text-center" width="60">ID</th>
-                    <th class="text-center">用户名</th>
-                    <th class="text-center" width="150">用户组</th>
-                    <th class="text-center" width="150">手机号</th>
-                    <th class="text-center" width="150">邮箱</th>
-                    <th class="text-center" width="100">QQ号码</th>
-                    <th class="text-center" width="100">状态</th>
-                    <th class="text-center" width="80">操作</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <th class="text-center media-middle">
-                        <input type="checkbox" role-checkbox="control"/>
-                    </th>
-                    <td colspan="9">
-                        <button class="btn btn-danger btn-sm" type="submit">删除</button>
-                    </td>
-                </tr>
-                </tfoot>
-                <tbody>
-                <empty name="list">
-                    <tr>
-                        <th colspan="9" class="empty-info">暂无相关数据</th>
-                    </tr>
-                    <else/>
-                    <foreach name="list" item="vo">
-                        <tr class="text-center">
-                            <td>
-                                <eq name="vo.is_system" value="0">
-                                    <input type="checkbox" role-checkbox="item" value="{$vo.id}" name="id[]"/>
-                                </eq>
-                            </td>
-                            <td>{$vo.id}</td>
-                            <td class="text-left">
-                                <eq name="vo.is_system" value="1">
-                                    <kbd title="系统管理员">系统</kbd>
-                                </eq>
-                                {$vo.username}
-                            </td>
-                            <td>{$vo.group.name}</td>
-                            <td>{$vo.phone|default="--"}</td>
-                            <td>{$vo.email|default="--"}</td>
-                            <td>{$vo.qq|default="--"}</td>
-                            <td>
-                                <eq name="vo.is_checked" value="1">
-                                    <span class="label label-success">正常</span>
-                                    <else/>
-                                    <span class="label label-danger">禁用</span>
-                                </eq>
-                            </td>
-                            <td>
-                                <a href="{:url('edit?id=' . $vo['id'])}" class="btn btn-xs btn-success">
-                                    <i class="icon icon-pencil"></i>
-                                </a>
-                                &nbsp;
-                                <eq name="vo.is_system" value="0">
-                                    <a href="{:url('delete?id=' . $vo['id'])}" class="btn btn-xs btn-danger" data-get-confirm="确认要删除吗？" role-ajax="1" role-loading="请稍候...">
-                                        <i class="icon icon-remove"></i>
-                                    </a>
-                                </eq>
-                            </td>
-                        </tr>
-                    </foreach>
-                </empty>
-                </tbody>
-            </table>
-        </form>
+    <div id="searchBar"
+         data-toggle="busy-search-bar"
+         data-url="{$url.self}"
+         data-accurate-show="true"
+         data-fields="username:用户名,email:邮箱,phone:手机号,qq:QQ号码,id:用户ID">
+        <script type="text/html" data-search-id="left">
+            <div class="form-group">
+                <select class="form-control" name="status">
+                    <option value="0">不限状态</option>
+                    <option value="1">正常</option>
+                    <option value="2">禁用</option>
+                    <option value="3">临时禁用</option>
+                </select>
+            </div>
+        </script>
     </div>
-    {$page}
+
+
+    <table class="table table-bordered table-striped table-hover"
+           id="fileTable"
+           data-toggle="busy-table"
+           data-search="#searchBar"
+           data-show-columns="true"
+           data-show-print="true"
+           data-show-refresh="true"
+           data-show-export="true"
+           data-show-fullscreen="true"
+           data-toolbar="#tableToolbar"
+           data-route="true"
+           data-url="{$url.self}"
+           data-click-to-select="true"
+           data-fixed-columns="true"
+           data-fixed-right-number="1"
+           data-fixed-number="2"
+           data-height="true">
+        <thead>
+            <tr>
+                <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
+                <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
+                <th class="text-center" data-field="username" data-halign="center" data-align="left">账号</th>
+                <th class="text-center" width="120" data-field="phone" data-align="center">手机号</th>
+                <th class="text-center" width="120" data-field="email" data-align="center">邮箱</th>
+                <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
+                    操作
+                </th>
+            </tr>
+        </thead>
+    </table>
+
+
+    <div class="hide">
+        <div id="tableToolbar">
+            <a class="btn btn-success"
+               data-toggle="busy-modal"
+               data-url="{:url('add')}"
+               data-ok="添加管理员"
+               data-form-on-success="@table.reload">
+                <i class="fa fa-plus"></i>
+                添加
+            </a>
+            <a class="btn btn-danger"
+               data-url="{:url('delete')}"
+               data-confirm="确认要删除选中的%s个管理员吗？"
+               data-checked="true"
+               data-disabled="true"
+               data-method="post"
+               data-on-success="@table.reload">
+                    <i class="fa fa-trash"></i>
+                    删除
+                </a>
+        </div>
+    </div>
+
+
+    <script type="text/html" id="operate">
+        <a class="btn btn-success btn-xs"
+           href="{:url('edit?id=')}{{item.id}}"
+           data-toggle="busy-modal"
+           data-ok="修改管理员"
+           data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
+
+        {{if !item.system}}
+        <a class="btn btn-danger btn-xs"
+           href="{:url('delete?id=')}{{item.id}}"
+           data-toggle="busy-request"
+           data-confirm="确认要删除该管理员吗？"
+           data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        {{/if}}
+    </script>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.data.checkboxState = function (value, item, index) {
+            if (item.system) {
+                return {disabled : true}
+            }
+
+            return value;
+        };
+    </script>
 </block>

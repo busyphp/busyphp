@@ -29,129 +29,139 @@ class SystemManagerController extends InsideController
 {
     /**
      * 系统基本设置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function index()
     {
-        return $this->submit('post', function($data) {
-            PublicSetting::init()->set($data['data']);
+        if ($this->isPost()) {
+            $data = $this->request->post('data', []);
+            PublicSetting::init()->set($data);
             $this->log('系统基本设置', $data, SystemLogs::TYPE_SET);
             $this->updateCache();
             
-            return '设置成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info = PublicSetting::init()->get();
-                
-                $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('System.Index/index', $info));
-                
-                return $info;
-            });
-            
-            $this->setRedirectUrl(null);
-        });
+            return $this->success('设置成功');
+        }
+        
+        $info = PublicSetting::init()->get();
+        $this->assign('info', $info);
+        $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('System.Index/index', $info));
+        
+        return $this->display();
     }
     
     
     /**
      * 后台安全设置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function admin()
     {
-        return $this->submit('post', function($data) {
-            AdminSetting::init()->set($data['data']);
+        if ($this->isPost()) {
+            $data = $this->request->post('data', []);
+            AdminSetting::init()->set($data);
             $this->log('后台安全设置', $data, SystemLogs::TYPE_SET);
             $this->updateCache();
             
-            return '设置成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return AdminSetting::init()->get();
-            });
-            
-            $this->setRedirectUrl(null);
-        });
+            return $this->success('设置成功');
+        }
+        
+        $this->assign('info', AdminSetting::init()->get());
+        
+        return $this->display();
     }
     
     
     /**
      * 上传设置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function upload()
     {
-        return $this->submit('post', function($data) {
-            UploadSetting::init()->set($data['data']);
+        if ($this->isPost()) {
+            $data = $this->request->post('data', []);
+            UploadSetting::init()->set($data);
             
-            $this->log('上传设置', ['data' => $data], SystemLogs::TYPE_SET);
+            $this->log('上传设置', $data, SystemLogs::TYPE_SET);
             $this->updateCache();
             
             return $this->success('设置成功');
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $setting = UploadSetting::init();
-                
-                
-                // 磁盘信息
-                $disks = [];
-                foreach (Filesystem::getConfig('disks') as $key => $disk) {
-                    if (($disk['visibility'] ?? '') !== 'public') {
-                        continue;
-                    }
-                    
-                    // 默认名称
-                    $name = $disk['name'] ?? '';
-                    if (!$name) {
-                        if (strtolower($disk['type'] ?? '') === 'local') {
-                            $name = '本地服务器';
-                        } else {
-                            $name = $key;
-                        }
-                    }
-                    
-                    // 默认描述
-                    $desc = $disk['description'] ?? '';
-                    if (!$desc && strtolower($disk['type'] ?? '') === 'local') {
-                        $root = $disk['root'] ?? '';
-                        $root = substr($root, strlen($this->app->getRootPath()));
-                        $desc = "文件直接上传到本地服务器的 <code>{$root}</code> 目录，占用服务器磁盘空间";
-                    }
-                    
-                    $disks[] = [
-                        'name'    => $name,
-                        'desc'    => $desc,
-                        'type'    => $key,
-                        'checked' => $key == $setting->getDisk()
-                    ];
+        }
+        
+        $setting = UploadSetting::init();
+        
+        // 磁盘信息
+        $disks = [];
+        foreach (Filesystem::getConfig('disks') as $key => $disk) {
+            if (($disk['visibility'] ?? '') !== 'public') {
+                continue;
+            }
+            
+            // 默认名称
+            $name = $disk['name'] ?? '';
+            if (!$name) {
+                if (strtolower($disk['type'] ?? '') === 'local') {
+                    $name = '本地服务器';
+                } else {
+                    $name = $key;
                 }
-                
-    
-                $this->assign('clients', SystemFile::getClients());
-                $this->assign('disks', $disks);
-                $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
-                $this->assign('type', SystemFile::getTypes());
-                
-                return $setting->get();
-            });
-        });
+            }
+            
+            // 默认描述
+            $desc = $disk['description'] ?? '';
+            if (!$desc && strtolower($disk['type'] ?? '') === 'local') {
+                $root = $disk['root'] ?? '';
+                $root = substr($root, strlen($this->app->getRootPath()));
+                $desc = "文件直接上传到本地服务器的 <code>{$root}</code> 目录，占用服务器磁盘空间";
+            }
+            
+            $disks[] = [
+                'name'    => $name,
+                'desc'    => $desc,
+                'type'    => $key,
+                'checked' => $key == $setting->getDisk()
+            ];
+        }
+        
+        $this->assign('clients', SystemFile::getClients());
+        $this->assign('disks', $disks);
+        $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
+        $this->assign('type', SystemFile::getTypes());
+        $this->assign('info', $setting->get());
+        
+        return $this->display();
     }
     
     
     /**
      * 图片水印设置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
      */
     public function watermark()
     {
-        return $this->submit('post', function($data) {
-            WatermarkSetting::init()->set($data['data']);
-            
-            $this->log('图片水印设置', ['data' => $data], SystemLogs::TYPE_SET);
+        if ($this->isPost()) {
+            $data = $this->request->post('data', []);
+            WatermarkSetting::init()->set($data);
+            $this->log('图片水印设置', $data, SystemLogs::TYPE_SET);
             $this->updateCache();
             
-            return '设置成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return WatermarkSetting::init()->get();
-            });
-        });
+            return $this->success('设置成功');
+        }
+        
+        $this->assign('info', WatermarkSetting::init()->get());
+        
+        return $this->display();
     }
     
     
@@ -181,36 +191,33 @@ class SystemManagerController extends InsideController
             $this->updateCache();
             
             return $this->success('设置成功');
-        } else {
-            // 分类列表数据
-            if ($this->pluginTable) {
-                $this->pluginTable->setQueryHandler(function(SystemFileClass $model, Map $data) {
-                    $model->order(SystemFileClassField::sort(), 'asc');
-                    $model->order(SystemFileClassField::id(), 'desc');
-                });
-                
-                return $this->success($this->pluginTable->build(SystemFileClass::init()));
-            }
-            
-            //
-            // 修改分类
-            elseif ($this->request->get('action') == 'edit') {
-                $info = SystemFileClass::init()->getInfo($this->request->get('id', 0, 'intval'));
-                $this->assign('info', $info);
-                
-                return $this->display('file_class_edit');
-            }
-            
-            //
-            // 分类列表
-            else {
-                $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
-                $this->assign('type', SystemFile::getTypes());
-                $this->assign('info', UploadSetting::init()->get());
-                
-                return $this->display();
-            }
         }
+        
+        // 分类列表数据
+        if ($this->pluginTable) {
+            $this->pluginTable->setQueryHandler(function(SystemFileClass $model, Map $data) {
+                $model->order(SystemFileClassField::sort(), 'asc');
+                $model->order(SystemFileClassField::id(), 'desc');
+            });
+            
+            return $this->success($this->pluginTable->build(SystemFileClass::init()));
+        }
+        
+        //
+        // 修改分类
+        elseif ($this->request->get('action') == 'edit') {
+            $info = SystemFileClass::init()->getInfo($this->request->get('id', 0, 'intval'));
+            $this->assign('info', $info);
+            
+            return $this->display('file_class_edit');
+        }
+        
+        // 分类列表
+        $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
+        $this->assign('type', SystemFile::getTypes());
+        $this->assign('info', UploadSetting::init()->get());
+        
+        return $this->display();
     }
     
     
@@ -237,7 +244,7 @@ class SystemManagerController extends InsideController
      */
     public function cache_clear()
     {
-        $this->clearCache(true);
+        $this->clearCache();
         $this->log('清理缓存');
         
         return $this->success('清理缓存成功');

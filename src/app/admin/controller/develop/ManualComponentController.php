@@ -143,7 +143,7 @@ class ManualComponentController extends InsideController
                     ];
             }
             
-            return $this->responseJsTree($data);
+            return $this->success(['data' => $data]);
         }
         
         return $this->display();

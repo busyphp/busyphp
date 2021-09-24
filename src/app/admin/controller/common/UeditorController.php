@@ -45,9 +45,6 @@ class UeditorController extends InsideController
     
     public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
-        // 插件路径
-        $this->assignUrl('plugin', $this->request->getWebAssetsUrl() . 'admin/lib/ueditor/');
-        
         // 是否输出JS
         $isJs = $this->iGet('js', 'intval');
         if ($isJs) {
@@ -168,7 +165,7 @@ class UeditorController extends InsideController
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
         try {
-            if (!$this->checkLogin()) {
+            if (!$this->getLoginUserInfo()) {
                 throw new AppException('请登录后上传');
             }
             
@@ -223,7 +220,7 @@ class UeditorController extends InsideController
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
         try {
-            if (!$this->checkLogin()) {
+            if (!$this->getLoginUserInfo()) {
                 throw new AppException('请登录后上传');
             }
             

@@ -87,22 +87,39 @@ class AdminUser extends Model
      * 添加管理员
      * @param AdminUserField $insert
      * @return int
-     * @throws DbException
+     * @throws Exception
      */
-    public function insertData($insert)
+    public function insertData(AdminUserField $insert)
     {
-        $insert->createTime = time();
-        $insert->updateTime = time();
+        if (!$insert->username || !$insert->password || !$insert->groupIds) {
+            throw new ParamInvalidException('username,password,group_ids');
+        }
         
-        return $this->addData($insert);
+        $this->startTrans();
+        try {
+            $this->checkRepeat($insert);
+            $insert->createTime = time();
+            $insert->updateTime = time();
+            $insert->password   = password_hash($insert->password, PASSWORD_DEFAULT);
+            
+            $id = $this->addData($insert);
+            
+            $this->commit();
+            
+            return $id;
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
     }
     
     
     /**
      * 修改管理员
      * @param AdminUserField $update
-     * @throws DbException
      * @throws ParamInvalidException
+     * @throws Exception
      */
     public function updateData($update)
     {
@@ -110,24 +127,80 @@ class AdminUser extends Model
             throw new ParamInvalidException('id');
         }
         
-        $update->updateTime = time();
-        $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
+        $this->startTrans();
+        try {
+            $this->lock(true)->getInfo($update->id);
+            $this->checkRepeat($update, $update->id);
+            
+            // 密码
+            if ($update->password) {
+                $update->password = password_hash($update->password, PASSWORD_DEFAULT);
+            }
+            
+            $update->updateTime = time();
+            $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
+            
+            $this->commit();
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 查重
+     * @param AdminUserField $data
+     * @param int            $id
+     * @throws VerifyException
+     */
+    protected function checkRepeat(AdminUserField $data, $id = 0)
+    {
+        if ($data->username) {
+            $this->whereEntity(AdminUserField::username($data->username));
+            if ($id > 0) {
+                $this->whereEntity(AdminUserField::id('<>', $id));
+            }
+            if ($this->count() > 0) {
+                throw new VerifyException('该用户名已存在', 'username');
+            }
+        }
+        
+        if ($data->phone) {
+            $this->whereEntity(AdminUserField::phone($data->phone));
+            if ($id > 0) {
+                $this->whereEntity(AdminUserField::id('<>', $id));
+            }
+            if ($this->count() > 0) {
+                throw new VerifyException('该手机号已存在', 'phone');
+            }
+        }
+        
+        if ($data->email) {
+            $this->whereEntity(AdminUserField::email($data->email));
+            if ($id > 0) {
+                $this->whereEntity(AdminUserField::id('<>', $id));
+            }
+            if ($this->count() > 0) {
+                throw new VerifyException('该邮箱地址已存在', 'phone');
+            }
+        }
     }
     
     
     /**
      * 修改管理员密码
-     * @param int    $adminUserId
+     * @param int    $id
      * @param string $password
      * @param string $confirmPassword
-     * @throws DbException
      * @throws ParamInvalidException
      * @throws VerifyException
      */
-    public function updatePassword($adminUserId, $password, $confirmPassword)
+    public function updatePassword($id, $password, $confirmPassword)
     {
         $saveData           = AdminUserField::init();
-        $saveData->id       = floatval($adminUserId);
+        $saveData->id       = floatval($id);
         $saveData->password = self::checkPassword($password, $confirmPassword);
         $this->updateData($saveData);
     }
@@ -199,7 +272,7 @@ class AdminUser extends Model
             $checkError      = $errorMinute > 0 && $errorLockMinute > 0 && $errorMax > 0;
             
             // 是否已经锁定
-            if ($checkError && $info->errorRelease > 0 && $info->errorRelease > time()) {
+            if ($checkError && $info->errorRelease > time()) {
                 $time = date('Y-m-d H:i:s', $info->errorRelease);
                 throw new VerifyException("连续密码错误超过{$errorMax}次，已被系统锁定至{$time}");
             }

@@ -417,7 +417,7 @@
                     extensions : acceptExtensions,
                     mimeTypes  : (config.mime || ['image/*']).join(',')
                 },
-                swf                 : '{$url.plugin}third-party/webuploader/Uploader.swf',
+                swf                 : '{$skin.lib}ueditor/third-party/webuploader/Uploader.swf',
                 server              : actionUrl,
                 fileVal             : 'upload',
                 duplicate           : true,

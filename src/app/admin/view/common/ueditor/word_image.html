@@ -4,7 +4,7 @@
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <js href="{$url.plugin}dialogs/internal.js"/>
+    <js href="{$skin.lib}ueditor/dialogs/internal.js"/>
     <style type="text/css">
         .wrapper { width: 600px; padding: 10px; height: 352px; overflow: hidden; position: relative; border-bottom: 1px solid #d7d7d7 }
         .localPath input { float: left; width: 350px; line-height: 20px; height: 20px; }
@@ -31,7 +31,7 @@
         </div>
     </div>
 </div>
-<js href="{$url.plugin}dialogs/wordimage/tangram.js"/>
+<js href="{$skin.lib}ueditor/dialogs/wordimage/tangram.js"/>
 <script src="{:url('?js=1')}"></script>
 <script type="text/javascript">
     editor.setOpt({
@@ -76,7 +76,7 @@
             //可向服务器提交的自定义参数列表
             ext                 : extendParams,
             fileType            : '{"description":"' + lang.fileType + '", "extension":"' + extension + '"}',     //上传文件格式限制
-            flashUrl            : '{$url.plugin}dialogs/wordimage/imageUploader.swf',                                                  //上传用的flash组件地址
+            flashUrl            : '{$skin.lib}ueditor/dialogs/wordimage/imageUploader.swf',                                                  //上传用的flash组件地址
             width               : 600,          //flash的宽度
             height              : 272,         //flash的高度
             gridWidth           : 120,     // 每一个预览图片所占的宽度

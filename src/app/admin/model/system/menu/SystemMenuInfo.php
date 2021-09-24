@@ -2,6 +2,7 @@
 
 namespace BusyPHP\app\admin\model\system\menu;
 
+use BusyPHP\helper\util\Filter;
 use think\facade\Route;
 
 /**
@@ -12,6 +13,8 @@ use think\facade\Route;
  * @method static mixed child();
  * @method static mixed hash();
  * @method static mixed parentHash();
+ * @method static mixed paramList();
+ * @method static mixed url();
  */
 class SystemMenuInfo extends SystemMenuField
 {
@@ -38,6 +41,12 @@ class SystemMenuInfo extends SystemMenuField
      */
     public $url;
     
+    /**
+     * 参数列表
+     * @var string[]
+     */
+    public $paramList;
+    
     
     public function onParseAfter()
     {
@@ -46,6 +55,7 @@ class SystemMenuInfo extends SystemMenuField
         $this->hide       = $this->hide > 0;
         $this->disabled   = $this->disabled > 0;
         $this->system     = $this->system > 0;
+        $this->paramList  = Filter::trimArray(explode(',', $this->params) ?: []);
         
         if (0 === strpos($this->path, '#')) {
             $this->url    = '';

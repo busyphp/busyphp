@@ -64,10 +64,7 @@
                     <td class="message">
                         <?php
                         $extend_message = '';
-                        if ($message instanceof BusyPHP\exception\SQLException) {
-                            $extend_message = $message->getErrorSQL() . '<br />' . $message->getLastSQL();
-                            echo $message->getMessage();
-                        } elseif ($message instanceof BusyPHP\exception\VerifyException) {
+                        if ($message instanceof BusyPHP\exception\VerifyException) {
                             $extend_message = "Error Field : " . $message->getField() . ", Error Code : " . $message->getCode();
                             echo $message->getMessage();
                         } elseif ($message instanceof Exception) {

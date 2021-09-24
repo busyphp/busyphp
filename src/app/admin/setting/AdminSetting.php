@@ -73,7 +73,7 @@ class AdminSetting extends Setting
      */
     public function getLogoIcon() : string
     {
-        return $this->get('logo_icon', '') ?: Request::init()->getWebAssetsUrl() . 'admin/images/busy-php-icon.png';
+        return $this->get('logo_icon', '') ?: Request::init()->getAssetsUrl() . 'admin/images/busy-php-icon.png';
     }
     
     

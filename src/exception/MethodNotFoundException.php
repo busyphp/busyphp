@@ -23,7 +23,15 @@ class MethodNotFoundException extends AppException
     protected $class;
     
     
-    public function __construct($class, $method, $message = "")
+    /**
+     * MethodNotFoundException constructor.
+     * @param mixed          $class 类名
+     * @param string         $method 方法名
+     * @param string         $message 消息
+     * @param int            $code
+     * @param Throwable|null $previous
+     */
+    public function __construct($class, string $method, string $message = '', int $code = 0, Throwable $previous = null)
     {
         if (is_object($class)) {
             $class = get_class($class);
@@ -39,6 +47,6 @@ class MethodNotFoundException extends AppException
             'method' => $method
         ]);
         
-        parent::__construct($message, 0);
+        parent::__construct($message, $code, $previous);
     }
 }

@@ -9,6 +9,7 @@ use BusyPHP\helper\util\Str;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午6:33 下午 InsideController.php $
+ * @internal
  */
 class InsideController extends AdminCurdController
 {
@@ -22,7 +23,7 @@ class InsideController extends AdminCurdController
      * 获取模板存放目录
      * @return string
      */
-    protected function getViewPath()
+    protected function getViewPath() : string
     {
         return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
     }
@@ -32,16 +33,17 @@ class InsideController extends AdminCurdController
      * 获取当前控制器模板存放目录
      * @return string
      */
-    protected function getTemplatePath()
+    protected function getTemplatePath() : string
     {
-        $group = '';
-        if ($groupName = $this->request->group()) {
-            $group = Str::snake($groupName) . DIRECTORY_SEPARATOR;
-        } else if ($groupName = $this->request->param('dir')) {
-            $group = Str::snake($groupName) . DIRECTORY_SEPARATOR;
+        $group      = '';
+        $controller = $this->request->controller();
+        if (false !== strpos($controller, '.')) {
+            [$group, $controller] = explode('.', $controller);
+            $group = Str::snake($group) . DIRECTORY_SEPARATOR;
         }
+        $controller = Str::snake($controller);
         
-        return $this->getViewPath() . $group . Str::snake($this->request->controller(false, true)) . DIRECTORY_SEPARATOR;
+        return $this->getViewPath() . $group . $controller . DIRECTORY_SEPARATOR;
     }
     
     

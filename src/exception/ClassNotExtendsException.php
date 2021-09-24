@@ -2,6 +2,8 @@
 
 namespace BusyPHP\exception;
 
+use Throwable;
+
 /**
  * 类未继承异常
  * @author busy^life <busy.life@qq.com>
@@ -23,11 +25,13 @@ class ClassNotExtendsException extends AppException
     
     /**
      * ClassNotExtendsException constructor.
-     * @param string|object $class
-     * @param string|object $extends
-     * @param string        $message
+     * @param string|object  $class
+     * @param string|object  $extends
+     * @param string         $message
+     * @param int            $code
+     * @param Throwable|null $previous
      */
-    public function __construct($class, $extends, $message = "")
+    public function __construct($class, $extends, string $message = "", int $code = 0, Throwable $previous = null)
     {
         if (is_object($class)) {
             $class = get_class($class);
@@ -46,7 +50,7 @@ class ClassNotExtendsException extends AppException
             'extends' => $extends
         ]);
         
-        parent::__construct($message);
+        parent::__construct($message, $code, $previous);
     }
     
     

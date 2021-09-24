@@ -28,18 +28,6 @@ use think\file\UploadedFile;
 class Request extends \think\Request
 {
     /**
-     * 网站静态资源URL
-     * @var string
-     */
-    protected static $assetsUrl;
-    
-    /**
-     * 网站文件资源URL
-     * @var string
-     */
-    protected static $fileUrl;
-    
-    /**
      * 来源地址
      * @var string
      */
@@ -75,54 +63,19 @@ class Request extends \think\Request
     
     
     /**
-     * 获取控制器名称
-     * @param bool $convert 是否转换为小写
-     * @param bool $real 是否输出真实的控制器名称
+     * 获取url的path部分，不含应用名称和扩展名
      * @return string
      */
-    public function controller(bool $convert = false, $real = false) : string
+    public function getPath() : string
     {
-        $controller = parent::controller($convert);
-        
-        if (!$real || false === strpos($controller, '.')) {
-            return $controller;
+        $path = $this->url();
+        $path = ltrim(trim(parse_url($path, PHP_URL_PATH)), '/');
+        if (false !== $index = strrpos($path, '.')) {
+            $path = substr($path, 0, $index);
         }
+        $path = ltrim(substr("/{$path}", strlen($this->root())), '/');
         
-        $array = explode('.', $controller);
-        
-        return array_pop($array);
-    }
-    
-    
-    /**
-     * 设置分组
-     * @param string $group
-     * @return Request
-     */
-    public function setGroup(string $group) : self
-    {
-        $this->group = $group;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 获取分组
-     * @param bool $convert
-     * @return string
-     */
-    public function group(bool $convert = false) : string
-    {
-        $controller = $this->controller ?: '';
-        if (!$this->group && false !== strpos($controller, '.')) {
-            $array       = explode('.', $controller);
-            $this->group = array_shift($array);
-        }
-        
-        $name = $this->group ?: '';
-        
-        return $convert ? strtolower($name) : $name;
+        return $path;
     }
     
     
@@ -339,35 +292,12 @@ class Request extends \think\Request
      * @param bool $domain 是否包含完整域名
      * @return string
      */
-    public function getWebAssetsUrl(bool $domain = false) : string
+    public function getAssetsUrl(bool $domain = false) : string
     {
-        if (!isset(self::$assetsUrl)) {
-            if ($domainAssets = config('route.domain_assets')) {
-                self::$assetsUrl = rtrim($domainAssets, '/') . '/';
-            } else {
-                self::$assetsUrl = $this->getWebUrl($domain) . 'assets/';
-            }
+        if ($domainAssets = App::getInstance()->config->get('route.domain_assets')) {
+            return rtrim($domainAssets, '/') . '/';
+        } else {
+            return $this->getWebUrl($domain) . 'assets/';
         }
-        
-        return self::$assetsUrl;
-    }
-    
-    
-    /**
-     * 获取网站文件入口URL
-     * @param bool $domain 是否包含完整域名
-     * @return string
-     */
-    public function getWebFileUrl(bool $domain = false) : string
-    {
-        if (!isset(self::$fileUrl)) {
-            if ($domainFile = config('route.domain_file')) {
-                self::$fileUrl = rtrim($domainFile, '/') . '/';
-            } else {
-                self::$fileUrl = $this->getWebUrl($domain) . 'data/file/';
-            }
-        }
-        
-        return self::$fileUrl;
     }
 }

@@ -131,7 +131,7 @@ class View implements TemplateHandlerInterface
         $this->config['tpl_replace_string']['__SELF__'] = $this->request->url();
         
         // 静态资源URL
-        $this->config['tpl_replace_string']['__ASSETS__'] = $this->request->getWebAssetsUrl();
+        $this->config['tpl_replace_string']['__ASSETS__'] = $this->request->getAssetsUrl();
         
         // 当前域名
         $this->config['tpl_replace_string']['__DOMAIN__'] = $this->request->domain();

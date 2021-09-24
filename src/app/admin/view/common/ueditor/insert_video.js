@@ -293,7 +293,7 @@
                 if (j == "none") {
                     div.className = "focus";
                 }
-                div.style.cssText = "background:url({$url.plugin}dialogs/video/images/" + j + "_focus.jpg);";
+                div.style.cssText = "background:url({$skin.lib}ueditor/dialogs/video/images/" + j + "_focus.jpg);";
                 div.setAttribute("title", nameMaps[j]);
                 floatContainer.appendChild(div);
             }
@@ -472,7 +472,7 @@
                     extensions : acceptExtensions,
                     mimeTypes  : (config.mime || ['video/*']).join(',')
                 },
-                swf                 : '{$url.plugin}third-party/webuploader/Uploader.swf',
+                swf                 : '{$skin.lib}ueditor/third-party/webuploader/Uploader.swf',
                 server              : actionUrl,
                 fileVal             : 'upload',
                 duplicate           : true,

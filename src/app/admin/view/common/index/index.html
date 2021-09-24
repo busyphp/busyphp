@@ -13,9 +13,11 @@
                 <table class="table table-bordered">
                     <tr>
                         <td colspan="2">
-                            您好，<a class="label label-primary f12" href="{:url('System.User/personal_info')}">{$system.username}</a>
+                            您好，<a class="label label-primary" href="{:url('System.User/personal_info')}">{$system.user.username}</a>
                             &nbsp;&nbsp;&nbsp;用户组：
-                            <label class="label label-warning f12">{$system.permission.name}</label>
+                            <foreach name="system.user.group_names" item="vo">
+                                <label class="label label-warning">{$vo}</label>
+                            </foreach>
                         </td>
                     </tr>
                     <tr>
@@ -24,9 +26,7 @@
                     </tr>
                     <tr>
                         <td>最后一次登录时间</td>
-                        <td>
-                            <admin:date format="Y-m-d H:i:s">$system['user']['last_time']</admin:date>
-                        </td>
+                        <td>{$system.user.format_last_time}</td>
                     </tr>
                     <tr>
                         <td>登录次数</td>
@@ -49,8 +49,7 @@
                     <tr>
                         <td>操作系统 / 编码</td>
                         <td>
-                            {$system_name} / {$soft_name} /
-                            <admin:date format="Y-m-d H:i:s">time()</admin:date>
+                            {$system_name} / {$soft_name} / {$Think.NOW}
                         </td>
                     </tr>
                     <tr>

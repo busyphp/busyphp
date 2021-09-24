@@ -31,7 +31,7 @@ class MessageNoticeSubscribe extends Subscribe
     public function onTotal(MessageParams $params) : int
     {
         return intval(AdminMessage::init()
-            ->whereEntity(AdminMessageField::userId($params->getUserId()), AdminMessageField::isRead(0))
+            ->whereEntity(AdminMessageField::userId($params->getUser()->id), AdminMessageField::isRead(0))
             ->count());
     }
     
@@ -49,7 +49,7 @@ class MessageNoticeSubscribe extends Subscribe
         $page  = $params->getPage();
         $page  = $page <= 1 ? 1 : $page;
         $model = AdminMessage::init();
-        $model->whereEntity(AdminMessageField::userId($params->getUserId()));
+        $model->whereEntity(AdminMessageField::userId($params->getUser()->id));
         $model->order(AdminMessageField::id(), 'desc');
         $model->page($page, $size);
         $data = $model->selectList();
@@ -79,7 +79,7 @@ class MessageNoticeSubscribe extends Subscribe
      */
     public function onRead(MessageUpdateParams $params)
     {
-        AdminMessage::init()->whereEntity(AdminMessageField::userId($params->getUserId()))->setRead($params->getId());
+        AdminMessage::init()->whereEntity(AdminMessageField::userId($params->getUser()->id))->setRead($params->getId());
     }
     
     
@@ -90,7 +90,7 @@ class MessageNoticeSubscribe extends Subscribe
      */
     public function onAllRead(MessageParams $params)
     {
-        AdminMessage::init()->setAllReadByUserId($params->getUserId());
+        AdminMessage::init()->setAllReadByUserId($params->getUser()->id);
     }
     
     
@@ -102,7 +102,7 @@ class MessageNoticeSubscribe extends Subscribe
     public function onDelete(MessageUpdateParams $params)
     {
         AdminMessage::init()
-            ->whereEntity(AdminMessageField::userId($params->getUserId()))
+            ->whereEntity(AdminMessageField::userId($params->getUser()->id))
             ->deleteInfo(intval($params->getId()));
     }
     
@@ -114,7 +114,7 @@ class MessageNoticeSubscribe extends Subscribe
      */
     public function onClear(MessageParams $params)
     {
-        AdminMessage::init()->clearByUserId($params->getUserId());
+        AdminMessage::init()->clearByUserId($params->getUser()->id);
     }
     
     

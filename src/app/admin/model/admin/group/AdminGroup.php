@@ -2,6 +2,9 @@
 
 namespace BusyPHP\app\admin\model\admin\group;
 
+use BusyPHP\App;
+use BusyPHP\app\admin\controller\AdminController;
+use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
@@ -27,6 +30,14 @@ class AdminGroup extends Model
     
     protected $bindParseClass      = AdminGroupInfo::class;
     
+    /**
+     * 权限验证放行的控制器白名单
+     * @var string
+     */
+    public static $allowControllers = [
+        'Common.'
+    ];
+    
     
     /**
      * 获取列表
@@ -39,8 +50,7 @@ class AdminGroup extends Model
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
-            $list = $this->order(AdminGroupField::id(), 'asc')->selectList();
-            $list = Arr::listByKey($list, AdminGroupField::id());
+            $list = $this->order(AdminGroupField::sort(), 'asc')->order(AdminGroupField::id(), 'desc')->selectList();
             $this->setCache('list', $list);
         }
         
@@ -197,19 +207,60 @@ class AdminGroup extends Model
      */
     public function updateCache()
     {
-        $this->clearCache();
-        
-        $list      = $this->getList(true);
-        $menuModel = SystemMenu::init();
-        foreach ($list as $id => $r) {
-            $menuModel->getAdminMenu($r->id, true);
-            $menuModel->getAdminNav($r->id, true);
-        }
+        $this->getList(true);
     }
     
     
-    public function onChanged(string $method, $id, array $options)
+    /**
+     * @param string $method
+     * @param mixed  $id
+     * @param array  $options
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function onChanged(string $method, $id, array $options)
     {
-        $this->getList(true);
+        $this->updateCache();
+    }
+    
+    
+    /**
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function onSaveAll()
+    {
+        $this->updateCache();
+    }
+    
+    
+    /**
+     * 检测权限
+     * @param AdminUserInfo $adminUserInfo 用户数据
+     * @param string        $path 检测的路由路径
+     * @return bool
+     */
+    public static function checkPermission(?AdminUserInfo $adminUserInfo, $path = null) : bool
+    {
+        if (!$adminUserInfo) {
+            return false;
+        }
+        
+        // 拥有超级管理员权限，放行所有请求
+        if ($adminUserInfo->groupHasSystem) {
+            return true;
+        }
+        
+        // 放行白名单
+        $request     = App::getInstance()->request;
+        $currentPath = $path ?: $request->controller() . '/' . $request->action();
+        foreach (self::$allowControllers as $item) {
+            if (0 === strpos($currentPath, $item)) {
+                return true;
+            }
+        }
+        
+        // 是否在规则内
+        return in_array($path ?: App::getInstance()->request->getPath(), $adminUserInfo->groupRulePaths);
     }
 }

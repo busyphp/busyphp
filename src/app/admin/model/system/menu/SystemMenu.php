@@ -3,13 +3,12 @@
 namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\app\admin\model\system\menu\provide\AdminMenuStruct;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
 use BusyPHP\helper\util\Arr;
-use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -36,15 +35,6 @@ class SystemMenu extends Model
     
     /** @var string Iframe窗口 */
     const TARGET_IFRAME = 'iframe';
-    
-    //+--------------------------------------
-    //| 其它
-    //+--------------------------------------
-    /** 开发模式分组 */
-    const DEVELOP = '#developer';
-    
-    /** 保留分组 */
-    const RETAIN_GROUP = 'Develop,Common';
     
     /** @var bool 开发模式 */
     const DEBUG = true;
@@ -413,131 +403,36 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取后台管理顶级菜单
-     * @param int  $groupId 用户组ID
-     * @param bool $must 是否强制更新缓存
-     * @return AdminMenuStruct
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getAdminMenu($groupId, bool $must = true) : AdminMenuStruct
-    {
-        $groupInfo = AdminGroup::init()->getInfo($groupId);
-        $cacheName = "admin_menu_{$groupId}";
-        $struct    = $this->getCache($cacheName);
-        
-        if (!$struct || $must) {
-            $treeList = $this->getTreeList();
-            $struct   = AdminMenuStruct::init();
-            
-            // 系统用户组则输出所有菜单
-            if ($groupInfo->system) {
-                foreach ($treeList as $item) {
-                    // 禁用的
-                    if ($item->disabled) {
-                        continue;
-                    }
-                    
-                    /*TODO if ($item->isDefault) {
-                        $struct->defaultPath = $item->path;
-                    }*/
-                    
-                    $item->child        = [];
-                    $struct->paths[]    = $item->path;
-                    $struct->menuList[] = $item;
-                }
-            } else {
-                foreach ($treeList as $i => $item) {
-                    // 禁用的，不包含在群组规则的
-                    if ($item->disabled || !in_array($item->path, $groupInfo->rule)) {
-                        continue;
-                    }
-                    
-                    /*TODO if ($item->isDefault) {
-                        $struct->defaultPath = $item->path;
-                    }*/
-                    
-                    $item->child        = [];
-                    $struct->paths[]    = $item->path;
-                    $struct->menuList[] = $item;
-                }
-            }
-            
-            if (!$struct->defaultPath) {
-                $struct->defaultPath = end($struct->paths);
-            }
-            
-            $this->setCache($cacheName, $struct);
-        }
-        
-        // 不是系统管理员则不输出开发模式
-        if (!$groupInfo->system || ($groupInfo->system && !app()->isDebug())) {
-            $list = [];
-            foreach ($struct->menuList as $item) {
-                if ($item->path == self::DEVELOP) {
-                    continue;
-                }
-                $list[] = $item;
-            }
-            $struct->menuList = $list;
-        }
-        
-        return $struct;
-    }
-    
-    
-    /**
-     * 获取后台管理左侧菜单
-     * @param int  $groupId 权限组ID
-     * @param bool $must 是否强制更新缓存
+     * 获取后台菜单
+     * @param AdminUserInfo $adminUserInfo 用户信息
      * @return SystemMenuInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getAdminNav($groupId, bool $must = false) : array
+    public function getAdminNav(AdminUserInfo $adminUserInfo) : array
     {
-        $groupInfo = AdminGroup::init()->getInfo($groupId);
-        $cacheName = "admin_nav_{$groupId}";
-        
-        /** @var SystemMenuInfo[] $list */
-        $list = $this->getCache($cacheName);
-        if (!$list || $must) {
-            // 系统用户组则输出所有菜单
-            if ($groupInfo->system) {
-                $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) {
-                    if ($info->disabled || $info->hide) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
-            } else {
-                $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($groupInfo) {
-                    if ($info->disabled || !in_array($info->path, $groupInfo->rule) || $info->hide) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
+        return Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo) {
+            // 禁用和隐藏的菜单不输出
+            if ($info->disabled || $info->hide) {
+                return false;
             }
             
-            $this->setCache($cacheName, $list);
-        }
-        
-        // 不是系统管理员则不输出开发模式
-        if (!$groupInfo->system || ($groupInfo->system && !app()->isDebug())) {
-            $temp = [];
-            foreach ($list as $item) {
-                if ($item->path == self::DEVELOP) {
-                    continue;
+            // 系统管理员
+            if ($adminUserInfo->groupHasSystem) {
+                // 系统菜单在非开发模式下不输出
+                if ($info->system && !App::getInstance()->isDebug()) {
+                    return false;
                 }
-                $temp[] = $item;
+            } else {
+                // 不在规则内
+                // 不是系统菜单
+                if (!in_array($info->id, $adminUserInfo->groupRuleIds) || $info->system) {
+                    return false;
+                }
             }
             
-            $list = $temp;
-        }
-        
-        return $list;
+            return true;
+        });
     }
     
     
@@ -568,43 +463,6 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取后台分组
-     * @return string[]
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getGroups() : array
-    {
-        $list   = $this->getTreeList();
-        $groups = explode(',', self::RETAIN_GROUP);
-        foreach ($list as $item) {
-            $groups[] = $item->path;
-        }
-        
-        return array_values(array_unique($groups));
-    }
-    
-    
-    /**
-     * 依据 URL PATH 校验该菜单是否被禁用
-     * @param $path
-     * @return bool
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function checkDisabledByPath($path) : bool
-    {
-        $list = $this->getPathList();
-        $info = $list[$path] ?? false;
-        if (!$info) {
-            return true;
-        }
-        
-        return $info->disabled;
-    }
-    
-    
-    /**
      * 获取打开方式
      * @param string $var
      * @return array|string
@@ -614,18 +472,6 @@ class SystemMenu extends Model
         return self::parseVars(self::parseConst(self::class, 'TARGET_', [], function($item) {
             return $item['name'];
         }), $var);
-    }
-    
-    
-    /**
-     * 获取当前网址的URL PATH
-     * @return string
-     */
-    public static function getUrlPath()
-    {
-        $request = App::getInstance()->request;
-        
-        return "{$request->controller()}/{$request->action()}";
     }
     
     
@@ -672,7 +518,7 @@ class SystemMenu extends Model
         
         $options = '';
         foreach ($list as $item) {
-            if (!self::DEBUG && $item->path == self::DEVELOP) {
+            if (!self::DEBUG && $item->system) {
                 continue;
             }
             

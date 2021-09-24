@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
@@ -7,13 +8,9 @@ use BusyPHP\app\admin\js\AutocompletePlugin;
 use BusyPHP\app\admin\js\SelectPickerPlugin;
 use BusyPHP\app\admin\js\TablePlugin;
 use BusyPHP\app\admin\js\TreePlugin;
-use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
-use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
-use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
-use BusyPHP\helper\util\Str;
 use BusyPHP\model\Setting;
 use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
@@ -35,17 +32,11 @@ use Throwable;
 /**
  * 后台基础类
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2015 busy^life <busy.life@qq.com>
- * @version $Id: 2015-12-20 13:06 AdminAction.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/9/24 下午下午4:39 AdminController.php $
  */
 abstract class AdminController extends Controller
 {
-    //+--------------------------------------
-    //| 常量
-    //+--------------------------------------
-    /** 返回地址SESSION NAME */
-    const ADMIN_LOGIN_REDIRECT_URL = 'admin_login_redirect_url';
-    
     //+--------------------------------------
     //| 记录
     //+--------------------------------------
@@ -77,7 +68,7 @@ abstract class AdminController extends Controller
     protected $publicConfig = [];
     
     /**
-     * 管理员数组
+     * 管理员信息
      * @var AdminUserInfo
      */
     protected $adminUser;
@@ -93,51 +84,6 @@ abstract class AdminController extends Controller
      * @var string
      */
     protected $adminUsername = '';
-    
-    /**
-     * 当前权限组
-     * @var AdminGroupInfo
-     */
-    protected $adminPermission;
-    
-    /**
-     * 当前权限组ID
-     * @var int
-     */
-    protected $adminPermissionId = 0;
-    
-    /**
-     * 当前URL PATH
-     * @var string
-     */
-    protected $urlPath = '';
-    
-    //+--------------------------------------
-    //| 私有
-    //+--------------------------------------
-    /**
-     * 错误的权限消息
-     * @var string
-     */
-    private $permissionError = '';
-    
-    /**
-     * 面包屑数组
-     * @var array
-     */
-    private $breadcrumb = [];
-    
-    /**
-     * 页面名称
-     * @var string
-     */
-    private $pageTitle;
-    
-    /**
-     * 是否记录操作时长
-     * @var bool
-     */
-    private $saveOperate = true;
     
     /**
      * 请求的插件名称
@@ -169,11 +115,20 @@ abstract class AdminController extends Controller
      */
     protected $pluginTree;
     
+    //+--------------------------------------
+    //| 私有
+    //+--------------------------------------
+    /**
+     * 页面名称
+     * @var string
+     */
+    private $pageTitle;
     
-    public function __construct(App $app)
-    {
-        parent::__construct($app);
-    }
+    /**
+     * 是否记录操作时长
+     * @var bool
+     */
+    private $saveOperate = true;
     
     
     protected function initializeBefore()
@@ -191,11 +146,10 @@ abstract class AdminController extends Controller
     protected function initialize($checkLogin = true)
     {
         $this->publicConfig = config('user.public');
-        $this->urlPath      = SystemMenu::getUrlPath();
         
         // 验证登录
         if ($checkLogin) {
-            $this->isLogin();
+            $this->checkLogin();
         }
         
         // 自动处理
@@ -236,125 +190,54 @@ abstract class AdminController extends Controller
     /**
      * 验证登录
      */
-    protected function isLogin()
+    protected function checkLogin()
     {
-        if (!$this->checkLogin()) {
-            // 权限错误
-            if ($this->permissionError != '') {
-                $message     = $this->permissionError;
-                $redirectUrl = url('Common.Index/index');
-                $isRedirect  = false;
+        // 验证登录
+        if (!$this->getLoginUserInfo()) {
+            AdminUser::outLogin();
+            
+            // 记录返回地址
+            // POST/AJAX 记录来源操作地址为返回地址
+            if ($this->isPost() || $this->isAjax()) {
+                $redirectUrl = $this->request->getRedirectUrl();
             } else {
-                AdminUser::outLogin();
-                
-                // 记录返回地址
-                // POST/AJAX 记录来源操作地址为返回地址
-                if ($this->isPost() || $this->isAjax()) {
-                    $redirectUrl = $this->request->getRedirectUrl();
-                } else {
-                    $redirectUrl = $this->request->url();
-                }
-                
-                $message     = '请登录后操作';
-                $redirectUrl = url('admin_login', [$this->request->getVarRedirectUrl() => $redirectUrl]);
-                $isRedirect  = true;
+                $redirectUrl = $this->request->url();
             }
             
-            // 抛出错误
+            $message     = '请登录后操作';
+            $redirectUrl = url('admin_login', [$this->request->getVarRedirectUrl() => $redirectUrl]);
+            
             if ($this->isAjax()) {
                 $result = $this->error($message, $redirectUrl);
             } else {
-                if ($isRedirect) {
-                    $result = $this->redirect($redirectUrl);
-                } else {
-                    $result = $this->error($message, $redirectUrl);
-                }
+                $result = $this->redirect($redirectUrl);
             }
             
             throw new HttpResponseException($result);
         }
+        
+        // 权限验证
+        if (!AdminGroup::checkPermission($this->adminUser)) {
+            throw new HttpResponseException($this->error('您无权限操作', $this->request->root(), 0));
+        }
     }
     
     
     /**
-     * 校验登录
-     * @return bool|AdminUserInfo
+     * 获取登录用户信息
+     * @return AdminUserInfo
      */
-    protected function checkLogin()
+    protected function getLoginUserInfo() : ?AdminUserInfo
     {
         try {
-            $this->adminUser         = AdminUser::init()->checkLogin($this->saveOperate);
-            $this->adminUserId       = $this->adminUser->id;
-            $this->adminUsername     = $this->adminUser->username;
-            $this->adminPermission   = $this->adminUser->group;
-            $this->adminPermissionId = $this->adminUser->groupId;
-            
-            // 权限校验
-            if (!$this->checkPermission()) {
-                $this->permissionError = '您没有权限操作该内容';
-                throw new Exception($this->permissionError);
-            }
-            
-            return $this->adminUser;
+            $this->adminUser     = AdminUser::init()->checkLogin($this->saveOperate);
+            $this->adminUserId   = $this->adminUser->id;
+            $this->adminUsername = $this->adminUser->username;
         } catch (Exception $e) {
-            return false;
-        }
-    }
-    
-    
-    /**
-     * 验证权限
-     * @return bool
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    protected function checkPermission()
-    {
-        // 系统保留分组则允许通行
-        if ($this->request->group() != SystemMenu::DEVELOP && false !== stripos(',' . SystemMenu::RETAIN_GROUP . ',', ',' . $this->request->group() . ',')) {
-            return true;
+            return null;
         }
         
-        // 不在系统范围内的权限则允许通行
-        if (!in_array($this->urlPath, array_keys(SystemMenu::init()->getPathList()))) {
-            return true;
-        }
-        
-        // 权限为空
-        if (!$this->adminPermission) {
-            return false;
-        }
-        
-        // 系统权限组允许任何权限
-        if ($this->adminPermission->system) {
-            return true;
-        }
-        
-        // 校验是否包含权限
-        if (!in_array($this->urlPath, $this->adminPermission->rule)) {
-            return false;
-        }
-        
-        return true;
-    }
-    
-    
-    /**
-     * 添加面包屑导航地址
-     * @param string      $name 导航名称
-     * @param string|bool $url 导航链接，输入null则删除对应的导航名称，输入true代表当前网址，输入false删除该面包屑
-     */
-    protected function addBreadcrumb($name, $url = '')
-    {
-        if (isset($this->breadcrumb[$name]) && false === ($this->breadcrumb[$name])) {
-            return;
-        }
-        
-        if ($url === true) {
-            $url = $this->request->url();
-        }
-        
-        $this->breadcrumb[$name] = $url;
+        return $this->adminUser;
     }
     
     
@@ -371,112 +254,79 @@ abstract class AdminController extends Controller
     
     
     /**
+     * 初始化View注入参数
      * @throws DataNotFoundException
      * @throws DbException
      */
     protected function initView() : void
     {
         // 全局URL
-        $this->assignUrl('base_root', $this->request->getWebUrl());
-        $this->assignUrl('root', $this->request->getAppUrl());
-        $this->assignUrl('site', $this->request->domain());
-        $this->assignUrl('self', url($this->urlPath));
-        $this->assignUrl('login', url('admin_login'));
-        $this->assignUrl('group', $this->request->group());
-        $this->assignUrl('controller', $this->request->controller(false, true));
-        $this->assignUrl('action', $this->request->action());
-        
-        // 样式路径配置
-        $appUrl = $this->request->getWebAssetsUrl() . 'admin/';
-        $this->assign('skin', [
-            'root'   => $appUrl,
-            'css'    => $appUrl . 'css/',
-            'js'     => $appUrl . 'js/',
-            'images' => $appUrl . 'images/',
-            'lib'    => $appUrl . 'lib/'
+        $this->assign('url', [
+            'root'       => $this->request->getWebUrl(),
+            'app'        => $this->request->getAppUrl(),
+            'self'       => url(),
+            'controller' => $this->request->controller(),
+            'action'     => $this->request->action(),
         ]);
         
+        // 计算面包屑
+        $menuModel   = SystemMenu::init();
+        $hashList    = $menuModel->getHashList();
+        $breadcrumb  = [];
+        $currentMenu = $hashList[md5($this->request->getPath())] ?? null;
+        if ($currentMenu) {
+            $idList     = $menuModel->getIdList();
+            $parentList = $menuModel->getIdParens();
+            $root       = $this->request->root();
+            foreach ($parentList[$currentMenu->id] ?? [] as $id) {
+                if ($item = ($idList[$id] ?? null)) {
+                    $breadcrumb[] = [
+                        'name' => $item->name,
+                        'url'  => $item->url ? $root . $item->url : '',
+                    ];
+                }
+            }
+            krsort($breadcrumb);
+            $breadcrumb = array_values($breadcrumb);
+            
+            // 最终页面
+            $query = [];
+            foreach ($currentMenu->paramList as $item) {
+                $query[$item] = $this->request->get($item);
+            }
+            
+            $breadcrumb[] = [
+                'name' => $currentMenu->name,
+                'url'  => $root . $currentMenu->url . ($query ? '?' . http_build_query($query) : '')
+            ];
+        }
         
-        $systemInfo = [
+        // 系统信息
+        $this->assign('system', [
             'title'           => AdminSetting::init()->getTitle(),
             'favicon'         => PublicSetting::init()->getFavicon(),
             'logo_icon'       => AdminSetting::init()->getLogoIcon(),
             'logo_horizontal' => AdminSetting::init()->getLogoHorizontal(),
-        ];
-        
-        if ($this->adminUser) {
-            // 顶部栏目
-            $menuModel    = SystemMenu::init();
-            $menuStruct   = $menuModel->getAdminMenu($this->adminPermissionId, true);
-            $menuPathList = $menuModel->getPathList();
-            
-            // 当前激活面板
-            $menuActive = $this->request->group();
-            if (!in_array($menuActive, $menuStruct->paths)) {
-                if ($this->adminPermission->defaultMenuId) {
-                    $menuActive = Str::studly($this->adminPermission->defaultMenuId);
-                }
-                
-                $menuActive = $menuActive ?: $menuStruct->defaultPath;
-            }
-            
-            
-            // 左侧栏目
-            // 激活选项
-            $navActive     = $this->urlPath;
-            $navInfo       = $menuPathList[$this->urlPath] ?? null;
-            $navParentInfo = null;
-            
-            
-            // 如果是隐藏菜单则创建高亮激活选项
-            /*if ($navInfo && $navInfo->isMenu && $navInfo->isHide && $navInfo->higher) {
-                $navInfo->action = $navInfo->higher;
-                $navInfo->path   = SystemMenu::createUrlPath($navInfo);
-                $navParentInfo   = $menuPathList[$navInfo->path] ?? null;
-                $navActive       = $navParentInfo->path;
-                $this->addBreadcrumb($navParentInfo->name, $navParentInfo->url);
-            }
-            */
-            
-            if ($navInfo) {
-                $params = [];
-                if ($navInfo->params) {
-                    $array = explode(',', $navInfo->params);
-                    foreach ($array as $key) {
-                        $params[$key] = $this->iGet($key);
-                    }
-                }
-                $this->addBreadcrumb($navInfo->name, (string) url($navInfo->path, $params));
-                unset($navInfo);
-            }
-            
-            foreach ($this->breadcrumb as $item => $value) {
-                if (false === $value) {
-                    unset($this->breadcrumb[$item]);
-                }
-            }
-            
-            // 系统变量
-            $systemInfo['menu_active'] = $menuActive;
-            $systemInfo['nav_active']  = $navActive;
-            $systemInfo['user']        = $this->adminUser;
-            $systemInfo['user_id']     = $this->adminUserId;
-            $systemInfo['username']    = $this->adminUsername;
-            $systemInfo['breadcrumb']  = $this->breadcrumb;
-            $systemInfo['permission']  = $this->adminPermission;
-        }
-        $this->assign('system', $systemInfo);
-        
+            'user'            => $this->adminUser ?? [],
+            'breadcrumb'      => $breadcrumb
+        ]);
         
         // 页面名称
-        if (!$this->pageTitle) {
-            if ($this->breadcrumb) {
-                $keyArray        = array_keys($this->breadcrumb);
-                $this->pageTitle = end($keyArray);
-            }
+        if (!$this->pageTitle && $currentMenu) {
+            $this->pageTitle = $currentMenu->name;
         }
         $this->assign('page_title', $this->pageTitle . ' - ' . AdminSetting::init()->getTitle());
         $this->assign('panel_title', $this->pageTitle);
+        
+        // 样式路径配置
+        $skinRoot = $this->request->getAssetsUrl() . 'admin/';
+        $this->assign('skin', [
+            'root'   => $skinRoot,
+            'css'    => $skinRoot . 'css/',
+            'js'     => $skinRoot . 'js/',
+            'images' => $skinRoot . 'images/',
+            'lib'    => $skinRoot . 'lib/'
+        ]);
     }
     
     
@@ -548,71 +398,30 @@ abstract class AdminController extends Controller
     
     /**
      * 清空缓存
-     * @param bool|array $names
      * @throws DataNotFoundException
      * @throws DbException
      */
-    protected function clearCache($names)
+    protected function clearCache()
     {
-        $apps = $this->getApps();
-        if (is_bool($names) && true === $names) {
-            $names = [];
-            foreach ($apps as $value => $name) {
-                $names[$value] = 1;
-            }
-        }
-        
-        foreach ($apps as $value => $name) {
-            if (!$names[$value]) {
+        $path = $this->app->getBasePath();
+        foreach (scandir($path) as $value) {
+            if (!is_dir($path . $value) || $value === '.' || $value === '..') {
                 continue;
             }
             
-            File::deleteDir(App::runtimePath($value));
+            File::deleteDir(App::runtimePath($value . DIRECTORY_SEPARATOR . 'temp'));
+            File::deleteDir(App::runtimePath($value . DIRECTORY_SEPARATOR . 'cache'));
         }
-        
         
         // 清理系统缓存
         File::deleteDir(App::runtimeCachePath());
         // 清理临时配置
         File::deleteDir(App::runtimeConfigPath());
-        // 清理临时日志
-        File::deleteDir(App::runtimePath('log'));
         // 清理基本缓存
         Cache::clear();
         
         // 生成配置
         $this->updateCache();
-    }
-    
-    
-    /**
-     * 获取应用名称集合
-     */
-    protected function getApps()
-    {
-        static $apps;
-        
-        if (!isset($apps)) {
-            $path = base_path();
-            $apps = ['admin' => '后台', $this->app->config->get('app.default_app') => '前台'];
-            $keys = array_keys($apps);
-            foreach (scandir($path) as $value) {
-                if (!is_dir($app = $path . $value) || $value === '.' || $value === '..' || in_array($value, $keys)) {
-                    continue;
-                }
-                
-                $name   = $value;
-                $readme = $app . DIRECTORY_SEPARATOR . 'README.md';
-                if (is_file($readme)) {
-                    $name = file($readme);
-                    $name = str_replace(['#', '*', ' ', '>', '~', '='], '', trim($name[0]));
-                }
-                
-                $apps[$value] = $name;
-            }
-        }
-        
-        return $apps;
     }
     
     
@@ -656,29 +465,6 @@ HTML;
         $page->setForceRender(true);
         
         return $page;
-    }
-    
-    
-    /**
-     * 检测权限，供模板使用
-     * @param $path
-     * @return bool
-     * @todo 待开发
-     */
-    public static function checkAuth($path) : bool
-    {
-        return true;
-    }
-    
-    
-    /**
-     * 输出JsTree结构数据
-     * @param array $data
-     * @return Response
-     */
-    protected function responseJsTree($data)
-    {
-        return $this->success('', '', ['data' => $data]);
     }
     
     

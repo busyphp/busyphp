@@ -2,6 +2,8 @@
 
 namespace BusyPHP\exception;
 
+use Throwable;
+
 /**
  * 类不存在异常
  * @author busy^life <busy.life@qq.com>
@@ -18,10 +20,12 @@ class ClassNotFoundException extends AppException
     
     /**
      * ClassNotFoundException constructor.
-     * @param string|object $class
-     * @param string        $message
+     * @param string|object  $class
+     * @param string         $message
+     * @param int            $code
+     * @param Throwable|null $previous
      */
-    public function __construct($class, $message = "")
+    public function __construct($class, $message = "", int $code = 0, Throwable $previous = null)
     {
         if (is_object($class)) {
             $class = get_class($class);
@@ -34,7 +38,7 @@ class ClassNotFoundException extends AppException
             'class' => $class,
         ]);
         
-        parent::__construct($message);
+        parent::__construct($message, $code, $previous);
     }
     
     

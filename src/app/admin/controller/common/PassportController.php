@@ -94,7 +94,7 @@ class PassportController extends InsideController
         $list  = glob(App::getPublicPath('assets/admin/images/login') . '*.*');
         $array = [];
         foreach ($list as $item) {
-            $array[] = $this->request->getWebAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
+            $array[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
         }
         
         $adminSetting  = AdminSetting::init();

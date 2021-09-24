@@ -3,10 +3,19 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\js\struct\TreeFlatItemStruct;
+use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
+use BusyPHP\model\Map;
+use Exception;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 后台管理员管理
@@ -31,99 +40,157 @@ class SystemUserController extends InsideController
     
     
     /**
-     * 列表
+     * 管理员列表
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function index()
     {
-        return $this->select($this->model);
+        // 管理员列表数据
+        if ($this->pluginTable) {
+            $this->pluginTable->setQueryHandler(function(AdminUser $model, Map $data) {
+                switch ($data->get('status', 0)) {
+                    // 正常
+                    case 1:
+                        $model->whereEntity(AdminUserField::checked(1));
+                    break;
+                    // 禁用
+                    case 2:
+                        $model->whereEntity(AdminUserField::checked(0));
+                    break;
+                    // 零时锁定
+                    case 3:
+                        $model->whereEntity(AdminUserField::errorRelease('>', time()));
+                    break;
+                }
+                $data->remove('status');
+            });
+            
+            return $this->success($this->pluginTable->build($this->model));
+        }
+        
+        return $this->display();
     }
     
     
     /**
-     * 增加
+     * 添加管理员
+     * @return Response
+     * @throws DbException
+     * @throws VerifyException
+     * @throws Exception
      */
     public function add()
     {
-        return $this->submit('post', function($data) {
-            $update = AdminUserField::init();
-            $update->setUsername($data['username']);
-            $update->setPassword($data['password'], $data['confirm_password']);
-            $update->setPhone($data['phone']);
-            $update->setEmail($data['email']);
-            $update->setQq($data['qq']);
-            $update->setGroupId($data['group_id']);
-            $update->setChecked($data['checked']);
-            $this->model->insertData($update);
+        if ($this->isPost()) {
+            $insert = AdminUserField::init();
+            $insert->setGroupIds($this->request->post('group_ids', []));
+            $insert->setUsername($this->request->post('username', '', 'trim'));
+            $insert->setPassword($this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
+            $insert->setPhone($this->request->post('phone', '', 'trim'));
+            $insert->setEmail($this->request->post('email', '', 'trim'));
+            $insert->setQq($this->request->post('qq', '', 'trim'));
+            $insert->setChecked($this->request->post('checked', 0, 'intval') > 0);
+            $this->model->insertData($insert);
             $this->log('添加管理员', $this->model->getHandleData(), self::LOG_INSERT);
             
-            return '添加成功';
-        }, function() {
-            // 显示回调
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info                  = [];
-                $info['checked']       = 1;
-                $info['group_options'] = AdminGroup::init()->getSelectOptions($info['group_id'] ?? 0);
-                
-                return $info;
-            });
-            
-            $this->setRedirectUrl(url('index'));
-            $this->submitName = '添加';
-        });
+            return $this->success('添加成功');
+        }
+        
+        // 权限数据
+        if ($this->pluginTree) {
+            return $this->groupTree();
+        }
+        
+        $this->assign('info', ['checked' => 1]);
+        
+        return $this->display();
     }
     
     
     /**
-     * 修改
+     * 修改管理员
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ParamInvalidException
+     * @throws VerifyException
      */
     public function edit()
     {
-        return $this->submit('post', function($data) {
+        if ($this->isPost()) {
             $update = AdminUserField::init();
-            $update->setId($data['id']);
-            $update->setPhone($data['phone']);
-            $update->setEmail($data['email']);
-            $update->setQq($data['qq']);
-            $update->setGroupId($data['group_id']);
-            $update->setChecked($data['checked']);
+            $update->setId($this->request->post('id', 0, 'intval'));
+            $update->setGroupIds($this->request->post('group_ids', []));
+            $update->setUsername($this->request->post('username', '', 'trim'));
+            $update->setPhone($this->request->post('phone', '', 'trim'));
+            $update->setEmail($this->request->post('email', '', 'trim'));
+            $update->setQq($this->request->post('qq', '', 'trim'));
+            $update->setChecked($this->request->post('checked', 0, 'intval') > 0);
             $this->model->updateData($update);
             $this->log('修改管理员', $this->model->getHandleData(), self::LOG_UPDATE);
             
-            return '修改成功';
-        }, function() {
-            // 显示回调
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info                  = $this->model->getInfo($this->iGet('id'));
-                $info['group_options'] = AdminGroup::init()->getSelectOptions($info['group_id']);
-                
-                return $info;
-            });
+            return $this->success('修改成功');
+        }
+        
+        // 权限数据
+        $info = $this->model->getInfo($this->request->get('id', 0, 'intval'));
+        if ($this->pluginTree) {
+            return $this->groupTree($info);
+        }
+        
+        $this->assign('info', $info);
+        
+        return $this->display('add');
+    }
+    
+    
+    /**
+     * 角色数据
+     * @param AdminUserInfo $info
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    private function groupTree(?AdminUserInfo $info = null) : Response
+    {
+        $this->pluginTree->setNodeHandler(function(AdminGroupInfo $item, TreeFlatItemStruct $node) use ($info) {
+            $node->setText($item->name);
+            $node->setParent($item->parentId);
+            $node->setId($item->id);
+            $node->state->setOpened(true);
             
-            $this->setRedirectUrl();
-            $this->submitName   = '修改';
-            $this->templateName = 'add';
+            if ($info && in_array($item->id, $info->groupIds)) {
+                $node->state->setSelected(true);
+            }
         });
+        
+        return $this->success($this->pluginTree->build(AdminGroup::init()));
     }
     
     
     /**
      * 修改密码
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws VerifyException
+     * @throws ParamInvalidException
      */
     public function password()
     {
-        return $this->submit('post', function($data) {
-            $this->model->updatePassword($this->adminUserId, $data['password'], $data['confirm_password']);
+        if ($this->isPost()) {
+            $this->model->updatePassword($this->adminUserId, $this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
             $this->log('修改管理员密码', $this->model->getHandleData(), self::LOG_UPDATE);
             
-            return '修改密码成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return $this->model->getInfo($this->iGet('id'));
-            });
-            
-            $this->submitName = '修改密码';
-            $this->setRedirectUrl();
-        });
+            return $this->success('修改成功');
+        }
+        
+        $info = $this->model->getInfo($this->request->get('id', 0, 'intval'));
+        $this->assign('info', $info);
+        
+        return $this->display();
     }
     
     

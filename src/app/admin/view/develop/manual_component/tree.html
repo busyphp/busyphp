@@ -33,8 +33,6 @@
 | data-multiple | boolean | 否 | `true` | 设置是否允许多选 |
 | data-expand-selected-onload | boolean | 否 | `false` | 设置所有选中节点是否在初始化完成后展开 |
 | data-force-text | boolean | 否 | `false` | 是否强制将节点文本转换为纯文本(移除html) |
-| data-name | string | 否 | `tree_id[]` | 如果该组件在`form`标签内，可以设置表单参数名称，带有`[]`则提交数组，否则提交按逗号分割的节点ID |
-| data-undetermined | boolean | 否 | `false` | 表单数据是否包涵半选状态的节点ID |
 | Ajax:title |  |  |  |  |
 | data-url | string | 否 | - | 设置异步请求的URL |
 | data-method | string | 否 | `get` | 设置请求方式，支持`get`, `post` |
@@ -44,8 +42,14 @@
 | data-list | string | 否 | - | 设置初始化的数据，支持html、json格式的数据 |
 | 复选框:title |  |  |  |  |
 | data-checkbox | boolean | 否 | `false` | 是否启用复选框 |
+| data-checkbox-relation | boolean | 否 | `true` | 设置复选框勾选是否关联上下层级 |
+| data-checkbox-relation-dir | string | 否 | - | 设置复选框关联影响的方式，`up`：向上影响，`down`：向下影响，`undetermined`：半选 |
+| data-checkbox-relation-disabled | boolean | 否 | `true` | 设置复选框关联是否影响禁用的复选框 |
+| data-checkbox-relation-hidden | boolean | 否 | `true` | 设置复选框关联是否影响隐藏的复选框 |
 | data-checkbox-keep-selected-style | boolean | 否 | `false` | 是否保留选中样式 |
 | data-checkbox-tie-selection | boolean | 否 | `true` | 设置复选框事件绑定到核心事件触发，还是单独触发 |
+| data-name | string | 否 | `tree_id[]` | 表单参数名称，如果该组件在`form`标签内，选中项将自动填充到表单中，带有`[]`则提交数组，否则提交按逗号分割的节点ID |
+| data-uncertain-name | string | 否 | - | 不确定选中项参数名称，如果该组件在`form`标签内，半选(未确定)项将自动填充到表单中，带有`[]`则提交数组，否则提交按逗号分割的节点ID |
 | 右键菜单:title |  |  |  |  |
 | data-contextmenu | boolean | 否 | `false` | 是否显示右键菜单 |
 | data-contextmenu-items | **Function(node:Object) : Object** <br /> 自定义右键菜单回调，参考：https://www.jstree.com/api/#/?f=$.jstree.defaults.contextmenu.items<br /><br />**String**<br />`window全局方法名`，参数同自定义回调一致 | 否 | `false` | 是否显示右键菜单 |

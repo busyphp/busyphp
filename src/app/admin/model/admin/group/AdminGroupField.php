@@ -150,7 +150,7 @@ class AdminGroupField extends Field
     {
         $this->defaultMenuId = trim($defaultMenuId);
         if (!$this->defaultMenuId) {
-            throw new VerifyException('请选择默认菜单', 'default_group');
+            throw new VerifyException('请选择默认菜单', 'default_menu_id');
         }
         
         return $this;

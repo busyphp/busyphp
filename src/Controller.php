@@ -71,12 +71,6 @@ abstract class Controller
      */
     protected $middleware = [];
     
-    /**
-     * URL变量数组
-     * @var array
-     */
-    protected $url = [];
-    
     
     /**
      * 构造方法
@@ -161,19 +155,6 @@ abstract class Controller
         } else {
             $this->view->assign($name, $value);
         }
-    }
-    
-    
-    /**
-     * 模板URL变量赋值，类似模板用法
-     * @param string $name URL名称
-     * @param string $value URL值
-     * @return void
-     */
-    protected function assignUrl($name = '', $value = '')
-    {
-        $this->url[$name] = $value;
-        $this->assign('url', $this->url);
     }
     
     

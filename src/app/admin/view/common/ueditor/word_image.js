@@ -136,7 +136,7 @@ function getPasteData(id) {
 function createCopyButton(id, dataFrom) {
 	baidu.swf.create({
 			id           : "copyFlash",
-			url          : "{$url.plugin}dialogs/wordimage/fClipboard_ueditor.swf",
+			url          : "{$skin.lib}ueditor/dialogs/wordimage/fClipboard_ueditor.swf",
 			width        : "58",
 			height       : "25",
 			errorMessage : "",

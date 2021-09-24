@@ -13,7 +13,7 @@
 <script type="text/javascript" src="{$skin.js}admin.js?{:time()}"></script>
 <script>
     busyAdmin.init({
-        root       : '{$url.root}',
+        root       : '{$url.app}',
         moduleRoot : '{$skin.lib}',
         version    : (new Date()).getTime(),
         app        : {
@@ -21,7 +21,7 @@
             cacheLength       : 50,
             scrollCacheLength : 50,
             errorImgUrl       : '/assets/data/images/no_image.jpeg',
-            url               : '{$url.root}',
+            url               : '{$url.app}',
             navSingleHold     : false
         }
     });

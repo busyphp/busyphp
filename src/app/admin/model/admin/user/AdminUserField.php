@@ -2,16 +2,15 @@
 
 namespace BusyPHP\app\admin\model\admin\user;
 
-use BusyPHP\exception\SQLException;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\util\Transform;
-use think\Exception;
 
 /**
- * 管理员表模型
+ * 管理员表模型字段
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:47 AdminUserField.php $
@@ -21,6 +20,7 @@ use think\Exception;
  * @method static Entity email($op = null, $value = null) 邮箱
  * @method static Entity phone($op = null, $value = null) 联系方式
  * @method static Entity qq($op = null, $value = null) QQ号码
+ * @method static Entity groupIds($op = null, $value = null) 权限组ID集合，英文逗号分割，左右要有逗号
  * @method static Entity lastIp($op = null, $value = null) 最后一次登录IP地址
  * @method static Entity lastTime($op = null, $value = null) 最后一次登录时间
  * @method static Entity loginIp($op = null, $value = null) 本次登录IP
@@ -28,8 +28,6 @@ use think\Exception;
  * @method static Entity loginTotal($op = null, $value = null) 登录次数
  * @method static Entity createTime($op = null, $value = null) 创建时间
  * @method static Entity updateTime($op = null, $value = null) 更新时间
- * @method static Entity groupId($op = null, $value = null) 用户组权限ID
- * @method static Entity sectionId($op = null, $value = null) 所属部门ID
  * @method static Entity checked($op = null, $value = null) 是否审核
  * @method static Entity system($op = null, $value = null) 是否系统管理员
  * @method static Entity token($op = null, $value = null) 密钥
@@ -76,6 +74,12 @@ class AdminUserField extends Field
     public $qq;
     
     /**
+     * 权限组ID集合，英文逗号分割，左右要有逗号
+     * @var string|array
+     */
+    public $groupIds;
+    
+    /**
      * 最后一次登录IP地址
      * @var string
      */
@@ -116,18 +120,6 @@ class AdminUserField extends Field
      * @var int
      */
     public $updateTime;
-    
-    /**
-     * 用户组权限ID
-     * @var int
-     */
-    public $groupId;
-    
-    /**
-     * 所属部门ID
-     * @var int
-     */
-    public $sectionId;
     
     /**
      * 是否审核
@@ -187,7 +179,7 @@ class AdminUserField extends Field
      * 设置帐号
      * @param string $username
      * @return $this
-     * @throws Exception
+     * @throws VerifyException
      */
     public function setUsername($username)
     {
@@ -195,22 +187,6 @@ class AdminUserField extends Field
         if (!$this->username) {
             throw new VerifyException('请输入用户名', 'username');
         }
-        
-        // 查重
-        try {
-            try {
-                $model = AdminUser::init();
-                if ($this->id > 0) {
-                    $model->where('id', '<>', $this->id);
-                }
-                $model->getInfoByUsername($username);
-                throw new Exception();
-            } catch (SQLException $e) {
-            }
-        } catch (Exception $e) {
-            throw new VerifyException('用户已存在', 'username');
-        }
-        
         
         return $this;
     }
@@ -226,7 +202,6 @@ class AdminUserField extends Field
     public function setPassword($password, $confirmPassword)
     {
         $this->password = AdminUser::checkPassword($password, $confirmPassword);
-        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         
         return $this;
     }
@@ -242,23 +217,8 @@ class AdminUserField extends Field
     {
         $this->email = trim($email);
         if ($this->email) {
-            $model = AdminUser::init();
             if (!Regex::email($this->email)) {
                 throw new VerifyException('请输入有效的邮箱地址', 'email');
-            }
-            
-            // 查重
-            try {
-                try {
-                    if ($this->id > 0) {
-                        $model->where('id', '<>', $this->id);
-                    }
-                    $model->getInfoByEmail($email);
-                    throw new Exception();
-                } catch (SQLException $e) {
-                }
-            } catch (Exception $e) {
-                throw new VerifyException('该邮箱已存在', 'email');
             }
         }
         
@@ -276,23 +236,8 @@ class AdminUserField extends Field
     {
         $this->phone = trim($phone);
         if ($this->phone) {
-            $model = AdminUser::init();
             if (!Regex::phone($phone)) {
                 throw new VerifyException('请输入有效的手机号', 'phone');
-            }
-            
-            // 查重
-            try {
-                try {
-                    if ($this->id > 0) {
-                        $model->where('id', '<>', $this->id);
-                    }
-                    $model->getInfoByPhone($phone);
-                    throw new Exception();
-                } catch (SQLException $e) {
-                }
-            } catch (Exception $e) {
-                throw new VerifyException('该手机号已存在', 'phone');
             }
         }
         
@@ -314,19 +259,6 @@ class AdminUserField extends Field
     
     
     /**
-     * 设置是否系统管理员
-     * @param int $system
-     * @return $this
-     */
-    public function setSystem($system)
-    {
-        $this->system = Transform::dataToBool($system);
-        
-        return $this;
-    }
-    
-    
-    /**
      * 设为是否审核
      * @param int $checked
      * @return $this
@@ -340,35 +272,18 @@ class AdminUserField extends Field
     
     
     /**
-     * 设置用户组
-     * @param int $groupId
-     * @return $this
+     * 设置权限ID集合
+     * @param array $groupIds
      * @throws VerifyException
      */
-    public function setGroupId($groupId)
+    public function setGroupIds(array $groupIds) : void
     {
-        $this->groupId = floatval($groupId);
-        if ($this->groupId < 1) {
-            throw new VerifyException('请选择所属用户组', 'group_id');
+        $groupIds = array_map('intval', $groupIds);
+        $groupIds = Filter::trimArray($groupIds);
+        if (!$groupIds) {
+            throw new VerifyException('请选择权限', 'group_ids');
         }
         
-        return $this;
-    }
-    
-    
-    /**
-     * 设置部门ID
-     * @param int $sectionId
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setSectionId($sectionId)
-    {
-        $this->sectionId = floatval($sectionId);
-        if ($this->sectionId < 1) {
-            throw new VerifyException('请选择所属部门', 'section');
-        }
-        
-        return $this;
+        $this->groupIds = ',' . implode(',', $groupIds) . ',';
     }
 }

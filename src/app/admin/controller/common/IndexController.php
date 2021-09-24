@@ -78,11 +78,9 @@ class IndexController extends InsideController
      */
     protected function appInfo()
     {
-        $menuStruct = SystemMenu::init()->getAdminMenu($this->adminPermissionId);
-        
         return $this->success([
-            'menu_default'   => $menuStruct->defaultPath,
-            'menu_list'      => SystemMenu::init()->getAdminNav($this->adminPermissionId),
+            'menu_default'   => '',
+            'menu_list'      => SystemMenu::init()->getAdminNav($this->adminUser),
             'user_id'        => $this->adminUserId,
             'username'       => $this->adminUsername,
             
@@ -102,18 +100,12 @@ class IndexController extends InsideController
         $type   = $this->iGet('type', 'trim');
         
         $params = new MessageParams();
-        $params->setUserId($this->adminUserId);
-        $params->setUsername($this->adminUsername);
         $params->setUser($this->adminUser);
-        $params->setPermission($this->adminPermission);
         
         if ($type == 'notice') {
             if ($action == 'list') {
                 $listParams = new MessageListParams();
-                $listParams->setUserId($this->adminUserId);
-                $listParams->setUsername($this->adminUsername);
                 $listParams->setUser($this->adminUser);
-                $listParams->setPermission($this->adminPermission);
                 $listParams->setPage($this->iGet('page'));
                 $list = [];
                 foreach (MessageNoticeSubscribe::triggerList($listParams) as $item) {
@@ -135,10 +127,7 @@ class IndexController extends InsideController
                 return $this->success(['list' => $list]);
             } elseif ($action == 'read' || $action == 'delete') {
                 $updateParams = new MessageUpdateParams();
-                $updateParams->setUserId($this->adminUserId);
-                $updateParams->setUsername($this->adminUsername);
                 $updateParams->setUser($this->adminUser);
-                $updateParams->setPermission($this->adminPermission);
                 $updateParams->setId($this->iGet('id'));
                 
                 if ($action == 'delete') {
@@ -176,10 +165,7 @@ class IndexController extends InsideController
                 return $this->success(['list' => $list]);
             } elseif ($action == 'read') {
                 $updateParams = new MessageUpdateParams();
-                $updateParams->setUserId($this->adminUserId);
-                $updateParams->setUsername($this->adminUsername);
                 $updateParams->setUser($this->adminUser);
-                $updateParams->setPermission($this->adminPermission);
                 $updateParams->setId($this->iGet('id'));
                 
                 MessageAgencySubscribe::triggerRead($updateParams);

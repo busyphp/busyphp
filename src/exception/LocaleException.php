@@ -2,6 +2,7 @@
 
 namespace BusyPHP\exception;
 
+use RuntimeException;
 use think\facade\Lang;
 use Throwable;
 
@@ -11,7 +12,7 @@ use Throwable;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/11/15 下午12:02 上午 LocaleAppException.php $
  */
-class LocaleAppException extends AppException
+class LocaleException extends RuntimeException
 {
     /**
      * LocaleAppException constructor.

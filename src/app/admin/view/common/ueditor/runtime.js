@@ -2,7 +2,7 @@
 window.UEDITOR_CONFIG = {
     busyFileConfig : eval('(<?=$file_config?>)'),
 
-    UEDITOR_HOME_URL    : '{$url.plugin}',
+    UEDITOR_HOME_URL    : '{$skin.lib}ueditor/',
     serverUrl           : '{:url("server")}',
     pageBreakTag        : '{$Think.config.app.VAR_CONTENT_PAGE}',
     listiconpath        : '',
