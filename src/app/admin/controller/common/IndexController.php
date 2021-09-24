@@ -84,6 +84,57 @@ class IndexController extends InsideController
             'user_id'        => $this->adminUserId,
             'username'       => $this->adminUsername,
             
+            // 用户菜单
+            'user_dropdowns' => [
+                [
+                    'text' => '修改资料',
+                    'icon' => 'bicon bicon-user-profile',
+                    'attr' => [
+                        'data-toggle' => 'busy-modal',
+                        'data-url'    => (string) url('system_user/personal_info'),
+                    ]
+                ],
+                [
+                    'text' => '修改密码',
+                    'icon' => 'bicon bicon-lock',
+                    'attr' => [
+                        'data-toggle' => 'busy-modal',
+                        'data-url'    => (string) url('system_user/personal_password'),
+                    ]
+                ],
+                [
+                    'type' => 'divider'
+                ],
+                [
+                    'text' => '清理缓存',
+                    'icon' => 'bicon bicon-user-profile',
+                    'attr' => [
+                        'data-toggle'  => 'busy-request',
+                        'data-url'     => (string) url('system_manager/cache_clear'),
+                        'data-confirm' => '确认要清理缓存吗？<br /><span class="text-warning">当系统发生错误的时候可以通过该方法尝试性修复</span>',
+                    ]
+                ],
+                [
+                    'text' => '生成缓存',
+                    'icon' => 'bicon bicon-lock',
+                    'attr' => [
+                        'data-toggle'  => 'busy-request',
+                        'data-url'     => (string) url('system_manager/cache_create'),
+                        'data-confirm' => '确认要生成缓存吗？<br /><span class="text-success">生成缓存后系统运行速度将会提升</span>',
+                    ]
+                ],
+                [
+                    'text' => '退出登录',
+                    'icon' => 'bicon bicon-exit',
+                    'attr' => [
+                        'data-toggle'     => 'busy-request',
+                        'data-url'        => (string) url('admin_out'),
+                        'data-confirm'    => '确认要退出登录吗？',
+                        'data-on-success' => '@app.redirect',
+                    ]
+                ]
+            ],
+            
             // 消息启用状态
             'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
             'message_agency' => MessageAgencySubscribe::hasSubscribe(),

@@ -196,6 +196,7 @@ class AdminUser extends Model
      * @param string $confirmPassword
      * @throws ParamInvalidException
      * @throws VerifyException
+     * @throws Exception
      */
     public function updatePassword($id, $password, $confirmPassword)
     {
@@ -278,7 +279,7 @@ class AdminUser extends Model
             }
             
             // 检测密码
-            if (!password_verify(self::createPassword($password), $info->password)) {
+            if (!self::verifyPassword($password, $info->password)) {
                 // 记录密码错误次数
                 $errorMsg  = '账号不存在或密码错误';
                 $errorCode = 0;
@@ -462,6 +463,18 @@ class AdminUser extends Model
     public static function createPassword($password) : string
     {
         return md5(md5($password) . 'Admin.BusyPHP');
+    }
+    
+    
+    /**
+     * 校验密码
+     * @param $inputPassword
+     * @param $dbPassword
+     * @return bool
+     */
+    public static function verifyPassword($inputPassword, $dbPassword)
+    {
+        return password_verify(self::createPassword($inputPassword), $dbPassword);
     }
     
     

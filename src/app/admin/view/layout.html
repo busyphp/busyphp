@@ -39,32 +39,12 @@
                         </a>
                         </li>
                         <li class="dropdown">
-                        <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
-                            <i class="bicon bicon-user"></i>
-                            <span data-busy-id="bar-username"></span>
-                            <span class="caret"></span>
-                        </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="{:url('system_user/personal_info')}"><i class="bicon bicon-user-profile"></i> 基本资料</a>
-                                </li>
-                                <li>
-                                    <a href="{:url('system_user/personal_password')}"><i class="bicon bicon-lock"></i> 修改密码</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li>
-                                    <a href="{:url('system_manager/cache_clear')}" data-toggle="busy-request" data-confirm="确认要清理缓存吗？<br />当系统发生错误的时候可以通过该方法尝试性修复" data-on-success="@app.reload"><i class="bicon bicon-user-profile"></i> 清理缓存</a>
-                                </li>
-                                <li>
-                                    <a href="{:url('system_manager/cache_create')}" data-toggle="busy-request" data-confirm="确认要生成缓存吗？<br />生成缓存后系统运行速度将会提升" data-on-success="@app.reload"><i class="bicon bicon-lock"></i> 生成缓存</a>
-                                </li>
-                                <li>
-                                <a href="{:url('admin_out')}" data-toggle="busy-request" data-confirm="确认要退出登录吗？" data-on-success="@app.redirect">
-                                    <i class="bicon bicon-exit"></i>
-                                    退出登录
-                                </a>
-                                </li>
-                            </ul>
+                            <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="bicon bicon-user"></i>
+                                <span data-busy-id="bar-username"></span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" data-busy-id="bar-user-dropdowns"></ul>
                         </li>
                     </ul>
                 </div>

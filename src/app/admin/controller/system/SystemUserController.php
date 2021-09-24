@@ -215,55 +215,53 @@ class SystemUserController extends InsideController
     
     /**
      * 修改个人资料
+     * @return Response
+     * @throws Exception
      */
     public function personal_info()
     {
-        return $this->submit('post', function($data) {
+        if ($this->isPost()) {
             $update = AdminUserField::init();
             $update->setId($this->adminUserId);
-            $update->setPhone($data['phone']);
-            $update->setEmail($data['email']);
-            $update->setQq($data['qq']);
-            $this->model->updateData($update);
-            $this->log('修改管理员个人资料', $this->model->getHandleData(), self::LOG_UPDATE);
+            $update->setUsername($this->request->post('username', '', 'trim'));
+            $update->setPhone($this->request->post('phone', '', 'trim'));
+            $update->setEmail($this->request->post('email', '', 'trim'));
+            $update->setQq($this->request->post('qq', '', 'trim'));
+            $this->model->whereEntity(AdminUserField::id($this->adminUserId))->updateData($update);
+            $this->log('修改个人资料', $this->model->getHandleData(), self::LOG_UPDATE);
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return $this->model->getInfo($this->adminUserId);
-            });
-            
-            $this->setRedirectUrl(null);
-            $this->submitName = '修改资料';
-        });
+            return $this->success('修改成功');
+        }
+        
+        $this->assign('info', $this->adminUser);
+        
+        return $this->display();
     }
     
     
     /**
      * 修改个人密码
+     * @return Response
+     * @throws Exception
      */
     public function personal_password()
     {
-        return $this->submit('post', function($data) {
-            $data['old_password'] = trim($data['old_password']);
-            if (!$data['old_password']) {
-                throw new VerifyException('请输入旧密码', 'old_password');
-            }
-            if (AdminUser::createPassword($data['old_password']) != $this->adminUser['password']) {
-                throw new VerifyException('旧密码输入错误', 'old_password');
+        if ($this->isPost()) {
+            $oldPassword = $this->request->post('old_password', '', 'trim');
+            if (!$oldPassword) {
+                throw new VerifyException('请输入登录密码', 'old_password');
             }
             
-            $this->model->updatePassword($this->adminUserId, $data['password'], $data['confirm_password']);
-            $this->log('修改管理员个人密码', $this->model->getHandleData(), self::LOG_UPDATE);
+            if (!AdminUser::verifyPassword($oldPassword, $this->adminUser->password)) {
+                throw new VerifyException('登录密码输入错误', 'old_password');
+            }
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return $this->model->getInfo($this->adminUserId);
-            });
+            $this->model->updatePassword($this->adminUserId, $this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
+            $this->log('修改个人密码', $this->model->getHandleData(), self::LOG_UPDATE);
             
-            $this->setRedirectUrl(null);
-            $this->submitName = '修改密码';
-        });
+            return $this->success('修改成功');
+        }
+        
+        return $this->display();
     }
 }
