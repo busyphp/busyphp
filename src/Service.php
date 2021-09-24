@@ -283,7 +283,7 @@ class Service extends ThinkService
             
             foreach ($routeConfig as $key => $item) {
                 $roleItem = $route->rule("{$key}/<action>", "{$item['class']}@<action>");
-                $roleItem->append(['group' => $item['group'], 'type' => 'plugin', 'control' => $key]);
+                $roleItem->append(['dir' => $item['group'], 'type' => 'plugin', 'control' => $key]);
                 if (isset($item['actions'])) {
                     $roleItem->pattern([
                         'action' => $item['actions']

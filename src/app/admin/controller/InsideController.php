@@ -43,7 +43,12 @@ class InsideController extends AdminCurdController
         }
         $controller = Str::snake($controller);
         
-        return $this->getViewPath() . $group . $controller . DIRECTORY_SEPARATOR;
+        $dir = $this->request->route('dir');
+        if ($dir) {
+            $dir = Str::snake($dir) . DIRECTORY_SEPARATOR;
+        }
+        
+        return $this->getViewPath() . $dir . $group . $controller . DIRECTORY_SEPARATOR;
     }
     
     
