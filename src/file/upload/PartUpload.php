@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\file\upload;
 
@@ -140,7 +141,6 @@ class PartUpload extends Upload
         $tempSystem = $this->tempSystem();
         $tempDir    = 'parts' . DIRECTORY_SEPARATOR . md5(implode(',', [
                 $this->id,
-                $this->client,
                 $this->userId,
                 $this->classType,
                 $this->classValue

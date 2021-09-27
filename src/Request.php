@@ -45,12 +45,6 @@ class Request extends \think\Request
      */
     protected $webUrl;
     
-    /**
-     * 分组
-     * @var string
-     */
-    protected $group;
-    
     
     /**
      * 单例
@@ -246,32 +240,26 @@ class Request extends \think\Request
     
     
     /**
-     * 设置应用入口URL
-     * @param string $appUrl
-     */
-    public function setAppUrl(string $appUrl) : void
-    {
-        $this->appUrl = $appUrl;
-    }
-    
-    
-    /**
-     * 设置站点入口URL
-     * @param string $webUrl
-     */
-    public function setWebUrl(string $webUrl) : void
-    {
-        $this->webUrl = $webUrl;
-    }
-    
-    
-    /**
      * 获取站点入口URL
      * @param bool $domain 是否包含完整域名
      * @return string
      */
     public function getWebUrl(bool $domain = false) : string
     {
+        if (!$this->webUrl) {
+            $root = $this->baseFile();
+            if ($root && 0 !== strpos($this->url(), $root)) {
+                $root = str_replace('\\', '/', dirname($root));
+            }
+            
+            $root = rtrim($root, '/') . '/';
+            $root = strpos($root, '.') ? ltrim(dirname($root), DIRECTORY_SEPARATOR) : $root;
+            if ('' != $root) {
+                $root = '/' . ltrim($root, '/');
+            }
+            $this->webUrl = rtrim($root, '/') . '/';
+        }
+        
         return $domain ? $this->domain() . $this->webUrl : $this->webUrl;
     }
     
@@ -283,6 +271,14 @@ class Request extends \think\Request
      */
     public function getAppUrl(bool $domain = false) : string
     {
+        if (!$this->appUrl) {
+            $appUrl = $this->root();
+            if (false === strpos($appUrl, '.')) {
+                $appUrl = $this->getWebUrl() . trim($appUrl, '/');
+            }
+            $this->appUrl = rtrim($appUrl, '/') . '/';
+        }
+        
         return $domain ? $this->domain() . $this->appUrl : $this->appUrl;
     }
     

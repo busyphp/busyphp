@@ -1,10 +1,13 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\config;
 
+use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\Handle;
+use BusyPHP\helper\file\File;
 use BusyPHP\model;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -34,31 +37,62 @@ class SystemConfig extends Model
      * @return int
      * @throws DbException
      */
-    public function insertData($insert)
+    public function insertData(SystemConfigField $insert)
     {
-        $insertId = $this->addData($insert);
+        $insert->content = '';
+        $this->checkRepeat($insert);
         
-        // 刷新缓存
-        $this->refreshCache($insertId);
-        
-        return $insertId;
+        return $this->addData($insert);
     }
     
     
     /**
      * 修改配置
-     * @param SystemConfigField $update 配置ID
-     * @throws DbException
+     * @param SystemConfigField $update
      * @throws ParamInvalidException
+     * @throws Exception
      */
-    public function updateData($update)
+    public function updateData(SystemConfigField $update)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('id');
         }
         
-        $this->whereEntity(SystemConfigField::id($update->id))->saveData($update);
-        $this->refreshCache($update->id);
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo($update->id);
+            if ($info->system) {
+                $update->system = true;
+                $update->type   = $info->type;
+            }
+            
+            $this->checkRepeat($update, $update->id);
+            $this->whereEntity(SystemConfigField::id($update->id))->saveData($update);
+            $this->commit();
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 查重
+     * @param SystemConfigField $data
+     * @param int               $id
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function checkRepeat(SystemConfigField $data, $id = 0)
+    {
+        $this->whereEntity(SystemConfigField::type($data->type));
+        if ($id > 0) {
+            $this->whereEntity(SystemConfigField::id('<>', $id));
+        }
+        if ($this->findInfo()) {
+            throw new VerifyException('该配置标识已存在', 'type');
+        }
     }
     
     
@@ -66,23 +100,32 @@ class SystemConfig extends Model
      * 删除配置
      * @param int $data 信息ID
      * @return int
-     * @throws DbException
      * @throws VerifyException
-     * @throws DataNotFoundException
+     * @throws Exception
      */
     public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($data);
-        if ($info->isSystem) {
-            throw new VerifyException('禁止删除系统配置');
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo($data);
+            if ($info->system) {
+                throw new VerifyException('禁止删除系统配置');
+            }
+            
+            $res = parent::deleteInfo($info->id);
+            $this->commit();
+            
+            try {
+                $this->deleteCache($info->type);
+            } catch (Exception $e) {
+            }
+            
+            return $res;
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
         }
-        
-        $result = parent::deleteInfo($info->id);
-        
-        // 刷新缓存
-        $this->refreshCache($info->type, true);
-        
-        return $result;
     }
     
     
@@ -103,9 +146,6 @@ class SystemConfig extends Model
         $update = SystemConfigField::init();
         $update->setContent($value);
         $this->whereEntity(SystemConfigField::type($key))->saveData($update);
-        
-        // 刷新缓存
-        $this->refreshCache($key, true);
     }
     
     
@@ -138,33 +178,35 @@ class SystemConfig extends Model
     
     
     /**
-     * 刷新缓存
-     * @param int  $id
-     * @param bool $idIsType
+     * @param string $method
+     * @param mixed  $id
+     * @param array  $options
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function refreshCache($id = 0, $idIsType = false)
+    protected function onChanged(string $method, $id, array $options)
     {
-        // 刷新全部缓存
-        if (is_numeric($id) && $id < 1) {
-            $list = $this->selectList();
-            foreach ($list as $i => $item) {
-                $this->get($item->type, true);
+        $this->updateCache();
+    }
+    
+    
+    /**
+     * 刷新缓存
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function updateCache()
+    {
+        $config = [];
+        foreach ($this->selectList() as $item) {
+            $result = $this->get($item->type, true);
+            if ($item->append && $result) {
+                $config[$item->type] = $result;
             }
-            
-            return;
         }
         
-        // 传入的参数就是type
-        if ($idIsType) {
-            $this->get($id, true);
-            
-            return;
-        }
-        
-        
-        $info = $this->getInfo($id);
-        $this->get($info->type, true);
+        // 生成系统配置
+        $string = var_export($config, true);
+        File::write(App::runtimeConfigPath() . 'config.php', "<?php // 本配置由系统自动生成 \n\n return {$string};");
     }
 }

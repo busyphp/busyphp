@@ -716,7 +716,7 @@ class Http
                 continue;
             }
             
-            $key   = trim(substr($item, 0, $index));
+            $key   = strtolower(trim(substr($item, 0, $index)));
             $value = trim(substr($item, $index + 1));
             if (!$key || !$value) {
                 continue;

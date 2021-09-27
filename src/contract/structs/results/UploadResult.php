@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\file\upload\struct;
+namespace BusyPHP\contract\structs\results;
 
 use think\File;
 
@@ -8,9 +8,9 @@ use think\File;
  * 上传返回结构
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/9/21 下午下午3:37 UploadResultStruct.php $
+ * @version $Id: 2021/9/21 下午下午3:37 UploadResult.php $
  */
-class UploadResultStruct
+class UploadResult
 {
     /**
      * 文件对象

@@ -52,6 +52,10 @@ class SystemMenuController extends InsideController
             $this->pluginTable->setQueryHandler(function(SystemMenu $model) {
                 $model->order(SystemMenuField::sort(), 'asc');
                 $model->order(SystemMenuField::id(), 'desc');
+                
+                if (!SystemMenu::DEBUG) {
+                    $model->whereEntity(SystemMenuField::system(0));
+                }
             });
             
             return $this->success($this->pluginTable->build($this->model));
@@ -73,39 +77,40 @@ class SystemMenuController extends InsideController
     {
         if ($this->isPost()) {
             $data = SystemMenuField::init();
-            $data->setParentPath($this->request->post('parent_path', '', 'trim'));
-            $data->setName($this->request->post('name', '', 'trim'));
-            $data->setIcon($this->request->post('icon', '', 'trim'));
-            $data->setPath($this->request->post('path', '', 'trim'));
-            $data->setParams($this->request->post('params', '', 'trim'));
-            $data->setTarget($this->request->post('target', '', 'trim'));
-            $data->setHide(!$this->request->post('show', 0, 'intval'));
-            $data->setDisabled(!$this->request->post('enable', 0, 'intval'));
-            $data->setSystem($this->request->post('system', 0, 'intval'));
+            $data->setParentPath($this->post('parent_path/s'));
+            $data->setName($this->post('name/s'));
+            $data->setIcon($this->post('icon/s'));
+            $data->setPath($this->post('path/s'));
+            $data->setParams($this->post('params/s'));
+            $data->setTarget($this->post('target/s'));
+            $data->setHide(!$this->post('show/d'));
+            $data->setDisabled(!$this->post('enable/d'));
+            $data->setSystem($this->post('system/b'));
             
-            $this->model->createMenu($data, $this->request->post('auto', []), $this->request->post('auto_suffix', '', 'trim'));
+            $this->model->createMenu($data, $this->post('auto/a'), $this->post('auto_suffix/s'));
             $this->updateCache();
+            $this->log()->record(self::LOG_INSERT, '添加系统菜单');
             
             return $this->success('添加菜单成功');
-        } else {
-            $id         = $this->request->get('id', 0, 'intval');
-            $parentPath = '';
-            if ($id > 0) {
-                $info       = $this->model->getInfo($id);
-                $parentPath = $info->path;
-            }
-            
-            $this->assign('parent_options', $this->model->getTreeOptions($parentPath));
-            $this->assign('target_list', SystemMenu::getTargets());
-            $this->assign('info', [
-                'target'   => '',
-                'hide'     => 0,
-                'disabled' => 0,
-                'system'   => 0
-            ]);
-            
-            return $this->display();
         }
+        
+        $id         = $this->get('id/d');
+        $parentPath = '';
+        if ($id > 0) {
+            $info       = $this->model->getInfo($id);
+            $parentPath = $info->path;
+        }
+        
+        $this->assign('parent_options', $this->model->getTreeOptions($parentPath));
+        $this->assign('target_list', SystemMenu::getTargets());
+        $this->assign('info', [
+            'target'   => '',
+            'hide'     => 0,
+            'disabled' => 0,
+            'system'   => 0
+        ]);
+        
+        return $this->display();
     }
     
     
@@ -122,23 +127,24 @@ class SystemMenuController extends InsideController
     {
         if ($this->isPost()) {
             $data = SystemMenuField::init();
-            $data->setId($this->request->post('id', '', 'intval'));
-            $data->setParentPath($this->request->post('parent_path', '', 'trim'));
-            $data->setName($this->request->post('name', '', 'trim'));
-            $data->setIcon($this->request->post('icon', '', 'trim'));
-            $data->setPath($this->request->post('path', '', 'trim'));
-            $data->setParams($this->request->post('params', '', 'trim'));
-            $data->setTarget($this->request->post('target', '', 'trim'));
-            $data->setHide(!$this->request->post('show', 0, 'intval'));
-            $data->setDisabled(!$this->request->post('enable', 0, 'intval'));
-            $data->setSystem($this->request->post('system', 0, 'intval'));
+            $data->setId($this->post('id/d'));
+            $data->setParentPath($this->post('parent_path/s'));
+            $data->setName($this->post('name/s'));
+            $data->setIcon($this->post('icon/s'));
+            $data->setPath($this->post('path/s'));
+            $data->setParams($this->post('params/s'));
+            $data->setTarget($this->post('target/s'));
+            $data->setHide(!$this->post('show/d'));
+            $data->setDisabled(!$this->post('enable/d'));
+            $data->setSystem($this->post('system/b'));
             
             $this->model->updateMenu($data);
             $this->updateCache();
+            $this->log()->record(self::LOG_UPDATE, '修改系统菜单');
             
-            return $this->success('添加菜单成功');
+            return $this->success('修改菜单成功');
         } else {
-            $info = $this->model->getInfo($this->request->get('id'));
+            $info = $this->model->getInfo($this->get('id/d'));
             
             $this->assign('parent_options', $this->model->getTreeOptions($info->parentPath));
             $this->assign('target_list', SystemMenu::getTargets());
@@ -157,9 +163,9 @@ class SystemMenuController extends InsideController
      */
     public function set_attr()
     {
-        $type   = $this->request->get('type', '', 'trim');
-        $id     = $this->request->get('id', '', 'intval');
-        $status = $this->request->get('status', 0, 'intval') > 0;
+        $type   = $this->get('type/s', 'trim');
+        $id     = $this->get('id/d');
+        $status = $this->get('status/b');
         
         switch ($type) {
             case 'disabled':
@@ -173,6 +179,7 @@ class SystemMenuController extends InsideController
         }
         
         $this->updateCache();
+        $this->log()->record(self::LOG_UPDATE, '修改系统菜单属性');
         
         return $this->success('设置成功');
     }
@@ -192,7 +199,7 @@ class SystemMenuController extends InsideController
                 ];
             }
             $this->model->saveAll($data);
-            $this->log('排序系统菜单', $params, self::LOG_BATCH);
+            $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
             $this->updateCache();
             
             return '排序成功';
@@ -212,7 +219,7 @@ class SystemMenuController extends InsideController
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除系统菜单', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除系统菜单');
             $this->updateCache();
             
             return '删除成功';

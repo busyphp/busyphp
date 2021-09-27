@@ -18,7 +18,7 @@ class QRCodeController extends Controller
 {
     public function index()
     {
-        $path    = $this->iParam('src', 'trim');
+        $path    = $this->param('src', 'trim');
         $path    = trim($path, '/');
         $info    = pathinfo($path);
         $list    = explode('.', $info['filename'], 2);

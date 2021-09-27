@@ -5,6 +5,10 @@ namespace BusyPHP\app\admin\controller\develop;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\config\SystemConfig as Model;
 use BusyPHP\app\admin\model\system\config\SystemConfigField;
+use Exception;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 开发模式-系统键值对配置管理
@@ -33,68 +37,70 @@ class SystemConfigController extends InsideController
     
     
     /**
-     * 列表
+     * 配置列表
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function index()
     {
-        $this->setSelectLimit(false);
+        if ($this->pluginTable) {
+            return $this->success($this->pluginTable->build($this->model));
+        }
         
-        return $this->select($this->model);
+        return $this->display();
     }
     
     
     /**
-     * 增加
+     * 添加配置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function add()
     {
-        return $this->submit('post', function($data) {
+        if ($this->isPost()) {
             $insert = SystemConfigField::init();
-            $insert->setName($data['name']);
-            $insert->setType($data['type']);
-            $insert->setIsSystem($data['is_system']);
-            $insert->setIsAppend($data['is_append']);
+            $insert->setName($this->post('name/s'));
+            $insert->setType($this->post('type/s'));
+            $insert->setSystem($this->post('system/b'));
+            $insert->setAppend($this->post('append/b'));
             $this->model->insertData($insert);
-            $this->log('增加系统配置', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->log()->record(self::LOG_INSERT, '增加系统配置');
             
-            return '添加成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return [
-                    'is_system' => 0,
-                    'type'      => ''
-                ];
-            });
-            
-            $this->setRedirectUrl(url('index'));
-            $this->submitName = '添加';
-        });
+            return $this->success('添加成功');
+        }
+        
+        return $this->display();
     }
     
     
     /**
-     * 修改
+     * 修改配置
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws Exception
      */
     public function edit()
     {
-        return $this->submit('post', function($data) {
-            $insert = SystemConfigField::init();
-            $insert->setId($data['id']);
-            $insert->setName($data['name']);
-            $insert->setIsAppend($data['is_append']);
-            $this->model->updateData($insert);
-            $this->log('修改系统配置', $this->model->getHandleData(), self::LOG_INSERT);
+        if ($this->isPost()) {
+            $update = SystemConfigField::init();
+            $update->setId($this->post('id/d'));
+            $update->setName($this->post('name/s'));
+            $update->setType($this->post('type/s'));
+            $update->setSystem($this->post('system/b'));
+            $update->setAppend($this->post('append/b'));
+            $this->model->updateData($update);
+            $this->log()->record(self::LOG_UPDATE, '修改系统配置');
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                return $this->model->getInfo($this->iGet('id'));
-            });
-            
-            $this->setRedirectUrl();
-            $this->templateName = 'add';
-            $this->submitName   = '修改';
-        });
+            return $this->success('修改成功');
+        }
+        
+        $this->assign('info', $this->model->getInfo($this->get('id/d')));
+        
+        return $this->display('add');
     }
     
     
@@ -107,7 +113,7 @@ class SystemConfigController extends InsideController
             $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除系统配置', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除系统配置');
             
             return '删除成功';
         });

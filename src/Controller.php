@@ -32,11 +32,11 @@ use think\Validate;
  * @method bool isMobile 是否在手机端运行
  * @method bool isAndroid 是否在安卓端运行
  * @method bool isIos 是否在苹果上运行
- * @method mixed iGet(string $key = "", callable $filterCall = "", string $default = "") 获取$_GET参数
- * @method mixed iRequest(string $key = "", callable $filterCall = "", string $default = "") 获取$_POST参数
- * @method mixed iPost(string $key = "", callable $filterCall = "", string $default = "") 获取$_REQUEST参数
- * @method mixed iPut(string $key = "", callable $filterCall = "", string $default = "") 获取$_PUT参数
- * @method mixed iParam(string $key = "", callable $filterCall = "", string $default = "") 获取参数
+ * @method mixed param(string $key = "", callable $filter = "", string $default = null) 获取参数
+ * @method mixed get(string $key = "", callable $filter = "", string $default = null) 获取$_GET参数
+ * @method mixed post(string $key = "", callable $filter = "", string $default = null) 获取$_POST参数
+ * @method mixed route(string $key = "", callable $filter = "", string $default = null) 获取路由参数
+ * @method mixed cookie(string $key = "", callable $filter = "", string $default = null) 获取Cookie
  * @method Json json(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSON数据
  * @method Jsonp jsonp(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSONP数据
  * @method Xml xml(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出XML数据
@@ -247,22 +247,45 @@ abstract class Controller
                 return $this->request->$method();
             
             // 获取参数
-            case 'IGET':
-            case '_GET':
-            case 'IPOST':
-            case '_POST':
-            case 'IPARAM':
-            case '_PARAM':
-            case 'IREQUEST':
-            case '_REQUEST':
-                $method  = strtolower(substr($upName, 1));
+            case 'GET':
+            case 'POST':
+            case 'PARAM':
+            case 'COOKIE':
+            case 'ROUTE':
+                $method  = $upName;
                 $name    = '';
                 $default = null;
                 $filter  = '';
                 if ($arguments) {
                     $name    = $arguments[0] ?? '';
-                    $default = $arguments[2] ?? null;
                     $filter  = $arguments[1] ?? '';
+                    $default = $arguments[2] ?? null;
+                }
+                
+                // 转换默认类型
+                if ((false !== $index = strpos($name, '/')) && $default === null) {
+                    $type = substr($name, $index + 1);
+                    switch (strtolower($type)) {
+                        // 数组
+                        case 'a':
+                            $default = [];
+                        break;
+                        // 数字
+                        case 'd':
+                            $default = 0;
+                        break;
+                        // 浮点
+                        case 'f':
+                            $default = 0.0;
+                        break;
+                        // 布尔
+                        case 'b':
+                            $default = false;
+                        break;
+                        // 字符串
+                        case 's':
+                            $default = '';
+                    }
                 }
                 
                 return $this->request->$method($name, $default, $filter);
@@ -339,17 +362,17 @@ abstract class Controller
      * @param string $jumpUrl 页面跳转地址
      * @return View
      */
-    private function dispatchJump($message, bool $status = true, $jumpUrl = '')
+    protected function dispatchJump($message, bool $status = true, $jumpUrl = '')
     {
         $this->assign('status', $status);
         $this->assign('wait_second', $status ? 1 : 3);
         $this->assign('message', $message);
         if ($status) {
-            $this->assign('jump_url', $jumpUrl ?: ($_SERVER['HTTP_REFERER'] ?: $this->request->getAppUrl()));
-            $template = config('app.success_tmpl');
+            $this->assign('jump_url', $jumpUrl ?: ($this->request->server('HTTP_REFERER') ?: $this->request->getAppUrl()));
+            $template = $this->app->config->get('app.success_tmpl');
         } else {
             $this->assign('jump_url', $jumpUrl ?: 'javascript:history.back(-1);');
-            $template = config('app.error_tmpl');
+            $template = $this->app->config->get('app.error_tmpl');
         }
         
         return $this->display($template);

@@ -1,6 +1,6 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@app.reload">
+    <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
 
         <div class="panel panel-default no-margin-bottom">
             <include file="@admin:system/system_manager/nav"/>
@@ -77,15 +77,16 @@
                 <div class="form-group-title">
                     客户端限制设置
                     <div class="space-2"></div>
-                    <p class="text-gray size-12 no-margin-bottom">更多客户端种类可以在 <code>config/filesystem.php</code> 中对 <code>clients</code> 进行配置</p>
+                    <p class="text-gray size-12 no-margin-bottom">更多客户端种类可以在 <code>config/filesystem.php</code> 中对
+                        <code>clients</code> 进行配置</p>
                 </div>
-                <foreach name="clients" item="vo" key="client">
+                <foreach name="clients" item="vo">
                     <fieldset class="fieldset">
                         <legend>{$vo.name}</legend>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">上传类型限制</label>
                             <div class="col-sm-10 col-md-8">
-                                <input type="text" class="form-control" name="data[clients][{$client}][allow_extensions]" value="{$info['clients'][$client]['allow_extensions']|default=''}" placeholder="请输入允许上传的文件扩展名"/>
+                                <input type="text" class="form-control" name="data[clients][{$vo.dir}][allow_extensions]" value="{$info['clients'][$vo['dir']]['allow_extensions']|default=''}" placeholder="请输入允许上传的文件扩展名"/>
                                 <span class="help-block">设置允许上传的文件扩展名，多个请用 <code>,</code> 号隔开，如：jpg,png,exe，不限请留空</span>
                             </div>
                         </div>
@@ -93,7 +94,7 @@
                             <label class="col-sm-2 control-label">上传大小限制</label>
                             <div class="col-sm-10 col-md-8">
                                 <div class="input-group">
-                                    <input type="number" size="0.01" class="form-control" name="data[clients][{$client}][max_size]" value="{$info['clients'][$client]['max_size']|default='0'}" placeholder="请输入允许上传的文件大小"/>
+                                    <input type="number" size="0.01" class="form-control" name="data[clients][{$vo.dir}][max_size]" value="{$info['clients'][$vo['dir']]['max_size']|default='0'}" placeholder="请输入允许上传的文件大小"/>
                                     <div class="input-group-addon">MB</div>
                                 </div>
                                 <span class="help-block">设置最大允许上传的文件大小，不限请填 <code>0</code></span>
@@ -103,19 +104,22 @@
                 </foreach>
 
                 <div class="form-group-title">其它设置</div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">水印设置</label>
-                    <div class="col-sm-10 col-md-8">
+                <ba:access value="watermark">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">水印设置</label>
+                        <div class="col-sm-10 col-md-8">
                         <a class="btn btn-outline-success"
                            data-toggle="busy-modal"
                            data-url="{:url('watermark')}"
                            data-ok="设置"><i class="fa fa-image"></i> 图片水印设置</a>
-                        <div class="help-block">设置全局水印配置，设置后<code>动态缩图</code>，<code>上传</code>打水印才可以生效</div>
+                            <div class="help-block">设置全局水印配置，设置后<code>动态缩图</code>，<code>上传</code>打水印才可以生效</div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group no-margin-bottom">
-                    <label class="col-sm-2 control-label">分类设置</label>
-                    <div class="col-sm-10 col-md-8">
+                </ba:access>
+                <ba:access value="file_class">
+                    <div class="form-group no-margin-bottom">
+                        <label class="col-sm-2 control-label">分类设置</label>
+                        <div class="col-sm-10 col-md-8">
                         <a class="btn btn-outline-dark"
                            data-toggle="busy-modal"
                            data-url="{:url('file_class')}"
@@ -128,9 +132,10 @@
                             <i class="fa fa-cogs"></i>
                             分类上传设置
                         </a>
-                        <div class="help-block">对分类的文件进行更详细的设置，如格式、缩图、水印等</div>
+                            <div class="help-block">对分类的文件进行更详细的设置，如格式、缩图、水印等</div>
+                        </div>
                     </div>
-                </div>
+                </ba:access>
             </div>
             <div class="panel-footer text-center">
                 <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>

@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\group;
 
@@ -80,7 +81,7 @@ class AdminGroupInfo extends AdminGroupField
             }
             $rule[] = intval($ruleId);
             
-            if (isset(self::$_menuIdList[$ruleId])) {
+            if (isset(self::$_menuIdList[$ruleId]) && !self::$_menuIdList[$ruleId]->disabled) {
                 $this->rulePaths[] = self::$_menuIdList[$ruleId]->path;
             }
         }

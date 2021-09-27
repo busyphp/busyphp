@@ -4,7 +4,6 @@ namespace BusyPHP\app\general\controller;
 
 use BusyPHP\App;
 use BusyPHP\Controller;
-use BusyPHP\model\Setting;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
@@ -386,12 +385,12 @@ HTML;
     public function db()
     {
         // 安装数据库
-        if ($this->isPost() && $this->iPost('action') === 'install') {
+        if ($this->isPost() && $this->post('action') === 'install') {
             set_time_limit(0);
             
-            $db    = Filter::trim($this->iPost('db'));
-            $user  = Filter::trim($this->iPost('user'));
-            $site  = Filter::trim($this->iPost('site'));
+            $db    = Filter::trim($this->post('db'));
+            $user  = Filter::trim($this->post('user'));
+            $site  = Filter::trim($this->post('site'));
             $mysql = null;
             try {
                 $mysql = $this->mysqlInit($db['server'], $db['username'], $db['password'], $db['port']);
@@ -476,8 +475,7 @@ HTML;
                 File::write($this->lockFile, "该文件为系统安装完毕后生成，如果需要重新安装，请删除该文件\n\n安装时间: {$time}");
                 
                 // 生成缓存
-                SystemConfig::init()->refreshCache();
-                Setting::createConfig();
+                SystemConfig::init()->updateCache();
             } catch (Exception $e) {
                 return $this->error($e->getMessage());
             }
@@ -491,10 +489,10 @@ HTML;
         
         // 校验数据库
         if ($this->isAjax()) {
-            $host  = $this->iRequest('db_host', 'trim');
-            $user  = $this->iRequest('db_user', 'trim');
-            $pass  = $this->iRequest('db_pass', 'trim');
-            $port  = $this->iRequest('db_port', 'trim');
+            $host  = $this->request('db_host', 'trim');
+            $user  = $this->request('db_user', 'trim');
+            $pass  = $this->request('db_pass', 'trim');
+            $port  = $this->request('db_port', 'trim');
             $mysql = null;
             try {
                 $mysql = $this->mysqlInit($host, $user, $pass, $port);

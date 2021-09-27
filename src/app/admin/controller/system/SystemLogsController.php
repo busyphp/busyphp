@@ -3,12 +3,17 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\logs\SystemLogsField;
+use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
+use BusyPHP\contract\structs\items\AppListItem;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Map;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use think\response\View;
 
 /**
  * 系统日志管理
@@ -26,28 +31,33 @@ class SystemLogsController extends InsideController
      */
     public function index()
     {
+        $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemLogs $model, Map $data) {
+            $this->pluginTable->setQueryHandler(function(SystemLogs $model, Map $data) use ($timeRange) {
                 if ($data->get('type', -1) < 0) {
                     $data->remove('type');
                 }
                 
-                switch ($data->get('admin_type', 0)) {
-                    case 1:
-                        $data->set('is_admin', 1);
-                    break;
-                    case 2:
-                        $data->set('is_admin', 0);
-                    break;
+                if (!$data->get('client', '')) {
+                    $data->remove('client');
                 }
                 
-                $data->remove('admin_type');
+                if ($time = $data->get('time', $timeRange)) {
+                    $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
+                }
+                $data->remove('time');
+                
+                if ($this->pluginTable->sortField === (string) SystemLogsInfo::formatCreateTime()) {
+                    $this->pluginTable->sortField = SystemLogsInfo::createTime();
+                }
             });
             
             return $this->success($this->pluginTable->build(SystemLogs::init()));
         }
         
         $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
+        $this->assign('client_options', Transform::arrayToOption(AppHelper::getList(), AppListItem::dir(), AppListItem::name()));
+        $this->assign('time', $timeRange);
         
         return $this->display();
     }
@@ -60,7 +70,7 @@ class SystemLogsController extends InsideController
     public function clear()
     {
         $len = SystemLogs::init()->clear();
-        $this->log('清空操作记录', '', self::LOG_DELETE);
+        $this->log()->record(self::LOG_DELETE, '清空操作记录');
         
         return $this->success('清理成功' . $len . '条');
     }
@@ -68,12 +78,13 @@ class SystemLogsController extends InsideController
     
     /**
      * 查看操作记录
+     * @return View
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function detail()
     {
-        $this->bind(self::CALL_DISPLAY, function() {
-            return SystemLogs::init()->getInfo($this->iGet('id'));
-        });
+        $this->assign('info', $info = SystemLogs::init()->getInfo($this->get('id/d')));
         
         return $this->display();
     }

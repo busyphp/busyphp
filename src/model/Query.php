@@ -275,4 +275,40 @@ class Query extends \think\db\Query
         
         return parent::getPdo();
     }
+    
+    
+    /**
+     * 时间戳范围条件
+     * @param string|Entity $field 字段
+     * @param string|int    $startOrTimeRange 开始时间或时间范围
+     * @param string|int    $endOrSpace 结束时间或时间范围分隔符
+     * @param bool          $split 是否分割传入的时间范围
+     * @return $this
+     */
+    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, $split = false) : self
+    {
+        $field = (string) $field;
+        if ($split && $endOrSpace) {
+            [$start, $end] = explode($endOrSpace, $startOrTimeRange);
+            $start = (int) strtotime($start);
+            $end   = (int) strtotime($end);
+        } else {
+            $start = (int) (!is_numeric($startOrTimeRange) ? strtotime($startOrTimeRange) : $startOrTimeRange);
+            $end   = (int) (!is_numeric($endOrSpace) ? strtotime($endOrSpace) : $endOrSpace);
+        }
+        
+        if ($start > 0 && $end > 0) {
+            if ($end >= $start) {
+                $this->whereBetweenTime($field, $start, $end);
+            } else {
+                $this->whereBetweenTime($field, $end, $start);
+            }
+        } elseif ($start > 0) {
+            $this->where($field, '>=', $start);
+        } elseif ($end > 0) {
+            $this->where($field, '<=', $end);
+        }
+        
+        return $this;
+    }
 }

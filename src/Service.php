@@ -43,6 +43,22 @@ use think\Service as ThinkService;
  */
 class Service extends ThinkService
 {
+    /** @var string 路由定义目录参数 */
+    const ROUTE_VAR_DIR = '__busy_dir__';
+    
+    /** @var string 路由定义类型参数 */
+    const ROUTE_VAR_TYPE = '__busy_type__';
+    
+    /** @var string 路由定义分组参数 */
+    const ROUTE_VAR_GROUP = '__busy_group__';
+    
+    /** @var string 路由定义控制器参数 */
+    const ROUTE_VAR_CONTROL = '__busy_control__';
+    
+    /** @var string 路由定义方法参数 */
+    const ROUTE_VAR_ACTION = '__busy_action__';
+    
+    
     public function register()
     {
         $this->configInit();
@@ -97,7 +113,12 @@ class Service extends ThinkService
         // 添加路由中间件
         $this->app->middleware->import([
             function(Request $request, \Closure $next) {
-                $this->configRoutePlugin($request);
+                // 通过插件方式引入
+                if ($request->route(self::ROUTE_VAR_TYPE) === 'plugin') {
+                    $group = $request->route(self::ROUTE_VAR_GROUP);
+                    $request->setController(($group ? $group . '.' : '') . $request->route(self::ROUTE_VAR_CONTROL));
+                    $request->setAction($request->route(self::ROUTE_VAR_ACTION));
+                }
                 
                 return $next($request);
             },
@@ -281,21 +302,26 @@ class Service extends ThinkService
                 'system_manager'    => ['group' => 'system', 'class' => SystemManagerController::class],
             ];
             
+            $actionPattern  = '<' . self::ROUTE_VAR_ACTION . '>';
+            $controlPattern = '<' . self::ROUTE_VAR_CONTROL . '>';
             foreach ($routeConfig as $key => $item) {
-                $roleItem = $route->rule("{$key}/<action>", "{$item['class']}@<action>");
-                $roleItem->append(['dir' => $item['group'], 'type' => 'plugin', 'control' => $key]);
+                $roleItem = $route->rule("{$key}/{$actionPattern}", "{$item['class']}@{$actionPattern}");
+                $roleItem->append([
+                    self::ROUTE_VAR_DIR     => $item['group'],
+                    self::ROUTE_VAR_TYPE    => 'plugin',
+                    self::ROUTE_VAR_CONTROL => $key
+                ]);
                 if (isset($item['actions'])) {
                     $roleItem->pattern([
-                        'action' => $item['actions']
+                        self::ROUTE_VAR_ACTION => $item['actions']
                     ]);
                 }
             }
             
             // 通用注册
-            $route->group(function() use ($route) {
+            $route->group(function() use ($route, $actionPattern, $controlPattern) {
                 // 全局
-                $route->rule('Common.<control>/<action>', 'BusyPHP\app\admin\controller\common\<control>Controller@<action>')
-                    ->pattern(['control' => '.+']);
+                $route->rule("Common.{$controlPattern}/{$actionPattern}", "BusyPHP\app\admin\controller\common\\{$controlPattern}Controller@{$actionPattern}");
                 
                 // 注册首页
                 $route->group(function() use ($route) {
@@ -303,63 +329,24 @@ class Service extends ThinkService
                     $route->rule('/', $index);
                     $route->rule('index', $index);
                 })->append([
-                    'action'  => 'index',
-                    'control' => 'Index',
+                    self::ROUTE_VAR_CONTROL => 'Index',
+                    self::ROUTE_VAR_ACTION  => 'index',
                 ]);
                 
                 // 注册登录地址
                 $passport = PassportController::class;
                 $route->rule('login', "{$passport}@login")->append([
-                    'control' => 'Passport',
-                    'action'  => 'login'
+                    self::ROUTE_VAR_CONTROL => 'Passport',
+                    self::ROUTE_VAR_ACTION  => 'login'
                 ])->name('admin_login');
                 
                 // 注册退出地址
                 $route->rule('out', "{$passport}@out")->append([
-                    'control' => 'Passport',
-                    'action'  => 'out'
+                    self::ROUTE_VAR_CONTROL => 'Passport',
+                    self::ROUTE_VAR_ACTION  => 'out'
                 ])->name('admin_out');
-            })->append(['type' => 'plugin', 'group' => 'Common']);
+            })->append([self::ROUTE_VAR_TYPE => 'plugin', self::ROUTE_VAR_GROUP => 'Common']);
         }
-    }
-    
-    
-    /**
-     * 配置路由扩展
-     * @param Request $request
-     */
-    private function configRoutePlugin(Request $request)
-    {
-        // 通过插件方式引入
-        if ($request->route('type') === 'plugin') {
-            $group = $request->route('group');
-            $request->setController(($group ? $group . '.' : '') . $request->route('control'));
-            $request->setAction($request->route('action'));
-        }
-        
-        
-        // 解析站点入口URL
-        $root = $request->baseFile();
-        if ($root && 0 !== strpos($request->url(), $root)) {
-            $root = str_replace('\\', '/', dirname($root));
-        }
-        
-        $root = rtrim($root, '/') . '/';
-        $root = strpos($root, '.') ? ltrim(dirname($root), DIRECTORY_SEPARATOR) : $root;
-        if ('' != $root) {
-            $root = '/' . ltrim($root, '/');
-        }
-        $webUrl = rtrim($root, '/') . '/';
-        $request->setWebUrl($webUrl);
-        
-        
-        // 解析应用入口Url
-        $appUrl = $request->root();
-        if (false === strpos($appUrl, '.')) {
-            $appUrl = $webUrl . trim($appUrl, '/');
-        }
-        $appUrl = rtrim($appUrl, '/') . '/';
-        $request->setAppUrl($appUrl);
     }
     
     

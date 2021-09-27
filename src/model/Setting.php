@@ -3,21 +3,17 @@
 namespace BusyPHP\model;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\model\system\config\SystemConfigField;
-use BusyPHP\app\admin\model\system\config\SystemConfigInfo;
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\file\File;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\util\Str;
 use think\Container;
-use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
 /**
  * Config基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/4 下午11:53 上午 Setting.php $
+ * @version $Id: 2021/9/27 下午上午10:22 Setting.php $
  */
 abstract class Setting
 {
@@ -82,16 +78,12 @@ abstract class Setting
     /**
      * 设置数据
      * @param mixed $data
-     * @throws DataNotFoundException
      * @throws DbException
      * @throws ParamInvalidException
      */
     final public function set($data)
     {
         SystemConfig::init()->setKey($this->key, $this->parseSet($data));
-        
-        // 生成配置
-        self::createConfig();
     }
     
     
@@ -163,50 +155,4 @@ abstract class Setting
      * @return mixed
      */
     abstract protected function parseSet($data);
-    
-    
-    /**
-     * 生成全局配置
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public static function createConfig()
-    {
-        $list = SystemConfig::init()->where(function(SystemConfig $query) {
-            $query->whereOr(SystemConfigField::isAppend(), 1);
-            $query->whereOr(SystemConfigField::type(), 'public');
-        })->selectList();
-        
-        $config = [];
-        static::parseNamespace($list, 'BusyPHP\\app\\admin\\setting\\', $config);
-        static::parseNamespace($list, 'core\\setting\\', $config);
-        
-        // 生成系统配置
-        $string = var_export($config, true);
-        File::write(App::runtimeConfigPath() . 'config.php', "<?php // 本配置由系统自动生成 \n\n return {$string};");
-    }
-    
-    
-    /**
-     * @param SystemConfigInfo[] $list
-     * @param string             $namespace
-     * @param array              $config
-     */
-    protected static function parseNamespace($list, $namespace, &$config)
-    {
-        foreach ($list as $item) {
-            $name         = ucfirst(Str::camel($item->type));
-            $class        = $namespace . $name;
-            $classSetting = $class . 'Setting';
-            if (class_exists($class)) {
-                $setting = new $class;
-            } elseif (class_exists($classSetting)) {
-                $setting = new $classSetting;
-            } else {
-                continue;
-            }
-            
-            $config[$item->type] = $setting->get();
-        }
-    }
 }

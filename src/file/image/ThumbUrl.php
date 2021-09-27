@@ -12,7 +12,7 @@ use think\Container;
  * 动态缩图URL生成
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/12 下午4:39 下午 Url.php $
+ * @version $Id: 2020/6/12 下午4:39 下午 ThumbUrl.php $
  */
 class ThumbUrl
 {

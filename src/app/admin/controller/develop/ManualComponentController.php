@@ -79,8 +79,8 @@ class ManualComponentController extends InsideController
      */
     public function tree()
     {
-        if ($this->request->get('action') === 'data') {
-            $parentId = $this->request->post('parent_id', 0, 'intval');
+        if ($this->get('action/s') === 'data') {
+            $parentId = $this->post('parent_id/d');
             switch ($parentId) {
                 case 1:
                     $data = [

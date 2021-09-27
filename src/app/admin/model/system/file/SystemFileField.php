@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
@@ -16,7 +17,7 @@ use BusyPHP\model\Field;
  * @method static Entity type($op = null, $value = null) 文件类型
  * @method static Entity classType($op = null, $value = null) 文件分类
  * @method static Entity classValue($op = null, $value = null) 文件分类对应的业务值
- * @method static Entity client($op = null, $value = null) 上传客户端
+ * @method static Entity client($op = null, $value = null) 所属客户端
  * @method static Entity url($op = null, $value = null) 文件地址
  * @method static Entity urlHash($op = null, $value = null) URL HASH
  * @method static Entity path($op = null, $value = null) 文件路径
@@ -68,8 +69,8 @@ class SystemFileField extends Field
     public $classValue;
     
     /**
-     * 上传客户端
-     * @var int
+     * 所属客户端
+     * @var string
      */
     public $client;
     

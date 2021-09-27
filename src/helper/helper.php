@@ -5,6 +5,7 @@
 
 use BusyPHP\file\qrcode\QRCodeUrl;
 use BusyPHP\file\image\ThumbUrl;
+use BusyPHP\Request;
 
 if (!function_exists('is_android')) {
     /**
@@ -14,7 +15,7 @@ if (!function_exists('is_android')) {
      */
     function is_android($ua = '') : bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
         
         return stripos($ua, 'android') !== false;
     }
@@ -29,9 +30,9 @@ if (!function_exists('is_ios')) {
      */
     function is_ios($ua = '') : bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
         
-        return stripos($ua, 'iphone') !== false || stripos($_SERVER['HTTP_USER_AGENT'], 'ipad');
+        return stripos($ua, 'iphone') !== false || stripos($ua, 'ipad');
     }
 }
 
@@ -44,7 +45,7 @@ if (!function_exists('is_wechat_client')) {
      */
     function is_wechat_client($ua = '') : bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
         
         return strpos($ua, 'MicroMessenger') !== false;
     }

@@ -17,8 +17,10 @@
            data-pagination="false"
            data-toolbar="#tableToolbar"
            data-url="{$url.self}"
-           data-route="true"
-           style="min-width: 650px">
+           data-fixed-columns="true"
+           data-fixed-right-number="1"
+           data-fixed-number="2"
+           data-route="true">
         <thead>
             <tr>
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
@@ -34,23 +36,23 @@
 
     <div class="hide">
         <div id="tableToolbar">
-             <a class="btn btn-success"
+             <a class="btn btn-primary"
                 href="javascript:void(0)"
                 data-toggle="busy-modal"
                 data-size="lg"
                 data-ok="添加菜单"
                 data-url="{:url('add')}"
-                data-on-success="@table.reload">
+                data-form-on-success="@table.reload|@app.loadInfo">
                 <i class="icon icon-plus"></i>
                  添加菜单
             </a>
 
-            <a class="btn btn-warning"
+            <a class="btn btn-secondary"
                href="javascript:void(0)"
                data-url="{:url('set_sort')}"
                data-field="id,sort"
                data-method="post"
-               data-on-success="@table.reload"
+               data-on-success="@table.reload|@app.loadInfo"
                data-confirm="确认要排序吗？">
                 <i class="icon icon-sort"></i>
                 排序
@@ -92,21 +94,21 @@
            data-toggle="busy-modal"
            data-size="lg"
            data-ok="添加菜单"
-           data-form-on-success="@table.reload">
+           data-form-on-success="@table.reload|@app.loadInfo">
             <i class="icon icon-plus"></i>
             添加
         </a>
 
-        <a class="btn btn-success btn-xs"
+        <a class="btn btn-primary btn-xs"
            data-url="{:url('edit?id=')}{{item.id}}"
            data-toggle="busy-modal"
            data-size="lg"
            data-ok="修改菜单"
-           data-form-on-success="@table.reload">
+           data-form-on-success="@table.reload|@app.loadInfo">
             <i class="icon icon-pencil"></i>
         </a>
         {{if !item.is_system}}
-        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload|@app.loadInfo"><i class="icon icon-trash"></i></a>
         {{/if}}
     </script>
 </block>

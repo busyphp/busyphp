@@ -4,7 +4,7 @@
          data-toggle="busy-search-bar"
          data-url="{$url.self}"
          data-accurate-show="true"
-         data-fields="name:附件名称,extension:附件后缀,hash:HASH,user_id:用户ID">
+         data-fields="name:文件名称,extension:文件扩展名,hash:文件哈希,user_id:用户ID">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
                 <select class="form-control" name="static[type]">
@@ -13,14 +13,23 @@
             </div>
             <div class="form-group">
                 <select class="form-control" name="static[client]">
-                    <option value="-1">不限客户端</option>
+                    <option value="">不限客户端</option>
                     {$client_options}
+                    <option value="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::CLI_CLIENT_KEY;?>"><?=\BusyPHP\app\admin\model\system\logs\SystemLogs::CLI_CLIENT_NAME;?></option>
                 </select>
             </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                    <input type="text" name="time" class="form-control" value="{$time}" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                </div>
+            </div>
         </script>
-        <script type="text/html" data-search-id="toolbar">
-            <a class="btn btn-success" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="uploadHidden" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i> 上传附件</a>
-        </script>
+        <ba:access value="upload">
+            <script type="text/html" data-search-id="toolbar">
+                <a class="btn btn-primary" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="uploadHidden" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i> 上传文件</a>
+            </script>
+        </ba:access>
     </div>
 
     <table class="table table-bordered table-striped table-hover"
@@ -43,17 +52,28 @@
         <thead>
             <tr>
                 <th class="text-center" width="40" data-checkbox="true"></th>
-                <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
+                <th class="text-center" width="60" data-field="id" data-searchable="false" data-sortable="true">ID</th>
                 <th class="text-center" data-field="name" data-halign="center" data-formatter="@" data-align="left">
                     文件名
                 </th>
-                <th class="text-center" width="240" data-field="hash" data-formatter="@">HASH</th>
-                <th class="text-center" width="80" data-field="is_admin" data-formatter="@">来源</th>
-                <th class="text-center" width="80" data-field="classify_name">类型</th>
-                <th class="text-center" width="80" data-field="extension">后缀</th>
-                <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">大小</th>
-                <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">时间</th>
-                <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">操作</th>
+                <th class="text-center" width="240" data-field="hash" data-formatter="@" data-sortable="true">文件哈希</th>
+                <th class="text-center" width="80" data-field="client_name">客户端</th>
+                <th class="text-center" width="80" data-field="type_name">类型</th>
+                <th class="text-center" width="80" data-field="class_name">分类</th>
+                <th class="text-center" width="80" data-field="extension" data-sortable="true">扩展名</th>
+                <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">
+                    大小
+                </th>
+                <th class="text-center" width="80" data-field="user_id" data-sortable="true">用户ID
+                </th>
+                <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">
+                    上传时间
+                </th>
+                <ba:access value="delete">
+                    <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
+                        操作
+                    </th>
+                </ba:access>
             </tr>
         </thead>
     </table>
@@ -61,16 +81,18 @@
 
     <div class="hide">
         <div id="tableToolbar">
-            <a class="btn btn-danger"
-               data-url="{:url('delete')}"
-               data-confirm="确认要删除选中的%s个文件吗？"
-               data-checked="true"
-               data-disabled="true"
-               data-method="post"
-               data-on-success="@table.reload">
-                <i class="fa fa-trash"></i>
-                批量删除
-            </a>
+            <ba:access value="delete">
+                <a class="btn btn-danger"
+                   data-url="{:url('delete')}"
+                   data-confirm="确认要删除选中的%s个文件吗？"
+                   data-checked="true"
+                   data-disabled="true"
+                   data-method="post"
+                   data-on-success="@table.reload">
+                    <i class="fa fa-trash"></i>
+                    删除
+                </a>
+            </ba:access>
         </div>
     </div>
 
@@ -92,20 +114,14 @@
         <span class="text-gray">{{value}}</span>
     </script>
 
-    <script type="text/html" id="is_admin">
-        {{if value}}
-        <span class="badge badge-primary">后台</span>
-        {{else}}
-        <span class="badge badge-primary">前端</span>
-        {{/if}}
-    </script>
-
     <script type="text/html" id="operate">
-        <a class="btn btn-danger btn-xs"
-           href="{:url('delete?id=')}{{item.id}}"
-           data-toggle="busy-request"
-           data-confirm="确认要删除该文件吗？"
-           data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        <ba:access value="delete">
+            <a class="btn btn-danger btn-xs"
+               href="{:url('delete?id=')}{{item.id}}"
+               data-toggle="busy-request"
+               data-confirm="确认要删除该文件吗？"
+               data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        </ba:access>
     </script>
 </block>
 <block name="foot">

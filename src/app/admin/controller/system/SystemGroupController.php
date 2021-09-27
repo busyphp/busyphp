@@ -76,14 +76,13 @@ class SystemGroupController extends InsideController
         // 添加
         if ($this->isPost()) {
             $insert = AdminGroupField::init();
-            $insert->setParentId($this->request->post('parent_id', 0, 'intval'));
-            $insert->setName($this->request->post('name', '', 'trim'));
-            $insert->setDefaultMenuId($this->request->post('default_menu_id', 0, 'intval'));
-            $insert->setRule($this->hashToId($this->request->post('rule', [])));
-            $insert->setStatus($this->request->post('status', 0, 'intval') > 0);
+            $insert->setParentId($this->post('parent_id/d'));
+            $insert->setName($this->post('name/s', 'trim'));
+            $insert->setDefaultMenuId($this->post('default_menu_id/d'));
+            $insert->setRule($this->hashToId($this->post('rule/a')));
+            $insert->setStatus($this->post('status/b'));
             $this->model->insertData($insert);
-            
-            $this->log('增加管理角色', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->log()->record(self::LOG_INSERT, '添加管理角色');
             
             return $this->success('添加成功');
         }
@@ -122,20 +121,20 @@ class SystemGroupController extends InsideController
         // 修改
         if ($this->isPost()) {
             $update = AdminGroupField::init();
-            $update->setId($this->request->post('id', 0, 'intval'));
-            $update->setParentId($this->request->post('parent_id', 0, 'intval'));
-            $update->setName($this->request->post('name', '', 'trim'));
-            $update->setDefaultMenuId($this->request->post('default_menu_id', 0, 'intval'));
-            $update->setRule($this->hashToId($this->request->post('rule', [])));
-            $update->setStatus($this->request->post('status', 0, 'intval') > 0);
+            $update->setId($this->post('id/d'));
+            $update->setParentId($this->post('parent_id/d'));
+            $update->setName($this->post('name/s', 'trim'));
+            $update->setDefaultMenuId($this->post('default_menu_id/d'));
+            $update->setRule($this->hashToId($this->post('rule/a', [])));
+            $update->setStatus($this->post('status/b'));
             $this->model->updateData($update);
-            $this->log('修改管理角色', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->log()->record(self::LOG_UPDATE, '修改管理角色');
             
             return $this->success('修改成功');
         }
         
         // 权限列表
-        $id   = $this->request->get('id', 0, 'intval');
+        $id   = $this->get('id/d');
         $info = $this->model->getInfo($id);
         if ($this->pluginTree) {
             return $this->ruleList($info);
@@ -189,7 +188,7 @@ class SystemGroupController extends InsideController
     {
         $this->pluginSelectPicker->setQueryHandler(function(SystemMenu $model) {
             // 继承父角色节点
-            $groupId = $this->request->get('group_id', 0, 'intval');
+            $groupId = $this->get('group_id/d');
             if ($groupId > 1) {
                 $groupInfo = $this->model->getInfo($groupId);
                 $model->whereEntity(SystemMenuField::id('in', $groupInfo->ruleIds));
@@ -214,7 +213,7 @@ class SystemGroupController extends InsideController
     {
         $this->pluginTree->setQueryHandler(function(SystemMenu $model) use ($info) {
             // 继承父角色节点
-            $groupId = $this->request->get('group_id', 0, 'intval');
+            $groupId = $this->get('group_id/d');
             if ($info && $groupId == $info->id) {
                 throw new VerifyException('父角色不能是自己');
             }
@@ -265,12 +264,26 @@ class SystemGroupController extends InsideController
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除管理角色', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除管理角色');
             
             return '删除成功';
         });
         
         return $this->batch();
+    }
+    
+    
+    /**
+     * 启用/禁用角色
+     * @throws DbException
+     */
+    public function change_status()
+    {
+        $status = $this->get('status/b');
+        $this->model->changeStatus($this->get('id/d'), $status);
+        $this->log()->record(self::LOG_UPDATE, '启用/禁用角色');
+        
+        return $this->success($status ? '启用成功' : '禁用成功');
     }
     
     
@@ -288,7 +301,7 @@ class SystemGroupController extends InsideController
                 ];
             }
             $this->model->saveAll($data);
-            $this->log('排序管理角色', $params, self::LOG_BATCH);
+            $this->log()->record(self::LOG_UPDATE, '排序管理角色');
             $this->updateCache();
             
             return '排序成功';

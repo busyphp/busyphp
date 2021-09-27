@@ -3,64 +3,105 @@
     <div class="form-horizontal">
         <div class="form-group form-group-sm">
             <label class="col-sm-2 control-label">操作名称</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.title}</p></div>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <input type="text" class="form-control" value="{$info.name|default='--'}" readonly/>
+                    <div class="input-group-addon">{$info.type_name|default=''}</div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">请求URL</label>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <div class="input-group-addon">{$info.client_name|default=''}</div>
+                    <div class="input-group-addon no-border-right">{$info.method|default='GET'}</div>
+                    <input type="text" class="form-control" value="{$info.url|default=''}" readonly />
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-secondary btn-sm" data-toggle="busy-copy" data-content="{$info.url|default=''}">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="form-group form-group-sm">
             <label class="col-sm-2 control-label">操作IP</label>
-            <div class="col-sm-10"><p class="form-control-static">
-                    <a href="https://ip.cn/index.php?ip={$info.ip}" target="_blank">{$info.ip|default="--"}</a></p>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <input class="form-control" type="text" value="{$info.ip|default='--'}" readonly/>
+                    <div class="input-group-btn">
+                        <button class="btn btn-secondary btn-sm" type="button" data-toggle="busy-copy" data-content="{$info.ip|default=''}">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作UA</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.ua|default="--"}</p></div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作URL</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.url|default="--"}</p></div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作时间</label>
-            <div class="col-sm-10">
-                <p class="form-control-static">{$info.format_create_time}</p></div>
         </div>
         <div class="form-group form-group-sm">
             <label class="col-sm-2 control-label">操作用户</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.username}</p></div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作用户ID</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.userid}</p></div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作路径</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.path}</p></div>
-        </div>
-        <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作来源</label>
-            <div class="col-sm-10">
-                <p class="form-control-static">
-                    <eq name="info.is_admin" value="1">
-                        <span class="label label-primary">后台</span>
-                        <else/>
-                        <span class="label label-primary">前台</span>
-                    </eq>
-                    <span class="label label-default">{$info.app_name}</span>
-                </p>
+            <div class="col-sm-9">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <div class="input-group-addon"><div class="width-40">用户名</div></div>
+                            <input class="form-control" type="text" readonly value="{$info.username|default='--'}"/>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <div class="input-group-addon"><div class="width-40">用户ID</div></div>
+                            <input class="form-control" type="text" readonly value="{$info.user_id|default='0'}"/>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="form-group form-group-sm">
-            <label class="col-sm-2 control-label">操作类型</label>
-            <div class="col-sm-10"><p class="form-control-static">{$info.type_name}</p></div>
-        </div>
-        <div class="form-group no-margin-bottom">
-            <label class="col-sm-2 control-label">操作详情</label>
-            <div class="col-sm-10">
-                <div class="form-control-static">
-                    <?php
-                    dump($info['content']);
-                    ?>
+            <label class="col-sm-2 control-label">操作业务</label>
+            <div class="col-sm-9">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <div class="input-group-addon"><div class="width-40">分类</div></div>
+                            <input class="form-control" type="text" readonly value="{$info.class_type|default='0'}"/>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <div class="input-group-addon"><div class="width-40">参数</div></div>
+                            <input class="form-control" type="text" readonly value="{$info.class_value|default='--'}"/>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作时间</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" value="{$info.format_create_time|default='--'}" readonly/>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">操作结果</label>
+            <div class="col-sm-9">
+                <textarea class="form-control" readonly rows="4">{$info.result|default='--'}</textarea>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-2 control-label">请求参数</label>
+            <div class="col-sm-9">
+                <?php
+                dump($info['params'] ?? []);
+                ?>
+            </div>
+        </div>
+        <div class="form-group form-group-sm no-margin-bottom">
+            <label class="col-sm-2 control-label">请求头</label>
+            <div class="col-sm-9">
+                <?php
+                dump($info['headers'] ?? []);
+                ?>
             </div>
         </div>
     </div>

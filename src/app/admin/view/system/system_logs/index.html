@@ -1,23 +1,36 @@
 <extend name="@admin:layout"/>
 <block name="content">
+    <?php
+    
+    use BusyPHP\app\admin\model\system\logs\SystemLogs;
+    use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
+    
+    ?>
+
     <div id="searchBar"
          data-toggle="busy-search-bar"
          data-url="{$url.self}"
          data-accurate-show="true"
-         data-fields="title:操作名称,action:操作路径,username:操作用户,userid:用户ID,content:操作详情">
+         data-fields="<?=SystemLogsInfo::name()?>:操作名称,<?=SystemLogsInfo::username()?>:操作用户名,<?=SystemLogsInfo::userId()?>:操作用户ID">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
                 <select class="form-control" name="type">
-                    <option value="-1">不限类型</option>
+                    <option value="-1">不限操作类型</option>
                     {$type_options}
                 </select>
             </div>
             <div class="form-group">
-                <select class="form-control" name="admin_type">
-                    <option value="0">不限来源</option>
-                    <option value="1">后台</option>
-                    <option value="2">前台</option>
+                <select class="form-control" name="client">
+                    <option value="">不限客户端</option>
+                    {$client_options}
+                    <option value="<?=SystemLogs::CLI_CLIENT_KEY;?>"><?=SystemLogs::CLI_CLIENT_NAME;?></option>
                 </select>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                    <input type="text" name="time" class="form-control" value="{$time}" placeholder="请选择时间" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                </div>
             </div>
         </script>
     </div>
@@ -33,18 +46,42 @@
            data-toolbar="#tableToolbar"
            data-route="true"
            data-url="{$url.self}"
+           data-fixed-columns="true"
+           data-fixed-right-number="1"
+           data-fixed-number="1"
            data-height="true">
         <thead>
             <tr>
-                <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
-                <th class="text-center" data-field="title" data-halign="center" data-align="left">操作名称</th>
-                <th class="text-center" width="100" data-field="ip" data-formatter="@" data-sortable="true">IP</th>
-                <th class="text-center" width="100" data-field="type_name">类型</th>
-                <th class="text-center" width="100" data-field="is_admin" data-formatter="@">客户端</th>
-                <th class="text-center" width="100" data-field="username">用户</th>
-                <th class="text-center" width="80" data-field="userid">用户ID</th>
-                <th class="text-center" width="150" data-field="format_create_time">操作时间</th>
-                <th class="text-center" width="80" data-field="operate" data-formatter="@">操作</th>
+                <th class="text-center" width="60" data-field="<?=SystemLogsInfo::id();?>" data-searchable="false" data-sortable="true">
+                    ID
+                </th>
+                <th class="text-center" data-field="<?=SystemLogsInfo::name();?>" data-halign="center" data-align="left">
+                    操作名称
+                </th>
+                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::url();?>" data-align="center" data-formatter="@">
+                    操作地址
+                </th>
+                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::ip();?>" data-formatter="@">
+                    IP
+                </th>
+                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::typeName();?>">
+                    操作类型
+                </th>
+                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::clientName();?>">
+                    客户端
+                </th>
+                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::username();?>" data-sortable="true">
+                    用户
+                </th>
+                <th class="text-center" width="80" data-field="<?=SystemLogsInfo::userId();?>" data-sortable="true">
+                    用户ID
+                </th>
+                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::formatCreateTime();?>" data-sortable="true">
+                    操作时间
+                </th>
+                <ba:access value="detail">
+                    <th class="text-center" width="80" data-field="operate" data-formatter="@">操作</th>
+                </ba:access>
             </tr>
         </thead>
     </table>
@@ -52,30 +89,38 @@
 
     <div class="hide">
         <div id="tableToolbar">
-            <a class="btn btn-warning"
-               data-url="{:url('clear')}"
-               data-confirm="该操作会清理六个月以前的操作记录，确认要清理吗?"
-               data-params="false"
-               data-on-success="@table.reload">
-                <i class="icon icon-trash"></i>
-                清空操作记录
-            </a>
+            <ba:access value="clear">
+                <a class="btn btn-warning"
+                   data-url="{:url('clear')}"
+                   data-confirm="该操作会清理六个月以前的操作记录，确认要清理吗?"
+                   data-params="false"
+                   data-on-success="@table.reload">
+                    <i class="icon icon-trash"></i>
+                    清理操作记录
+                </a>
+            </ba:access>
         </div>
     </div>
 
-    <script type="text/html" id="ip">
-        <a href="https://ip.cn/index.php?ip={{value}}" target="_blank">{{value}}</a>
+    <script type="text/html" id="<?=SystemLogsInfo::ip();?>">
+        <div class="input-group input-group-xs">
+            <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
+            <div class="input-group-btn">
+                <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
+            </div>
+        </div>
     </script>
 
-    <script type="text/html" id="is_admin">
-        {{if value}}
-        <span class="label label-primary">后台</span>
-        {{else}}
-        <span class="label label-success">前台</span>
-        {{/if}}
+    <script type="text/html" id="<?=SystemLogsInfo::url();?>">
+        <div class="input-group input-group-xs">
+            <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
+            <div class="input-group-btn">
+                <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
+            </div>
+        </div>
     </script>
 
     <script type="text/html" id="operate">
-        <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.id}}" data-toggle="busy-modal" data-type="page" data-title="记录详情"><i class="icon icon-pencil"></i></a>
+        <a class="btn btn-primary btn-xs" href="{:url('detail?id=')}{{item.<?=SystemLogsInfo::id();?>}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
     </script>
 </block>

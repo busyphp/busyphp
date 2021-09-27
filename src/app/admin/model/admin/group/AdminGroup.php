@@ -1,15 +1,16 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -134,18 +135,49 @@ class AdminGroup extends Model
      * 删除用户组
      * @param int $data
      * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
      * @throws VerifyException
+     * @throws \Exception
      */
     public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($data);
-        if ($info->system) {
-            throw new VerifyException('系统管理权限组禁止删除');
+        $this->startTrans();
+        try {
+            $info = $this->getInfo($data);
+            if ($info->system) {
+                throw new VerifyException('系统管理权限组禁止删除');
+            }
+            
+            // 删除子角色
+            $childIds = array_keys(Arr::listByKey($this->getChildList($info->id), AdminGroupField::id()));
+            if ($childIds) {
+                $this->whereEntity(AdminGroupField::id('in', $childIds))->delete();
+            }
+            
+            $res = parent::deleteInfo($data);
+            $this->commit();
+            
+            return $res;
+        } catch (Exception $e) {
+            $this->rollback();
+            
+            throw $e;
         }
+    }
+    
+    
+    /**
+     * 获取某角色的所有子角色
+     * @param int $id 角色ID
+     * @return AdminGroupInfo[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getChildList($id) : array
+    {
+        $list = Arr::listToTree($this->selectList(), AdminGroupField::id(), AdminGroupField::parentId(), AdminGroupInfo::child(), $id);
+        $list = Arr::treeToList($list, AdminGroupInfo::child());
         
-        return parent::deleteInfo($data);
+        return $list;
     }
     
     
@@ -164,7 +196,7 @@ class AdminGroup extends Model
     /**
      * 获取菜单选项
      * @param string $selectedId
-     * @param string $disabled
+     * @param string $disabledId
      * @param array  $list
      * @param string $space
      * @return string
@@ -208,6 +240,18 @@ class AdminGroup extends Model
     public function updateCache()
     {
         $this->getList(true);
+    }
+    
+    
+    /**
+     * 设置启用/禁用
+     * @param $id
+     * @param $status
+     * @throws DbException
+     */
+    public function changeStatus($id, bool $status)
+    {
+        $this->whereEntity(AdminGroupField::id($id))->setField(AdminGroupField::status(), $status ? 1 : 0);
     }
     
     

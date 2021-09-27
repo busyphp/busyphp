@@ -14,7 +14,7 @@ use think\Exception;
  * 动态缩图
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/11 下午6:09 下午 ThumbController.php $
+ * @version $Id: 2021/9/26 下午下午3:44 ThumbController.php $
  */
 class ThumbController extends Controller
 {
@@ -25,7 +25,7 @@ class ThumbController extends Controller
     {
         try {
             // 图片地址
-            $src = trim($this->iParam('src'));
+            $src = $this->param('src/s', 'trim');
             $src = ltrim($src, '/');
             if (!$src) {
                 throw new AppException('图片地址不存在');
@@ -96,7 +96,7 @@ class ThumbController extends Controller
             $thumb = new Image();
             $thumb->src($source)
                 ->format($extension)
-                ->save($config['save_local'] ?? false, App::getPublicPath('thumbs') . ltrim($src, '/'), true)
+                ->save($config['save_local'] ?? false, App::getPublicPath('thumbs') . ltrim($src, '/'))
                 ->width($width)
                 ->height($height)
                 ->thumb($type)

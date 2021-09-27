@@ -33,8 +33,8 @@
 | 回调方法:title |  |  |  |  |
 | data-on-before | string | `否` | - | 请求前回调，返回false阻止请求 |
 | data-on-complete | string | `否` | - | 请求完成回调，返回false阻止成功和失败 |
-| data-on-success | string | `否` | - | 请求成功回调，返回false阻止弹出提示，支持语法糖如下：<br />`@app.reload`：重载当前页面<br />`@app.back`：返回上一页<br />`@app.redirect`：跳转到响应结果内返回的`url`地址<br />`@table.reload`：刷新表格(针对 `data-toggle="busy-request"` 在[数据表格]({:url('table')})内) |
-| data-on-error | string | `否` | - | 请求失败回调，返回false阻止弹出提示，支持语法糖如下：<br />`@app.reload`：重载当前页面<br />`@app.back`：返回上一页<br />`@app.redirect`：跳转到响应结果内返回的`url`地址 |
+| data-on-success | string | `否` | - | 请求成功回调，返回false阻止弹出提示，支持语法糖如下：<br />`@route.reload`：重载当前页面<br />`@route.back`：返回上一页<br />`@route.redirect`：跳转到响应结果内返回的`url`地址<br />`@table.reload`：刷新表格(针对 `data-toggle="busy-request"` 在[数据表格]({:url('table')})内) |
+| data-on-error | string | `否` | - | 请求失败回调，返回false阻止弹出提示，支持语法糖如下：<br />`@route.reload`：重载当前页面<br />`@route.back`：返回上一页<br />`@route.redirect`：跳转到响应结果内返回的`url`地址 |
 
 ### 使用示例
 
@@ -47,8 +47,8 @@
     </div>
 
     <template id="demo1" class="hide">
-        <a class="btn btn-primary" href="__SELF__" data-toggle="busy-request" data-method="post" data-on-success="@app.reload">执行请求</a>
+        <a class="btn btn-primary" href="__SELF__" data-toggle="busy-request" data-method="post" data-on-success="@route.reload">执行请求</a>
         <hr/>
-        <a class="btn btn-primary" href="__SELF__" data-toggle="busy-request" data-method="post" data-confirm="确认要执行该操作吗？" data-on-success="@app.reload">执行操作并确认</a>
+        <a class="btn btn-primary" href="__SELF__" data-toggle="busy-request" data-method="post" data-confirm="确认要执行该操作吗？" data-on-success="@route.reload">执行操作并确认</a>
     </template>
 </block>

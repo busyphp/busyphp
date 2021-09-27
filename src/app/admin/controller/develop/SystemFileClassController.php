@@ -8,6 +8,10 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\model\Map;
+use Exception;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\Response;
 
 /**
  * 开发模式-系统附件分类管理
@@ -36,7 +40,10 @@ class SystemFileClassController extends InsideController
     
     
     /**
-     * 列表
+     * 文件分类列表
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function index()
     {
@@ -61,62 +68,60 @@ class SystemFileClassController extends InsideController
     
     
     /**
-     * 增加
+     * 添加文件分类
+     * @return Response
+     * @throws DbException
      */
     public function add()
     {
-        return $this->submit('post', function($data) {
+        if ($this->isPost()) {
             $insert = SystemFileClassField::init();
-            $insert->setName($data['name']);
-            $insert->setVar($data['var']);
-            $insert->setType($data['type']);
-            $insert->setSystem($data['system'] ?? 0);
+            $insert->setName($this->post('name/s'));
+            $insert->setVar($this->post('var/s'));
+            $insert->setType($this->post('type/s'));
+            $insert->setSystem($this->post('system/b'));
             $this->model->insertData($insert);
-            $this->log('增加文件分类', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->log()->record(self::LOG_INSERT, '增加文件分类');
             
-            return '添加成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $array['type_options'] = Transform::arrayToOption(SystemFile::getTypes());
-                $array['system']       = 0;
-                
-                return $array;
-            });
-            
-            $this->setRedirectUrl(url('index'));
-            $this->submitName = '添加';
-        });
+            return $this->success('添加成功');
+        }
+        
+        $this->assign('info', [
+            'type_options' => Transform::arrayToOption(SystemFile::getTypes()),
+            'system'       => 0,
+        ]);
+        
+        return $this->display();
     }
     
     
     /**
-     * 修改
+     * 修改文件分类
+     * @return Response
+     * @throws DbException
+     * @throws DataNotFoundException
+     * @throws Exception
      */
     public function edit()
     {
-        return $this->submit('post', function($data) {
+        if ($this->isPost()) {
             $update = SystemFileClassField::init();
-            $update->setId($data['id']);
-            $update->setName($data['name']);
-            $update->setVar($data['var']);
-            $update->setType($data['type']);
-            $update->setSystem($data['system'] ?? 0);
+            $update->setId($this->post('id/d'));
+            $update->setName($this->post('name/s'));
+            $update->setVar($this->post('var/s'));
+            $update->setType($this->post('type/s'));
+            $update->setSystem($this->post('system/b'));
             $this->model->updateData($update);
-            $this->log('修改文件分类', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->log()->record(self::LOG_UPDATE, '修改文件分类');
             
-            return '修改成功';
-        }, function() {
-            $this->bind(self::CALL_DISPLAY, function() {
-                $info                 = $this->model->getInfo($this->iGet('id'));
-                $info['type_options'] = Transform::arrayToOption(SystemFile::getTypes(), '', '', $info['type']);
-                
-                return $info;
-            });
-            
-            $this->templateName = 'add';
-            $this->setRedirectUrl();
-            $this->submitName = '修改';
-        });
+            return $this->success('修改成功');
+        }
+        
+        $info                 = $this->model->getInfo($this->get('id'));
+        $info['type_options'] = Transform::arrayToOption(SystemFile::getTypes(), '', '', $info->type);
+        $this->assign('info', $info);
+        
+        return $this->display('add');
     }
     
     
@@ -129,7 +134,8 @@ class SystemFileClassController extends InsideController
             foreach ($params as $id => $value) {
                 $this->model->setSort($id, $value);
             }
-            $this->log('排序文件分类', $params, self::LOG_UPDATE);
+            
+            $this->log()->record(self::LOG_UPDATE, '排序文件分类');
             
             return '排序成功';
         });
@@ -147,7 +153,7 @@ class SystemFileClassController extends InsideController
             $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除文件分类', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除文件分类');
             
             return '删除成功';
         });

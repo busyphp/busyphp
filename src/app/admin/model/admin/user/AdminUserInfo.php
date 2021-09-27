@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
@@ -14,11 +15,17 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:48 AdminUserInfo.php $
- * @method static Entity groupList() 权限组数据
- * @method static Entity groupRulePaths() 权限规则路径集合
- * @method static Entity groupRuleIds() 权限规则ID集合
- * @method static Entity groupNames() 权限名称集合
- * @method static Entity groupHasSystem() 权限中是否包涵超级权限
+ * @method static Entity groupList($op = null, $value = null) 权限组数据
+ * @method static Entity groupRulePaths($op = null, $value = null) 权限规则路径集合
+ * @method static Entity groupRuleIds($op = null, $value = null) 权限规则ID集合
+ * @method static Entity groupNames($op = null, $value = null) 权限名称集合
+ * @method static Entity groupHasSystem($op = null, $value = null) 权限中是否包涵超级权限
+ * @method static Entity formatCreateTime($op = null, $value = null) 格式化的创建时间
+ * @method static Entity formatUpdateTime($op = null, $value = null) 格式化的更新时间
+ * @method static Entity formatLastTime($op = null, $value = null) 格式化的上次登录时间
+ * @method static Entity formatLoginTime($op = null, $value = null) 格式化的本次登录时间
+ * @method static Entity isTempLock($op = null, $value = null) 是否临时锁定
+ * @method static Entity formatErrorReleaseTime($op = null, $value = null) 格式化的锁定释放时间
  */
 class AdminUserInfo extends AdminUserField
 {
@@ -77,6 +84,18 @@ class AdminUserInfo extends AdminUserField
     public $formatLoginTime;
     
     /**
+     * 是否已经临时锁定
+     * @var bool
+     */
+    public $isTempLock;
+    
+    /**
+     * 格式化的锁定释放时间
+     * @var string
+     */
+    public $formatErrorRelease;
+    
+    /**
      * @var AdminGroupInfo[]
      */
     private static $_groupList;
@@ -92,12 +111,14 @@ class AdminUserInfo extends AdminUserField
             static::$_groupList = AdminGroup::init()->getIdList();
         }
         
-        $this->formatCreateTime = Transform::date($this->createTime);
-        $this->formatUpdateTime = Transform::date($this->updateTime);
-        $this->formatLastTime   = Transform::date($this->lastTime);
-        $this->formatLoginTime  = Transform::date($this->loginTime);
-        $this->checked          = $this->checked > 0;
-        $this->system           = $this->system > 0;
+        $this->formatCreateTime   = Transform::date($this->createTime);
+        $this->formatUpdateTime   = Transform::date($this->updateTime);
+        $this->formatLastTime     = $this->lastTime > 0 ? Transform::date($this->lastTime) : '';
+        $this->formatLoginTime    = $this->loginTime > 0 ? Transform::date($this->loginTime) : '';
+        $this->checked            = $this->checked > 0;
+        $this->system             = $this->system > 0;
+        $this->isTempLock         = $this->errorRelease > time();
+        $this->formatErrorRelease = $this->errorRelease > 0 ? Transform::date($this->errorRelease) : '';
         
         $groupIds             = explode(',', $this->groupIds);
         $this->groupIds       = [];
@@ -112,7 +133,11 @@ class AdminUserInfo extends AdminUserField
                 continue;
             }
             
-            $groupInfo                 = static::$_groupList[$groupId];
+            $groupInfo = static::$_groupList[$groupId];
+            if (!$groupInfo->status) {
+                continue;
+            }
+            
             $this->groupNames[]        = $groupInfo->name;
             $this->groupIds[]          = $groupId;
             $this->groupList[$groupId] = $groupInfo;

@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\menu;
 
@@ -37,7 +38,7 @@ class SystemMenu extends Model
     const TARGET_IFRAME = 'iframe';
     
     /** @var bool 开发模式 */
-    const DEBUG = true;
+    const DEBUG = false;
     
     protected $dataNotFoundMessage = '菜单不存在';
     
@@ -56,6 +57,7 @@ class SystemMenu extends Model
      */
     public function createMenu(SystemMenuField $data, array $auto = [], string $autoSuffix = '')
     {
+        $autoSuffix = trim($autoSuffix);
         $this->startTrans();
         try {
             $this->checkReplace($data->path);
@@ -117,6 +119,9 @@ class SystemMenu extends Model
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($data->id);
+            if ($info->system) {
+                $data->system = true;
+            }
             
             // 更新子菜单关系
             $this->whereEntity(SystemMenuField::parentPath($info->path))

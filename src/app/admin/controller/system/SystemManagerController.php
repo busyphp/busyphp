@@ -8,12 +8,13 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\setting\AdminSetting;
-use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\model\Map;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Filesystem;
@@ -37,9 +38,9 @@ class SystemManagerController extends InsideController
     public function index()
     {
         if ($this->isPost()) {
-            $data = $this->request->post('data', []);
+            $data = $this->post('data/a');
             PublicSetting::init()->set($data);
-            $this->log('系统基本设置', $data, SystemLogs::TYPE_SET);
+            $this->log()->record(self::LOG_UPDATE, '系统基本设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -63,9 +64,9 @@ class SystemManagerController extends InsideController
     public function admin()
     {
         if ($this->isPost()) {
-            $data = $this->request->post('data', []);
+            $data = $this->post('data/a');
             AdminSetting::init()->set($data);
-            $this->log('后台安全设置', $data, SystemLogs::TYPE_SET);
+            $this->log()->record(self::LOG_UPDATE, '后台安全设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -87,10 +88,9 @@ class SystemManagerController extends InsideController
     public function upload()
     {
         if ($this->isPost()) {
-            $data = $this->request->post('data', []);
+            $data = $this->post('data/a');
             UploadSetting::init()->set($data);
-            
-            $this->log('上传设置', $data, SystemLogs::TYPE_SET);
+            $this->log()->record(self::LOG_UPDATE, '上传设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -131,7 +131,7 @@ class SystemManagerController extends InsideController
             ];
         }
         
-        $this->assign('clients', SystemFile::getClients());
+        $this->assign('clients', AppHelper::getList());
         $this->assign('disks', $disks);
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
         $this->assign('type', SystemFile::getTypes());
@@ -151,9 +151,9 @@ class SystemManagerController extends InsideController
     public function watermark()
     {
         if ($this->isPost()) {
-            $data = $this->request->post('data', []);
+            $data = $this->post('data/a');
             WatermarkSetting::init()->set($data);
-            $this->log('图片水印设置', $data, SystemLogs::TYPE_SET);
+            $this->log()->record(self::LOG_UPDATE, '图片水印设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -171,23 +171,24 @@ class SystemManagerController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ParamInvalidException
+     * @throws Exception
      */
     public function file_class()
     {
         // 分类设置
         if ($this->isPost()) {
             $data = SystemFileClassField::init();
-            $data->setId($this->request->post('id', 0, 'intval'));
-            $data->setAllowExtensions($this->request->post('allow_extensions', '', 'trim'));
-            $data->setMaxSize($this->request->post('max_size', 0, 'intval'));
-            $data->setMimeType($this->request->post('mime_type', '', 'trim'));
-            $data->setWatermark($this->request->post('watermark', 0, 'intval'));
-            $data->setThumbType($this->request->post('thumb_type', 0, 'intval'));
-            $data->setThumbWidth($this->request->post('thumb_width', 0, 'intval'));
-            $data->setThumbHeight($this->request->post('thumb_height', 0, 'intval'));
+            $data->setId($this->post('id/d'));
+            $data->setAllowExtensions($this->post('allow_extensions/s', 'trim'));
+            $data->setMaxSize($this->post('max_size/d'));
+            $data->setMimeType($this->post('mime_type/s', 'trim'));
+            $data->setWatermark($this->post('watermark/d'));
+            $data->setThumbType($this->post('thumb_type/d'));
+            $data->setThumbWidth($this->post('thumb_width/d'));
+            $data->setThumbHeight($this->post('thumb_height/d'));
             SystemFileClass::init()->updateData($data);
             
-            $this->log('分类上传设置', SystemFileClass::init()->getHandleData(), SystemLogs::TYPE_UPDATE);
+            $this->log()->record(self::LOG_UPDATE, '分类上传设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -205,8 +206,8 @@ class SystemManagerController extends InsideController
         
         //
         // 修改分类
-        elseif ($this->request->get('action') == 'edit') {
-            $info = SystemFileClass::init()->getInfo($this->request->get('id', 0, 'intval'));
+        elseif ($this->get('action/s') == 'edit') {
+            $info = SystemFileClass::init()->getInfo($this->get('id/d'));
             $this->assign('info', $info);
             
             return $this->display('file_class_edit');
@@ -230,7 +231,7 @@ class SystemManagerController extends InsideController
     public function cache_create()
     {
         $this->updateCache();
-        $this->log('生成缓存');
+        $this->log()->record(self::LOG_DEFAULT, '生成缓存');
         
         return $this->success('生成缓存成功');
     }
@@ -245,7 +246,7 @@ class SystemManagerController extends InsideController
     public function cache_clear()
     {
         $this->clearCache();
-        $this->log('清理缓存');
+        $this->log()->record(self::LOG_DEFAULT, '清理缓存');
         
         return $this->success('清理缓存成功');
     }

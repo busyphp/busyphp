@@ -9,9 +9,7 @@ use BusyPHP\app\admin\js\SelectPickerPlugin;
 use BusyPHP\app\admin\js\TablePlugin;
 use BusyPHP\app\admin\js\TreePlugin;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
-use BusyPHP\app\admin\setting\AdminSetting;
-use BusyPHP\app\admin\setting\PublicSetting;
-use BusyPHP\model\Setting;
+use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\page\Page;
@@ -46,27 +44,15 @@ abstract class AdminController extends Controller
     /** 更新操作 */
     const LOG_UPDATE = SystemLogs::TYPE_UPDATE;
     
-    /** 批量处理 */
-    const LOG_BATCH = SystemLogs::TYPE_BATCH;
+    /** 删除操作 */
+    const LOG_DELETE = SystemLogs::TYPE_DELETE;
     
     /** 默认操作 */
     const LOG_DEFAULT = SystemLogs::TYPE_DEFAULT;
     
-    /** 删除操作 */
-    const LOG_DELETE = SystemLogs::TYPE_DELETE;
-    
-    /** 设置操作 */
-    const LOG_SET = SystemLogs::TYPE_SET;
-    
     //+--------------------------------------
     //| 变量
     //+--------------------------------------
-    /**
-     * 网站基本数据配置
-     * @var array
-     */
-    protected $publicConfig = [];
-    
     /**
      * 管理员信息
      * @var AdminUserInfo
@@ -145,8 +131,6 @@ abstract class AdminController extends Controller
      */
     protected function initialize($checkLogin = true)
     {
-        $this->publicConfig = config('user.public');
-        
         // 验证登录
         if ($checkLogin) {
             $this->checkLogin();
@@ -218,7 +202,7 @@ abstract class AdminController extends Controller
         
         // 权限验证
         if (!AdminGroup::checkPermission($this->adminUser)) {
-            throw new HttpResponseException($this->error('您无权限操作', $this->request->root(), 0));
+            throw new HttpResponseException($this->error('无权限操作', $this->request->getAppUrl(), 0));
         }
     }
     
@@ -243,13 +227,13 @@ abstract class AdminController extends Controller
     
     /**
      * 记录操作记录
-     * @param string $name 操作名称
-     * @param mixed  $value 操作内容
-     * @param int    $type 操作类型
+     * @param int   $type 日志分类
+     * @param mixed $value 日志业务参数
+     * @return SystemLogs
      */
-    protected function log($name, $value = '', $type = SystemLogs::TYPE_DEFAULT)
+    protected function log(int $type = 0, string $value = '') : SystemLogs
     {
-        SystemLogs::init()->setUser($this->adminUserId, $this->adminUsername)->insertData($name, $value, $type);
+        return SystemLogs::init()->setUser($this->adminUserId, $this->adminUsername)->setClass($type, $value);
     }
     
     
@@ -260,73 +244,9 @@ abstract class AdminController extends Controller
      */
     protected function initView() : void
     {
-        // 全局URL
-        $this->assign('url', [
-            'root'       => $this->request->getWebUrl(),
-            'app'        => $this->request->getAppUrl(),
-            'self'       => url(),
-            'controller' => $this->request->controller(),
-            'action'     => $this->request->action(),
-        ]);
-        
-        // 计算面包屑
-        $menuModel   = SystemMenu::init();
-        $hashList    = $menuModel->getHashList();
-        $breadcrumb  = [];
-        $currentMenu = $hashList[md5($this->request->getPath())] ?? null;
-        if ($currentMenu) {
-            $idList     = $menuModel->getIdList();
-            $parentList = $menuModel->getIdParens();
-            $root       = $this->request->root();
-            foreach ($parentList[$currentMenu->id] ?? [] as $id) {
-                if ($item = ($idList[$id] ?? null)) {
-                    $breadcrumb[] = [
-                        'name' => $item->name,
-                        'url'  => $item->url ? $root . $item->url : '',
-                    ];
-                }
-            }
-            krsort($breadcrumb);
-            $breadcrumb = array_values($breadcrumb);
-            
-            // 最终页面
-            $query = [];
-            foreach ($currentMenu->paramList as $item) {
-                $query[$item] = $this->request->get($item);
-            }
-            
-            $breadcrumb[] = [
-                'name' => $currentMenu->name,
-                'url'  => $root . $currentMenu->url . ($query ? '?' . http_build_query($query) : '')
-            ];
+        foreach (AdminHandle::templateBaseData($this->pageTitle, $this->adminUser) as $key => $value) {
+            $this->assign($key, $value);
         }
-        
-        // 系统信息
-        $this->assign('system', [
-            'title'           => AdminSetting::init()->getTitle(),
-            'favicon'         => PublicSetting::init()->getFavicon(),
-            'logo_icon'       => AdminSetting::init()->getLogoIcon(),
-            'logo_horizontal' => AdminSetting::init()->getLogoHorizontal(),
-            'user'            => $this->adminUser ?? [],
-            'breadcrumb'      => $breadcrumb
-        ]);
-        
-        // 页面名称
-        if (!$this->pageTitle && $currentMenu) {
-            $this->pageTitle = $currentMenu->name;
-        }
-        $this->assign('page_title', $this->pageTitle . ' - ' . AdminSetting::init()->getTitle());
-        $this->assign('panel_title', $this->pageTitle);
-        
-        // 样式路径配置
-        $skinRoot = $this->request->getAssetsUrl() . 'admin/';
-        $this->assign('skin', [
-            'root'   => $skinRoot,
-            'css'    => $skinRoot . 'css/',
-            'js'     => $skinRoot . 'js/',
-            'images' => $skinRoot . 'images/',
-            'lib'    => $skinRoot . 'lib/'
-        ]);
     }
     
     
@@ -349,7 +269,7 @@ abstract class AdminController extends Controller
             $message = '';
         }
         
-        if ($this->isAjax() || $data) {
+        if (($this->isAjax() || $data) && !AdminHandle::isSinglePage()) {
             return AdminHandle::restResponseSuccess($message, $data, $jumpUrl);
         }
         
@@ -366,7 +286,7 @@ abstract class AdminController extends Controller
      */
     protected function error($message, $jumpUrl = '', int $code = 0)
     {
-        if ($this->isAjax()) {
+        if ($this->isAjax() && !AdminHandle::isSinglePage()) {
             return AdminHandle::restResponseError($message, $jumpUrl, $code);
         }
         
@@ -375,6 +295,20 @@ abstract class AdminController extends Controller
         }
         
         return parent::error($message, $jumpUrl);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    protected function dispatchJump($message, bool $status = true, $jumpUrl = '')
+    {
+        // 覆盖模板
+        $this->app->config->set(['error_tmpl' => __DIR__ . DIRECTORY_SEPARATOR . '../view/message.html'], 'app');
+        $this->app->config->set(['success_tmpl' => __DIR__ . DIRECTORY_SEPARATOR . '../view/message.html'], 'app');
+        $this->pageTitle = $message;
+        
+        return parent::dispatchJump($message, $status, $jumpUrl);
     }
     
     
@@ -392,7 +326,7 @@ abstract class AdminController extends Controller
         AdminGroup::init()->updateCache();
         
         // 生成系统配置文件
-        Setting::createConfig();
+        SystemConfig::init()->updateCache();
     }
     
     

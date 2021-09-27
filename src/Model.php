@@ -150,6 +150,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected static $macro = [];
     
     /**
+     * 单例模式容器
+     * @var Model[]
+     */
+    protected static $instances = [];
+    
+    /**
      * 增加删除或修改操作的数据
      * @var array
      */
@@ -271,12 +277,23 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 快速实例化
+     * 快速实例化，默认实例化单例
+     * @param bool $isInstance 是否取单例模式
      * @return $this
      */
-    public static function init() : self
+    public static function init(bool $isInstance = true)
     {
-        return new static();
+        if (!$isInstance) {
+            return new static();
+        }
+        
+        if (isset(static::$instances[static::class])) {
+            return static::$instances[static::class];
+        }
+        
+        static::$instances[static::class] = new static();
+        
+        return static::$instances[static::class];
     }
     
     

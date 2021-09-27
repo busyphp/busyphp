@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\group;
 
@@ -148,7 +149,7 @@ class AdminGroupField extends Field
      */
     public function setDefaultMenuId($defaultMenuId) : self
     {
-        $this->defaultMenuId = trim($defaultMenuId);
+        $this->defaultMenuId = intval($defaultMenuId);
         if (!$this->defaultMenuId) {
             throw new VerifyException('请选择默认菜单', 'default_menu_id');
         }

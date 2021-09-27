@@ -1,8 +1,10 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\util\Filter;
@@ -108,11 +110,12 @@ class UploadSetting extends Setting
     
     /**
      * 获取客户端配置
-     * @param int $client
+     * @param string $client 为空自动获取
      * @return array|null
      */
-    public function getClientInfo(int $client = 0) : ?array
+    public function getClientInfo(string $client = '') : ?array
     {
+        $client  = $client ?: AppHelper::getDirName();
         $clients = $this->get('clients', []);
         
         return $clients[$client] ?? null;
@@ -121,13 +124,13 @@ class UploadSetting extends Setting
     
     /**
      * 获取允许上传的文件扩展名
-     * @param int    $client 客户端类型
-     * @param string $classType 文件分类标识
+     * @param string $classType 文件分类
+     * @param string $client 客户端类型，留空自动获取当前客户端
      * @return string[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getAllowExtensions(int $client = 0, string $classType = '') : array
+    public function getAllowExtensions(string $classType = '', string $client = '') : array
     {
         if ($config = $this->getClassConfig($classType)) {
             if ($config->allowExtensions && $extensions = self::parseExtensions($config->allowExtensions, true)) {
@@ -141,13 +144,13 @@ class UploadSetting extends Setting
     
     /**
      * 获取允许上传的文件大小
-     * @param int    $client
-     * @param string $classType
+     * @param string $classType 文件类型
+     * @param string $client 客户端类型，留空自动获取当前客户端
      * @return int
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getMaxSize(int $client = 0, string $classType = '') : int
+    public function getMaxSize(string $classType = '', string $client = '') : int
     {
         if ($config = $this->getClassConfig($classType)) {
             if ($config->allowExtensions && $config->maxSize > 0) {

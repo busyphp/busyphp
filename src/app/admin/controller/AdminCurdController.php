@@ -89,19 +89,19 @@ abstract class AdminCurdController extends AdminController
      */
     protected function parseSelectWhere()
     {
-        $field    = $this->iParam('field', 'trim');       // 搜索字段
-        $word     = $this->iParam('word', 'trim');        // 搜索词
-        $accurate = $this->iParam('accurate', 'intval');  // 是否精确搜索
+        $field    = $this->param('field/s', 'trim');       // 搜索字段
+        $word     = $this->param('word/s', 'trim');        // 搜索词
+        $accurate = $this->param('accurate/b');  // 是否精确搜索
         
         // 条件
-        $where = $this->iParam('static');
+        $where = $this->param('static/a');
         $where = is_array($where) ? $where : [];  // 固定条件
         $where = array_map('trim', $where);
         
         // 搜索字段为空或搜索词为空
         if ($field && $word !== '') {
             // 精确搜索
-            if ($accurate > 0) {
+            if ($accurate) {
                 $where[$field] = $word;
             } else {
                 $searchWord    = Filter::searchWord($word);
@@ -291,11 +291,11 @@ abstract class AdminCurdController extends AdminController
             $message = '';
             $method  = strtoupper($method);
             if ('AJAX' === $method && $this->isAjax()) {
-                $message = call_user_func_array($callback, [$this->iParam()]);
+                $message = call_user_func_array($callback, [$this->param()]);
             } elseif ('POST' === $method && $this->isPost()) {
-                $message = call_user_func_array($callback, [$this->iPost()]);
+                $message = call_user_func_array($callback, [$this->post()]);
             } elseif ('REQUEST' === $method) {
-                $message = call_user_func_array($callback, [$this->iParam()]);
+                $message = call_user_func_array($callback, [$this->param()]);
             } else {
                 $status = false;
             }
@@ -334,7 +334,7 @@ abstract class AdminCurdController extends AdminController
     {
         try {
             $key   = $key ?: 'id';
-            $value = $this->iParam($key);
+            $value = $this->param($key);
             if (!is_array($value)) {
                 if (false === strpos($value, ',')) {
                     $params = [$value];

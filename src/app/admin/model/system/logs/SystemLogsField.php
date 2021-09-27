@@ -1,8 +1,7 @@
 <?php
-
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\logs;
-
 
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
@@ -13,18 +12,20 @@ use BusyPHP\model\Field;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午5:01 SystemLogsField.php $
  * @method static Entity id($op = null, $value = null) ID
- * @method static Entity createTime($op = null, $value = null) 记录时间
- * @method static Entity type($op = null, $value = null) 记录类型
- * @method static Entity title($op = null, $value = null) 操作描述
- * @method static Entity path($op = null, $value = null) 操作路径
- * @method static Entity userid($op = null, $value = null) 用户ID
+ * @method static Entity createTime($op = null, $value = null) 操作时间
+ * @method static Entity type($op = null, $value = null) 操作类型
+ * @method static Entity name($op = null, $value = null) 操作名称
+ * @method static Entity userId($op = null, $value = null) 操作用户ID
  * @method static Entity username($op = null, $value = null) 操作用户名
- * @method static Entity isAdmin($op = null, $value = null) 是否后台操作 1是，0不是
- * @method static Entity appName($op = null, $value = null) APP名称
- * @method static Entity content($op = null, $value = null) 操作详情
- * @method static Entity ip($op = null, $value = null) 操作IP
- * @method static Entity ua($op = null, $value = null) UserAgent
- * @method static Entity url($op = null, $value = null) 操作URL
+ * @method static Entity classType($op = null, $value = null) 日志分类
+ * @method static Entity classValue($op = null, $value = null) 日志分类业务参数
+ * @method static Entity client($op = null, $value = null) 操作客户端
+ * @method static Entity ip($op = null, $value = null) 客户端IP
+ * @method static Entity method($op = null, $value = null) 请求方式
+ * @method static Entity url($op = null, $value = null) 请求URL
+ * @method static Entity params($op = null, $value = null) 请求参数
+ * @method static Entity headers($op = null, $value = null) 请求头
+ * @method static Entity result($op = null, $value = null) 操作结果
  */
 class SystemLogsField extends Field
 {
@@ -35,34 +36,28 @@ class SystemLogsField extends Field
     public $id;
     
     /**
-     * 记录时间
+     * 操作时间
      * @var int
      */
     public $createTime;
     
     /**
-     * 记录类型
+     * 操作类型
      * @var int
      */
     public $type;
     
     /**
-     * 操作描述
+     * 操作名称
      * @var string
      */
-    public $title;
+    public $name;
     
     /**
-     * 操作路径
-     * @var string
-     */
-    public $path;
-    
-    /**
-     * 用户ID
+     * 操作用户ID
      * @var int
      */
-    public $userid;
+    public $userId;
     
     /**
      * 操作用户名
@@ -71,38 +66,56 @@ class SystemLogsField extends Field
     public $username;
     
     /**
-     * 是否后台操作 1是，0不是
+     * 日志分类
      * @var int
      */
-    public $isAdmin;
+    public $classType;
     
     /**
-     * APP名称
+     * 日志分类业务参数
      * @var string
      */
-    public $appName;
+    public $classValue;
     
     /**
-     * 操作详情
+     * 操作客户端
      * @var string
      */
-    public $content;
+    public $client;
     
     /**
-     * 操作IP
+     * 客户端IP
      * @var string
      */
     public $ip;
     
     /**
-     * UserAgent
+     * 请求方式
      * @var string
      */
-    public $ua;
+    public $method;
     
     /**
-     * 操作URL
+     * 请求URL
      * @var string
      */
     public $url;
+    
+    /**
+     * 请求参数
+     * @var mixed
+     */
+    public $params;
+    
+    /**
+     * 请求头
+     * @var mixed
+     */
+    public $headers;
+    
+    /**
+     * 操作结果
+     * @var string
+     */
+    public $result;
 }

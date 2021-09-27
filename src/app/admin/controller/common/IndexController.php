@@ -11,7 +11,10 @@ use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
+use BusyPHP\exception\PartUploadSuccessException;
+use BusyPHP\file\upload\PartUpload;
 use BusyPHP\helper\util\Transform;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -40,6 +43,7 @@ class IndexController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
+     * @throws Exception
      */
     public function index()
     {
@@ -51,6 +55,10 @@ class IndexController extends InsideController
             // 系统消息/待办
             case 'AppMessage':
                 return $this->appMessage();
+            
+            // 文件上传
+            case 'Upload':
+                return $this->upload();
             
             // 显示
             default:
@@ -83,7 +91,7 @@ class IndexController extends InsideController
             'menu_list'      => SystemMenu::init()->getNav($this->adminUser),
             'user_id'        => $this->adminUserId,
             'username'       => $this->adminUsername,
-    
+            
             // 用户菜单
             'user_dropdowns' => [
                 [
@@ -130,11 +138,11 @@ class IndexController extends InsideController
                         'data-toggle'     => 'busy-request',
                         'data-url'        => (string) url('admin_out'),
                         'data-confirm'    => '确认要退出登录吗？',
-                        'data-on-success' => '@app.redirect',
+                        'data-on-success' => '@route.redirect',
                     ]
                 ]
             ],
-    
+            
             // 消息启用状态
             'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
             'message_agency' => MessageAgencySubscribe::hasSubscribe(),
@@ -143,12 +151,55 @@ class IndexController extends InsideController
     
     
     /**
+     * 上传文件
+     * @throws Exception
+     */
+    protected function upload()
+    {
+        $this->request->setRequestIsAjax();
+        $classType     = $this->post('class_type/s', 'trim');
+        $classValue    = $this->post('class_value/s', 'trim');
+        $chunkFilename = $this->post('chunk_filename/s', 'trim');
+        $chunkComplete = $this->post('chunk_complete/b');
+        $chunkTotal    = $this->post('chunk_total/d');
+        $chunkCurrent  = $this->post('chunk_current/d');
+        $chunkId       = $this->post('chunk_guid/s', 'trim');
+        
+        try {
+            $upload = new PartUpload();
+            $upload->setUserId($this->adminUserId);
+            $upload->setClassType($classType, $classValue);
+            $upload->setName($chunkFilename);
+            $upload->setComplete($chunkComplete);
+            $upload->setTotal($chunkTotal);
+            $upload->setCurrent($chunkCurrent);
+            $upload->setId($chunkId);
+            
+            $result = $upload->upload($this->request->file('upload'));
+        } catch (PartUploadSuccessException $e) {
+            return $this->success('PART SUCCESS');
+        }
+        
+        $data = [
+            'file_url'  => $result->url,
+            'file_id'   => $result->id,
+            'name'      => $result->name,
+            'filename'  => $result->file->getFilename(),
+            'extension' => $result->file->getExtension(),
+        ];
+        $this->log()->record(self::LOG_INSERT, '上传文件', json_encode($data, JSON_UNESCAPED_UNICODE));
+        
+        return $this->success('上传成功', $data);
+    }
+    
+    
+    /**
      * 消息通知
      */
     protected function appMessage()
     {
-        $action = $this->iGet('action', 'trim');
-        $type   = $this->iGet('type', 'trim');
+        $action = $this->get('action', 'trim');
+        $type   = $this->get('type', 'trim');
         
         $params = new MessageParams();
         $params->setUser($this->adminUser);
@@ -157,7 +208,7 @@ class IndexController extends InsideController
             if ($action == 'list') {
                 $listParams = new MessageListParams();
                 $listParams->setUser($this->adminUser);
-                $listParams->setPage($this->iGet('page'));
+                $listParams->setPage($this->get('page'));
                 $list = [];
                 foreach (MessageNoticeSubscribe::triggerList($listParams) as $item) {
                     $list[] = [
@@ -179,7 +230,7 @@ class IndexController extends InsideController
             } elseif ($action == 'read' || $action == 'delete') {
                 $updateParams = new MessageUpdateParams();
                 $updateParams->setUser($this->adminUser);
-                $updateParams->setId($this->iGet('id'));
+                $updateParams->setId($this->get('id'));
                 
                 if ($action == 'delete') {
                     MessageNoticeSubscribe::triggerDelete($updateParams);
@@ -217,7 +268,7 @@ class IndexController extends InsideController
             } elseif ($action == 'read') {
                 $updateParams = new MessageUpdateParams();
                 $updateParams->setUser($this->adminUser);
-                $updateParams->setId($this->iGet('id'));
+                $updateParams->setId($this->get('id'));
                 
                 MessageAgencySubscribe::triggerRead($updateParams);
             }

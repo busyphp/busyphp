@@ -1,10 +1,15 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model;
+use BusyPHP\Request;
 use Exception;
 use League\Flysystem\FileNotFoundException;
 use think\db\exception\DataNotFoundException;
@@ -35,7 +40,7 @@ class SystemFile extends Model
     /** @var string 音频 */
     const FILE_TYPE_AUDIO = 'audio';
     
-    /** @var string 附件 */
+    /** @var string 文件 */
     const FILE_TYPE_FILE = 'file';
     
     //+--------------------------------------
@@ -59,8 +64,16 @@ class SystemFile extends Model
      */
     public function insertFile(SystemFileField $insert)
     {
+        $list      = SystemFileClass::init()->getList();
+        $classInfo = $list[$insert->classType] ?? null;
+        if (!$classInfo) {
+            throw new VerifyException('文件分类不能为空', 'class_type');
+        }
+        
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
+        $insert->client     = Request::init()->isCli() ? SystemLogs::CLI_CLIENT_KEY : AppHelper::getDirName();
+        $insert->type       = $classInfo->type;
         
         return $this->addData($insert);
     }
@@ -99,7 +112,6 @@ class SystemFile extends Model
      * 查询分类条件
      * @param string $classType 文件分类
      * @param string $classValue 文件业务参数
-     * @param bool   $mustValue 是否强制查询业务参数
      * @return $this
      */
     public function whereClass(string $classType, $classValue = null) : self
@@ -191,25 +203,6 @@ class SystemFile extends Model
         return self::parseVars(self::parseConst(self::class, 'FILE_TYPE_', [], function($item) {
             return $item['name'];
         }), $var);
-    }
-    
-    
-    /**
-     * 获取客户端配置
-     * @param int $var
-     * @return array
-     */
-    public static function getClients($var = null)
-    {
-        $clientsConfig = Filesystem::getConfig('clients', []);
-        if (!$clientsConfig) {
-            $clientsConfig = [];
-        }
-        if (!isset($clientsConfig[0])) {
-            $clientsConfig[0] = ['name' => '后台'];
-        }
-        
-        return self::parseVars($clientsConfig, $var);
     }
     
     

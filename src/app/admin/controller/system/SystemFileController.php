@@ -8,6 +8,7 @@ use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\exception\PartUploadSuccessException;
 use BusyPHP\file\upload\PartUpload;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\file\SystemFile;
@@ -48,8 +49,9 @@ class SystemFileController extends InsideController
      */
     public function index()
     {
+        $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemFile $modal, Map $data) {
+            $this->pluginTable->setQueryHandler(function(SystemFile $model, Map $data) use ($timeRange) {
                 if (!$type = $data->get('type', '')) {
                     $data->remove('type');
                 }
@@ -60,9 +62,14 @@ class SystemFileController extends InsideController
                     $data->remove('type');
                 }
                 
-                if ($data->get('client', -1) == -1) {
+                if (!$data->get('client', '')) {
                     $data->remove('client');
                 }
+                
+                if ($time = $data->get('time', $timeRange)) {
+                    $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
+                }
+                $data->remove('time');
                 
                 if ($this->pluginTable->sortField === 'format_size') {
                     $this->pluginTable->sortField = 'size';
@@ -75,7 +82,8 @@ class SystemFileController extends InsideController
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限类型'));
-        $this->assign('client_options', Transform::arrayToOption(SystemFile::getClients(), '__index', 'name'));
+        $this->assign('client_options', Transform::arrayToOption(AppHelper::getList(), 'dir', 'name'));
+        $this->assign('time', $timeRange);
         
         return $this->display();
     }
@@ -88,40 +96,6 @@ class SystemFileController extends InsideController
      */
     public function upload()
     {
-        if ($this->requestPluginName === 'Upload') {
-            $this->request->setRequestIsAjax();
-            $classType     = $this->request->post('class_type', '', 'trim');
-            $classValue    = $this->request->post('class_value', '', 'trim');
-            $chunkFilename = $this->request->post('chunk_filename', '', 'trim');
-            $chunkComplete = $this->request->post('chunk_complete', 0, 'intval') > 0;
-            $chunkTotal    = $this->request->post('chunk_total', 0, 'intval');
-            $chunkCurrent  = $this->request->post('chunk_current', 0, 'intval');
-            $chunkId       = $this->request->post('chunk_guid', '', 'trim');
-            
-            try {
-                $upload = new PartUpload();
-                $upload->setClient(0, $this->adminUserId);
-                $upload->setClassType($classType, $classValue);
-                $upload->setName($chunkFilename);
-                $upload->setComplete($chunkComplete);
-                $upload->setTotal($chunkTotal);
-                $upload->setCurrent($chunkCurrent);
-                $upload->setId($chunkId);
-                
-                $result = $upload->upload($this->request->file('upload'));
-            } catch (PartUploadSuccessException $e) {
-                return $this->success('PART SUCCESS');
-            }
-            
-            return $this->success('上传成功', [
-                'file_url'  => $result->url,
-                'file_id'   => $result->id,
-                'name'      => $result->name,
-                'filename'  => $result->file->getFilename(),
-                'extension' => $result->file->getExtension(),
-            ]);
-        }
-        
         return $this->display();
     }
     
@@ -135,7 +109,7 @@ class SystemFileController extends InsideController
             $this->model->deleteInfo($id);
         });
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除附件', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除文件');
             
             return '删除成功';
         });
@@ -152,12 +126,12 @@ class SystemFileController extends InsideController
      */
     public function picker()
     {
-        $classType  = $this->iGet('class_type', 'trim');
-        $classValue = $this->iGet('class_value', 'trim');
-        $extensions = $this->iGet('extensions', 'trim');
-        $range      = $this->iGet('range', 'intval');
-        $type       = $this->iGet('type', 'trim');
-        $word       = $this->iGet('word', 'trim');
+        $classType  = $this->get('class_type/s', 'trim');
+        $classValue = $this->get('class_value/s', 'trim');
+        $extensions = $this->get('extensions/s', 'trim');
+        $range      = $this->get('range/d');
+        $type       = $this->get('type/s', 'trim');
+        $word       = $this->get('word/s', 'trim');
         $fileType   = SystemFile::FILE_TYPE_FILE;
         
         // 按分类查询
@@ -239,8 +213,8 @@ class SystemFileController extends InsideController
         $fileClass     = [];
         foreach ($classList as $key => $r) {
             $fileClass[$key] = [
-                'size'   => $uploadSetting->getMaxSize(),
-                'suffix' => implode(',', $uploadSetting->getAllowExtensions(0, $key)),
+                'size'   => $uploadSetting->getMaxSize($key),
+                'suffix' => implode(',', $uploadSetting->getAllowExtensions($key)),
                 'mime'   => implode(',', $uploadSetting->getMimeType($key)),
                 'type'   => $r['type'],
                 'name'   => $r['name'],
@@ -250,7 +224,7 @@ class SystemFileController extends InsideController
             ];
         }
         
-        $uploadUrl = url('upload');
+        $uploadUrl = $this->request->getAppUrl();
         $pickerUrl = url('picker?class_type=_type_&class_value=_value_&extensions=_extensions_');
         $fileClass = json_encode($fileClass, JSON_UNESCAPED_UNICODE);
         

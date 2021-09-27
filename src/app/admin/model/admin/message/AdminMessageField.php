@@ -1,8 +1,7 @@
 <?php
-
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\message;
-
 
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;

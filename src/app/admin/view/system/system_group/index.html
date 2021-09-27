@@ -9,7 +9,6 @@
 
 
     <table class="table table-bordered table-striped table-hover"
-           id="fileTable"
            data-toggle="busy-table"
            data-search="#searchBar"
            data-show-columns="true"
@@ -31,13 +30,20 @@
         <thead>
             <tr>
                 <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
-                <th class="text-center" width="60" data-field="sort" data-formatter="@" data-click-to-select="false">
-                    排序
-                </th>
+                <ba:access value="sort">
+                    <th class="text-center" width="60" data-field="sort" data-formatter="@" data-click-to-select="false">
+                        排序
+                    </th>
+                </ba:access>
                 <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
-                <th class="text-center" data-field="name" data-halign="center" data-align="left" data-click-to-select="false">
+                <th class="text-center" data-field="name" data-halign="center" data-align="left" data-click-to-select="false" data-formatter="@">
                     角色名称
                 </th>
+                <ba:access value="change_status">
+                    <th class="text-center" width="80" data-field="status" data-align="center" data-formatter="@">
+                        状态
+                    </th>
+                </ba:access>
                 <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
                     操作
                 </th>
@@ -48,8 +54,8 @@
 
     <div class="hide">
         <div id="tableToolbar">
-            <div class="btn-group">
-                <a class="btn btn-success"
+            <ba:access value="add">
+                <a class="btn btn-primary"
                    data-toggle="busy-modal"
                    data-url="{:url('add')}"
                    data-ok="添加角色"
@@ -57,7 +63,9 @@
                     <i class="fa fa-plus"></i>
                     添加
                 </a>
-                <a class="btn btn-warning"
+            </ba:access>
+            <ba:access value="sort">
+                <a class="btn btn-secondary"
                    data-url="{:url('sort')}"
                    data-confirm="确认要排序吗？"
                    data-method="post"
@@ -66,6 +74,8 @@
                     <i class="fa fa-sort"></i>
                     排序
                 </a>
+            </ba:access>
+            <ba:access value="delete">
                 <a class="btn btn-danger"
                    data-url="{:url('delete')}"
                    data-confirm="确认要删除选中的%s个角色组吗？"
@@ -76,7 +86,7 @@
                     <i class="fa fa-trash"></i>
                     删除
                 </a>
-            </div>
+            </ba:access>
         </div>
     </div>
 
@@ -84,19 +94,34 @@
         <input type="text" class="form-control input-xs text-center" value="{{value}}" data-bind="sort"/>
     </script>
 
+    <script type="text/html" id="name">
+        {{value}}
+
+        {{if item.system}}
+        <kbd>系统角色</kbd>
+        {{/if}}
+    </script>
+
+    <script type="text/html" id="status">
+        <input type="checkbox" class="switch input-xs success" data-toggle="busy-checkbox" data-url="{:url('change_status?id=')}{{item.id}}" title="启用,禁用" {{value ? 'checked': ''}}/>
+    </script>
+
     <script type="text/html" id="operate">
         {{if !item.system}}
-        <a class="btn btn-success btn-xs"
-           href="{:url('edit?id=')}{{item.id}}"
-           data-toggle="busy-modal"
-           data-ok="修改角色"
-           data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
-
-        <a class="btn btn-danger btn-xs"
-           href="{:url('delete?id=')}{{item.id}}"
-           data-toggle="busy-request"
-           data-confirm="确认要删除该角色吗？"
-           data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        <ba:access value="edit">
+            <a class="btn btn-primary btn-xs"
+               href="{:url('edit?id=')}{{item.id}}"
+               data-toggle="busy-modal"
+               data-ok="修改角色"
+               data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
+        </ba:access>
+        <ba:access value="delete">
+            <a class="btn btn-danger btn-xs"
+               href="{:url('delete?id=')}{{item.id}}"
+               data-toggle="busy-request"
+               data-confirm="确认要删除该角色吗？"
+               data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+        </ba:access>
         {{else}}
         -
         {{/if}}

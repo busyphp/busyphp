@@ -26,10 +26,10 @@ class VerifyController extends Controller
      */
     public function index()
     {
-        $key                = $this->iGet('key', 'trim');
-        $type               = $this->iGet('type', 'intval', 0);
-        $width              = $this->iGet('width', 'intval', 0);
-        $height             = $this->iGet('height', 'intval', 0);
+        $key                = $this->get('key', 'trim');
+        $type               = $this->get('type', 'intval', 0);
+        $width              = $this->get('width', 'intval', 0);
+        $height             = $this->get('height', 'intval', 0);
         $config             = [];
         $config['seKey']    = 'BusyPHP';
         $config['expire']   = 600;

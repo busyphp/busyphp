@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\config;
 
@@ -10,8 +11,6 @@ use BusyPHP\helper\util\Regex;
 use BusyPHP\helper\util\Transform;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
-
 
 /**
  * 系统键值对配置数据模型字段
@@ -22,8 +21,8 @@ use think\db\exception\ModelNotFoundException;
  * @method static Entity content($op = null, $value = null)
  * @method static Entity name($op = null, $value = null) 备注
  * @method static Entity type($op = null, $value = null) 类型
- * @method static Entity isSystem($op = null, $value = null) 系统配置
- * @method static Entity isAppend($op = null, $value = null) 是否加入全局配置
+ * @method static Entity system($op = null, $value = null) 系统配置
+ * @method static Entity append($op = null, $value = null) 是否加入全局配置
  */
 class SystemConfigField extends Field
 {
@@ -54,13 +53,13 @@ class SystemConfigField extends Field
      * 系统配置
      * @var int
      */
-    public $isSystem;
+    public $system;
     
     /**
      * 是否加入全局配置
      * @var int
      */
-    public $isAppend;
+    public $append;
     
     
     /**
@@ -117,7 +116,6 @@ class SystemConfigField extends Field
      * @throws VerifyException
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ModelNotFoundException
      */
     public function setType($type)
     {
@@ -135,28 +133,18 @@ class SystemConfigField extends Field
             throw new VerifyException('配置标识不能为数字或下划线开头', 'type');
         }
         
-        // 查重
-        $model = SystemConfig::init();
-        $model->whereEntity(self::type($type));
-        if ($this->id > 0) {
-            $model->whereEntity(self::id('<>', $this->id));
-        }
-        if ($model->findInfo()) {
-            throw new VerifyException('配置标识不能重复', 'type');
-        }
-        
         return $this;
     }
     
     
     /**
      * 设置系统配置
-     * @param int $isSystem
+     * @param int $system
      * @return $this
      */
-    public function setIsSystem($isSystem)
+    public function setSystem($system)
     {
-        $this->isSystem = Transform::dataToBool($isSystem);
+        $this->system = Transform::dataToBool($system);
         
         return $this;
     }
@@ -164,12 +152,12 @@ class SystemConfigField extends Field
     
     /**
      * 设置是否加入全局配置
-     * @param int $isAppend
+     * @param int $append
      * @return $this
      */
-    public function setIsAppend($isAppend)
+    public function setAppend($append)
     {
-        $this->isAppend = Transform::dataToBool($isAppend);
+        $this->append = Transform::dataToBool($append);
         
         return $this;
     }

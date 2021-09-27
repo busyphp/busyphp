@@ -45,7 +45,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">打开方式</label>
             <div class="col-sm-9">
-                <div class="radio no-padding">
+                <div class="radio">
                     <foreach name="target_list" key="vo" item="name">
                         <input type="radio" name="target" value="{$vo}" <?=is_checked($info['target'] == $vo)?> data-toggle="busy-radio" title="{$name}"/>
                     </foreach>
@@ -54,21 +54,20 @@
             </div>
         </div>
         <div class="form-group {$url.action === 'edit' ? 'no-margin-bottom' : ''}">
-            <label class="col-sm-2 control-label">显示级状态</label>
+            <label class="col-sm-2 control-label">其它设置</label>
             <div class="col-sm-9">
                 <div class="radio no-padding">
                     <input type="checkbox" class="switch" name="show" value="1" <?=is_checked(!$info['hide'])?> data-toggle="busy-checkbox" title="显示,隐藏"/>
                     <input type="checkbox" class="switch" name="enable" value="1" <?=is_checked(!$info['disabled'])?> data-toggle="busy-checkbox" title="正常,禁用"/>
-                    <input type="checkbox" class="switch" name="system" value="1" <?=is_checked($info['system'])?> data-toggle="busy-checkbox" title="系统,普通"/>
                 </div>
-                <span class="help-block"><code>隐藏</code>的菜单不在菜单栏显示，但会做为权限检测使用。<br/><code>禁用</code>后菜单将无法正常使用。<br/><code>系统</code>级别的菜单创建后无法修改也无法删除</span>
+                <span class="help-block"><code>隐藏</code>的菜单不在菜单栏显示，但会做为权限以及其它功能使用。<br/><code>禁用</code>后菜单将无法正常使用。</span>
             </div>
         </div>
         <eq name="url.action" value="add">
             <div class="form-group no-margin-bottom" id="autoBox">
                 <label class="col-sm-2 control-label">自动创建</label>
                 <div class="col-sm-9">
-                    <div class="radio no-padding">
+                    <div class="checkbox-group">
                         <input type="checkbox" class="pill" name="auto[]" value="add" data-toggle="busy-checkbox" title="添加"/>
                         <input type="checkbox" class="pill" name="auto[]" value="edit" data-toggle="busy-checkbox" title="修改"/>
                         <input type="checkbox" class="pill" name="auto[]" value="delete" data-toggle="busy-checkbox" title="删除"/>

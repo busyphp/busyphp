@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\helper\util\Str;
+use BusyPHP\Service;
 
 /**
  * admin内部基本控制器
@@ -43,7 +44,7 @@ class InsideController extends AdminCurdController
         }
         $controller = Str::snake($controller);
         
-        $dir = $this->request->route('dir');
+        $dir = $this->request->route(Service::ROUTE_VAR_DIR);
         if ($dir) {
             $dir = Str::snake($dir) . DIRECTORY_SEPARATOR;
         }

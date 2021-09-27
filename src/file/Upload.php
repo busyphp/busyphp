@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\file;
 
@@ -7,10 +8,9 @@ use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
+use BusyPHP\contract\structs\results\UploadResult;
 use BusyPHP\exception\PartUploadSuccessException;
-use BusyPHP\file\upload\struct\UploadResultStruct;
 use BusyPHP\helper\util\Str;
-use BusyPHP\file\Image;
 use Exception;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -125,22 +125,20 @@ abstract class Upload
         $this->disk             = $this->setting->getDisk();
         
         if ($target) {
-            $this->setClient($target->client, $target->userId);
+            $this->setUserId($target->userId);
             $this->setClassType($target->classType, $target->classValue);
         }
     }
     
     
     /**
-     * 设置客户端和用户ID
-     * @param int $client 客户端类型
+     * 设置用户ID
      * @param int $userId 用户ID
      * @return static
      */
-    public function setClient(int $client, int $userId = 0) : self
+    public function setUserId($userId) : self
     {
-        $this->client = $client;
-        $this->userId = $userId;
+        $this->userId = intval($userId);
         
         return $this;
     }
@@ -179,7 +177,7 @@ abstract class Upload
     /**
      * 执行上传
      * @param mixed $data 上传的数据
-     * @return UploadResultStruct
+     * @return UploadResult
      * @throws PartUploadSuccessException
      * @throws Exception
      */
@@ -189,7 +187,7 @@ abstract class Upload
         
         $imageInfo      = $imageInfo ?: [];
         $system         = $this->fileSystem();
-        $struct         = new UploadResultStruct();
+        $struct         = new UploadResult();
         $struct->name   = $name;
         $struct->url    = rtrim((trim($system->getConfig()->get('url', '')) ?: '/uploads'), '/') . '/' . $path;
         $struct->file   = new File($system->path($path), true);
@@ -322,7 +320,6 @@ abstract class Upload
             $append             = SystemFileField::init();
             $append->name       = $struct->name;
             $append->url        = $struct->url;
-            $append->client     = $this->client;
             $append->userId     = $this->userId;
             $append->classValue = $this->classValue;
             $append->classType  = $this->classType;
@@ -459,7 +456,6 @@ abstract class Upload
                 Str::random(32),
                 $this->classType,
                 $this->classValue,
-                $this->client,
                 $this->userId
             ])) . '.' . $extension;
     }
@@ -541,7 +537,7 @@ abstract class Upload
             throw new FileException('未知文件扩展名');
         }
         
-        $allow = array_map('strtolower', $this->setting->getAllowExtensions($this->client, $this->classType));
+        $allow = array_map('strtolower', $this->setting->getAllowExtensions($this->classType));
         if (!in_array($extension, $allow)) {
             throw new FileException('上传的文件格式不正确');
         }
@@ -637,7 +633,7 @@ abstract class Upload
             throw new FileException('禁止上传空文件');
         }
         
-        if ($fileSize > $this->setting->getMaxSize($this->client, $this->classType)) {
+        if ($fileSize > $this->setting->getMaxSize($this->classType)) {
             throw new FileException('上传的文件大小超过了系统限制');
         }
     }

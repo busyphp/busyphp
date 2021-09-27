@@ -65,10 +65,23 @@ class SystemUserController extends InsideController
                     break;
                 }
                 $data->remove('status');
+                
+                if ($groupId = $data->get('group_id', 0)) {
+                    $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
+                }
+                $data->remove('group_id');
+                
+                if ($this->pluginTable->sortField == AdminUserInfo::formatCreateTime()) {
+                    $this->pluginTable->sortField = AdminUserInfo::createTime();
+                } elseif ($this->pluginTable->sortField == AdminUserInfo::formatLastTime()) {
+                    $this->pluginTable->sortField = AdminUserInfo::lastTime();
+                }
             });
             
             return $this->success($this->pluginTable->build($this->model));
         }
+        
+        $this->assign('group_options', AdminGroup::init()->getTreeOptions());
         
         return $this->display();
     }
@@ -85,15 +98,15 @@ class SystemUserController extends InsideController
     {
         if ($this->isPost()) {
             $insert = AdminUserField::init();
-            $insert->setGroupIds($this->request->post('group_ids', []));
-            $insert->setUsername($this->request->post('username', '', 'trim'));
-            $insert->setPassword($this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
-            $insert->setPhone($this->request->post('phone', '', 'trim'));
-            $insert->setEmail($this->request->post('email', '', 'trim'));
-            $insert->setQq($this->request->post('qq', '', 'trim'));
-            $insert->setChecked($this->request->post('checked', 0, 'intval') > 0);
+            $insert->setGroupIds($this->post('group_ids/a'));
+            $insert->setUsername($this->post('username/s', 'trim'));
+            $insert->setPassword($this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $insert->setPhone($this->post('phone/s', 'trim'));
+            $insert->setEmail($this->post('email/s', 'trim'));
+            $insert->setQq($this->post('qq/s', 'trim'));
+            $insert->setChecked($this->post('checked/b'));
             $this->model->insertData($insert);
-            $this->log('添加管理员', $this->model->getHandleData(), self::LOG_INSERT);
+            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
             
             return $this->success('添加成功');
         }
@@ -116,26 +129,27 @@ class SystemUserController extends InsideController
      * @throws DbException
      * @throws ParamInvalidException
      * @throws VerifyException
+     * @throws Exception
      */
     public function edit()
     {
         if ($this->isPost()) {
             $update = AdminUserField::init();
-            $update->setId($this->request->post('id', 0, 'intval'));
-            $update->setGroupIds($this->request->post('group_ids', []));
-            $update->setUsername($this->request->post('username', '', 'trim'));
-            $update->setPhone($this->request->post('phone', '', 'trim'));
-            $update->setEmail($this->request->post('email', '', 'trim'));
-            $update->setQq($this->request->post('qq', '', 'trim'));
-            $update->setChecked($this->request->post('checked', 0, 'intval') > 0);
+            $update->setId($this->post('id/d'));
+            $update->setGroupIds($this->post('group_ids/a'));
+            $update->setUsername($this->post('username/s', 'trim'));
+            $update->setPhone($this->post('phone/s', 'trim'));
+            $update->setEmail($this->post('email/s', 'trim'));
+            $update->setQq($this->post('qq/s', 'trim'));
+            $update->setChecked($this->post('checked/b'));
             $this->model->updateData($update);
-            $this->log('修改管理员', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
             return $this->success('修改成功');
         }
         
         // 权限数据
-        $info = $this->model->getInfo($this->request->get('id', 0, 'intval'));
+        $info = $this->model->getInfo($this->get('id/d'));
         if ($this->pluginTree) {
             return $this->groupTree($info);
         }
@@ -177,20 +191,48 @@ class SystemUserController extends InsideController
      * @throws DbException
      * @throws VerifyException
      * @throws ParamInvalidException
+     * @throws Exception
      */
     public function password()
     {
         if ($this->isPost()) {
-            $this->model->updatePassword($this->adminUserId, $this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
-            $this->log('修改管理员密码', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->model->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
             
             return $this->success('修改成功');
         }
         
-        $info = $this->model->getInfo($this->request->get('id', 0, 'intval'));
+        $info = $this->model->getInfo($this->get('id/d'));
         $this->assign('info', $info);
         
         return $this->display();
+    }
+    
+    
+    /**
+     * 启用/禁用管理员
+     * @throws Exception
+     */
+    public function change_checked()
+    {
+        $status = $this->get('status/b');
+        $this->model->changeChecked($this->get('id/d'), $status);
+        $this->log()->record(self::LOG_UPDATE, '启用/禁用管理员');
+        
+        return $this->success($status ? '启用成功' : '禁用成功');
+    }
+    
+    
+    /**
+     * 解锁管理员
+     * @throws Exception
+     */
+    public function unlock()
+    {
+        $this->model->unlock($this->get('id/d'));
+        $this->log()->record(self::LOG_UPDATE, '解锁管理员');
+        
+        return $this->success('解锁成功');
     }
     
     
@@ -204,7 +246,7 @@ class SystemUserController extends InsideController
         });
         
         $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log('删除管理员', ['id' => $params], self::LOG_DELETE);
+            $this->log()->record(self::LOG_DELETE, '删除管理员');
             
             return '删除成功';
         });
@@ -223,12 +265,12 @@ class SystemUserController extends InsideController
         if ($this->isPost()) {
             $update = AdminUserField::init();
             $update->setId($this->adminUserId);
-            $update->setUsername($this->request->post('username', '', 'trim'));
-            $update->setPhone($this->request->post('phone', '', 'trim'));
-            $update->setEmail($this->request->post('email', '', 'trim'));
-            $update->setQq($this->request->post('qq', '', 'trim'));
+            $update->setUsername($this->post('username/s', 'trim'));
+            $update->setPhone($this->post('phone/s', 'trim'));
+            $update->setEmail($this->post('email/s', 'trim'));
+            $update->setQq($this->post('qq/s', 'trim'));
             $this->model->whereEntity(AdminUserField::id($this->adminUserId))->updateData($update);
-            $this->log('修改个人资料', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->log()->record(self::LOG_UPDATE, '修改个人资料');
             
             return $this->success('修改成功');
         }
@@ -247,7 +289,7 @@ class SystemUserController extends InsideController
     public function personal_password()
     {
         if ($this->isPost()) {
-            $oldPassword = $this->request->post('old_password', '', 'trim');
+            $oldPassword = $this->post('old_password/s', 'trim');
             if (!$oldPassword) {
                 throw new VerifyException('请输入登录密码', 'old_password');
             }
@@ -256,8 +298,10 @@ class SystemUserController extends InsideController
                 throw new VerifyException('登录密码输入错误', 'old_password');
             }
             
-            $this->model->updatePassword($this->adminUserId, $this->request->post('password', '', 'trim'), $this->request->post('confirm_password', '', 'trim'));
-            $this->log('修改个人密码', $this->model->getHandleData(), self::LOG_UPDATE);
+            $this->model->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $this->log()
+                ->filterParams(['old_password', 'password', 'confirm_password'])
+                ->record(self::LOG_UPDATE, '修改个人密码');
             
             return $this->success('修改成功');
         }

@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
@@ -273,7 +274,7 @@ class AdminUser extends Model
             $checkError      = $errorMinute > 0 && $errorLockMinute > 0 && $errorMax > 0;
             
             // 是否已经锁定
-            if ($checkError && $info->errorRelease > time()) {
+            if ($checkError && $info->isTempLock) {
                 $time = date('Y-m-d H:i:s', $info->errorRelease);
                 throw new VerifyException("连续密码错误超过{$errorMax}次，已被系统锁定至{$time}");
             }
@@ -282,9 +283,9 @@ class AdminUser extends Model
             if (!self::verifyPassword($password, $info->password)) {
                 // 记录密码错误次数
                 $errorMsg  = '账号不存在或密码错误';
-                $errorCode = 0;
+                $errorCode = 1;
                 if ($checkError) {
-                    $errorCode = 1;
+                    $errorCode = 2;
                     $save      = AdminUserField::init();
                     
                     // 1. 从未出错
@@ -320,7 +321,7 @@ class AdminUser extends Model
             
             return $result;
         } catch (Exception $e) {
-            if ($e instanceof VerifyException && $e->getCode() === 1) {
+            if ($e instanceof VerifyException && $e->getCode() === 2) {
                 $this->commit();
             } else {
                 $this->rollback();
@@ -341,8 +342,8 @@ class AdminUser extends Model
      */
     public function checkLogin($saveOperateTime = false)
     {
-        $cookieUserId  = floatval(Cookie::get(AdminUser::COOKIE_USER_ID));
-        $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY));
+        $cookieUserId  = floatval(Cookie::get(AdminUser::COOKIE_USER_ID, 0));
+        $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY, ''));
         if (!$cookieUserId || !$cookieAuthKey) {
             throw new VerifyException('缺少COOKIE', 'cookie');
         }
@@ -425,6 +426,37 @@ class AdminUser extends Model
         if (AdminSetting::init()->getOften()) {
             Session::set(self::SESSION_OPERATE_TIME, time());
         }
+    }
+    
+    
+    /**
+     * 设置启用/禁用
+     * @param int  $id
+     * @param bool $checked
+     * @throws Exception
+     */
+    public function changeChecked($id, bool $checked)
+    {
+        $update = AdminUserField::init();
+        $update->setId($id);
+        $update->checked = $checked;
+        $this->updateData($update);
+    }
+    
+    
+    /**
+     * 解锁
+     * @param $id
+     * @throws Exception
+     */
+    public function unlock($id)
+    {
+        $update = AdminUserField::init();
+        $update->setId($id);
+        $update->errorRelease = 0;
+        $update->errorTime    = 0;
+        $update->errorTotal   = 0;
+        $this->updateData($update);
     }
     
     

@@ -33,7 +33,7 @@ class UeditorController extends InsideController
      */
     public function server()
     {
-        $action = $this->iRequest('action');
+        $action = $this->param('action/s', 'trim');
         $method = 'server' . ucfirst($action);
         if (method_exists($this, $method)) {
             return $this->$method();
@@ -46,8 +46,7 @@ class UeditorController extends InsideController
     public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
         // 是否输出JS
-        $isJs = $this->iGet('js', 'intval');
-        if ($isJs) {
+        if ($this->get('js/b')) {
             $charset     = 'utf-8';
             $contentType = 'application/x-javascript';
             $template    = $this->getTemplatePath() . $this->request->action() . '.js';
@@ -149,9 +148,54 @@ class UeditorController extends InsideController
      */
     public function runtime()
     {
-        $this->assign('file_config', json_encode($this->getFileConfig()));
+        $fileConfig          = json_encode($this->getFileConfig(), JSON_UNESCAPED_UNICODE);
+        $pageBreakTag        = $this->app->config->get('app.VAR_CONTENT_PAGE', '');
+        $serverUrl           = url('server');
+        $host                = $this->request->host(true);
+        $insertImageUrl      = url('insert_image');
+        $insertVideoUrl      = url('insert_video');
+        $insertAttachmentUrl = url('insert_attachment');
+        $scrawlUrl           = url('scrawl');
+        $wordImageUrl        = url('word_image');
+        $script              = <<<JS
+// UEditor运行配置
+window.UEDITOR_CONFIG = {
+    busyFileConfig : {$fileConfig},
+
+    serverUrl           : '{$serverUrl}',
+    pageBreakTag        : '{$pageBreakTag}',
+    listiconpath        : '',
+    emotionLocalization : '',
+
+    // 图片上传配置
+    imageActionName     : 'upload',
+    imageFieldName      : 'upload',
+    imageUrlPrefix      : '',
+    imageCompressEnable : false,
+    imageCompressBorder : 1600,
+
+    // 截图工具上传
+    snapscreenActionName : 'snapscreen',
+    snapscreenUrlPrefix  : '',
+
+    // 抓取远程图片配置
+    catcherLocalDomain : ["127.0.0.1", "localhost", "{$host}"],
+    catcherActionName  : 'remote',
+    catcherFieldName   : 'upload',
+    catcherUrlPrefix   : '',
+
+    // 重新定义dialog页面
+    iframeUrlMap : {
+        insertimage : '{$insertImageUrl}',
+        insertvideo : '{$insertVideoUrl}',
+        attachment  : '{$insertAttachmentUrl}',
+        scrawl      : '{$scrawlUrl}',
+        wordimage   : '{$wordImageUrl}'
+    }
+};
+JS;
         
-        return $this->display();
+        return Response::create($script)->contentType('application/javascript');
     }
     
     
@@ -170,18 +214,18 @@ class UeditorController extends InsideController
             }
             
             // 上传
-            $classType  = $this->request->post('class_type', '', 'trim');
-            $classValue = $this->request->post('class_value', '', 'trim');
+            $classType  = $this->param('class_type/s', 'trim');
+            $classValue = $this->param('class_value/s', 'trim');
             if ($isBase64) {
                 $upload = new Base64Upload();
-                $upload->setClient(0, $this->adminUserId);
+                $upload->setUserId($this->adminUserId);
                 $upload->setClassType($classType, $classValue);
                 $upload->setDefaultMimeType('image/jpg');
                 $upload->setDefaultExtension('jpg');
-                $result = $upload->upload($this->request->post('upload'));
+                $result = $upload->upload($this->post('upload/s', 'trim'));
             } else {
                 $upload = new LocalUpload();
-                $upload->setClient(0, $this->adminUserId);
+                $upload->setUserId($this->adminUserId);
                 $upload->setClassType($classType, $classValue);
                 $result = $upload->upload($this->request->file('upload'));
             }
@@ -191,6 +235,10 @@ class UeditorController extends InsideController
             $jsonData['original'] = $result->name;
             $jsonData['type']     = $result->file->getExtension();
             $jsonData['size']     = $result->file->getSize();
+            
+            $this->log()
+                ->filterParams($isBase64 ? ['upload'] : [])
+                ->record(self::LOG_INSERT, 'UEditor上传文件', json_encode($jsonData, JSON_UNESCAPED_UNICODE));
         } catch (Exception $e) {
             $jsonData['state'] = $e->getMessage();
         }
@@ -224,26 +272,37 @@ class UeditorController extends InsideController
                 throw new AppException('请登录后上传');
             }
             
-            $classType  = $this->request->post('mark_image_type', '', 'trim');
-            $classValue = $this->request->post('mark_value', '', 'trim');
+            $classType  = $this->post('class_image_type/s', 'trim');
+            $classValue = $this->post('class_value/s', 'trim');
             $list       = [];
-            foreach ($this->iPost('upload') as $i => $url) {
+            $success    = [];
+            foreach ($this->post('upload') as $i => $url) {
                 $url = str_replace('&amp;', '&', $url);
                 try {
                     $upload = new RemoteUpload();
-                    $upload->setClient(0, $this->adminUserId);
+                    $upload->setUserId($this->adminUserId);
                     $upload->setClassType($classType, $classValue);
                     $upload->setDefaultExtension('jpg');
                     $upload->setDefaultMimeType('image/jpg');
                     $result = $upload->upload($url);
                     
-                    $list[$i] = ['state' => 'SUCCESS', 'source' => $url, 'url' => $result->url];
+                    $list[$i]  = [
+                        'state'   => 'SUCCESS',
+                        'source'  => $url,
+                        'url'     => $result->url,
+                        'file_id' => $result->id
+                    ];
+                    $success[] = $list[$i];
                 } catch (Exception $e) {
                     $list[$i] = ['state' => $e->getMessage(), 'source' => '', 'url' => ''];
                 }
             }
             
             $jsonData['list'] = $list;
+            
+            if ($success) {
+                $this->log()->record(self::LOG_INSERT, 'UEditor抓取图片', json_encode($success, JSON_UNESCAPED_UNICODE));
+            }
         } catch (Exception $e) {
             $jsonData['state'] = $e->getMessage();
         }
@@ -261,7 +320,7 @@ class UeditorController extends InsideController
      */
     private function serverUpload()
     {
-        $this->request->setRequest('mark_type', $this->iRequest('mark_image_type'));
+        $this->request->setParam('class_type', $this->param('class_image_type/s', 'trim'));
         
         return $this->json($this->upload());
     }
@@ -280,8 +339,8 @@ class UeditorController extends InsideController
         $array   = [];
         foreach ($list as $key => $value) {
             $array[$key] = [
-                'suffix' => $fileSet->getAllowExtensions(0, $key),
-                'size'   => $fileSet->getMaxSize(0, $key),
+                'suffix' => $fileSet->getAllowExtensions($key),
+                'size'   => $fileSet->getMaxSize($key),
                 'mime'   => $fileSet->getMimeType($key),
                 'type'   => $value->type,
                 'name'   => $value->name

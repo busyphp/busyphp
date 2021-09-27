@@ -10,14 +10,13 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
-use think\db\exception\DbException;
 use think\Response;
 
 /**
  * 登录
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/5/28 下午10:51 上午 Passport.php $
+ * @version $Id: 2021/9/26 下午下午2:25 PassportController.php $
  */
 class PassportController extends InsideController
 {
@@ -36,16 +35,14 @@ class PassportController extends InsideController
     /**
      * 登录
      * @return Response
-     * @throws VerifyException
-     * @throws DbException
      */
     public function login()
     {
         if ($this->isPost()) {
-            $username  = $this->request->post('username', '', 'trim');
-            $password  = $this->request->post('password', '', 'trim');
-            $verify    = $this->request->post('verify', '', 'trim');
-            $saveLogin = $this->request->post('save_login', 0, 'intval') > 0;
+            $username  = $this->post('username/s', 'trim');
+            $password  = $this->post('password/s', 'trim');
+            $verify    = $this->post('verify/s', 'trim');
+            $saveLogin = $this->post('save_login/b');
             
             try {
                 $adminModel = AdminUser::init();
@@ -63,7 +60,7 @@ class PassportController extends InsideController
                 $user                = $adminModel->login($username, $password, $saveLogin);
                 $this->adminUserId   = $user['id'];
                 $this->adminUsername = $user['username'];
-                $this->log('登录成功');
+                $this->log()->filterParams(['password'])->record(self::LOG_DEFAULT, '登录成功');
                 
                 // 回跳地址
                 $redirectUrl = $this->request->getRedirectUrl($this->request->getAppUrl(), false);
@@ -80,11 +77,10 @@ class PassportController extends InsideController
                 
                 return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
             } catch (VerifyException $e) {
-                if ($e->getCode()) {
-                    $this->log('密码输入错误', [
-                        'username' => $username,
-                        'password' => $password,
-                    ]);
+                if ($e->getField() == 'verify') {
+                    $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', '验证码错误');
+                } elseif ($e->getCode() > 0) {
+                    $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', '密码错误');
                 }
                 
                 throw $e;
@@ -119,7 +115,10 @@ class PassportController extends InsideController
      */
     public function out()
     {
-        $this->log('退出登录');
+        if ($this->getLoginUserInfo()) {
+            $this->log()->record(self::LOG_DEFAULT, '退出登录');
+        }
+        
         AdminUser::outLogin();
         
         return $this->success('退出成功', url('admin_login', [$this->request->getVarRedirectUrl() => $this->request->getRedirectUrl()]));

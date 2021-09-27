@@ -1,9 +1,12 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\logs;
 
-use BusyPHP\app\admin\model\system\file\SystemFileInfo;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\model;
+use BusyPHP\Request;
+use BusyPHP\Service;
 use Exception;
 use think\db\exception\DbException;
 
@@ -18,7 +21,7 @@ use think\db\exception\DbException;
  */
 class SystemLogs extends Model
 {
-    /** @var int 其它操作 */
+    /** @var int 默认操作 */
     const TYPE_DEFAULT = 0;
     
     /** @var int 添加操作 */
@@ -30,71 +33,102 @@ class SystemLogs extends Model
     /** @var int 删除操作 */
     const TYPE_DELETE = 3;
     
-    /** @var int 设置操作 */
-    const TYPE_SET = 4;
+    /** @var string 守护模式客户端标识 */
+    const CLI_CLIENT_KEY = ':system_cli';
     
-    /** @var int 批量操作 */
-    const TYPE_BATCH = 5;
+    /** @var string 守护模式客户端名称 */
+    const CLI_CLIENT_NAME = '守护模式';
     
     protected $bindParseClass = SystemLogsInfo::class;
-    
-    /**
-     * 操作用户ID
-     * @var int
-     */
-    protected $userId = 0;
-    
-    /**
-     * 操作用户名
-     * @var string
-     */
-    protected $username = '';
     
     
     /**
      * 设置操作用户
-     * @param int    $userId
-     * @param string $username
+     * @param int    $userId 用户ID
+     * @param string $username 用户名
      * @return $this
      */
-    public function setUser($userId, $username)
+    public function setUser(int $userId, $username = '') : self
     {
-        $this->userId   = floatval($userId);
-        $this->username = trim($username);
+        $this->setOption('logs_user_id', $userId);
+        $this->setOption('logs_username', trim($username));
         
         return $this;
     }
     
     
     /**
-     * 添加LOG
-     * @param string $name 操作名称
-     * @param mixed  $value 操作内容
-     * @param int    $type 操作类型
-     * @return false|int
+     * 设置业务类型以及业务参数
+     * @param int    $type 业务类型
+     * @param string $value 业务参数
+     * @return $this
      */
-    public function insertData($name, $value, $type = self::TYPE_DEFAULT)
+    public function setClass(int $type, $value = '') : self
+    {
+        $this->setOption('logs_class_type', $type);
+        $this->setOption('logs_class_value', trim($value));
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置过滤的参数键
+     * @param array $keys
+     * @return $this
+     */
+    public function filterParams(array $keys = []) : self
+    {
+        $this->setOption('logs_params_keys', $keys);
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 记录日志
+     * @param int    $type 操作类型
+     * @param string $name 操作名称
+     * @param string $result 操作结果
+     * @return int|false
+     */
+    public function record(int $type, string $name, string $result = '')
     {
         try {
-            $request = request();
-            $appName = app()->http->getName();
-            $isCli   = $request->isCli();
+            $request    = Request::init();
+            $isCli      = $request->isCli();
+            $filterKeys = array_merge($this->getOptions('logs_params_keys') ?: [], [
+                Service::ROUTE_VAR_DIR,
+                Service::ROUTE_VAR_CONTROL,
+                Service::ROUTE_VAR_ACTION,
+                Service::ROUTE_VAR_GROUP,
+                Service::ROUTE_VAR_TYPE
+            ]);
+            $params     = [];
+            foreach ($request->param() ?: [] as $key => $value) {
+                if (in_array($key, $filterKeys)) {
+                    continue;
+                }
+                $params[$key] = $value;
+            }
             
-            $data             = SystemLogsField::init();
-            $data->createTime = time();
-            $data->title      = $name;
-            $data->type       = $type;
-            $data->content    = serialize($value);
-            $data->path       = $request->root();
-            $data->username   = $isCli ? 'CLI' : $this->username;
-            $data->userid     = $this->userId;
-            $data->isAdmin    = $appName === 'admin';
-            $data->appName    = $appName;
-            $data->ip         = $isCli ? '0.0.0.0' : $request->ip();
-            $data->ua         = $isCli ? 'CLI' : $request->server('http_user_agent');
-            $data->url        = $isCli ? '' : (($request->isPost() ? 'POST:' : 'GET:') . $request->url());
+            $insert             = SystemLogsField::init();
+            $insert->createTime = time();
+            $insert->name       = $name;
+            $insert->method     = $request->method() ?: '';
+            $insert->type       = $type;
+            $insert->username   = $this->getOptions('logs_username') ?: '';
+            $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
+            $insert->classType  = $this->getOptions('logs_class_type') ?: 0;
+            $insert->classValue = $this->getOptions('logs_class_value') ?: '';
+            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : AppHelper::getDirName();
+            $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
+            $insert->url        = $isCli ? '' : ($request->url() ?: '');
+            $insert->headers    = json_encode($request->header() ?: [], JSON_UNESCAPED_UNICODE);
+            $insert->params     = json_encode($params, JSON_UNESCAPED_UNICODE);
+            $insert->result     = trim($result);
             
-            return $this->addData($data);
+            return $this->addData($insert);
         } catch (Exception $e) {
             return false;
         }
@@ -106,7 +140,7 @@ class SystemLogs extends Model
      * @return int
      * @throws DbException
      */
-    public function clear()
+    public function clear() : int
     {
         $time = strtotime('-6 month');
         

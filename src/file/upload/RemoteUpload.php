@@ -1,9 +1,11 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\file\upload;
 
 use BusyPHP\file\Upload;
 use BusyPHP\helper\net\Http;
+use BusyPHP\Request;
 use Exception;
 use League\Flysystem\Util\MimeType;
 use think\exception\FileException;
@@ -33,6 +35,12 @@ class RemoteUpload extends Upload
      * @var string
      */
     protected $mimeType = '';
+    
+    /**
+     * 忽略的域名
+     * @var array
+     */
+    protected $ignoreHosts = [];
     
     
     public function __construct(?Upload $target = null)
@@ -94,6 +102,19 @@ class RemoteUpload extends Upload
     
     
     /**
+     * 设置忽略的域名
+     * @param array $ignoreHosts
+     * @return $this
+     */
+    public function setIgnoreHosts(array $ignoreHosts) : self
+    {
+        $this->ignoreHosts = $ignoreHosts;
+        
+        return $this;
+    }
+    
+    
+    /**
      * 上传处理
      * @param mixed $url 远程URL
      * @return array [文件名称,文件对象,图像信息]
@@ -106,11 +127,14 @@ class RemoteUpload extends Upload
         }
         
         $parse = parse_url($url);
-        if (!$parse || empty($parse['path'])) {
+        if (!$parse || empty($parse['path']) || empty($parse['host'])) {
             throw new FileException("下载地址无效: {$url}");
         }
-        $urlPathInfo = pathinfo($parse['path'] ?? '');
         
+        $ignoreHosts = array_merge($this->ignoreHosts, [Request::init()->host(true)]);
+        if (in_array($parse['host'], $ignoreHosts)) {
+            throw new FileException("下载地址中包含忽略域名: {$url}");
+        }
         
         // 获取文件头信息
         $headerHttp = clone $this->http;
@@ -119,15 +143,15 @@ class RemoteUpload extends Upload
         $headerHttp->setOpt(CURLOPT_POST, false);
         $headerHttp->request();
         $headers       = Http::parseResponseHeaders($headerHttp->getResponseHeaders());
-        $contentType   = trim($headers['Content-Type'] ?? '');
-        $contentLength = floatval($headers['Content-Length'] ?? 0);
+        $contentType   = trim($headers['content-type'] ?? '');
+        $contentLength = intval($headers['content-length'] ?? 0);
         
         // 获取文件名以及扩展名
         $name      = '';
         $extension = '';
         
         // 从响应中获取文件名
-        if (preg_match('/.*filename=(.+)/is', trim($headers['Content-Disposition'] ?? ''), $match)) {
+        if (preg_match('/.*filename=(.+)/is', trim($headers['content-disposition'] ?? ''), $match)) {
             $name      = $match[1];
             $extension = pathinfo($match[1], PATHINFO_EXTENSION);
         }
@@ -144,8 +168,9 @@ class RemoteUpload extends Upload
         }
         
         // 从url中取文件扩展名
-        $extension = $extension ?: (($urlPathInfo['extension'] ?? '') ?: $this->extension);
-        $name      = $name ?: ($urlPathInfo['basename'] ?? '');
+        $urlPathInfo = pathinfo($parse['path']);
+        $extension   = $extension ?: (($urlPathInfo['extension'] ?? '') ?: $this->extension);
+        $name        = $name ?: ($urlPathInfo['basename'] ?? '');
         if (!$extension) {
             throw new FileException('必须指定文件扩展名');
         }
