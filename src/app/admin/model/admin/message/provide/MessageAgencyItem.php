@@ -40,7 +40,7 @@ class MessageAgencyItem
      */
     public function setId($id) : void
     {
-        $this->id = trim($id);
+        $this->id = trim((string) $id);
     }
     
     
@@ -60,7 +60,7 @@ class MessageAgencyItem
      */
     public function setTitle($title) : void
     {
-        $this->title = trim($title);
+        $this->title = trim((string) $title);
     }
     
     
@@ -80,7 +80,7 @@ class MessageAgencyItem
      */
     public function setDesc($desc) : void
     {
-        $this->desc = trim($desc);
+        $this->desc = trim((string) $desc);
     }
     
     
@@ -100,6 +100,6 @@ class MessageAgencyItem
      */
     public function setOperateUrl($operateUrl) : void
     {
-        $this->operateUrl = trim($operateUrl);
+        $this->operateUrl = trim((string) $operateUrl);
     }
 }
