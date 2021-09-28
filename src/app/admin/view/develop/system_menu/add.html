@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">菜单名称</label>
+            <label class="col-sm-2 control-label required">菜单名称</label>
             <div class="col-sm-9">
                 <div class="input-group">
                     <input class="form-control" name="name" value="{$info.name|default=''}" placeholder="请输入菜单名称" required/>
@@ -29,17 +29,17 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">菜单连接</label>
+            <label class="col-sm-2 control-label required">菜单链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="path" placeholder="请输入菜单连接" required data-toggle="busy-autocomplete" data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class;?>" data-text-field="path" value="{$info.path|default=''}"/>
-                <span class="help-block">设置菜单连接，如：<code>user/index</code>，外部连接必须填写<code>https://</code>或<code>http://</code>前缀</span>
+                <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class;?>" data-text-field="path" value="{$info.path|default=''}"/>
+                <span class="help-block">设置菜单链接，如：<code>user/index</code>，外部链接必须填写<code>https://</code>或<code>http://</code>前缀</span>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">附加参数</label>
             <div class="col-sm-9">
-                <input class="form-control" name="params" placeholder="设置附加参数" value="{$info.params|default=''}"/>
-                <span class="help-block">设置菜单连接附加参数名，系统将通过<code>$_GET</code>方法在关键功能位置进行补齐。如：<code>id,user_id</code></span>
+                <input class="form-control" name="params" placeholder="请输入附加参数" value="{$info.params|default=''}"/>
+                <span class="help-block">设置菜单链接附加参数名，系统将通过<code>$_GET</code>方法在关键功能位置进行补齐。如：<code>id,user_id</code></span>
             </div>
         </div>
         <div class="form-group">
@@ -53,7 +53,7 @@
                 <span class="help-block">设置点击菜单时的页面打开方式</span>
             </div>
         </div>
-        <div class="form-group {$url.action === 'edit' ? 'no-margin-bottom' : ''}">
+        <div class="form-group">
             <label class="col-sm-2 control-label">其它设置</label>
             <div class="col-sm-9">
                 <div class="radio no-padding">
@@ -87,28 +87,45 @@
                 </div>
             </div>
         </eq>
+        <div class="form-group no-margin-bottom" id="topPath">
+            <label class="col-sm-2 control-label">访问链接</label>
+            <div class="col-sm-9">
+                <input class="form-control" name="top_path" placeholder="请输入访问链接" value="{$info.top_path|default=''}"/>
+                <span class="help-block">设置顶级菜单访问链接，设置后点击顶级菜单将默认访问到该链接中</span>
+            </div>
+        </div>
     </div>
 </block>
 <block name="foot">
-    <eq name="url.action" value="add">
-        <script>
-            busyAdmin.ready(function () {
-                var $autoBox       = $('#autoBox');
-                var $autoSuffixBox = $('[name="auto_suffix"]').closest('.form-group');
-                var $autoCheckbox  = $('[name*=auto]').not('[name="auto_suffix"]');
-                $autoCheckbox.on('change', function () {
-                    var checked = false;
-                    $autoCheckbox.each(function () {
-                        if ($(this).prop('checked')) {
-                            checked = true;
-                        }
-                    });
-
-                    $autoBox.toggleClass('no-margin-bottom', !checked);
-                    $autoSuffixBox.toggleClass('hide', !checked);
-                    $(window).trigger('resize');
+    <script>
+        busyAdmin.ready(function () {
+            var $parentPath    = $('[name="parent_path"]');
+            var $autoBox       = $('#autoBox');
+            var $autoSuffixBox = $('[name="auto_suffix"]').closest('.form-group');
+            var $autoCheckbox  = $('[name*=auto]').not('[name="auto_suffix"]');
+            var $topPath       = $('#topPath');
+            $autoCheckbox.on('change', function () {
+                var checked = false;
+                $autoCheckbox.each(function () {
+                    if ($(this).prop('checked')) {
+                        checked = true;
+                    }
                 });
+
+                $autoBox.toggleClass('no-margin-bottom', !checked);
+                $autoSuffixBox.toggleClass('hide', !checked);
+                $(window).trigger('resize');
             });
-        </script>
-    </eq>
+
+            $parentPath.on('change', function () {
+                if (!$(this).val()) {
+                    $autoBox.hide();
+                    $topPath.show();
+                } else {
+                    $autoBox.show();
+                    $topPath.hide();
+                }
+            }).trigger('change');
+        });
+    </script>
 </block>

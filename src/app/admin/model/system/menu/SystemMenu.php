@@ -60,7 +60,7 @@ class SystemMenu extends Model
         $autoSuffix = trim($autoSuffix);
         $this->startTrans();
         try {
-            $this->checkReplace($data->path);
+            $this->checkData($data);
             $ids   = [];
             $ids[] = $this->addData($data);
             
@@ -123,6 +123,8 @@ class SystemMenu extends Model
                 $data->system = true;
             }
             
+            $this->checkData($data, $data->id);
+            
             // 更新子菜单关系
             $this->whereEntity(SystemMenuField::parentPath($info->path))
                 ->setField(SystemMenuField::parentPath(), $data->path);
@@ -139,20 +141,27 @@ class SystemMenu extends Model
     
     
     /**
-     * 菜单连接查重
-     * @param string $path 菜单连接
-     * @param int    $id 菜单ID
-     * @throws VerifyException
+     * 菜单数据校验
+     * @param SystemMenuField $data 菜单数据
+     * @param int             $id 菜单ID
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    protected function checkReplace($path, $id = 0)
+    protected function checkData(SystemMenuField $data, $id = 0)
     {
-        $this->whereEntity(SystemMenuField::path($path));
+        $this->whereEntity(SystemMenuField::path($data->path));
         if ($id > 0) {
             $this->whereEntity(SystemMenuField::id('<>', $id));
         }
         
-        if ($this->count() > 0) {
+        if ($this->findInfo()) {
             throw new VerifyException('该菜单连接已存在', 'path');
+        }
+        
+        if ($data->topPath) {
+            if (!$this->whereEntity(SystemMenuField::topPath($data->topPath))->findInfo()) {
+                throw new VerifyException('顶级菜单访问链接不存在', 'top_path');
+            }
         }
     }
     

@@ -85,7 +85,7 @@ class SystemMenuController extends InsideController
             $data->setTarget($this->post('target/s'));
             $data->setHide(!$this->post('show/d'));
             $data->setDisabled(!$this->post('enable/d'));
-            $data->setSystem($this->post('system/b'));
+            $data->setTopPath($this->post('top_path/s'));
             
             $this->model->createMenu($data, $this->post('auto/a'), $this->post('auto_suffix/s'));
             $this->updateCache();
@@ -136,7 +136,7 @@ class SystemMenuController extends InsideController
             $data->setTarget($this->post('target/s'));
             $data->setHide(!$this->post('show/d'));
             $data->setDisabled(!$this->post('enable/d'));
-            $data->setSystem($this->post('system/b'));
+            $data->setTopPath($this->post('top_path/s'));
             
             $this->model->updateMenu($data);
             $this->updateCache();

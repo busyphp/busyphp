@@ -18,6 +18,7 @@ use BusyPHP\helper\util\Transform;
  * @method static Entity name($op = null, $value = null) 名称
  * @method static Entity path($op = null, $value = null) 路由地址
  * @method static Entity parentPath($op = null, $value = null) 上级路由
+ * @method static Entity topPath($op = null, $value = null) 顶级菜单默认访问路由地址
  * @method static Entity params($op = null, $value = null) 附加参数
  * @method static Entity icon($op = null, $value = null) 图标
  * @method static Entity target($op = null, $value = null) 打开方式
@@ -51,6 +52,12 @@ class SystemMenuField extends Field
      * @var string
      */
     public $parentPath;
+    
+    /**
+     * 顶级菜单默认访问路由地址
+     * @var string
+     */
+    public $topPath;
     
     /**
      * 附加参数
@@ -118,7 +125,7 @@ class SystemMenuField extends Field
      * @return $this
      * @throws VerifyException
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->name = trim($name);
         if (!$this->name) {
@@ -135,12 +142,12 @@ class SystemMenuField extends Field
      * @return $this
      * @throws VerifyException
      */
-    public function setPath($path)
+    public function setPath(string $path)
     {
         $this->path = trim($path);
         $this->path = ltrim($path, '/');
         if (!$this->path) {
-            throw new VerifyException('请输入菜单连接', 'path');
+            throw new VerifyException('请输入菜单链接', 'path');
         }
         
         return $this;
@@ -152,7 +159,7 @@ class SystemMenuField extends Field
      * @param string $parentPath
      * @return $this
      */
-    public function setParentPath($parentPath)
+    public function setParentPath(string $parentPath)
     {
         $this->parentPath = trim($parentPath);
         
@@ -161,11 +168,28 @@ class SystemMenuField extends Field
     
     
     /**
+     * 设置顶级菜单默认访问链接
+     * @param string $topPath
+     */
+    public function setTopPath(string $topPath) : void
+    {
+        $topPath = trim($topPath);
+        if ($topPath) {
+            if (0 === strpos($topPath, '#') || false !== strpos($topPath, '://')) {
+                throw new VerifyException('顶级菜单访问链接不能是锚连接或外部连接');
+            }
+        }
+        
+        $this->topPath = $topPath;
+    }
+    
+    
+    /**
      * 设置附加参数
      * @param string $params
      * @return $this
      */
-    public function setParams($params)
+    public function setParams(string $params)
     {
         $this->params = trim($params);
         
@@ -178,7 +202,7 @@ class SystemMenuField extends Field
      * @param string $icon
      * @return $this
      */
-    public function setIcon($icon)
+    public function setIcon(string $icon)
     {
         $this->icon = trim($icon);
         
@@ -191,7 +215,7 @@ class SystemMenuField extends Field
      * @param string $target
      * @return $this
      */
-    public function setTarget($target)
+    public function setTarget(string $target)
     {
         $this->target = trim($target);
         
@@ -220,32 +244,6 @@ class SystemMenuField extends Field
     public function setDisabled($disabled)
     {
         $this->disabled = Transform::dataToBool($disabled);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否系统菜单
-     * @param int $system
-     * @return $this
-     */
-    public function setSystem($system)
-    {
-        $this->system = Transform::dataToBool($system);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置自定义排序
-     * @param int $sort
-     * @return $this
-     */
-    public function setSort($sort)
-    {
-        $this->sort = intval($sort);
         
         return $this;
     }

@@ -51,6 +51,12 @@ class SystemMenuInfo extends SystemMenuField
     public $url;
     
     /**
+     * 顶级菜单访问连接
+     * @var string
+     */
+    public $topUrl;
+    
+    /**
      * 参数列表
      * @var string[]
      */
@@ -67,13 +73,16 @@ class SystemMenuInfo extends SystemMenuField
         $this->paramList  = Filter::trimArray(explode(',', $this->params) ?: []);
         
         if (0 === strpos($this->path, '#')) {
-            $this->url    = '';
-            $this->target = SystemMenu::TARGET_SELF;
+            $this->url = '';
         } elseif (false !== strpos($this->path, '://')) {
-            $this->url    = $this->path;
-            $this->target = SystemMenu::TARGET_BLANK;
+            $this->url = $this->path;
         } else {
             $this->url = Route::buildUrl('/' . ltrim($this->path, '/'))->build();
+        }
+        
+        $this->topUrl = '';
+        if ($this->topPath) {
+            $this->topUrl = Route::buildUrl('/' . ltrim($this->topPath, '/'))->build();
         }
     }
 }

@@ -72,6 +72,7 @@ class IndexController extends InsideController
                 $this->assign('soft_name', $softNames[0]);
                 $this->assign('framework_name', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
                 $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
+                $this->setPageTitle('首页');
                 
                 return $this->display();
         }
