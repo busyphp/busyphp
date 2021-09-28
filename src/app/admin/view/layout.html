@@ -57,21 +57,7 @@
 
         <div class="busy-admin-content clearfix" data-busy-id="content">
             <div class="busy-admin-content-head" data-busy-id="content-header">
-                <ul class="breadcrumb">
-                    <li>
-                        <i class="fa fa-home"></i>
-                        <a href="{$url.app}">首页</a>
-                    </li>
-                    <foreach name="system.breadcrumb" item="_breadcrumbItem">
-                        <li>
-                            <empty name="_breadcrumbItem.url">
-                                <span>{$_breadcrumbItem.name}</span>
-                                <else/>
-                                <a href="{$_breadcrumbItem.url}">{$_breadcrumbItem.name}</a>
-                            </empty>
-                        </li>
-                    </foreach>
-                </ul>
+                <include file="@admin:breadcrumb" />
             </div>
 
             <div class="busy-admin-content-body clearfix" data-busy-id="content-body">
