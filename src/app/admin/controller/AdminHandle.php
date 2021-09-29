@@ -114,7 +114,7 @@ class AdminHandle extends Handle
                 if ($item = ($idList[$id] ?? null)) {
                     $breadcrumb[] = [
                         'name' => $item->name,
-                        'url'  => $item->url ? $root . $item->url : '',
+                        'url'  => $item->url ? $root . ltrim($item->url, '/') : '',
                     ];
                 }
             }
@@ -129,7 +129,7 @@ class AdminHandle extends Handle
             
             $breadcrumb[] = [
                 'name' => $currentMenu->name,
-                'url'  => $root . $currentMenu->url . ($query ? '?' . http_build_query($query) : '')
+                'url'  => $root . ltrim($currentMenu->url, '/') . ($query ? '?' . http_build_query($query) : '')
             ];
         }
         
