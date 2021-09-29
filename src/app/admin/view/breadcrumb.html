@@ -1,15 +1,3 @@
 <ul class="breadcrumb">
-    <li>
-        <i class="fa fa-home"></i>
-        <a href="{$url.app}">首页</a>
-    </li>
-    <foreach name="system.breadcrumb" item="_breadcrumbItem">
-        <li>
-            <empty name="_breadcrumbItem.url">
-                <span>{$_breadcrumbItem.name}</span>
-                <else/>
-                <a href="{$_breadcrumbItem.url}">{$_breadcrumbItem.name}</a>
-            </empty>
-        </li>
-    </foreach>
+    <li><i class="fa fa-home"></i> <a href="{$url.app}">首页</a></li><foreach name="system.breadcrumb" item="_breadcrumbItem"><li><empty name="_breadcrumbItem.url"><span>{$_breadcrumbItem.name}</span><else/><a href="{$_breadcrumbItem.url}">{$_breadcrumbItem.name}</a></empty></li></foreach>
 </ul>

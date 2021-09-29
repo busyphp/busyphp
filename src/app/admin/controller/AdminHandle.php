@@ -133,23 +133,24 @@ class AdminHandle extends Handle
             ];
         }
         
-        // 系统信息
-        $data['system'] = [
-            'title'           => AdminSetting::init()->getTitle(),
-            'favicon'         => PublicSetting::init()->getFavicon(),
-            'logo_icon'       => AdminSetting::init()->getLogoIcon(),
-            'logo_horizontal' => AdminSetting::init()->getLogoHorizontal(),
-            'user'            => $adminUser ?? [],
-            'breadcrumb'      => $breadcrumb
-        ];
         
         // 页面名称
         if (!$pageTitle && $currentMenu) {
             $pageTitle = $currentMenu->name;
         }
         
-        $data['page_title']  = $pageTitle . ' - ' . AdminSetting::init()->getTitle();
-        $data['panel_title'] = $pageTitle;
+        // 系统信息
+        $data['system'] = [
+            'title'             => AdminSetting::init()->getTitle(),
+            'page_title'        => $pageTitle,
+            'page_title_suffix' => ' - ' . AdminSetting::init()->getTitle(),
+            'favicon'           => PublicSetting::init()->getFavicon(),
+            'logo_icon'         => AdminSetting::init()->getLogoIcon(),
+            'logo_horizontal'   => AdminSetting::init()->getLogoHorizontal(),
+            'user'              => $adminUser ?? [],
+            'breadcrumb'        => $breadcrumb
+        ];
+        
         // 样式路径配置
         $skinRoot     = $request->getAssetsUrl() . 'admin/';
         $data['skin'] = [

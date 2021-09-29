@@ -1,6 +1,6 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <title>{$panel_title}</title>
+    <title>{$system.page_title}</title>
     <div class="form-group">
         <label>水印文件</label>
         <input type="text" class="form-control" data-toggle="busy-upload" name="data[file]" value="{$info.file|default=''}" placeholder="请上传水印文件"/>
