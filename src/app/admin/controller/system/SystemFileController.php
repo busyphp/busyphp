@@ -187,7 +187,7 @@ class SystemFileController extends InsideController
         $this->assign('extensions', $extensions);
         $this->assign('range', $range);
         $this->assign('word', $word);
-        $this->assign('reset_url', url('', ['mark_type' => $classType, 'mark_value' => $classValue]));
+        $this->assign('reset_url', url('', ['class_type' => $classType, 'class_value' => $classValue]));
         $this->assign('is_file', in_array($fileType, [
             SystemFile::FILE_TYPE_FILE,
             SystemFile::FILE_TYPE_VIDEO,
