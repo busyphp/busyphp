@@ -26,6 +26,7 @@
 
     <table class="table table-bordered table-striped table-hover"
            data-toggle="busy-table"
+           data-state="{$url.controller}{$url.action}"
            data-search="#searchBar"
            data-show-columns="true"
            data-show-print="true"
@@ -99,7 +100,9 @@
     </script>
 
     <script type="text/html" id="checked">
-        <input type="checkbox" class="switch input-xs success" data-toggle="busy-checkbox" data-url="{:url('change_checked?id=')}{{item.id}}" title="正常,禁用" {{value ? 'checked': ''}}/>
+        <div class="min-width-70">
+            <input type="checkbox" class="switch input-xs success" data-toggle="busy-checkbox" data-url="{:url('change_checked?id=')}{{item.id}}" title="正常,禁用" {{value ? 'checked': ''}}/>
+        </div>
     </script>
 
     <script type="text/html" id="operate">

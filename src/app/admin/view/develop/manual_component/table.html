@@ -29,6 +29,8 @@
 | data-route | boolean | 否 | `false` | 是否启用路由管理，启用后可以通过URL复原表单 |
 | data-model | string | `否` | - | 设置自动获取数据的模型类名称 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
+| data-state | string,boolean | `否` | `false` | 是否记录表格内状态，设为`string`为记录状态的参数名称，防止和其它表格冲突。默认为当前URL |
+| data-state-key | string | `否` | `document.URL` | 记录状态的参数名称，防止和其它表格冲突。默认为当前URL，优先于 `data-state` 设置 |
 | 分页:title |  |  |  |  |
 | data-pagination | boolean | 否 | `true` | 设置是否显示分页 |
 | 搜索:title |  |  |  |  |
@@ -58,7 +60,7 @@
 | 树结构:title |  |  |  |  |
 | data-tree-show-field | string | 否 | - | 指定树结构显示的字段，设置后表格将展示树状结构 |
 | data-parent-id-field | string | 否 | `parent_id` | 指定树结构依赖字段名称 |
-| data-tree-save-state | string | 否 | `document.URL` | 设置保存树结构状态的名称 |
+| data-tree-state | boolean | 否 | `false` | 是否记录树结构状态 |
 | 固定表头:title |  |  |  |  |
 | data-sticky-header | boolean | 否 | `false` | 是否启用滚动固定表头 |
 | data-sticky-header-offset-y | number | 否 | 0 | 滚动固定表头的上偏移 |

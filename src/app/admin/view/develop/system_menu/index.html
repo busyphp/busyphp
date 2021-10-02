@@ -13,7 +13,9 @@
            data-parent-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::parentHash();?>"
            data-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::hash();?>"
            data-root-parent-id=""
-           data-tree-save-state="{$url.controller}{$url.action}"
+           data-state="true"
+           data-state-key="test"
+           data-tree-state="true"
            data-pagination="false"
            data-toolbar="#tableToolbar"
            data-url="{$url.self}"
@@ -73,19 +75,23 @@
     </script>
 
     <script type="text/html" id="disabled">
-        {{if item.is_system}}
-        <span class="badge badge-default badge-pill">系统菜单</span>
-        {{else}}
-        <input class="switch input-xs info" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="正常,禁用"/>
-        {{/if}}
+        <div class="min-width-80">
+            {{if item.is_system}}
+            <span class="badge badge-default badge-pill">系统菜单</span>
+            {{else}}
+            <input class="switch input-xs info" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="正常,禁用"/>
+            {{/if}}
+        </div>
     </script>
 
     <script type="text/html" id="hide">
-        {{if item.is_system}}
-        <span class="badge badge-default badge-pill">系统菜单</span>
-        {{else}}
-        <input class="switch input-xs secondary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="显示,隐藏"/>
-        {{/if}}
+        <div class="min-width-80">
+            {{if item.is_system}}
+            <span class="badge badge-default badge-pill">系统菜单</span>
+            {{else}}
+            <input class="switch input-xs secondary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="显示,隐藏"/>
+            {{/if}}
+        </div>
     </script>
 
     <script type="text/html" id="operate">
