@@ -22,18 +22,28 @@
 		"ext-pdo"                  : "*",
 		"ext-iconv"                : "*",
 		"ext-gd"                   : "*",
-		"ext-curl"                 : "*"
+		"ext-curl"                 : "*",
+		"ext-zip"                  : "*",
+		"ext-fileinfo"             : "*"
 	},
 	"require-dev" : {
 		"symfony/var-dumper" : "^4.2"
 	},
 	"autoload"    : {
 		"psr-4" : {
+			"app\\"     : "app",
+			"core\\"    : "core",
 			"BusyPHP\\" : "src"
 		}
 	},
 	"config"      : {
 		"preferred-install" : "dist"
+	},
+	"scripts"     : {
+		"post-autoload-dump" : [
+			"@php think service:discover",
+			"@php think vendor:publish"
+		]
 	},
 	"extra"       : {
 		"busyphp" : {
