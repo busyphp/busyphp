@@ -50,10 +50,11 @@
                             <td class="text-center text-muted">{$vo.format_size}</td>
                             <td class="text-center">
                                 <a class="btn btn-default btn-xs"><i class="fa fa-search-plus"></i></a>
-                                <!-- TODO 权限 -->
-                                <a class="btn btn-danger btn-xs"
-                                   data-url="{:url('delete?id=' . $vo['id'])}"
-                                   data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
+                                <ba:access value="delete">
+                                    <a class="btn btn-danger btn-xs"
+                                       data-url="{:url('delete?id=' . $vo['id'])}"
+                                       data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
+                                </ba:access>
                             </td>
                         </tr>
                     </foreach>
@@ -76,10 +77,12 @@
 
                                     <div class="pull-right">
                                         <a class="preview cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
-                                        <a class="delete"
-                                           href="javascript:void(0)"
-                                           data-url="{:url('delete?id=' . $vo['id'])}"
-                                           data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
+                                        <ba:access value="delete">
+                                            <a class="delete"
+                                               href="javascript:void(0)"
+                                               data-url="{:url('delete?id=' . $vo['id'])}"
+                                               data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
+                                        </ba:access>
                                     </div>
                                 </div>
                                 <div class="name">{$vo.name}</div>

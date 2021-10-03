@@ -19,14 +19,25 @@
         root       : '{$url.app}',
         moduleRoot : '{$skin.lib}',
         version    : (new Date()).getTime(),
-        app        : {
-            cache             : false,
-            cacheLength       : 50,
-            scrollCacheLength : 50,
-            errorImgUrl       : '/assets/data/images/no_image.jpeg',
-            url               : '{$url.app}',
-            navSingleHold     : false,
-            pageTitleSuffix   : '{$system.page_title_suffix}',
+        configs    : {
+            app    : {
+                cache             : false,
+                cacheLength       : 50,
+                scrollCacheLength : 50,
+                errorImgUrl       : '/assets/data/images/no_image.jpeg',
+                url               : '{$url.app}',
+                navSingleHold     : false,
+                pageTitleSuffix   : '{$system.page_title_suffix}',
+            },
+            upload : {
+                configUrl : '{:url("Common.File/config?noext")}'
+            },
+            editor : {
+                ueConfigUrl : '{:url("Common.Ueditor/runtime?js=1&noext")}'
+            },
+            topBar : {
+                url : '{:url("Common.Message/index")}'
+            }
         }
     });
 </script>
