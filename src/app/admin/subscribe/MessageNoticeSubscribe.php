@@ -32,7 +32,7 @@ class MessageNoticeSubscribe extends Subscribe
     public function onTotal(MessageParams $params) : int
     {
         return intval(AdminMessage::init()
-            ->whereEntity(AdminMessageField::userId($params->getUser()->id), AdminMessageField::isRead(0))
+            ->whereEntity(AdminMessageField::userId($params->getUser()->id), AdminMessageField::read(0))
             ->count());
     }
     
@@ -59,7 +59,7 @@ class MessageNoticeSubscribe extends Subscribe
         foreach ($data as $info) {
             $item = new MessageNoticeItem();
             $item->setId($info->id);
-            $item->setRead($info->isRead);
+            $item->setRead($info->read);
             $item->setCreateTime($info->createTime);
             $item->setReadTime($info->readTime);
             $item->setTitle($info->content);

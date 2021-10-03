@@ -187,7 +187,7 @@ class MessageController extends InsideController
     {
         $updateParams = new MessageUpdateParams();
         $updateParams->setUser($this->adminUser);
-        $updateParams->setId($this->get('id'));
+        $updateParams->setId($this->get('id/d'));
         
         MessageAgencySubscribe::triggerRead($updateParams);
         

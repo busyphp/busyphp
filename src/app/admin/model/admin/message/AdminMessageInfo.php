@@ -3,11 +3,16 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\message;
 
+use BusyPHP\model\Entity;
+
 /**
  * 后台消息信息结构
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:31 AdminMessageInfo.php $
+ * @method static Entity iconColor() 图标颜色
+ * @method static Entity iconIsClass() 图标是否css类
+ * @property bool $read
  */
 class AdminMessageInfo extends AdminMessageField
 {
@@ -19,14 +24,14 @@ class AdminMessageInfo extends AdminMessageField
     
     /**
      * 图标是否css类
-     * @var string
+     * @var bool
      */
     public $iconIsClass;
     
     
     public function onParseAfter()
     {
-        $this->isRead = $this->isRead > 0;
+        $this->read = $this->read > 0;
         
         $icons = json_decode($this->icon, true);
         $color = '';

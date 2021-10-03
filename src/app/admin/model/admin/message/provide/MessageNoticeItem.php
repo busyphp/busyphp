@@ -61,7 +61,7 @@ class MessageNoticeItem
      */
     public function setId($id) : void
     {
-        $this->id = trim($id);
+        $this->id = trim((string) $id);
     }
     
     
@@ -81,7 +81,7 @@ class MessageNoticeItem
      */
     public function setTitle($title) : void
     {
-        $this->title = trim($title);
+        $this->title = trim((string) $title);
     }
     
     
@@ -101,7 +101,7 @@ class MessageNoticeItem
      */
     public function setDesc($desc) : void
     {
-        $this->desc = trim($desc);
+        $this->desc = trim((string) $desc);
     }
     
     
@@ -181,7 +181,7 @@ class MessageNoticeItem
      */
     public function setOperateUrl($operateUrl) : void
     {
-        $this->operateUrl = trim($operateUrl);
+        $this->operateUrl = trim((string) $operateUrl);
     }
     
     
@@ -235,10 +235,10 @@ class MessageNoticeItem
     {
         $this->iconClass = $iconClass;
         if ($this->iconClass) {
-            $this->icon      = trim($icon);
+            $this->icon      = trim((string) $icon);
             $this->iconColor = $iconColor;
         } else {
-            $this->imageUrl = trim($icon);
+            $this->imageUrl = trim((string) $icon);
         }
     }
 }

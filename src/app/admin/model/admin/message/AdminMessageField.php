@@ -14,7 +14,7 @@ use BusyPHP\model\Field;
  * @method static Entity id($op = null, $value = null)
  * @method static Entity userId($op = null, $value = null) 管理员ID
  * @method static Entity createTime($op = null, $value = null) 创建时间
- * @method static Entity isRead($op = null, $value = null) 是否已读
+ * @method static Entity read($op = null, $value = null) 是否已读
  * @method static Entity readTime($op = null, $value = null) 阅读时间
  * @method static Entity content($op = null, $value = null) 消息内容
  * @method static Entity description($op = null, $value = null) 消息备注
@@ -44,7 +44,7 @@ class AdminMessageField extends Field
      * 是否已读
      * @var int
      */
-    public $isRead;
+    public $read;
     
     /**
      * 阅读时间

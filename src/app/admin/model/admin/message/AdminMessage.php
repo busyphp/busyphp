@@ -26,7 +26,7 @@ class AdminMessage extends Model
     
     
     /**
-     * 插入消息
+     * 添加消息
      * @param int          $userId 用户ID
      * @param string       $content 消息内容
      * @param string|Url   $url 操作链接
@@ -35,12 +35,9 @@ class AdminMessage extends Model
      * @return int
      * @throws DbException
      */
-    public function insertData($userId, $content, $url = '', $desc = '', $icon = '')
+    public function add($userId, $content, $url = '', $desc = '', $icon = '')
     {
-        if ($url instanceof Url) {
-            $url = $url->__toString();
-        }
-        
+        $url               = (string) $url;
         $data              = AdminMessageField::init();
         $data->createTime  = time();
         $data->userId      = intval($userId);
@@ -61,7 +58,7 @@ class AdminMessage extends Model
     public function setRead($id)
     {
         $save           = AdminMessageField::init();
-        $save->isRead   = true;
+        $save->read     = true;
         $save->readTime = time();
         $this->whereEntity(AdminMessageField::id(intval($id)))->saveData($save);
     }
@@ -86,8 +83,8 @@ class AdminMessage extends Model
     public function setAllReadByUserId($userId)
     {
         $save           = AdminMessageField::init();
-        $save->isRead   = true;
+        $save->read     = true;
         $save->readTime = time();
-        $this->whereEntity(AdminMessageField::userId(intval($userId)), AdminMessageField::isRead(0))->saveData($save);
+        $this->whereEntity(AdminMessageField::userId(intval($userId)), AdminMessageField::read(0))->saveData($save);
     }
 }
