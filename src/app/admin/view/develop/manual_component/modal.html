@@ -41,12 +41,12 @@
 | 确认按钮:title |  |  |  |  |
 | data-ok | boolean,string | 否 | `确定` | 设置确认按钮的文本内容，`false`则不显示 |
 | data-ok-skin | string | 否 | `btn-primary` | 确定按钮css类名 |
-| data-ok-icon | string | 否 | - | 确定按钮图标css类名称，如：`icon icon-check` |
+| data-ok-icon | string | 否 | - | 确定按钮图标css类名称，如：`fa fa-check` |
 | data-on-ok | string | 否 | - | 确定按钮点击事件，如不指定默认为：<br /> `data-type=form` 为 `submit`事件<br /> `data-type=其他` 为 `close` 事件 |
 | 取消按钮:title |  |  |  |  |
 | data-cancel | boolean,string | 否 | `取消` | 设置确认按钮的文本内容，`false`则不显示 |
 | data-cancel-skin | string | 否 | `btn-default` | 取消按钮css类名 |
-| data-cancel-icon | string | 否 | - | 取消按钮图标css类名称，如：`icon icon-close` |
+| data-cancel-icon | string | 否 | - | 取消按钮图标css类名称，如：`fa fa-close` |
 | data-on-cancel | string | 否 | - | 取消按钮点击事件，如不指定默认为：`data-type=form` 为 `reset`事件<br /> `data-type=其他` 为 `close` 事件 |
 | `data-type="form"` 自动表单，扩展自 [自动表单]({:url('form')}) 组件，请使用 `data-form-*` 进行配置:title |  |  |  |  |
 | data-form-on-success | string | 否 | `@modal.close` | 表单提交成功操作回调，支持`原组件`语法及`本组件`语法如下：<br />`@modal.close`：关闭模态框<br />`@modal.reload`：重载模态框(针对远程页面有效)<br />`@table.reload`：关闭模态框，并刷新表格(针对 `data-toggle="busy-modal"` 在[数据表格]({:url('table')})内) |
@@ -58,14 +58,14 @@ var buttons = [
     {
         align: 'left|right', // 按钮位置
         classes: 'btn-danger', // 按钮样式
-        text: '<i class="icon icon-check"></i> 按钮文本', // 按钮文本
+        text: '<i class="fa fa-check"></i> 按钮文本', // 按钮文本
         events: function(api) { // 直接指定回调函数则默认为按钮绑定点击事件
             $(this) // 当前按钮
         }
     },
     {
         classes: 'btn-danger', // 按钮样式
-        text: '<i class="icon icon-check"></i> 按钮文本', // 按钮文本
+        text: '<i class="fa fa-check"></i> 按钮文本', // 按钮文本
         events: { // 可以绑定各种事件
             'click' : function(api) {
                 $(this) // 当前按钮

@@ -25,6 +25,7 @@
            data-route="true">
         <thead>
             <tr>
+                <th class="text-center" width="40" data-checkbox="true"></th>
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
                 <th width="60" data-align="center" data-field="id">ID</th>
                 <th width="50" data-align="center" data-field="icon" data-formatter="@">图标</th>
@@ -45,8 +46,8 @@
                 data-ok="添加菜单"
                 data-url="{:url('add')}"
                 data-form-on-success="@table.reload|@app.loadInfo">
-                <i class="icon icon-plus"></i>
-                 添加菜单
+                <i class="fa fa-plus"></i>
+                 添加
             </a>
 
             <a class="btn btn-secondary"
@@ -56,8 +57,19 @@
                data-method="post"
                data-on-success="@table.reload|@app.loadInfo"
                data-confirm="确认要排序吗？">
-                <i class="icon icon-sort"></i>
+                <i class="fa fa-sort"></i>
                 排序
+            </a>
+
+            <a class="btn btn-danger"
+               data-url="{:url('delete')}"
+               data-confirm="确认要删除选中的%s个菜单吗？"
+               data-checked="true"
+               data-disabled="true"
+               data-method="post"
+               data-on-success="@table.reload">
+                <i class="fa fa-trash"></i>
+                删除
             </a>
         </div>
     </div>
@@ -101,7 +113,7 @@
            data-size="lg"
            data-ok="添加菜单"
            data-form-on-success="@table.reload|@app.loadInfo">
-            <i class="icon icon-plus"></i>
+            <i class="fa fa-plus"></i>
             添加
         </a>
 
@@ -111,10 +123,10 @@
            data-size="lg"
            data-ok="修改菜单"
            data-form-on-success="@table.reload|@app.loadInfo">
-            <i class="icon icon-pencil"></i>
+            <i class="fa fa-pencil"></i>
         </a>
         {{if !item.is_system}}
-        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload|@app.loadInfo"><i class="icon icon-trash"></i></a>
+        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload|@app.loadInfo"><i class="fa fa-trash"></i></a>
         {{/if}}
     </script>
 </block>

@@ -124,7 +124,7 @@
                href="{:url('edit?id=')}{{item.id}}"
                data-toggle="busy-modal"
                data-ok="修改角色"
-               data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
+               data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
         </ba:access>
         {{if !item.system}}
         <ba:access value="delete">
@@ -132,7 +132,7 @@
                href="{:url('delete?id=')}{{item.id}}"
                data-toggle="busy-request"
                data-confirm="确认要删除该角色吗？"
-               data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+               data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
         </ba:access>
         {{/if}}
     </script>

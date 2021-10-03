@@ -111,7 +111,7 @@
                href="{:url('edit?id=')}{{item.id}}"
                data-toggle="busy-modal"
                data-ok="修改管理员"
-               data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
+               data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
         </ba:access>
         <ba:access value="delete">
         {{if !item.system}}
@@ -119,7 +119,7 @@
            href="{:url('delete?id=')}{{item.id}}"
            data-toggle="busy-request"
            data-confirm="确认要删除该管理员吗？"
-           data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
+           data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
         {{/if}}
         </ba:access>
     </script>
