@@ -3,7 +3,6 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\js\AutocompletePlugin;
 use BusyPHP\app\admin\js\SelectPickerPlugin;
 use BusyPHP\app\admin\js\TablePlugin;
@@ -339,14 +338,14 @@ abstract class AdminController extends Controller
                 continue;
             }
             
-            File::deleteDir(App::runtimePath($value . DIRECTORY_SEPARATOR . 'temp'));
-            File::deleteDir(App::runtimePath($value . DIRECTORY_SEPARATOR . 'cache'));
+            File::deleteDir($this->app->getRuntimeRootPath("{$value}/temp"));
+            File::deleteDir($this->app->getRuntimeRootPath("{$value}/cache"));
         }
         
         // 清理系统缓存
-        File::deleteDir(App::runtimeCachePath());
+        File::deleteDir($this->app->getRuntimeCachePath());
         // 清理临时配置
-        File::deleteDir(App::runtimeConfigPath());
+        File::deleteDir($this->app->getRuntimeConfigPath());
         // 清理基本缓存
         Cache::clear();
         

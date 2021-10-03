@@ -14,7 +14,7 @@ return [
     'empty_image_var'      => 'no_picture',
     
     // 无图图片资源路径
-    'empty_image_path'     => App::getPublicPath('assets' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'images') . 'no_image.jpeg',
+    'empty_image_path'     => App::getInstance()->getPublicPath('assets/data/images/no_image.jpeg'),
     
     // 允许的尺寸配置，false则自由配置
     'sizes'                => [
@@ -32,7 +32,7 @@ return [
     'watermark_status'     => false,
     
     // 水印图片文件，留空则获取后台配置
-    'watermark_image_path' => App::getPublicPath('assets' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'images') . 'watermark.png',
+    'watermark_image_path' => App::getInstance()->getPublicPath('assets/data/images/watermark.png'),
     
     // 水印图片位置，留空则获取后台配置
     'watermark_position'   => Image::P_BOTTOM_RIGHT,

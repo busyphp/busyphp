@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\general\controller;
 
-use BusyPHP\App;
 use BusyPHP\Controller;
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Transform;
@@ -60,7 +59,7 @@ class QRCodeController extends Controller
             
             // 保存到本地
             if ($config['save_local'] ?? false) {
-                $qrCode->save(true, App::getPublicPath('qrcodes') . str_replace('/', DIRECTORY_SEPARATOR, $info['dirname']) . DIRECTORY_SEPARATOR . $info['basename']);
+                $qrCode->save(true, $this->app->getPublicPath("qrcodes/{$info['dirname']}/{$info['basename']}"));
             }
             
             $data = $qrCode->exec(true);

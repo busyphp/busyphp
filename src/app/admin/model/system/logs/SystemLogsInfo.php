@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\logs;
 
+use BusyPHP\App;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
 
@@ -46,7 +46,7 @@ class SystemLogsInfo extends SystemLogsField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = Arr::listByKey(AppHelper::getList(), AppListItem::dir());
+            static::$_appList = Arr::listByKey(App::getInstance()->getList(), AppListItem::dir());
         }
         
         $this->formatCreateTime = Transform::date($this->createTime);

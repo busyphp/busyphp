@@ -112,7 +112,7 @@ class IndexController extends InsideController
                 $this->assign('max_upload_size', ini_get('upload_max_filesize'));
                 $this->assign('system_name', php_uname('s'));
                 $this->assign('soft_name', $softNames[0]);
-                $this->assign('framework_name', $this->app->getBusyName() . ' V' . $this->app->getBusyVersion());
+                $this->assign('framework_name', $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion());
                 $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
                 $this->setPageTitle('首页');
                 

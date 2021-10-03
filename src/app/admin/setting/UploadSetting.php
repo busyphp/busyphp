@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\setting;
 
+use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\util\Filter;
@@ -115,7 +115,7 @@ class UploadSetting extends Setting
      */
     public function getClientInfo(string $client = '') : ?array
     {
-        $client  = $client ?: AppHelper::getDirName();
+        $client  = $client ?: App::getInstance()->getDirName();
         $clients = $this->get('clients', []);
         
         return $clients[$client] ?? null;

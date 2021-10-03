@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\controller\common;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\general\controller\VerifyController;
@@ -87,7 +86,7 @@ class PassportController extends InsideController
             }
         }
         
-        $list  = glob(App::getPublicPath('assets/admin/images/login') . '*.*');
+        $list  = glob($this->app->getPublicPath('assets/admin/images/login/*.*'));
         $array = [];
         foreach ($list as $item) {
             $array[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);

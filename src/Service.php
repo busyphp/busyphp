@@ -40,6 +40,7 @@ use think\Service as ThinkService;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午11:41 上午 Service.php $
+ * @property App $app
  */
 class Service extends ThinkService
 {
@@ -166,17 +167,11 @@ class Service extends ThinkService
         
         
         // 应用
-        $tplPath               = App::getBusyPath('tpl');
+        $tplPath               = $this->app->getFrameworkPath('tpl/');
         $app['exception_tmpl'] = $this->value($app, 'exception_tmpl', $tplPath . 'exception.html');
         $app['success_tmpl']   = $this->value($app, 'success_tpl', $tplPath . 'message.html');
         $app['error_tmpl']     = $this->value($app, 'error_tpl', $tplPath . 'message.html');
         $app['app_express']    = true;
-        
-        
-        // 错误级别配置
-        $errorLevelExclude          = $this->value($app, 'error_level_exclude', []);
-        $app['error_level_exclude'] = $errorLevelExclude;
-        
         
         // 模板配置
         $view['type']            = $this->value($view, 'type', View::class);
@@ -189,7 +184,7 @@ class Service extends ThinkService
         // 数据库配置
         $mysql['query']                   = $this->value($mysql, 'query', Query::class);
         $mysql['prefix']                  = $this->value($mysql, 'prefix', 'busy_');
-        $mysql['schema_cache_path']       = $this->value($mysql, 'schema_cache_path', App::runtimeCachePath('schema'));
+        $mysql['schema_cache_path']       = $this->value($mysql, 'schema_cache_path', $this->app->getRuntimeCachePath('schema/'));
         $database['connections']['mysql'] = $mysql;
         
         
@@ -197,7 +192,7 @@ class Service extends ThinkService
         $cache['stores']          = $this->value($cache, 'stores', []);
         $file                     = $this->value($cache['stores'], 'file', []);
         $file['type']             = $this->value($file, 'type', File::class);
-        $file['path']             = $this->value($file, 'path', App::runtimeCachePath());
+        $file['path']             = $this->value($file, 'path', $this->app->getRuntimeCachePath());
         $cache['stores']['file']  = $file;
         $redis                    = $this->value($cache['stores'], 'redis', []);
         $redis['type']            = $this->value($redis, 'type', Redis::class);
@@ -211,10 +206,10 @@ class Service extends ThinkService
         
         
         // trace
-        $trace['file'] = $this->value($trace, 'file', App::getBusyPath('tpl') . 'trace.html');
+        $trace['file'] = $this->value($trace, 'file', $tplPath . 'trace.html');
         
         // session
-        $session['path'] = $this->value($session, 'path', App::runtimeCachePath('session'));
+        $session['path'] = $this->value($session, 'path', $this->app->getRuntimeCachePath('session/'));
         
         
         // 组合参数进行设置

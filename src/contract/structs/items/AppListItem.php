@@ -2,7 +2,7 @@
 
 namespace BusyPHP\contract\structs\items;
 
-use BusyPHP\helper\AppHelper;
+use BusyPHP\App;
 use BusyPHP\model\Map;
 
 /**
@@ -10,7 +10,7 @@ use BusyPHP\model\Map;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/25 下午下午5:50 AppListItem.php $
- * @see AppHelper::getList()
+ * @see App::getList()
  * @method static mixed dir();
  * @method static mixed name();
  * @method static mixed path();

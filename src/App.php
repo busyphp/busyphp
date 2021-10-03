@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace BusyPHP;
 
-use BusyPHP\initializer\Error;
+use BusyPHP\contract\structs\items\AppListItem;
 use BusyPHP\initializer\RegisterService;
 use think\initializer\BootService;
+use think\initializer\Error;
 
 /**
  * App
@@ -18,30 +19,22 @@ use think\initializer\BootService;
 class App extends \think\App
 {
     /**
-     * 版本号
+     * 框架版本号
      * @var string
      */
-    public static $busyVersion = '6.0.0';
+    private $frameworkVersion = '6.0.0';
     
     /**
      * 框架名称
      * @var string
      */
-    public static $busyName = 'BusyPHP快速开发框架';
+    private $frameworkName = 'BusyPHP快速开发框架';
     
     /**
-     * BusyPHP路径
-     * @var string
+     * 应用初始化器
+     * @var array
      */
-    protected static $busyPath;
-    
-    /**
-     * public路径
-     * @var string
-     */
-    protected static $publicPath;
-    
-    protected        $initializers = [
+    protected $initializers = [
         Error::class,
         RegisterService::class,
         BootService::class,
@@ -50,8 +43,6 @@ class App extends \think\App
     
     public function __construct(string $rootPath = '')
     {
-        spl_autoload_register([$this, 'autoload']);
-        
         $this->bind([
             \think\App::class              => App::class,
             \think\Request::class          => Request::class,
@@ -66,69 +57,94 @@ class App extends \think\App
     protected function load() : void
     {
         // 加载助手函数
-        include_once __DIR__ . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR . 'helper.php';
+        include_once $this->getFrameworkPath('helper/helper.php');
         
         parent::load();
         
         // 加载自定义全局配置文件
-        $this->config->load(self::runtimeConfigPath() . 'config.php', 'user');
+        $this->config->load($this->getRuntimeConfigPath('config.php'), 'user');
     }
     
     
     /**
-     * 自动导入解析
-     * @param $class
+     * 获取框架名称
+     * @return string
      */
-    public function autoload($class)
+    public function getFrameworkName() : string
     {
-        // 子类规则 Class_Child
-        // 判断没有包含子类则不解析
-        if (false === $index = strpos($class, '_')) {
-            return;
-        }
-        
-        
-        $class = ltrim(substr($class, 0, -(strlen($class) - $index)), '\\');
-        $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-        
-        
-        // BusyPHP前缀解析
-        if (substr($class, 0, 7) === 'BusyPHP') {
-            $class = substr($class, 8);
-            $class = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . $class . '.php';
-        }
-        
-        // app 前缀解析
-        // core前缀解析
-        elseif (substr($class, 0, 4) === 'core' || substr($class, 0, 3) === 'app') {
-            $class = dirname(dirname(dirname(dirname(dirname(__FILE__))))) . DIRECTORY_SEPARATOR . $class . '.php';
-        }
-        
-        //
-        // 不解析
-        else {
-            return;
-        }
-        
-        
-        if (is_file($class)) {
-            require_once $class;
-        }
+        return $this->frameworkName;
     }
     
     
     /**
-     * 获取BusyPHP入口目录路径
+     * 获取框架版本号
+     * @return string
+     */
+    public function getFrameworkVersion() : string
+    {
+        return $this->frameworkVersion;
+    }
+    
+    
+    /**
+     * 获取框架入口目录路径
      * @param string $path
      * @return string
      */
-    public static function getBusyPath($path = '')
+    public function getFrameworkPath(string $path = '') : string
     {
-        if (!isset(static::$busyPath)) {
-            static::$busyPath = dirname(__FILE__) . DIRECTORY_SEPARATOR;
+        $root = __DIR__ . DIRECTORY_SEPARATOR;
+        $path = $this->parsePath($path);
+        
+        return $path ? $root . $path : $root;
+    }
+    
+    
+    /**
+     * 获取应用目录名称
+     * @return string
+     */
+    public function getDirName() : string
+    {
+        return pathinfo($this->getAppPath(), PATHINFO_FILENAME);
+    }
+    
+    
+    /**
+     * 获取应用集合
+     * @return AppListItem[]
+     */
+    public function getList() : array
+    {
+        $basePath = $this->getBasePath();
+        $list     = [];
+        $maps     = ['admin' => '后台管理', 'home' => '前端网站'];
+        foreach (scandir($basePath) as $value) {
+            if (!is_dir($path = $basePath . $value . DIRECTORY_SEPARATOR) || $value === '.' || $value === '..') {
+                continue;
+            }
+            
+            $name   = '';
+            $config = [];
+            if (is_file($configFile = $path . 'config' . DIRECTORY_SEPARATOR . 'app.php')) {
+                $config = include $configFile;
+                $config = is_array($config) ? $config : [];
+                $name   = $config['app_name'] ?? '';
+            }
+            if (!$name) {
+                $name = ($maps[$value] ?? '') ?: $value;
+            }
+            
+            $item         = new AppListItem();
+            $item->path   = $path;
+            $item->dir    = $value;
+            $item->name   = $name;
+            $item->config = $config;
+            
+            $list[] = $item;
         }
         
-        return static::$busyPath . ($path ? $path . DIRECTORY_SEPARATOR : '');
+        return $list;
     }
     
     
@@ -137,14 +153,13 @@ class App extends \think\App
      * @param string $path
      * @return string
      */
-    public static function getPublicPath($path = '') : string
+    public function getPublicPath(string $path = '') : string
     {
-        if (!isset(static::$publicPath)) {
-            $file               = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
-            static::$publicPath = rtrim(dirname($file), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        }
+        $root = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
+        $root = rtrim(dirname($root), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $path = $this->parsePath($path);
         
-        return static::$publicPath . ($path ? $path . DIRECTORY_SEPARATOR : $path);
+        return $path ? $root . $path : $root;
     }
     
     
@@ -153,9 +168,12 @@ class App extends \think\App
      * @param string $path
      * @return string
      */
-    public static function corePath($path = '')
+    public function getCorePath(string $path = '') : string
     {
-        return root_path('core') . ($path ? $path . DIRECTORY_SEPARATOR : $path);
+        $root = $this->getRootPath();
+        $path = $this->parsePath($path);
+        
+        return $path ? $root . $path : $root;
     }
     
     
@@ -164,9 +182,12 @@ class App extends \think\App
      * @param string $path
      * @return string
      */
-    public static function runtimePath($path = '')
+    public function getRuntimeRootPath(string $path = '') : string
     {
-        return root_path('runtime') . ($path ? $path . DIRECTORY_SEPARATOR : $path);
+        $root = $this->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR;
+        $path = $this->parsePath($path);
+        
+        return $path ? $root . $path : $root;
     }
     
     
@@ -175,9 +196,12 @@ class App extends \think\App
      * @param string $path
      * @return string
      */
-    public static function runtimeCachePath($path = '') : string
+    public function getRuntimeCachePath(string $path = '') : string
     {
-        return static::runtimePath('cache') . ($path ? $path . DIRECTORY_SEPARATOR : $path);
+        $root = $this->getRuntimeRootPath('cache/');
+        $path = $this->parsePath($path);
+        
+        return $path ? $root . $path : $root;
     }
     
     
@@ -186,20 +210,12 @@ class App extends \think\App
      * @param string $path
      * @return string
      */
-    public static function runtimeConfigPath($path = '') : string
+    public function getRuntimeConfigPath(string $path = '') : string
     {
-        return static::runtimePath('config') . ($path ? $path . DIRECTORY_SEPARATOR : $path);
-    }
-    
-    
-    /**
-     * 获取临时文件基本路径
-     * @param string $path
-     * @return string
-     */
-    public static function runtimeUploadPath($path = '') : string
-    {
-        return static::runtimePath('upload') . ($path ? $path . DIRECTORY_SEPARATOR : $path);
+        $root = $this->getRuntimeRootPath('config/');
+        $path = $this->parsePath($path);
+        
+        return $path ? $root . $path : $root;
     }
     
     
@@ -208,28 +224,23 @@ class App extends \think\App
      * @param string $url 地址
      * @return string
      */
-    public static function urlToPath($url)
+    public static function urlToPath(string $url) : string
     {
-        return static::getPublicPath() . ltrim($url, '/');
+        return App::getInstance()->getPublicPath($url);
     }
     
     
     /**
-     * 获取框架名称
+     * 解析路径
+     * @param string $path
      * @return string
      */
-    public function getBusyName() : string
+    protected function parsePath(string $path) : string
     {
-        return self::$busyName;
-    }
-    
-    
-    /**
-     * 获取框架版本号
-     * @return string
-     */
-    public function getBusyVersion() : string
-    {
-        return self::$busyVersion;
+        $path = trim($path);
+        $path = str_replace('\\', '/', $path);
+        $path = ltrim($path, '/');
+        
+        return str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 }

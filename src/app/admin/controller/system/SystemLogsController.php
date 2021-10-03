@@ -6,7 +6,6 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\logs\SystemLogsField;
 use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Map;
@@ -56,7 +55,7 @@ class SystemLogsController extends InsideController
         }
         
         $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
-        $this->assign('client_options', Transform::arrayToOption(AppHelper::getList(), AppListItem::dir(), AppListItem::name()));
+        $this->assign('client_options', Transform::arrayToOption($this->app->getList(), AppListItem::dir(), AppListItem::name()));
         $this->assign('time', $timeRange);
         
         return $this->display();

@@ -77,7 +77,7 @@ class ThumbController extends Controller
             $noWatermark = false;
             if ($filename === ($config['empty_image_var'] ?: ThumbUrl::EMPTY_IMAGE_VAR)) {
                 $noWatermark = true;
-                $source      = $config['empty_image_path'] ?: App::getPublicPath('assets') . 'no_image.jpeg';
+                $source      = $config['empty_image_path'] ?: $this->app->getPublicPath('assets/data/no_image.jpeg');
                 if (!$source) {
                     throw new AppException('没有配置无图图片资源路径: empty_image_path');
                 }
@@ -85,7 +85,7 @@ class ThumbController extends Controller
                     throw new AppException('无图图片资源不存在: ' . $source);
                 }
             } else {
-                $source = App::getPublicPath() . ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filename), DIRECTORY_SEPARATOR) . '.' . $extension;
+                $source = $this->app->getPublicPath($filename . '.' . $extension);
                 if (!is_file($source)) {
                     throw new AppException('图片资源不存在: ' . $src);
                 }
@@ -96,7 +96,7 @@ class ThumbController extends Controller
             $thumb = new Image();
             $thumb->src($source)
                 ->format($extension)
-                ->save($config['save_local'] ?? false, App::getPublicPath('thumbs') . ltrim($src, '/'))
+                ->save($config['save_local'] ?? false, $this->app->getPublicPath('thumbs' . $src))
                 ->width($width)
                 ->height($height)
                 ->thumb($type)

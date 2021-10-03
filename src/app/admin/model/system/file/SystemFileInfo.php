@@ -3,10 +3,10 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
+use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
@@ -103,7 +103,7 @@ class SystemFileInfo extends SystemFileField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = Arr::listByKey(AppHelper::getList(), AppListItem::dir());
+            static::$_appList = Arr::listByKey(App::getInstance()->getList(), AppListItem::dir());
         }
         
         if (!is_array(static::$_fileClassList)) {

@@ -12,7 +12,6 @@ use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -131,7 +130,7 @@ class SystemManagerController extends InsideController
             ];
         }
         
-        $this->assign('clients', AppHelper::getList());
+        $this->assign('clients', $this->app->getList());
         $this->assign('disks', $disks);
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
         $this->assign('type', SystemFile::getTypes());

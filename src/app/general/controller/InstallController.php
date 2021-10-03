@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\general\controller;
 
-use BusyPHP\App;
 use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
 use BusyPHP\helper\util\Filter;
@@ -26,8 +25,8 @@ class InstallController extends Controller
     {
         parent::initialize();
         
-        $this->app->setRuntimePath(App::runtimePath('general'));
-        $this->lockFile = App::getPublicPath('install') . 'install.lock';
+        $this->app->setRuntimePath($this->app->getRuntimeRootPath('general/'));
+        $this->lockFile = $this->app->getPublicPath('install/install.lock');
         $this->assign('finish', false);
         
         // 检测是否安装完毕
@@ -55,8 +54,8 @@ class InstallController extends Controller
         $progress = $step * 25 + 25;
         $this->assign('steps', $steps);
         $this->assign('progress', $progress);
-        $this->assign('version_name', $this->app->getBusyVersion());
-        $this->assign('title', $this->app->getBusyName());
+        $this->assign('version_name', $this->app->getFrameworkVersion());
+        $this->assign('title', $this->app->getFrameworkName());
         
         return parent::display($template, $charset, $contentType, $content);
     }
@@ -425,7 +424,7 @@ HTML;
                 $title  = trim($site['title']);
                 $title  = $title ? $title : 'BusyPHP';
                 $length = strlen($title);
-                $sql    = $this->parseSql(App::getBusyPath('data') . 'install.sql', $db['prefix'], [
+                $sql    = $this->parseSql($this->app->getFrameworkPath('data/install.sql'), $db['prefix'], [
                     '#__username__#',
                     '#__password__#',
                     '#__create_time__#',
@@ -451,7 +450,7 @@ HTML;
                 
                 
                 // 读取扩展SQL文件
-                $extendSqlFile = App::getPublicPath('install') . 'sql.sql';
+                $extendSqlFile = $this->app->getPublicPath('install/sql.sql');
                 if (is_file($extendSqlFile)) {
                     $extendSql = $this->parseSql($extendSqlFile, $db['prefix']);
                     foreach ($extendSql as $item) {

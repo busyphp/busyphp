@@ -32,7 +32,7 @@ class PublicSetting extends Setting
      */
     public function getTitle() : string
     {
-        return $this->get('title', '') ?: $this->app->getBusyName();
+        return $this->get('title', '') ?: $this->app->getFrameworkName();
     }
     
     
@@ -74,6 +74,6 @@ class PublicSetting extends Setting
     {
         $year = date('Y');
         
-        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP'>{$this->app->getBusyName()}</a>  V{$this->app->getBusyVersion()}";
+        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
     }
 }

@@ -3,10 +3,10 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
+use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model;
 use BusyPHP\Request;
@@ -72,7 +72,7 @@ class SystemFile extends Model
         
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
-        $insert->client     = Request::init()->isCli() ? SystemLogs::CLI_CLIENT_KEY : AppHelper::getDirName();
+        $insert->client     = Request::init()->isCli() ? SystemLogs::CLI_CLIENT_KEY : App::getInstance()->getDirName();
         $insert->type       = $classInfo->type;
         
         return $this->addData($insert);

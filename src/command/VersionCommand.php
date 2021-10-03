@@ -23,6 +23,6 @@ class VersionCommand extends Command
     
     protected function execute(Input $input, Output $output)
     {
-        $output->writeln("<info>V{$this->app->getBusyVersion()}</info>");
+        $output->writeln("<info>V{$this->app->getFrameworkVersion()}</info>");
     }
 }

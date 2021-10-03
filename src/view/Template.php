@@ -747,13 +747,14 @@ class Template extends \think\Template
             // @app:
             // 解析到 src/app 目录
             if (0 === strpos($template, '@app:')) {
-                $template = App::getBusyPath('app') . ltrim(substr($template, 5), '/') . '.html';
+                $template = App::getInstance()->getFrameworkPath('app/' . ltrim(substr($template, 5), '/') . '.html');
             }
             
             // @admin:
             // 解析到 src/admin/view 目录
             elseif (0 === strpos($template, '@admin:')) {
-                $template = App::getBusyPath('app') . 'admin' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . ltrim(substr($template, 7), '/') . '.html';
+                $template = App::getInstance()
+                    ->getFrameworkPath('app/admin/view/' . ltrim(substr($template, 7), '/') . '.html');
             }
             
             //
