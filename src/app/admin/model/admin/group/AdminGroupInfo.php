@@ -19,6 +19,8 @@ use think\db\exception\DbException;
  * @method static Entity ruleIds() 权限ID集合
  * @method static Entity ruleIndeterminate() 权限所有父节点ID集合
  * @method static Entity rulePaths() 权限地址集合
+ * @method static Entity defaultMenuName() 默认菜单名称
+ * @method static Entity defaultMenu() 默认菜单信息
  */
 class AdminGroupInfo extends AdminGroupField
 {
@@ -47,6 +49,18 @@ class AdminGroupInfo extends AdminGroupField
     public $rulePaths = [];
     
     /**
+     * 默认菜单名称
+     * @var string
+     */
+    public $defaultMenuName;
+    
+    /**
+     * 默认菜单信息
+     * @var SystemMenuInfo
+     */
+    public $defaultMenu;
+    
+    /**
      * @var array
      */
     private static $_menuIdParents;
@@ -64,10 +78,10 @@ class AdminGroupInfo extends AdminGroupField
     public function onParseAfter()
     {
         if (!is_array(self::$_menuIdParents)) {
-            self::$_menuIdParents = SystemMenu::init()->getIdParens();
+            static::$_menuIdParents = SystemMenu::init()->getIdParens();
         }
         if (!is_array(self::$_menuIdList)) {
-            self::$_menuIdList = SystemMenu::init()->getIdList();
+            static::$_menuIdList = SystemMenu::init()->getIdList();
         }
         
         $this->system = Transform::dataToBool($this->system);
@@ -81,19 +95,21 @@ class AdminGroupInfo extends AdminGroupField
             }
             $rule[] = intval($ruleId);
             
-            if (isset(self::$_menuIdList[$ruleId]) && !self::$_menuIdList[$ruleId]->disabled) {
-                $this->rulePaths[] = self::$_menuIdList[$ruleId]->path;
+            if (isset(self::$_menuIdList[$ruleId]) && !static::$_menuIdList[$ruleId]->disabled) {
+                $this->rulePaths[] = static::$_menuIdList[$ruleId]->path;
             }
         }
-        $this->rule    = $rule;
-        $this->ruleIds = $rule;
+        $this->rule            = $rule;
+        $this->ruleIds         = $rule;
+        $this->defaultMenu     = static::$_menuIdList[$this->defaultMenuId] ?? null;
+        $this->defaultMenuName = $this->defaultMenu->name ?? '';
         
         
         // 计算权限所有父节点ID集合
         $this->ruleIndeterminate = [];
         foreach ($this->rule as $ruleId) {
-            if (isset(self::$_menuIdParents[$ruleId])) {
-                foreach (self::$_menuIdParents[$ruleId] as $id) {
+            if (isset(static::$_menuIdParents[$ruleId])) {
+                foreach (static::$_menuIdParents[$ruleId] as $id) {
                     if (!in_array($id, $this->ruleIndeterminate)) {
                         $this->ruleIndeterminate[] = $id;
                         $this->ruleIds[]           = $id;

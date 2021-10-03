@@ -26,6 +26,8 @@ use think\db\exception\DbException;
  * @method static Entity formatLoginTime($op = null, $value = null) 格式化的本次登录时间
  * @method static Entity isTempLock($op = null, $value = null) 是否临时锁定
  * @method static Entity formatErrorReleaseTime($op = null, $value = null) 格式化的锁定释放时间
+ * @method static Entity defaultGroup($op = null, $value = null) 默认角色组信息
+ * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
  */
 class AdminUserInfo extends AdminUserField
 {
@@ -96,6 +98,18 @@ class AdminUserInfo extends AdminUserField
     public $formatErrorRelease;
     
     /**
+     * 默认角色组信息
+     * @var AdminGroupInfo
+     */
+    public $defaultGroup;
+    
+    /**
+     * 默认菜单
+     * @var string
+     */
+    public $defaultMenu;
+    
+    /**
      * @var AdminGroupInfo[]
      */
     private static $_groupList;
@@ -147,5 +161,12 @@ class AdminUserInfo extends AdminUserField
                 $this->groupHasSystem = true;
             }
         }
+        
+        if (!$this->defaultGroupId || !isset($this->groupList[$this->defaultGroupId])) {
+            $this->defaultGroupId = end($this->groupIds);
+        }
+        
+        $this->defaultGroup = $this->groupList[$this->defaultGroupId];
+        $this->defaultMenu  = $this->defaultGroup->defaultMenu->path;
     }
 }

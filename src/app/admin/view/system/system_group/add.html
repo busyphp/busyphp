@@ -21,15 +21,6 @@
         </div>
 
         <div class="form-group">
-            <label class="col-sm-2 control-label">默认菜单</label>
-            <div class="col-sm-9">
-                <select class="form-control" name="default_menu_id" data-toggle="busy-select-picker" data-url="{:url()}" data-search="false" data-params="busyAdmin.data.treeParams" data-value="{$info.default_menu_id|default=0}" data-placeholder="请选择默认菜单">
-                </select>
-                <span class="help-block">设置默认菜单，用户登录后将默认展开该菜单</span>
-            </div>
-        </div>
-
-        <div class="form-group">
             <label class="col-sm-2 control-label">角色权限</label>
             <div class="col-sm-9">
                 <div class="checkbox-group">
@@ -47,6 +38,19 @@
                      data-checkbox-relation="false"
                      data-checkbox-relation-dir="up,undetermined"
                      data-checkbox="true"></div>
+                <eq name="info.system" value="1">
+                    <span class="help-block text-info"><i class="fa fa-info-circle"></i> 系统角色无论是否设置角色权限，都将拥有所有权限</span>
+                </eq>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label">默认菜单</label>
+            <div class="col-sm-9">
+                <select class="form-control" name="default_menu_id" disabled>
+                    <option value="0">请先选择角色权限</option>
+                </select>
+                <span class="help-block">设置默认菜单，用户登录后将默认展开该菜单</span>
             </div>
         </div>
 
@@ -65,6 +69,7 @@
 <block name="foot">
     <script>
         busyAdmin.data.treeParentGroupId = '{$info.parent_id|default=0}';
+        busyAdmin.data.defaultMenuId     = '{$info.default_menu_id|default=0}';
         busyAdmin.data.treeParams        = function () {
             return {
                 group_id : busyAdmin.data.treeParentGroupId,
@@ -95,8 +100,34 @@
             $('[name="parent_id"]').on('change', function () {
                 busyAdmin.data.treeParentGroupId = $(this).val();
                 $tree.busyAdminTree('refresh');
-                $menu.busyAdminSelectPicker('value', '{$info.default_menu_id|default=0}');
             });
+
+            $tree.on(
+                busyAdmin.e.treeReady + ' '
+                + busyAdmin.e.treeSelectAll + ' '
+                + busyAdmin.e.treeSelectNode + ' '
+                + busyAdmin.e.treeDeSelectAll + ' '
+                + busyAdmin.e.treeDeSelectNode,
+                function (e, api) {
+                    var list = api.get_selected(true);
+                    list.push.apply(list, api.get_undetermined(true));
+
+                    var options = '';
+                    list.map(function (item) {
+                        if (item.parent !== '#') {
+                            return;
+                        }
+
+                        var selected = item.a_attr['data-id'] == busyAdmin.data.defaultMenuId ? ' selected' : '';
+                        options += '<option value="' + item.a_attr['data-id'] + '"' + selected + '>' + item.text + '</option>';
+                    });
+
+                    if (options) {
+                        $menu.prop('disabled', false).html(options);
+                    } else {
+                        $menu.prop('disabled', true).html('<option value="0">请先选择角色权限</option>');
+                    }
+                });
         });
     </script>
 </block>

@@ -4,14 +4,17 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
+use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\message\provide\MessageListParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
 use BusyPHP\exception\PartUploadSuccessException;
+use BusyPHP\exception\VerifyException;
 use BusyPHP\file\upload\PartUpload;
 use BusyPHP\helper\util\Transform;
 use Exception;
@@ -29,7 +32,7 @@ class IndexController extends InsideController
 {
     protected function initialize($checkLogin = true)
     {
-        // 不记路操作
+        // 不记录操作
         if ($this->requestPluginName === 'AppMessage') {
             $this->setSaveOperate(false);
         }
@@ -87,62 +90,68 @@ class IndexController extends InsideController
      */
     protected function appInfo()
     {
+        $dropList   = [];
+        $dropList[] = [
+            'text' => '修改资料',
+            'icon' => 'bicon bicon-user-profile',
+            'attr' => [
+                'data-toggle' => 'busy-modal',
+                'data-url'    => (string) url('Common.Index/personal_info'),
+            ]
+        ];
+        $dropList[] = [
+            'text' => '修改密码',
+            'icon' => 'bicon bicon-lock',
+            'attr' => [
+                'data-toggle' => 'busy-modal',
+                'data-url'    => (string) url('Common.Index/personal_password'),
+            ]
+        ];
+        $dropList[] = [
+            'type' => 'divider'
+        ];
+        
+        if (AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_clear')) {
+            $dropList[] = [
+                'text' => '清理缓存',
+                'icon' => 'bicon bicon-clear',
+                'attr' => [
+                    'data-toggle'  => 'busy-request',
+                    'data-url'     => (string) url('system_manager/cache_clear'),
+                    'data-confirm' => '确认要清理缓存吗？<br /><span class="text-warning">当系统发生错误的时候可以通过该方法尝试性修复</span>',
+                ]
+            ];
+        }
+        
+        if (AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_create')) {
+            $dropList[] = [
+                'text' => '生成缓存',
+                'icon' => 'bicon bicon-re-create',
+                'attr' => [
+                    'data-toggle'  => 'busy-request',
+                    'data-url'     => (string) url('system_manager/cache_create'),
+                    'data-confirm' => '确认要生成缓存吗？<br /><span class="text-success">生成缓存后系统运行速度将会提升</span>',
+                ]
+            ];
+        }
+        
+        $dropList[] = [
+            'text' => '退出登录',
+            'icon' => 'bicon bicon-exit',
+            'attr' => [
+                'data-toggle'     => 'busy-request',
+                'data-url'        => (string) url('admin_out'),
+                'data-confirm'    => '确认要退出登录吗？',
+                'data-on-success' => '@route.redirect',
+            ]
+        ];
+        
         return $this->success([
-            'menu_default'   => '',
+            'menu_default'   => $this->adminUser->defaultMenu,
             'menu_list'      => SystemMenu::init()->getNav($this->adminUser),
             'user_id'        => $this->adminUserId,
             'username'       => $this->adminUsername,
-            
-            // 用户菜单
-            'user_dropdowns' => [
-                [
-                    'text' => '修改资料',
-                    'icon' => 'bicon bicon-user-profile',
-                    'attr' => [
-                        'data-toggle' => 'busy-modal',
-                        'data-url'    => (string) url('system_user/personal_info'),
-                    ]
-                ],
-                [
-                    'text' => '修改密码',
-                    'icon' => 'bicon bicon-lock',
-                    'attr' => [
-                        'data-toggle' => 'busy-modal',
-                        'data-url'    => (string) url('system_user/personal_password'),
-                    ]
-                ],
-                [
-                    'type' => 'divider'
-                ],
-                [
-                    'text' => '清理缓存',
-                    'icon' => 'bicon bicon-clear',
-                    'attr' => [
-                        'data-toggle'  => 'busy-request',
-                        'data-url'     => (string) url('system_manager/cache_clear'),
-                        'data-confirm' => '确认要清理缓存吗？<br /><span class="text-warning">当系统发生错误的时候可以通过该方法尝试性修复</span>',
-                    ]
-                ],
-                [
-                    'text' => '生成缓存',
-                    'icon' => 'bicon bicon-re-create',
-                    'attr' => [
-                        'data-toggle'  => 'busy-request',
-                        'data-url'     => (string) url('system_manager/cache_create'),
-                        'data-confirm' => '确认要生成缓存吗？<br /><span class="text-success">生成缓存后系统运行速度将会提升</span>',
-                    ]
-                ],
-                [
-                    'text' => '退出登录',
-                    'icon' => 'bicon bicon-exit',
-                    'attr' => [
-                        'data-toggle'     => 'busy-request',
-                        'data-url'        => (string) url('admin_out'),
-                        'data-confirm'    => '确认要退出登录吗？',
-                        'data-on-success' => '@route.redirect',
-                    ]
-                ]
-            ],
+            'user_dropdowns' => $dropList,
             
             // 消息启用状态
             'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
@@ -285,5 +294,61 @@ class IndexController extends InsideController
                 'total'        => $noticeTotal + $agencyTotal
             ]);
         }
+    }
+    
+    
+    /**
+     * 修改个人资料
+     * @return Response
+     * @throws Exception
+     */
+    public function personal_info()
+    {
+        if ($this->isPost()) {
+            $update = AdminUserField::init();
+            $update->setId($this->adminUserId);
+            $update->setUsername($this->post('username/s', 'trim'));
+            $update->setPhone($this->post('phone/s', 'trim'));
+            $update->setEmail($this->post('email/s', 'trim'));
+            $update->setQq($this->post('qq/s', 'trim'));
+            AdminUser::init()->whereEntity(AdminUserField::id($this->adminUserId))->updateData($update);
+            $this->log()->record(self::LOG_UPDATE, '修改个人资料');
+            
+            return $this->success('修改成功');
+        }
+        
+        $this->assign('info', $this->adminUser);
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 修改个人密码
+     * @return Response
+     * @throws Exception
+     */
+    public function personal_password()
+    {
+        if ($this->isPost()) {
+            $oldPassword = $this->post('old_password/s', 'trim');
+            if (!$oldPassword) {
+                throw new VerifyException('请输入登录密码', 'old_password');
+            }
+            
+            if (!AdminUser::verifyPassword($oldPassword, $this->adminUser->password)) {
+                throw new VerifyException('登录密码输入错误', 'old_password');
+            }
+            
+            AdminUser::init()
+                ->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $this->log()
+                ->filterParams(['old_password', 'password', 'confirm_password'])
+                ->record(self::LOG_UPDATE, '修改个人密码');
+            
+            return $this->success('修改成功');
+        }
+        
+        return $this->display();
     }
 }

@@ -99,6 +99,7 @@ class SystemUserController extends InsideController
         if ($this->isPost()) {
             $insert = AdminUserField::init();
             $insert->setGroupIds($this->post('group_ids/a'));
+            $insert->setDefaultGroupId($this->post('default_group_id/d'));
             $insert->setUsername($this->post('username/s', 'trim'));
             $insert->setPassword($this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
             $insert->setPhone($this->post('phone/s', 'trim'));
@@ -137,6 +138,7 @@ class SystemUserController extends InsideController
             $update = AdminUserField::init();
             $update->setId($this->post('id/d'));
             $update->setGroupIds($this->post('group_ids/a'));
+            $update->setDefaultGroupId($this->post('default_group_id/d'));
             $update->setUsername($this->post('username/s', 'trim'));
             $update->setPhone($this->post('phone/s', 'trim'));
             $update->setEmail($this->post('email/s', 'trim'));
@@ -252,60 +254,5 @@ class SystemUserController extends InsideController
         });
         
         return $this->batch();
-    }
-    
-    
-    /**
-     * 修改个人资料
-     * @return Response
-     * @throws Exception
-     */
-    public function personal_info()
-    {
-        if ($this->isPost()) {
-            $update = AdminUserField::init();
-            $update->setId($this->adminUserId);
-            $update->setUsername($this->post('username/s', 'trim'));
-            $update->setPhone($this->post('phone/s', 'trim'));
-            $update->setEmail($this->post('email/s', 'trim'));
-            $update->setQq($this->post('qq/s', 'trim'));
-            $this->model->whereEntity(AdminUserField::id($this->adminUserId))->updateData($update);
-            $this->log()->record(self::LOG_UPDATE, '修改个人资料');
-            
-            return $this->success('修改成功');
-        }
-        
-        $this->assign('info', $this->adminUser);
-        
-        return $this->display();
-    }
-    
-    
-    /**
-     * 修改个人密码
-     * @return Response
-     * @throws Exception
-     */
-    public function personal_password()
-    {
-        if ($this->isPost()) {
-            $oldPassword = $this->post('old_password/s', 'trim');
-            if (!$oldPassword) {
-                throw new VerifyException('请输入登录密码', 'old_password');
-            }
-            
-            if (!AdminUser::verifyPassword($oldPassword, $this->adminUser->password)) {
-                throw new VerifyException('登录密码输入错误', 'old_password');
-            }
-            
-            $this->model->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
-            $this->log()
-                ->filterParams(['old_password', 'password', 'confirm_password'])
-                ->record(self::LOG_UPDATE, '修改个人密码');
-            
-            return $this->success('修改成功');
-        }
-        
-        return $this->display();
     }
 }

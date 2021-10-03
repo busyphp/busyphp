@@ -45,7 +45,8 @@
                         状态
                     </th>
                 </ba:access>
-                <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
+                <th class="text-center" width="100" data-field="default_menu_name" data-searchable="false">默认菜单</th>
+                <th class="text-center" width="120" data-field="operate" data-formatter="@" data-click-to-select="false">
                     操作
                 </th>
             </tr>
@@ -108,7 +109,16 @@
     </script>
 
     <script type="text/html" id="operate">
-        {{if !item.system}}
+        <ba:access value="add">
+            <a class="btn btn-default btn-xs"
+               data-toggle="busy-modal"
+               data-url="{:url('add?id=')}{{item.id}}"
+               data-ok="添加角色"
+               data-form-on-success="@table.reload">
+                <i class="fa fa-plus"></i>
+                添加
+            </a>
+        </ba:access>
         <ba:access value="edit">
             <a class="btn btn-primary btn-xs"
                href="{:url('edit?id=')}{{item.id}}"
@@ -116,6 +126,7 @@
                data-ok="修改角色"
                data-form-on-success="@table.reload"><i class="icon icon-pencil"></i></a>
         </ba:access>
+        {{if !item.system}}
         <ba:access value="delete">
             <a class="btn btn-danger btn-xs"
                href="{:url('delete?id=')}{{item.id}}"
@@ -123,8 +134,6 @@
                data-confirm="确认要删除该角色吗？"
                data-on-success="@table.reload"><i class="icon icon-trash"></i></a>
         </ba:access>
-        {{else}}
-        -
         {{/if}}
     </script>
 </block>

@@ -22,6 +22,7 @@ use BusyPHP\helper\util\Transform;
  * @method static Entity phone($op = null, $value = null) 联系方式
  * @method static Entity qq($op = null, $value = null) QQ号码
  * @method static Entity groupIds($op = null, $value = null) 权限组ID集合，英文逗号分割，左右要有逗号
+ * @method static Entity defaultGroupId($op = null, $value = null) 默认角色组ID
  * @method static Entity lastIp($op = null, $value = null) 最后一次登录IP地址
  * @method static Entity lastTime($op = null, $value = null) 最后一次登录时间
  * @method static Entity loginIp($op = null, $value = null) 本次登录IP
@@ -79,6 +80,12 @@ class AdminUserField extends Field
      * @var string|array
      */
     public $groupIds;
+    
+    /**
+     * 默认角色组ID
+     * @var int
+     */
+    public $defaultGroupId;
     
     /**
      * 最后一次登录IP地址
@@ -184,7 +191,7 @@ class AdminUserField extends Field
      */
     public function setUsername($username)
     {
-        $this->username = trim($username);
+        $this->username = trim((string) $username);
         if (!$this->username) {
             throw new VerifyException('请输入用户名', 'username');
         }
@@ -216,7 +223,7 @@ class AdminUserField extends Field
      */
     public function setEmail($email)
     {
-        $this->email = trim($email);
+        $this->email = trim((string) $email);
         if ($this->email) {
             if (!Regex::email($this->email)) {
                 throw new VerifyException('请输入有效的邮箱地址', 'email');
@@ -235,7 +242,7 @@ class AdminUserField extends Field
      */
     public function setPhone($phone)
     {
-        $this->phone = trim($phone);
+        $this->phone = trim((string) $phone);
         if ($this->phone) {
             if (!Regex::phone($phone)) {
                 throw new VerifyException('请输入有效的手机号', 'phone');
@@ -253,7 +260,7 @@ class AdminUserField extends Field
      */
     public function setQq($qq)
     {
-        $this->qq = trim($qq);
+        $this->qq = trim((string) $qq);
         
         return $this;
     }
@@ -275,9 +282,10 @@ class AdminUserField extends Field
     /**
      * 设置权限ID集合
      * @param array $groupIds
+     * @return $this
      * @throws VerifyException
      */
-    public function setGroupIds(array $groupIds) : void
+    public function setGroupIds(array $groupIds)
     {
         $groupIds = array_map('intval', $groupIds);
         $groupIds = Filter::trimArray($groupIds);
@@ -286,5 +294,20 @@ class AdminUserField extends Field
         }
         
         $this->groupIds = ',' . implode(',', $groupIds) . ',';
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置默认角色组ID
+     * @param int $defaultGroupId
+     * @return $this
+     */
+    public function setDefaultGroupId($defaultGroupId)
+    {
+        $this->defaultGroupId = intval($defaultGroupId);
+        
+        return $this;
     }
 }

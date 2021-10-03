@@ -94,56 +94,56 @@
 | 事件名:240 | 参数:400 | 返回值:100 | 描述 |
 | :- | :- | :--: | - |
 | 核心:title | | |  |
-| treeInit | `api:Tree` - Tree对象 | `void` | 所有事件绑定后触发 |
-| treeLoading | `api:Tree` - Tree对象 | `void` | 加载开始之前触发 |
-| treeDestroy | `api:Tree` - Tree对象 | `void` | 销毁前触发 |
-| treeLoaded | `api:Tree` - Tree对象 | `void` | 首次加载根节点后触发 |
-| treeReady | `api:Tree` - Tree对象 | `void` | 所有节点加载完毕后触发，这里就可以使用方法了 |
-| treeLoadNode | `api:Tree` - Tree对象<br />`node:object` - 正在加载的节点<br />`status:boolean` - 节点是否加载成功 | `void` | 加载节点后触发 |
-| treeLoadAll | `api:Tree` - Tree对象<br />`node:object` - 递归加载的节点 | `void` | 执行`loadAll`方法后触发 |
-| treeRedraw | `api:Tree` - Tree对象<br />`nodes:[string]` - 重绘的节点ID集合 | `void` | 节点重绘后触发 |
-| treeInsert | `api:Tree` - Tree对象<br />`nodes:[string]` - 新增的节点ID集合<br />`parent:string` - 父节点ID | `void` | 新增节点后触发 |
-| treeBeforeOpen | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当一个节点即将被打开时触发 |
-| treeOpenNode | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 打开节点时触发（如果有动画则不触发） |
-| treeAfterOpen | `api:Tree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当节点打开且动画完成时触发 |
-| treeCloseNode | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭时触发（如果有动画则不触发） |
-| treeAfterClose | `api:Tree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭且动画完成时触发 |
-| treeOpenAll | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 执行`openAll`方法后触发 |
-| treeEnableNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 启用节点时触发 |
-| treeDisableNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 节点被禁用时触发 |
-| hide-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 隐藏的节点 | `void` | 节点被隐藏时触发 |
-| show-node.busy.admin.tree| `api:Tree` - Tree对象<br />`node:object` - 显示的节点 | `void` | 节点被显示时触发 |
-| treeHideAll | `api:Tree` - Tree对象<br />`nodes:[string]` - 所有隐藏节点的 ID | `void` | 所有节点被隐身时触发 |
-| treeShowAll | `api:Tree` - Tree对象<br />`nodes:[string]` - 所有显示节点的 ID | `void` | 所有节点被显示时触发 |
-| treeClickNode | `api:Tree` - Tree对象<br />`node:object` - 点击的节点<br />`event: object` - 触发调用的原始事件（如果有）（可能是一个空对象） | `void` | 节点被点击时触发 |
-| treeHoverNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标悬停节点时触发 |
-| treeDeHoverNode | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标移除悬停节点时触发 |
-| treeSelectNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 select-node 的事件（如果有）| `void` | 选择节点时触发 |
-| treeDeSelectNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 deselect-node 的事件（如果有）| `void` | 取消选择节点时触发 |
-| treeChanged | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`action:string` - 导致选择更改的操作<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此更改事件的事件（如果有）| `void` | 选择更改时触发 |
-| treeSelectAll | `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选择所有节点时触发 |
-| treeDeSelectAll | `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选择所有节点时触发 |
-| treeSetState | `api:Tree` - Tree对象 | `void` | 设置树状态后触发 |
-| treeRefresh | `api:Tree` - Tree对象 | `void` | 执行`refresh`方法后触发  |
-| treeRefreshNode | `api:Tree` - Tree对象<br />`node:object` - 刷新的节点<br />`nodes:[string]` - 重新加载的节点的 ID 数组 | `void` | 节点刷新时触发  |
-| treeSetId | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`old:string` - 旧的ID | `void` | 当节点 id 值改变时触发  |
-| treeSetText | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新的值 | `void` | 当节点文本值更改时触发 |
-| treeCreateNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 新节点在父节点中的位置 | `void` | 创建节点时触发 |
-| treeRenameNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新名称<br />`old:string` - 旧名称 | `void` | 重命名节点时触发 |
-| treeDeleteNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID | `void` | 删除节点时触发 |
-| treeMoveNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`old_parent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 移动节点时触发 |
-| treeCopyNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`original:object` - 原始节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`oldParent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 当节点被复制时触发 |
-| treeCut | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行移动时触发 |
-| treeCopy | `api:Tree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行复制时触发 |
-| treePaste | `api:Tree` - Tree对象<br />`parent:string` - 父节点ID<br />`node:[]` - 缓冲区中的节点<br />`mode:string` - 执行的操作 - "copy-node" 或 "move-node" | `void` | 调用 `paste`方法 时触发 |
-| treeClearBuffer | `api:Tree` - Tree对象| `void` | 当复制/剪切缓冲区被清除时触发 |
+| treeInit | `api:jstree` - Tree对象 | `void` | 所有事件绑定后触发 |
+| treeLoading | `api:jstree` - Tree对象 | `void` | 加载开始之前触发 |
+| treeDestroy | `api:jstree` - Tree对象 | `void` | 销毁前触发 |
+| treeLoaded | `api:jstree` - Tree对象 | `void` | 首次加载根节点后触发 |
+| treeReady | `api:jstree` - Tree对象 | `void` | 所有节点加载完毕后触发，这里就可以使用方法了 |
+| treeLoadNode | `api:jstree` - Tree对象<br />`node:object` - 正在加载的节点<br />`status:boolean` - 节点是否加载成功 | `void` | 加载节点后触发 |
+| treeLoadAll | `api:jstree` - Tree对象<br />`node:object` - 递归加载的节点 | `void` | 执行`loadAll`方法后触发 |
+| treeRedraw | `api:jstree` - Tree对象<br />`nodes:[string]` - 重绘的节点ID集合 | `void` | 节点重绘后触发 |
+| treeInsert | `api:jstree` - Tree对象<br />`nodes:[string]` - 新增的节点ID集合<br />`parent:string` - 父节点ID | `void` | 新增节点后触发 |
+| treeBeforeOpen | `api:jstree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当一个节点即将被打开时触发 |
+| treeOpenNode | `api:jstree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 打开节点时触发（如果有动画则不触发） |
+| treeAfterOpen | `api:jstree` - Tree对象<br />`node:object` - 打开的节点 | `void` | 当节点打开且动画完成时触发 |
+| treeCloseNode | `api:jstree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭时触发（如果有动画则不触发） |
+| treeAfterClose | `api:jstree` - Tree对象<br />`node:object` - 关闭的节点 | `void` | 当节点关闭且动画完成时触发 |
+| treeOpenAll | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 执行`openAll`方法后触发 |
+| treeEnableNode | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 启用节点时触发 |
+| treeDisableNode | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 节点被禁用时触发 |
+| treeHideNone | `api:jstree` - Tree对象<br />`node:object` - 隐藏的节点 | `void` | 节点被隐藏时触发 |
+| treeShowNode | `api:jstree` - Tree对象<br />`node:object` - 显示的节点 | `void` | 节点被显示时触发 |
+| treeHideAll | `api:jstree` - Tree对象<br />`nodes:[string]` - 所有隐藏节点的 ID | `void` | 所有节点被隐身时触发 |
+| treeShowAll | `api:jstree` - Tree对象<br />`nodes:[string]` - 所有显示节点的 ID | `void` | 所有节点被显示时触发 |
+| treeClickNode | `api:jstree` - Tree对象<br />`node:object` - 点击的节点<br />`event: object` - 触发调用的原始事件（如果有）（可能是一个空对象） | `void` | 节点被点击时触发 |
+| treeHoverNode | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标悬停节点时触发 |
+| treeDeHoverNode | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 鼠标移除悬停节点时触发 |
+| treeSelectNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 select-node 的事件（如果有）| `void` | 选择节点时触发 |
+| treeDeSelectNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 deselect-node 的事件（如果有）| `void` | 取消选择节点时触发 |
+| treeChanged | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`action:string` - 导致选择更改的操作<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此更改事件的事件（如果有）| `void` | 选择更改时触发 |
+| treeSelectAll | `api:jstree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选择所有节点时触发 |
+| treeDeSelectAll | `api:jstree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选择所有节点时触发 |
+| treeSetState | `api:jstree` - Tree对象 | `void` | 设置树状态后触发 |
+| treeRefresh | `api:jstree` - Tree对象 | `void` | 执行`refresh`方法后触发  |
+| treeRefreshNode | `api:jstree` - Tree对象<br />`node:object` - 刷新的节点<br />`nodes:[string]` - 重新加载的节点的 ID 数组 | `void` | 节点刷新时触发  |
+| treeSetId | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`old:string` - 旧的ID | `void` | 当节点 id 值改变时触发  |
+| treeSetText | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新的值 | `void` | 当节点文本值更改时触发 |
+| treeCreateNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 新节点在父节点中的位置 | `void` | 创建节点时触发 |
+| treeRenameNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`text:string` - 新名称<br />`old:string` - 旧名称 | `void` | 重命名节点时触发 |
+| treeDeleteNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID | `void` | 删除节点时触发 |
+| treeMoveNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`old_parent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 移动节点时触发 |
+| treeCopyNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`original:object` - 原始节点<br />`parent:string` - 父ID<br />`position:number` - 节点在父节点中的位置<br />`oldParent:string` - 节点的旧父节点<br />`oldPosition:number` - 节点的旧位置<br />`isMulti:boolean` - 节点和新的父节点是否属于不同的实例<br />`oldInstance:$.jstree` - 节点来自的实例<br />`newInstance:$.jstree` - 新父级的实例 | `void` | 当节点被复制时触发 |
+| treeCut | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行移动时触发 |
+| treeCopy | `api:jstree` - Tree对象<br />`node:object` - 节点 | `void` | 当节点被添加到缓冲区进行复制时触发 |
+| treePaste | `api:jstree` - Tree对象<br />`parent:string` - 父节点ID<br />`node:[]` - 缓冲区中的节点<br />`mode:string` - 执行的操作 - "copy-node" 或 "move-node" | `void` | 调用 `paste`方法 时触发 |
+| treeClearBuffer | `api:jstree` - Tree对象| `void` | 当复制/剪切缓冲区被清除时触发 |
 | 复选框:title | | |  |
-| treeDisableCheckbox | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
-| treeEnableCheckbox | `api:Tree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
-| treeCheckNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 check-node 的事件（如果有） | `void` | 选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时）|
-| treeUnCheckNode | `api:Tree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 uncheck-node 的事件（如果有） | `void` | 取消选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
-| treeCheckAll | `api:Tree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
-| treeUnCheckAll | `api:Tree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeDisableCheckbox | `api:jstree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
+| treeEnableCheckbox | `api:jstree` - Tree对象 <br /> `node:object` - 节点 | `void` | 当节点的复选框被禁用时触发 |
+| treeCheckNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 check-node 的事件（如果有） | `void` | 选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时）|
+| treeUnCheckNode | `api:jstree` - Tree对象<br />`node:object` - 节点<br />`selected:[string]` - 当前选中的ID集合<br />`event:object` - 触发此 uncheck-node 的事件（如果有） | `void` | 取消选中节点时触发（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeCheckAll | `api:jstree` - Tree对象<br />`selected:[string]` - 当前选中的ID集合 | `void` | 选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
+| treeUnCheckAll | `api:jstree` - Tree对象<br />`beforeSelected:[string]` - 之前选中的ID集合 <br />`selected:[string]` - 当前选中的ID集合 | `void` | 取消选中所有节点时（仅当复选框设置中的 checkboxTieSelection 为 false 时） |
 
 ### 使用示例
 

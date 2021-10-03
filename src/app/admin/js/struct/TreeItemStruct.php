@@ -63,7 +63,7 @@ abstract class TreeItemStruct extends Map
      */
     public function setId($id) : self
     {
-        $this->id = trim($id);
+        $this->id = trim((string) $id);
         
         return $this;
     }
@@ -76,7 +76,7 @@ abstract class TreeItemStruct extends Map
      */
     public function setText($text) : self
     {
-        $this->text = trim($text);
+        $this->text = trim((string) $text);
         
         return $this;
     }
@@ -89,7 +89,7 @@ abstract class TreeItemStruct extends Map
      */
     public function setIcon($icon) : self
     {
-        $this->icon = trim($icon);
+        $this->icon = trim((string) $icon);
         
         return $this;
     }

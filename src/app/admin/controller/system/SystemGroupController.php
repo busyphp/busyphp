@@ -93,16 +93,11 @@ class SystemGroupController extends InsideController
             return $this->ruleList();
         }
         
-        // 默认菜单选项
-        if ($this->pluginSelectPicker) {
-            return $this->menuList();
-        }
-        
         // 显示修改
-        $this->assign('info', ['status' => true]);
+        $this->assign('info', ['status' => true, 'system' => false]);
         $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
             ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name()));
-        $this->assign('group_options', $this->model->getTreeOptions());
+        $this->assign('group_options', $this->model->getTreeOptions($this->get('id/s')));
         
         return $this->display();
     }
@@ -140,11 +135,6 @@ class SystemGroupController extends InsideController
             return $this->ruleList($info);
         }
         
-        // 默认菜单选项
-        if ($this->pluginSelectPicker) {
-            return $this->menuList();
-        }
-        
         // 修改显示
         $this->assign('info', $info);
         $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
@@ -175,30 +165,6 @@ class SystemGroupController extends InsideController
         }
         
         return $idRule;
-    }
-    
-    
-    /**
-     * 顶级菜单列表
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    private function menuList()
-    {
-        $this->pluginSelectPicker->setQueryHandler(function(SystemMenu $model) {
-            // 继承父角色节点
-            $groupId = $this->get('group_id/d');
-            if ($groupId > 1) {
-                $groupInfo = $this->model->getInfo($groupId);
-                $model->whereEntity(SystemMenuField::id('in', $groupInfo->ruleIds));
-            }
-            
-            $model->whereSafe()->orderSort();
-            $model->whereEntity(SystemMenuField::parentPath(''));
-        });
-        
-        return $this->success($this->pluginSelectPicker->build(SystemMenu::init()));
     }
     
     
@@ -234,6 +200,7 @@ class SystemGroupController extends InsideController
             $node->setText($item->name);
             $node->setId($item->hash);
             $node->setIcon($item->icon);
+            $node->setAAttr('data-id', $item->id);
             
             if (!$info) {
                 return;
