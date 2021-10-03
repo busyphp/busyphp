@@ -3,21 +3,21 @@
     <div class="form-horizontal">
         <input type="hidden" value="{$info.id|default=''}" name="id"/>
         <div class="form-group">
-            <label class="col-sm-2 control-label">分类名称</label>
+            <label class="col-sm-2 control-label required">分类名称</label>
             <div class="col-sm-9">
                 <input type="text" class="form-control" name="name" value="{$info.name|default=''}" placeholder="请输入分类名称" required/>
                 <span class="help-block">设置文件分类的名称，如：轮播图</span>
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">分类标识</label>
+            <label class="col-sm-2 control-label required">分类标识</label>
             <div class="col-sm-9">
                 <input type="text" class="form-control" name="var" data-rule-enNumLine="true" value="{$info.var|default=''}" placeholder="请输入分类标识" required <?=is_readonly($info['system'] ?? false);?>/>
                 <span class="help-block">设置分类标识，英文字母+数字+下划线</span>
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">文件类型</label>
+            <label class="col-sm-2 control-label required">文件类型</label>
             <div class="col-sm-9">
                 <eq name="info.system" value="1">
                     <select class="form-control" disabled>

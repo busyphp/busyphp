@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">角色名称</label>
+            <label class="col-sm-2 control-label required">角色名称</label>
             <div class="col-sm-9">
                 <input type="text" class="form-control" name="name" value="{$info.name|default=''}" placeholder="请输入角色名称" required/>
                 <span class="help-block">设置角色名称，如: 管理部</span>
@@ -21,7 +21,7 @@
         </div>
 
         <div class="form-group">
-            <label class="col-sm-2 control-label">角色权限</label>
+            <label class="col-sm-2 control-label required">角色权限</label>
             <div class="col-sm-9">
                 <div class="checkbox-group">
                     <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="groupAddCheckedAll" title="选中全部"/>
@@ -45,7 +45,7 @@
         </div>
 
         <div class="form-group">
-            <label class="col-sm-2 control-label">默认菜单</label>
+            <label class="col-sm-2 control-label required">默认菜单</label>
             <div class="col-sm-9">
                 <select class="form-control" name="default_menu_id" disabled>
                     <option value="0">请先选择角色权限</option>
