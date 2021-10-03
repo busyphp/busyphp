@@ -1,7 +1,7 @@
 <extend name="@admin:page"/>
 <block name="content">
     <style type="text/css">
-        .error-message-page { background: #FFF; font-family: "Helvetica Neue", "Helvetica", "Lucida Grande", "Arial", "Hiragino Sans GB", "Microsoft Yahei", "WenQuanYi Micro Hei", "sans-serif"; color: #333; font-size: 16px; margin: 0;}
+        .error-message-page { background: #FFF; font-size: 16px; margin: -15px; position: relative;}
         .error-message-page p {margin: 0 0 10px;}
         .error-message-page a {color: #428bca;text-decoration: none;}
         .gray-lighter { background-color: #EEE; color: #333}
@@ -57,20 +57,22 @@
                             </svg>
                         </td>
                         <td class="message">
-                            <?php
-                            echo $message; ?>
+                            {$message}
                         </td>
                     </tr>
                 </table>
                 <div class="buttons">
-                    <a class="btn" href="{$jump_url}">返回重试</a>
+                    <a class="btn" href="{$jump_url}">返回上一页</a>
                     <a class="btn" href="{$url.app}">回到首页</a>
                 </div>
             </h1>
         </eq>
-        <p class="jump">页面即将在
+        <p class="jump">
+            页面即将在
             <span id="wait">{$wait_second}</span>
-            秒后自动跳转...<br/><a id="href" href="{$jump_url}">如果您的浏览器没有跳转，您可以点击这里执行手动跳转</a>
+            秒后自动跳转...
+            <br/>
+            <a id="href" href="{$jump_url}">如果您的浏览器没有跳转，您可以点击这里执行手动跳转</a>
         </p>
     </div>
     <script type="text/javascript">

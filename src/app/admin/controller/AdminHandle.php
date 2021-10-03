@@ -29,6 +29,10 @@ use Throwable;
  */
 class AdminHandle extends Handle
 {
+    /** @var int 需要登录 */
+    const CODE_NEED_LOGIN = 3020001;
+    
+    
     /**
      * 处理数据渲染
      * @param Request   $request

@@ -13,6 +13,7 @@ use think\response\View;
 use think\response\Xml;
 use think\route\Url;
 use think\Validate;
+use Throwable;
 
 /**
  * 控制器基础类
@@ -364,11 +365,15 @@ abstract class Controller
      */
     protected function dispatchJump($message, bool $status = true, $jumpUrl = '')
     {
+        if ($message instanceof Throwable) {
+            $message = $message->getMessage();
+        }
+        
         $this->assign('status', $status);
         $this->assign('wait_second', $status ? 1 : 3);
         $this->assign('message', $message);
         if ($status) {
-            $this->assign('jump_url', $jumpUrl ?: ($this->request->server('HTTP_REFERER') ?: $this->request->getAppUrl()));
+            $this->assign('jump_url', $jumpUrl ?: $this->request->getRedirectUrl($this->request->getAppUrl()));
             $template = $this->app->config->get('app.success_tmpl');
         } else {
             $this->assign('jump_url', $jumpUrl ?: 'javascript:history.back(-1);');

@@ -80,6 +80,10 @@
     </div>
 
     <script>
+        if (self !== top) {
+            parent.busyAdmin.route.show('{:url("admin_login")}');
+        }
+        
         busyAdmin.data.onLoginError = function () {
             $('[data-toggle="busy-change-verify"]').trigger('click');
         };

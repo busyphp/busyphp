@@ -192,7 +192,7 @@ abstract class AdminController extends Controller
             $redirectUrl = url('admin_login', [$this->request->getVarRedirectUrl() => $redirectUrl]);
             
             if ($this->isAjax()) {
-                $result = $this->error($message, $redirectUrl);
+                $result = $this->error($message, $redirectUrl, AdminHandle::CODE_NEED_LOGIN);
             } else {
                 $result = $this->redirect($redirectUrl);
             }
@@ -286,12 +286,8 @@ abstract class AdminController extends Controller
      */
     protected function error($message, $jumpUrl = '', int $code = 0)
     {
-        if ($this->isAjax() && !AdminHandle::isSinglePage()) {
+        if ($this->isAjax()) {
             return AdminHandle::restResponseError($message, $jumpUrl, $code);
-        }
-        
-        if ($message instanceof Throwable) {
-            $message = $message->getMessage();
         }
         
         return parent::error($message, $jumpUrl);
