@@ -113,6 +113,7 @@ class MessageController extends InsideController
         $updateParams->setUser($this->adminUser);
         $updateParams->setId($this->get('id/d'));
         MessageNoticeSubscribe::triggerRead($updateParams);
+        $this->log()->record(self::LOG_UPDATE, '读取通知');
         
         return $this->success();
     }
@@ -126,6 +127,7 @@ class MessageController extends InsideController
         $params = new MessageParams();
         $params->setUser($this->adminUser);
         MessageNoticeSubscribe::triggerAllRead($params);
+        $this->log()->record(self::LOG_UPDATE, '全部已读通知');
         
         return $this->success('操作成功');
     }
@@ -140,6 +142,7 @@ class MessageController extends InsideController
         $updateParams->setUser($this->adminUser);
         $updateParams->setId($this->get('id/d'));
         MessageNoticeSubscribe::triggerRead($updateParams);
+        $this->log()->record(self::LOG_DELETE, '删除通知');
         
         return $this->success('删除成功');
     }
@@ -153,6 +156,7 @@ class MessageController extends InsideController
         $params = new MessageParams();
         $params->setUser($this->adminUser);
         MessageNoticeSubscribe::triggerClear($params);
+        $this->log()->record(self::LOG_DELETE, '清空通知');
         
         return $this->success('清空成功');
     }
@@ -190,6 +194,7 @@ class MessageController extends InsideController
         $updateParams->setId($this->get('id/d'));
         
         MessageAgencySubscribe::triggerRead($updateParams);
+        $this->log()->record(self::LOG_UPDATE, '读取待办');
         
         return $this->success();
     }

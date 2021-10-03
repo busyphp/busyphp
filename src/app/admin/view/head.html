@@ -21,13 +21,10 @@
         version    : (new Date()).getTime(),
         configs    : {
             app    : {
-                cache             : false,
-                cacheLength       : 50,
-                scrollCacheLength : 50,
-                errorImgUrl       : '/assets/data/images/no_image.jpeg',
-                url               : '{$url.app}',
-                navSingleHold     : false,
-                pageTitleSuffix   : '{$system.page_title_suffix}',
+                errorImgUrl     : '/assets/data/images/no_image.jpeg',
+                url             : '{$url.app}',
+                navSingleHold   : false,
+                pageTitleSuffix : '{$system.page_title_suffix}',
             },
             upload : {
                 configUrl : '{:url("Common.File/config?noext")}'
