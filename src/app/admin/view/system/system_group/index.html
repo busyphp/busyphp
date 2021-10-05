@@ -57,24 +57,13 @@
     <div class="hide">
         <div id="tableToolbar">
             <ba:access value="add">
-                <a class="btn btn-primary"
+                <a class="btn btn-success"
                    data-toggle="busy-modal"
                    data-url="{:url('add')}"
                    data-ok="添加角色"
                    data-form-on-success="@table.reload">
                     <i class="fa fa-plus"></i>
                     添加
-                </a>
-            </ba:access>
-            <ba:access value="sort">
-                <a class="btn btn-secondary"
-                   data-url="{:url('sort')}"
-                   data-confirm="确认要排序吗？"
-                   data-method="post"
-                   data-field="id,sort"
-                   data-on-success="@table.reload">
-                    <i class="fa fa-sort"></i>
-                    排序
                 </a>
             </ba:access>
             <ba:access value="delete">
@@ -87,6 +76,17 @@
                    data-on-success="@table.reload">
                     <i class="fa fa-trash"></i>
                     删除
+                </a>
+            </ba:access>
+            <ba:access value="sort">
+                <a class="btn btn-default"
+                   data-url="{:url('sort')}"
+                   data-confirm="确认要排序吗？"
+                   data-method="post"
+                   data-field="id,sort"
+                   data-on-success="@table.reload">
+                    <i class="fa fa-sort"></i>
+                    排序
                 </a>
             </ba:access>
         </div>
@@ -120,7 +120,7 @@
             </a>
         </ba:access>
         <ba:access value="edit">
-            <a class="btn btn-primary btn-xs"
+            <a class="btn btn-success btn-xs"
                href="{:url('edit?id=')}{{item.id}}"
                data-toggle="busy-modal"
                data-ok="修改角色"

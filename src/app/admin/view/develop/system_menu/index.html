@@ -39,7 +39,7 @@
 
     <div class="hide">
         <div id="tableToolbar">
-             <a class="btn btn-primary"
+             <a class="btn btn-success"
                 href="javascript:void(0)"
                 data-toggle="busy-modal"
                 data-size="lg"
@@ -48,17 +48,6 @@
                 data-form-on-success="@table.reload|@app.loadInfo">
                 <i class="fa fa-plus"></i>
                  添加
-            </a>
-
-            <a class="btn btn-secondary"
-               href="javascript:void(0)"
-               data-url="{:url('set_sort')}"
-               data-field="id,sort"
-               data-method="post"
-               data-on-success="@table.reload|@app.loadInfo"
-               data-confirm="确认要排序吗？">
-                <i class="fa fa-sort"></i>
-                排序
             </a>
 
             <a class="btn btn-danger"
@@ -70,6 +59,17 @@
                data-on-success="@table.reload">
                 <i class="fa fa-trash"></i>
                 删除
+            </a>
+
+            <a class="btn btn-default"
+               href="javascript:void(0)"
+               data-url="{:url('set_sort')}"
+               data-field="id,sort"
+               data-method="post"
+               data-on-success="@table.reload|@app.loadInfo"
+               data-confirm="确认要排序吗？">
+                <i class="fa fa-sort"></i>
+                排序
             </a>
         </div>
     </div>
@@ -117,7 +117,7 @@
             添加
         </a>
 
-        <a class="btn btn-primary btn-xs"
+        <a class="btn btn-success btn-xs"
            data-url="{:url('edit?id=')}{{item.id}}"
            data-toggle="busy-modal"
            data-size="lg"
