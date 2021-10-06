@@ -176,7 +176,7 @@ class AdminUserInfo extends AdminUserField
             $this->defaultGroupId = end($this->groupIds);
         }
         
-        $this->defaultGroup = $this->groupList[$this->defaultGroupId];
-        $this->defaultMenu  = $this->defaultGroup->defaultMenu->path;
+        $this->defaultGroup = $this->groupList[$this->defaultGroupId] ?? null;
+        $this->defaultMenu  = $this->defaultGroup->defaultMenu->path ?? '';
     }
 }

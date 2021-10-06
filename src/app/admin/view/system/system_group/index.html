@@ -105,7 +105,11 @@
     </script>
 
     <script type="text/html" id="status">
+        {{if !item.system}}
         <input type="checkbox" class="switch input-xs primary" data-toggle="busy-checkbox" data-url="{:url('change_status?id=')}{{item.id}}" title="启用,禁用" {{value ? 'checked': ''}}/>
+        {{else}}
+        -
+        {{/if}}
     </script>
 
     <script type="text/html" id="operate">

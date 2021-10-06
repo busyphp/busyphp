@@ -101,6 +101,11 @@ class AdminGroup extends Model
         }
         
         $this->checkData($update);
+        $info = $this->getInfo($update->id);
+        if ($info->system && !$update->status) {
+            throw new VerifyException('无法禁用系统权限');
+        }
+        
         $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
     }
     
@@ -251,6 +256,11 @@ class AdminGroup extends Model
      */
     public function changeStatus($id, bool $status)
     {
+        $info = $this->getInfo($id);
+        if ($info->system) {
+            throw new VerifyException('无法禁用系统权限');
+        }
+        
         $this->whereEntity(AdminGroupField::id($id))->setField(AdminGroupField::status(), $status ? 1 : 0);
     }
     
