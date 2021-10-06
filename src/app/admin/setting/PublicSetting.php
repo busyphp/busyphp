@@ -74,6 +74,6 @@ class PublicSetting extends Setting
     {
         $year = date('Y');
         
-        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
+        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP' target='_blank'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
     }
 }
