@@ -135,15 +135,21 @@ class SystemUserController extends InsideController
     public function edit()
     {
         if ($this->isPost()) {
+            $id      = $this->post('id/d');
+            $checked = $this->post('checked/b');
+            if ($id == $this->adminUserId && !$checked) {
+                throw new VerifyException('不能禁用自己');
+            }
+            
             $update = AdminUserField::init();
-            $update->setId($this->post('id/d'));
+            $update->setId($id);
             $update->setGroupIds($this->post('group_ids/a'));
             $update->setDefaultGroupId($this->post('default_group_id/d'));
             $update->setUsername($this->post('username/s', 'trim'));
             $update->setPhone($this->post('phone/s', 'trim'));
             $update->setEmail($this->post('email/s', 'trim'));
             $update->setQq($this->post('qq/s', 'trim'));
-            $update->setChecked($this->post('checked/b'));
+            $update->setChecked($checked);
             $this->model->updateData($update);
             $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
@@ -217,8 +223,13 @@ class SystemUserController extends InsideController
      */
     public function change_checked()
     {
+        $id = $this->get('id/d');
+        if ($id == $this->adminUserId) {
+            throw new VerifyException('不能禁用自己');
+        }
+        
         $status = $this->get('status/b');
-        $this->model->changeChecked($this->get('id/d'), $status);
+        $this->model->changeChecked($id, $status);
         $this->log()->record(self::LOG_UPDATE, '启用/禁用管理员');
         
         return $this->success($status ? '启用成功' : '禁用成功');
