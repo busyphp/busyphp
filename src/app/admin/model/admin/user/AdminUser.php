@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
+use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\util\Regex;
 use BusyPHP\model;
@@ -33,6 +34,8 @@ class AdminUser extends Model
     const COOKIE_AUTH_KEY      = 'admin_auth_key';
     
     const COOKIE_USER_ID       = 'admin_user_id';
+    
+    const COOKIE_USER_THEME    = 'admin_user_theme';
     
     const SESSION_OPERATE_TIME = 'admin_operate_time';
     
@@ -102,6 +105,7 @@ class AdminUser extends Model
             $insert->createTime = time();
             $insert->updateTime = time();
             $insert->password   = password_hash($insert->password, PASSWORD_DEFAULT);
+            $insert->theme      = '';
             
             $id = $this->addData($insert);
             
@@ -410,8 +414,9 @@ class AdminUser extends Model
             $expire = 86400 * $saveLoginDay;
         }
         
-        Cookie::set(self::COOKIE_AUTH_KEY, $cookieAuthKey, $expire);
-        Cookie::set(self::COOKIE_USER_ID, $cookieUserId, $expire);
+        Cookie::set(self::COOKIE_AUTH_KEY, (string) $cookieAuthKey, $expire);
+        Cookie::set(self::COOKIE_USER_ID, (string) $cookieUserId, 86400 * 365);
+        $this->saveThemeToCookie($userInfo->id, $userInfo->theme);
         $this->setOperateTime();
         
         return $userInfo;
@@ -445,6 +450,58 @@ class AdminUser extends Model
     
     
     /**
+     * 设置主题
+     * @param int   $id
+     * @param array $theme
+     * @throws Exception
+     */
+    public function setTheme($id, array $theme)
+    {
+        $update = AdminUserField::init();
+        $update->setId($id);
+        $update->theme = json_encode($theme, JSON_UNESCAPED_UNICODE);
+        $this->updateData($update);
+        $this->saveThemeToCookie($id, $update->theme);
+    }
+    
+    
+    /**
+     * 保存主题到cookie
+     * @param $id
+     * @param $theme
+     */
+    protected function saveThemeToCookie($id, $theme)
+    {
+        Cookie::set(self::COOKIE_USER_THEME . $id, is_array($theme) ? json_encode($theme, JSON_UNESCAPED_UNICODE) : $theme, 86400 * 365);
+    }
+    
+    
+    /**
+     * 获取主题
+     * @param AdminUserInfo $userInfo
+     * @return array
+     */
+    public function getTheme(?AdminUserInfo $userInfo = null)
+    {
+        if ($userInfo) {
+            $theme = $userInfo->theme;
+        } else {
+            $userId = Cookie::get(self::COOKIE_USER_ID);
+            $theme  = Cookie::get(self::COOKIE_USER_THEME . $userId);
+            $theme  = json_decode((string) $theme, true) ?: [];
+        }
+        
+        $config                   = App::getInstance()->config;
+        $theme['skin']            = trim($theme['skin'] ?? '');
+        $theme['skin']            = $theme['skin'] ?: $config->get('app.theme_skin', 'default-light');
+        $theme['nav_mode']        = (isset($theme['nav_mode']) ? intval($theme['nav_mode']) : $config->get('app.theme_nav_mode', 0)) > 0;
+        $theme['nav_single_hold'] = (isset($theme['nav_single_hold']) ? intval($theme['nav_single_hold']) : $config->get('app.theme_nav_single_hold', 0)) > 0;
+        
+        return $theme;
+    }
+    
+    
+    /**
      * 解锁
      * @param $id
      * @throws Exception
@@ -466,7 +523,6 @@ class AdminUser extends Model
     public static function outLogin()
     {
         Cookie::delete(self::COOKIE_AUTH_KEY);
-        Cookie::delete(self::COOKIE_USER_ID);
     }
     
     

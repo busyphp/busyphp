@@ -36,6 +36,7 @@ use BusyPHP\helper\util\Transform;
  * @method static Entity errorTotal($op = null, $value = null) 密码错误次数统计
  * @method static Entity errorTime($op = null, $value = null) 密码错误开始时间
  * @method static Entity errorRelease($op = null, $value = null) 密码错误锁定释放时间
+ * @method static Entity theme($op = null, $value = null) 主题配置
  */
 class AdminUserField extends Field
 {
@@ -164,6 +165,12 @@ class AdminUserField extends Field
      * @var int
      */
     public $errorRelease;
+    
+    /**
+     * 主题配置
+     * @var string
+     */
+    public $theme;
     
     
     /**

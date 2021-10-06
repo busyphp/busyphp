@@ -28,6 +28,8 @@ use think\db\exception\DbException;
  * @method static Entity formatErrorReleaseTime($op = null, $value = null) 格式化的锁定释放时间
  * @method static Entity defaultGroup($op = null, $value = null) 默认角色组信息
  * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
+ * @method static Entity skin($op = null, $value = null) 皮肤
+ * @property array|string $theme
  */
 class AdminUserInfo extends AdminUserField
 {
@@ -110,6 +112,12 @@ class AdminUserInfo extends AdminUserField
     public $defaultMenu;
     
     /**
+     * 皮肤
+     * @var string
+     */
+    public $skin;
+    
+    /**
      * @var AdminGroupInfo[]
      */
     private static $_groupList;
@@ -125,6 +133,8 @@ class AdminUserInfo extends AdminUserField
             static::$_groupList = AdminGroup::init()->getIdList();
         }
         
+        $this->theme              = json_decode($this->theme, true) ?: [];
+        $this->skin               = $this->theme['skin'] ?? '';
         $this->formatCreateTime   = Transform::date($this->createTime);
         $this->formatUpdateTime   = Transform::date($this->updateTime);
         $this->formatLastTime     = $this->lastTime > 0 ? Transform::date($this->lastTime) : '';

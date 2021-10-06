@@ -1,0 +1,108 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="form-group no-margin-bottom">
+        <label>配色方案</label>
+        <div class="busy-theme-list clearfix">
+            <foreach name="list" item="vo">
+                <div class="theme-item">
+                    <input type="radio" id="theme_{$vo.value}" name="data[skin]" value="{$vo.value}" <?=is_checked(($info['skin'] ?? 'default') == $vo['value'])?>/>
+                    <label for="theme_{$vo.value}">
+                        <div class="theme-head" style="background-color: {$vo.header}">
+                            <div class="theme-brand" style="background-color: {$vo.brand}"></div>
+                        </div>
+                        <div class="theme-body" style="background-color: {$vo.content}">
+                            <div class="theme-nav" style="background-color: {$vo.nav}"></div>
+                        </div>
+                    </label>
+                    <span class="theme-name">{$vo.name}</span>
+                </div>
+            </foreach>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>导航栏模式</label>
+        <div class="radio no-margin-bottom">
+            <input type="radio" name="data[nav_mode]" value="0" title="默认" data-toggle="busy-radio" <?=is_checked(($info['nav_mode'] ?? 0) == 0)?>/>
+            <input type="radio" name="data[nav_mode]" value="1" title="迷你" data-toggle="busy-radio" <?=is_checked(($info['nav_mode'] ?? 0) == 1)?>/>
+        </div>
+        <div class="help-block no-margin-bottom">设置导航栏模式：<br/><span class="badge">默认</span>
+            展示文字、图标、以及子菜单<br/><span class="badge">迷你</span> 默认只展示菜单图标，鼠标移动至导航栏才会全部展示文字、图标、以及子菜单
+        </div>
+    </div>
+    <div class="form-group no-margin-bottom">
+        <label>菜单展开模式</label>
+        <div class="radio no-margin-bottom">
+            <input type="radio" name="data[nav_single_hold]" value="0" title="默认" data-toggle="busy-radio" <?=is_checked(($info['nav_single_hold'] ?? 0) == 0)?>/>
+            <input type="radio" name="data[nav_single_hold]" value="1" title="独立" data-toggle="busy-radio" <?=is_checked(($info['nav_single_hold'] ?? 0) == 1)?>/>
+        </div>
+        <div class="help-block no-margin-bottom">设置子菜单展开方式：<br/><span class="badge">默认</span>
+            同级别子菜单可以同时展开或关闭<br/><span class="badge">独立</span> 同级别子菜单只有一个菜单展开，其它菜单关闭
+        </div>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.ready(function () {
+            var $themeModal = $('[data-busy-id="theme-setting"]');
+            var $themeList  = $('.busy-theme-list');
+            var isSuccess   = false;
+            var createTheme = function ($el, value) {
+                $el.find('[data-busy-id="theme-css"]').remove();
+                $el.find('body').prepend('<link href="{$skin.themes}' + value + '.css?v={$skin.version}" type="text/css" rel="stylesheet" data-busy-id="theme-css"/>');
+            };
+
+            var initTheme = function (value) {
+                busyAdmin.app.$contentIframes.find('iframe').each(function () {
+                    createTheme($(this).contents(), value);
+                });
+                createTheme($(document), value);
+            };
+
+            var initNavMode = function (isMini) {
+                if (isMini) {
+                    busyAdmin.app.setToMiniNav();
+                } else {
+                    busyAdmin.app.setToDefaultNav();
+                }
+            };
+
+            var initNavHold = function (isHold) {
+                busyAdmin.app.options.navSingleHold = isHold;
+            };
+
+            $themeList.find('input').on('change', function () {
+                initTheme($(this).val());
+            });
+
+            busyAdmin.data.themeClose   = function () {
+                if (isSuccess) {
+                    isSuccess = false;
+                    return;
+                }
+
+                initTheme("{$info.skin}");
+                initNavMode(<?=$info['nav_mode'];?>);
+                initNavHold(<?=$info['nav_single_hold'];?>);
+            };
+            busyAdmin.data.themeSuccess = function () {
+                isSuccess = true;
+                $themeModal.busyAdminModal('hide');
+            };
+
+            $('[name="data[nav_mode]"]').on('change click', function () {
+                if ($(this).prop('checked')) {
+                    initNavMode(busyAdmin.helper.int($(this).val()) > 0);
+                }
+            });
+            initNavMode(<?=$info['nav_mode'];?>);
+
+            $('[name="data[nav_single_hold]"]').on('change click', function () {
+                if ($(this).prop('checked')) {
+                    initNavHold(busyAdmin.helper.int($(this).val()) > 0);
+                }
+            });
+
+            initNavHold(<?=$info['nav_single_hold'];?>);
+        });
+    </script>
+</block>

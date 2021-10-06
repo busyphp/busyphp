@@ -7,6 +7,7 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Arr;
 use Exception;
 use think\Response;
 
@@ -39,6 +40,7 @@ class UserController extends InsideController
         }
         
         $this->assign('info', $this->adminUser);
+        $this->setPageTitle('修改个人资料');
         
         return $this->display();
     }
@@ -69,6 +71,50 @@ class UserController extends InsideController
             
             return $this->success('修改成功');
         }
+        $this->setPageTitle('修改个人密码');
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 主题设置
+     * @return Response
+     * @throws Exception
+     */
+    public function theme()
+    {
+        if ($this->isPost()) {
+            AdminUser::init()
+                ->whereEntity(AdminUserField::id($this->adminUserId))
+                ->setTheme($this->adminUserId, $this->post('data/a'));
+            $this->log()->record(self::LOG_UPDATE, '主题设置');
+            
+            return $this->success('修改成功');
+        }
+        
+        $list = [];
+        foreach (glob($this->app->getPublicPath('assets/admin/themes/*.*')) as $i => $cssFile) {
+            if (!is_file($cssFile)) {
+                continue;
+            }
+            $content = file_get_contents($cssFile);
+            if (!preg_match('/\/\*\*!!config(.*?)!!\*\//is', $content, $match)) {
+                continue;
+            }
+            
+            $config = json_decode($match[1] ?? '{}', true) ?: [];
+            if (!isset($config['name'])) {
+                continue;
+            }
+            $config['value'] = pathinfo($cssFile, PATHINFO_FILENAME);
+            $config['sort']  = $config['sort'] ?? (1000 + $i);
+            $list[]          = $config;
+        }
+        $list = Arr::listSortBy($list, 'sort', Arr::ORDER_BY_ASC);
+        $this->assign('list', $list);
+        $this->assign('info', AdminUser::init()->getTheme($this->adminUser));
+        $this->setPageTitle('主题设置');
         
         return $this->display();
     }

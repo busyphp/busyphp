@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\AdminSetting;
@@ -143,26 +144,55 @@ class AdminHandle extends Handle
             $pageTitle = $currentMenu->name;
         }
         
+        
+        // 样式路径配置
+        $theme        = AdminUser::init()->getTheme($adminUser);
+        $skinRoot     = $request->getAssetsUrl() . 'admin/';
+        $data['skin'] = [
+            'root'    => $skinRoot,
+            'css'     => $skinRoot . 'css/',
+            'js'      => $skinRoot . 'js/',
+            'images'  => $skinRoot . 'images/',
+            'lib'     => $skinRoot . 'lib/',
+            'themes'  => $skinRoot . 'themes/',
+            'theme'   => $skinRoot . "themes/{$theme['skin']}.css",
+            'version' => time(),
+        ];
+        
         // 系统信息
-        $data['system'] = [
+        $pageTitleSuffix = ' - ' . AdminSetting::init()->getTitle();
+        $data['system']  = [
             'title'             => AdminSetting::init()->getTitle(),
             'page_title'        => $pageTitle,
-            'page_title_suffix' => ' - ' . AdminSetting::init()->getTitle(),
+            'page_title_suffix' => $pageTitleSuffix,
             'favicon'           => PublicSetting::init()->getFavicon(),
             'logo_icon'         => AdminSetting::init()->getLogoIcon(),
             'logo_horizontal'   => AdminSetting::init()->getLogoHorizontal(),
             'user'              => $adminUser ?? [],
-            'breadcrumb'        => $breadcrumb
-        ];
-        
-        // 样式路径配置
-        $skinRoot     = $request->getAssetsUrl() . 'admin/';
-        $data['skin'] = [
-            'root'   => $skinRoot,
-            'css'    => $skinRoot . 'css/',
-            'js'     => $skinRoot . 'js/',
-            'images' => $skinRoot . 'images/',
-            'lib'    => $skinRoot . 'lib/'
+            'breadcrumb'        => $breadcrumb,
+            'frame_config'      => json_encode([
+                'root'       => $data['url']['app'],
+                'moduleRoot' => $data['skin']['lib'],
+                'version'    => $data['skin']['version'],
+                'configs'    => [
+                    'app'    => [
+                        'errorImgUrl'     => "/assets/data/images/no_image.jpeg?v={$data['skin']['version']}",
+                        'url'             => $data['url']['app'],
+                        'navSingleHold'   => $theme['nav_single_hold'],
+                        'navMode'         => $theme['nav_mode'],
+                        'pageTitleSuffix' => $pageTitleSuffix
+                    ],
+                    'upload' => [
+                        'configUrl' => (string) url('Common.File/config?noext'),
+                    ],
+                    'editor' => [
+                        'ueConfigUrl' => (string) url('Common.Ueditor/runtime?js=1&noext'),
+                    ],
+                    'topBar' => [
+                        'url' => (string) url('Common.Message/index'),
+                    ]
+                ]
+            ], JSON_UNESCAPED_UNICODE)
         ];
         
         return $data;

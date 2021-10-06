@@ -52,10 +52,23 @@ class IndexController extends InsideController
                     ]
                 ];
                 $dropList[] = [
+                    'text' => '主题设置',
+                    'icon' => 'bicon bicon-theme',
+                    'attr' => [
+                        'data-toggle'          => 'busy-modal',
+                        'data-url'             => (string) url('Common.User/theme'),
+                        'data-on-hide'         => 'busyAdmin.data.themeClose',
+                        'data-form-on-success' => 'busyAdmin.data.themeSuccess',
+                        'data-busy-id'         => 'theme-setting',
+                    ]
+                ];
+                $dropList[] = [
                     'type' => 'divider'
                 ];
                 
-                if (AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_clear')) {
+                $hasCacheClear  = AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_clear');
+                $hasCacheCreate = AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_create');
+                if ($hasCacheClear) {
                     $dropList[] = [
                         'text' => '清理缓存',
                         'icon' => 'bicon bicon-clear',
@@ -67,7 +80,7 @@ class IndexController extends InsideController
                     ];
                 }
                 
-                if (AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_create')) {
+                if ($hasCacheCreate) {
                     $dropList[] = [
                         'text' => '生成缓存',
                         'icon' => 'bicon bicon-re-create',
@@ -76,6 +89,12 @@ class IndexController extends InsideController
                             'data-url'     => (string) url('system_manager/cache_create'),
                             'data-confirm' => '确认要生成缓存吗？<br /><span class="text-success">生成缓存后系统运行速度将会提升</span>',
                         ]
+                    ];
+                }
+                
+                if ($hasCacheCreate || $hasCacheClear) {
+                    $dropList[] = [
+                        'type' => 'divider'
                     ];
                 }
                 

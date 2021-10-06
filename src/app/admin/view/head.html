@@ -3,38 +3,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
 <title data-title="{$system.page_title}">{$system.page_title}{$system.page_title_suffix}</title>
 <notempty name="system.favicon">
-    <link rel="shortcut icon" href="{$system.favicon}" type="image/x-icon"/>
-    <link rel="icon" sizes="any" mask href="{$system.favicon}">
+    <link rel="shortcut icon" href="{$system.favicon}?v={$skin.version}" type="image/x-icon"/>
+    <link rel="icon" sizes="any" mask href="{$system.favicon}?v={$skin.version}">
 </notempty>
-<css href="{$skin.css}admin.css?{:time()}"/>
+<link type="text/css" rel="stylesheet" href="{$skin.css}admin.css?v={$skin.version}"/>
+<link type="text/css" rel="stylesheet" href="{$skin.theme}?v={$skin.version}" data-busy-id="theme-css"/>
 <!--[if lt IE 9]>
-<js href="{$skin.lib}bootstrap/js/respond.min.js"/>
+<script type="text/javascript" src="{$skin.lib}bootstrap/js/respond.min.js?v={$skin.version}"></script>
 <![endif]-->
 <!--[if lt IE 10]>
-<js href="{$skin.lib}history/history.min.js"/>
+<script type="text/javascript" src="{$skin.lib}history/history.min.js?v={$skin.version}"></script>
 <![endif]-->
-<script type="text/javascript" src="{$skin.js}admin.js?{:time()}"></script>
-<script>
-    busyAdmin.init({
-        root       : '{$url.app}',
-        moduleRoot : '{$skin.lib}',
-        version    : (new Date()).getTime(),
-        configs    : {
-            app    : {
-                errorImgUrl     : '/assets/data/images/no_image.jpeg',
-                url             : '{$url.app}',
-                navSingleHold   : false,
-                pageTitleSuffix : '{$system.page_title_suffix}',
-            },
-            upload : {
-                configUrl : '{:url("Common.File/config?noext")}'
-            },
-            editor : {
-                ueConfigUrl : '{:url("Common.Ueditor/runtime?js=1&noext")}'
-            },
-            topBar : {
-                url : '{:url("Common.Message/index")}'
-            }
-        }
-    });
-</script>
+<script type="text/javascript" src="{$skin.js}admin.js?v={$skin.version}"></script>
+<script>busyAdmin.init(<?=$system['frame_config'];?>);</script>
