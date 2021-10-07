@@ -12,11 +12,14 @@ use BusyPHP\Service;
  * @version $Id: 2020/6/4 下午6:33 下午 InsideController.php $
  * @internal
  */
-class InsideController extends AdminCurdController
+class InsideController extends AdminController
 {
-    protected function init($template)
+    /**
+     * @inheritDoc
+     */
+    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
-        return $this->parseTemplate(parent::init($template));
+        return parent::display($this->parseTemplate($template), $charset, $contentType, $content);
     }
     
     

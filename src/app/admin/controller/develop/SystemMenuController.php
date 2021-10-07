@@ -187,44 +187,31 @@ class SystemMenuController extends InsideController
     
     /**
      * 排序
+     * @throws DbException
      */
-    public function set_sort()
+    public function sort()
     {
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $data = [];
-            foreach ($params as $key => $value) {
-                $data[] = [
-                    SystemMenuField::id()->field()   => $key,
-                    SystemMenuField::sort()->field() => $value
-                ];
-            }
-            $this->model->saveAll($data);
-            $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
-            $this->updateCache();
-            
-            return '排序成功';
-        });
+        $this->model->setSort($this->param('sort/list'));
+        $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
+        $this->updateCache();
         
-        return $this->batch('sort');
+        return $this->success('排序成功');
     }
     
     
     /**
      * 删除
+     * @throws Exception
      */
     public function delete()
     {
-        $this->bind(self::CALL_BATCH_EACH, function($id) {
+        foreach ($this->param('id/list/请选择要删除的菜单') as $id) {
             $this->model->deleteInfo($id);
-        });
+        }
         
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log()->record(self::LOG_DELETE, '删除系统菜单');
-            $this->updateCache();
-            
-            return '删除成功';
-        });
+        $this->log()->record(self::LOG_DELETE, '删除系统菜单');
+        $this->updateCache();
         
-        return $this->batch();
+        return $this->success('删除成功');
     }
 }

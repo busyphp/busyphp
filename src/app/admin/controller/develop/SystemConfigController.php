@@ -106,18 +106,16 @@ class SystemConfigController extends InsideController
     
     /**
      * 删除
+     * @throws Exception
      */
     public function delete()
     {
-        $this->bind(self::CALL_BATCH_EACH, function($id) {
+        foreach ($this->param('id/list/请选择要删除的配置', 'intval') as $id) {
             $this->model->deleteInfo($id);
-        });
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log()->record(self::LOG_DELETE, '删除系统配置');
-            
-            return '删除成功';
-        });
+        }
         
-        return $this->batch();
+        $this->log()->record(self::LOG_DELETE, '删除系统配置');
+        
+        return $this->success('删除成功');
     }
 } 

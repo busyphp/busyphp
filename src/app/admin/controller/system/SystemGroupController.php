@@ -14,6 +14,7 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Map;
+use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -223,20 +224,17 @@ class SystemGroupController extends InsideController
     
     /**
      * 删除管理角色
+     * @throws Exception
      */
     public function delete()
     {
-        $this->bind(self::CALL_BATCH_EACH, function($id) {
+        foreach ($this->param('id/list/请选择要删除的角色') as $id) {
             $this->model->deleteInfo($id);
-        });
+        }
         
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log()->record(self::LOG_DELETE, '删除管理角色');
-            
-            return '删除成功';
-        });
+        $this->log()->record(self::LOG_DELETE, '删除管理角色');
         
-        return $this->batch();
+        return $this->success('删除成功');
     }
     
     
@@ -256,24 +254,14 @@ class SystemGroupController extends InsideController
     
     /**
      * 排序
+     * @throws DbException
      */
     public function sort()
     {
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $data = [];
-            foreach ($params as $key => $value) {
-                $data[] = [
-                    AdminGroupField::id()->field()   => $key,
-                    AdminGroupField::sort()->field() => $value
-                ];
-            }
-            $this->model->saveAll($data);
-            $this->log()->record(self::LOG_UPDATE, '排序管理角色');
-            $this->updateCache();
-            
-            return '排序成功';
-        });
+        $this->model->setSort($this->param('sort/list'));
+        $this->log()->record(self::LOG_UPDATE, '排序管理角色');
+        $this->updateCache();
         
-        return $this->batch('sort');
+        return $this->success('排序成功');
     }
 }

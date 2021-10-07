@@ -113,10 +113,10 @@ abstract class Controller
      * @param string|array $validate 验证器名或者验证规则数组
      * @param array        $message 提示信息
      * @param bool         $batch 是否批量验证
-     * @return array|string|true
+     * @return bool
      * @throws ValidateException
      */
-    protected function validate(array $data, $validate, array $message = [], bool $batch = false)
+    protected function validate(array $data, $validate, array $message = [], bool $batch = false) : bool
     {
         if (is_array($validate)) {
             $v = new Validate();

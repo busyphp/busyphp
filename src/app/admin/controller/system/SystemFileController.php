@@ -96,18 +96,17 @@ class SystemFileController extends InsideController
     
     /**
      * 删除附件
+     * @return Response
+     * @throws Exception
      */
     public function delete()
     {
-        $this->bind(self::CALL_BATCH_EACH, function($id) {
+        foreach ($this->param('id/list/请选择要删除的文件', 'intval') as $id) {
             $this->model->deleteInfo($id);
-        });
-        $this->bind(self::CALL_BATCH_EACH_AFTER, function($params) {
-            $this->log()->record(self::LOG_DELETE, '删除文件');
-            
-            return '删除成功';
-        });
+        }
         
-        return $this->batch();
+        $this->log()->record(self::LOG_DELETE, '删除文件');
+        
+        return $this->success('删除成功');
     }
 }

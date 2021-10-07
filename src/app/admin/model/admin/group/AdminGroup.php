@@ -171,6 +171,27 @@ class AdminGroup extends Model
     
     
     /**
+     * 设置排序
+     * @param array $data
+     * @throws DbException
+     */
+    public function setSort(array $data)
+    {
+        $saveAll = [];
+        foreach ($data as $id => $value) {
+            $item       = AdminGroupField::init();
+            $item->id   = $id;
+            $item->sort = $value;
+            $saveAll[]  = $item;
+        }
+        
+        if ($saveAll) {
+            $this->saveAll($saveAll);
+        }
+    }
+    
+    
+    /**
      * 获取某角色的所有子角色
      * @param int $id 角色ID
      * @return AdminGroupInfo[]

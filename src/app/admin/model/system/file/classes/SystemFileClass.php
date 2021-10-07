@@ -200,13 +200,22 @@ class SystemFileClass extends Model
     
     /**
      * 设置分类排序
-     * @param int $id
-     * @param int $value
+     * @param array $data
      * @throws DbException
      */
-    public function setSort($id, $value)
+    public function setSort(array $data)
     {
-        $this->whereEntity(SystemFileClassField::id($id))->setField(SystemFileClassField::sort(), $value);
+        $saveAll = [];
+        foreach ($data as $id => $value) {
+            $item       = SystemFileClassField::init();
+            $item->id   = $id;
+            $item->sort = $value;
+            $saveAll[]  = $item;
+        }
+        
+        if ($saveAll) {
+            $this->saveAll($saveAll);
+        }
     }
     
     
@@ -218,6 +227,16 @@ class SystemFileClass extends Model
      * @throws DbException
      */
     protected function onChanged($method, $id, $options)
+    {
+        $this->getList(true);
+    }
+    
+    
+    /**
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function onSaveAll()
     {
         $this->getList(true);
     }

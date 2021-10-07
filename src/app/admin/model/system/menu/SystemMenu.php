@@ -202,6 +202,27 @@ class SystemMenu extends Model
     
     
     /**
+     * 设置排序
+     * @param array $data
+     * @throws DbException
+     */
+    public function setSort(array $data)
+    {
+        $saveAll = [];
+        foreach ($data as $id => $value) {
+            $item       = SystemMenuField::init();
+            $item->id   = $id;
+            $item->sort = $value;
+            $saveAll[]  = $item;
+        }
+        
+        if ($saveAll) {
+            $this->saveAll($saveAll);
+        }
+    }
+    
+    
+    /**
      * 获取某菜单的所有子菜单
      * @param int $path 菜单连接
      * @return SystemMenuInfo[]

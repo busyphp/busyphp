@@ -3,6 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\util\Filter;
 use think\Container;
 use think\facade\Config;
 use think\file\UploadedFile;
@@ -21,7 +23,6 @@ use think\file\UploadedFile;
  * @method mixed patch($name = '', $default = null, callable $filter = '')
  * @method mixed route($name = '', $default = null, callable $filter = '')
  * @method mixed cookie(string $name = '', $default = null, callable $filter = '')
- * @method mixed input(array $data = [], $name = '', $default = null, callable $filter = '')
  * @method mixed only(array $name, $data = 'param', callable $filter = '') : array
  * @method UploadedFile|UploadedFile[]|null file(string $name = '')
  */
@@ -53,6 +54,57 @@ class Request extends \think\Request
     public static function init() : self
     {
         return Container::getInstance()->make(self::class);
+    }
+    
+    
+    /**
+     * 获取变量 支持过滤和默认值
+     * @access public
+     * @param array           $data 数据源
+     * @param string|false    $name 字段名
+     * @param mixed           $default 默认值
+     * @param string|callable $filter 过滤函数
+     * @return mixed
+     */
+    public function input(array $data = [], $name = '', $default = null, $filter = '')
+    {
+        // 获取原始数据
+        if (false === $name) {
+            return $data;
+        }
+        
+        // list方式获取
+        $key = (string) $name;
+        if ($key && strpos($key, '/')) {
+            $array   = explode('/', $name);
+            $key     = $array[0];
+            $type    = $array[1];
+            $message = $array[2] ?? '';
+            if ($type === 'list') {
+                $data = $this->getData($data, $key);
+                if (is_null($data)) {
+                    $data = $default;
+                }
+                
+                if (!is_array($data)) {
+                    $data = trim((string) $data);
+                    if (!$data) {
+                        $data = [];
+                    } else {
+                        $data = explode(',', $data);
+                    }
+                }
+                $data = array_map('trim', $data);
+                
+                if ($message && !$data) {
+                    throw new VerifyException($message, $key);
+                }
+                
+                return $this->filterData($data, $filter, $key, null);
+            }
+        }
+        
+        return parent::input($data, $name, $default, $filter);
     }
     
     
