@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
+use BusyPHP\helper\util\Str;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
@@ -171,6 +172,7 @@ class AdminUserInfo extends AdminUserField
                 $this->groupHasSystem = true;
             }
         }
+        $this->groupRulePaths = array_map([Str::class, 'snake'], $this->groupRulePaths);
         
         if (!$this->defaultGroupId || !isset($this->groupList[$this->defaultGroupId])) {
             $this->defaultGroupId = end($this->groupIds);

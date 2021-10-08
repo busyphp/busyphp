@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\model\admin\group;
 use BusyPHP\App;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;
+use BusyPHP\helper\util\Str;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Arr;
@@ -36,7 +37,7 @@ class AdminGroup extends Model
      * @var string
      */
     public static $allowControllers = [
-        'Common.'
+        'common.'
     ];
     
     
@@ -328,7 +329,7 @@ class AdminGroup extends Model
         
         // 放行白名单
         $request     = App::getInstance()->request;
-        $currentPath = $path ?: $request->controller() . '/' . $request->action();
+        $currentPath = Str::snake($path ?: $request->controller() . '/' . $request->action());
         foreach (self::$allowControllers as $item) {
             if (0 === strpos($currentPath, $item)) {
                 return true;
@@ -336,6 +337,6 @@ class AdminGroup extends Model
         }
         
         // 是否在规则内
-        return in_array($path ?: App::getInstance()->request->getPath(), $adminUserInfo->groupRulePaths);
+        return in_array(Str::snake($path ?: App::getInstance()->request->getPath()), $adminUserInfo->groupRulePaths);
     }
 }
