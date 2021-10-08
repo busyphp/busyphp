@@ -1,9 +1,10 @@
 <?php
+declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\js;
+namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\js\struct\TreeFlatItemStruct;
+use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
 use BusyPHP\Model;
 use BusyPHP\Request;
 use Closure;
@@ -109,16 +110,19 @@ class TreePlugin
      * 匿名函数包涵1个参数<br />
      * <b>{@see \BusyPHP\model\Model} $model 当前查询模型</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function(\BusyPHP\model\Model $model) {
+     * <pre>$this->setQueryCallback(function({@see \BusyPHP\model\Model} $model) {
      *      $model->where('id', 1);
      *      $model->order('id', 'desc');
      *      $model->limit('10');
      * });</pre>
      * </p>
+     * @return TreePlugin
      */
-    public function setQueryHandler(Closure $queryHandler) : void
+    public function setQueryHandler(Closure $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
+        
+        return $this;
     }
     
     
@@ -126,16 +130,19 @@ class TreePlugin
      * 设置节点处理回调
      * @param Closure $nodeHandler <p>
      * 匿名函数包涵1个参数<br />
-     * <b>{@see \BusyPHP\model\Field} $item 当前遍历的数据对象</b><br />
-     * <b>{@see \BusyPHP\app\admin\js\struct\TreeFlatItemStruct} $node 返回的节点对象</b><br /><br />
+     * <b>{@see Field} $item 当前遍历的数据对象</b><br />
+     * <b>{@see TreeFlatItemStruct} $node 返回的节点对象</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function(\BusyPHP\model\Field|array $item, \BusyPHP\app\admin\js\struct\TreeFlatItemStruct $node) {
+     * <pre>$this->setQueryCallback(function({@see Field}|array $item, {@see TreeFlatItemStruct} $node) {
      *      $node->setId($item->id);
      * });</pre>
      * </p>
+     * @return TreePlugin
      */
-    public function setNodeHandler(Closure $nodeHandler) : void
+    public function setNodeHandler(Closure $nodeHandler) : self
     {
         $this->nodeHandler = $nodeHandler;
+        
+        return $this;
     }
 }

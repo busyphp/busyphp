@@ -209,7 +209,7 @@ JS;
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
         try {
-            if (!$this->getLoginUserInfo()) {
+            if (!$this->isLogin()) {
                 throw new AppException('请登录后上传');
             }
             
@@ -268,7 +268,7 @@ JS;
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
         try {
-            if (!$this->getLoginUserInfo()) {
+            if (!$this->isLogin()) {
                 throw new AppException('请登录后上传');
             }
             

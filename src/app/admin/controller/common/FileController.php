@@ -158,9 +158,9 @@ class FileController extends InsideController
             SystemFile::FILE_TYPE_AUDIO
         ]));
         $this->assign('is_image', $fileType === SystemFile::FILE_TYPE_IMAGE);
+        $this->assign('info', $this->list($this->model)->select());
         
-        // TODO 分页应该能自定义为迷你版
-        return $this->select($this->model);
+        return $this->display();
     }
     
     

@@ -5,9 +5,7 @@ namespace BusyPHP\model;
 
 use BusyPHP\Model;
 use PDOStatement;
-use think\db\exception\DbException;
 use think\db\Raw;
-use think\Paginator;
 
 /**
  * 扩展查询方法，主要用于兼容TP3.1语法

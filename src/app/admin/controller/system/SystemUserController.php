@@ -3,7 +3,7 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\js\struct\TreeFlatItemStruct;
+use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;

@@ -3,22 +3,22 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
-use BusyPHP\app\admin\js\AutocompletePlugin;
-use BusyPHP\app\admin\js\SelectPickerPlugin;
-use BusyPHP\app\admin\js\TablePlugin;
-use BusyPHP\app\admin\js\TreePlugin;
+use BusyPHP\app\admin\plugin\AutocompletePlugin;
+use BusyPHP\app\admin\plugin\ListPlugin;
+use BusyPHP\app\admin\plugin\SelectPickerPlugin;
+use BusyPHP\app\admin\plugin\TablePlugin;
+use BusyPHP\app\admin\plugin\TreePlugin;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
 use BusyPHP\helper\file\File;
-use BusyPHP\helper\page\Page;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\Model;
 use BusyPHP\Url;
 use Exception;
-use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
@@ -176,7 +176,7 @@ abstract class AdminController extends Controller
     protected function checkLogin()
     {
         // 验证登录
-        if (!$this->getLoginUserInfo()) {
+        if (!$this->isLogin()) {
             AdminUser::outLogin();
             
             // 记录返回地址
@@ -210,7 +210,7 @@ abstract class AdminController extends Controller
      * 获取登录用户信息
      * @return AdminUserInfo
      */
-    protected function getLoginUserInfo() : ?AdminUserInfo
+    protected function isLogin() : ?AdminUserInfo
     {
         try {
             $this->adminUser     = AdminUser::init()->checkLogin($this->saveOperate);
@@ -233,6 +233,34 @@ abstract class AdminController extends Controller
     protected function log(int $type = 0, string $value = '') : SystemLogs
     {
         return SystemLogs::init()->setUser($this->adminUserId, $this->adminUsername)->setClass($type, $value);
+    }
+    
+    
+    /**
+     * 通用数据列表查询器
+     * @param Model $model 模型
+     * @param int   $limit 每页显示条数
+     * @param bool  $extend 是否查询扩展数据
+     * @param null  $isTotal 是否统计条数
+     * @return ListPlugin
+     */
+    protected function list(Model $model, $limit = null, $extend = null, $isTotal = null) : ListPlugin
+    {
+        $plugin = new ListPlugin($model);
+        
+        if (is_numeric($limit) && $limit >= 0) {
+            $plugin->setLimit($limit);
+        }
+        
+        if (is_bool($extend)) {
+            $plugin->setExtend($extend);
+        }
+        
+        if (is_bool($isTotal)) {
+            $plugin->setSimple($isTotal);
+        }
+        
+        return $plugin;
     }
     
     
@@ -351,49 +379,6 @@ abstract class AdminController extends Controller
         
         // 生成配置
         $this->updateCache();
-    }
-    
-    
-    /**
-     * 后台分页
-     * @param array|Collection $items
-     * @param int              $listRows 每页显示多少条，默认20条
-     * @param int              $currentPage 当前页码
-     * @param int|null         $total 总条数
-     * @param bool             $simple 简洁模式
-     * @return Page
-     */
-    protected function page($items, int $listRows, int $currentPage = 1, int $total = null, bool $simple = false)
-    {
-        $page         = Page::init($items, $listRows, $currentPage, $total, $simple);
-        $lastPage     = $simple ? 0 : $page->lastPage();
-        $defaultTheme = <<<HTML
-<div class="busy-admin-pagination clearfix">
-    <span class="page-info">共{$total}条记录&nbsp;&nbsp;{$currentPage}/{$lastPage}页</span>
-    <ul class="pagination">%s %s %s</ul>
-</div>
-HTML;
-        $simpleTheme  = <<<HTML
-<div class="busy-admin-pagination clearfix">
-    <span class="page-info">每页{$listRows}条&nbsp;&nbsp;第{$currentPage}页</span>
-    <ul class="pager">%s %s</ul>
-</div>
-HTML;
-        $page->setTheme([
-            'default' => $defaultTheme,
-            'simple'  => $simpleTheme
-        ]);
-        
-        $page->setTemplate([
-            'prev'     => '<li class="prev %s"><a href="%s">上一页</a></li>',
-            'next'     => '<li class="next %s"><a href="%s">下一页</a></li>',
-            'active'   => '<li class="active"><span>%s</span></li>',
-            'disabled' => '<li class="disabled"><span>%s</span></li>',
-            'link'     => '<li><a href="%s">%s</a></li>',
-        ]);
-        $page->setForceRender(true);
-        
-        return $page;
     }
     
     

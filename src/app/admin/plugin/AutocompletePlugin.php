@@ -1,9 +1,11 @@
 <?php
+declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\js;
+namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\helper\util\Filter;
 use BusyPHP\Model;
+use BusyPHP\model\Field;
 use BusyPHP\Request;
 use Closure;
 use think\Container;
@@ -150,16 +152,19 @@ class AutocompletePlugin
      * 设置选项文本处理回调
      * @param Closure $textHandler <p>
      * 匿名函数包涵2个参数，并返回处理后的文本<br />
-     * <b>array $item 信息</b><br /><br />
+     * <b>{@see Field}|array $item 信息</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setTextCallback(function(mixed $item, boolean $isGroup) {
+     * <pre>$this->setTextCallback(function({@see Field}|array $item, boolean $isGroup) {
      *      return $item['name'] . '-' . $item['param1']
      * });</pre>
      * </p>
+     * @return AutocompletePlugin
      */
-    public function setTextHandler(Closure $textHandler) : void
+    public function setTextHandler(Closure $textHandler) : self
     {
         $this->textHandler = $textHandler;
+        
+        return $this;
     }
     
     
@@ -167,15 +172,18 @@ class AutocompletePlugin
      * 设置查询处理回调
      * @param Closure $queryHandler <p>
      * 匿名函数包涵1个参数<br />
-     * <b>Model $model 当前查询模型</b><br /><br />
+     * <b>{@see Model} $model 当前查询模型</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function(Model $model) {
+     * <pre>$this->setQueryCallback(function({@see Model} $model) {
      *      $model->where('id', 1)
      * });</pre>
      * </p>
+     * @return AutocompletePlugin
      */
-    public function setQueryHandler(Closure $queryHandler) : void
+    public function setQueryHandler(Closure $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
+        
+        return $this;
     }
 }

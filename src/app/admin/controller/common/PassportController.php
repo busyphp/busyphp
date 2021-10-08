@@ -114,7 +114,7 @@ class PassportController extends InsideController
      */
     public function out()
     {
-        if ($this->getLoginUserInfo()) {
+        if ($this->isLogin()) {
             $this->log()->record(self::LOG_DEFAULT, '退出登录');
         }
         

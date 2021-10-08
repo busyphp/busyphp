@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="search-bar">
-        <form class="form-inline clearfix" action="{:url()}" method="get">
+        <form class="form-inline clearfix" action="{$url.self}" method="get">
             <input type="hidden" name="class_type" value="{$class_type}"/>
             <input type="hidden" name="class_value" value="{$class_value}"/>
             <input type="hidden" name="extensions" value="{$extensions}"/>
@@ -9,7 +9,7 @@
             <div class="form-group field-range">
                 <select class="form-control" name="range">
                     <option value="0"<?=is_selected($range == 0)?>>当前信息</option>
-                    <option value="1"<?=is_selected($range == 1)?>>全部附件</option>
+                    <option value="1"<?=is_selected($range == 1)?>>全部文件</option>
                 </select>
             </div>
             <div class="form-group field-type">
@@ -42,7 +42,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <foreach name="list" item="vo">
+                    <foreach name="info.list" item="vo">
                         <tr data-item='<?=json_encode($vo);?>'>
                             <td class="text-center"></td>
                             <td class="text-center">{$vo.id}</td>
@@ -66,7 +66,7 @@
     <eq name="is_image" value="1">
         <div class="image-list" data-toggle="busy-image-viewer">
             <div class="image-list-body clearfix">
-                <foreach name="list" item="vo">
+                <foreach name="info.list" item="vo">
                     <div class="item item-{$vo.id}" data-item='<?=json_encode($vo);?>'>
                         <div class="thumb">
                             <img src="{$vo.url}"/>
@@ -94,5 +94,5 @@
         </div>
     </eq>
 
-    {$page}
+    {$info.page}
 </block>

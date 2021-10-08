@@ -1,6 +1,7 @@
 <?php
+declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\js\struct;
+namespace BusyPHP\app\admin\plugin\tree;
 
 /**
  * Tree Js 树状节点结构

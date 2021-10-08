@@ -1,9 +1,11 @@
 <?php
+declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\js;
+namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\helper\util\Filter;
 use BusyPHP\Model;
+use BusyPHP\model\Field;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
 use Closure;
@@ -158,10 +160,10 @@ class TablePlugin
             // 执行查询处理程序
             if (is_callable($this->queryHandler)) {
                 call_user_func_array($this->queryHandler, [$model, $this->data]);
-                $where = $this->data->getWhere();
-                foreach ($where as $key => $value) {
-                    $model->where($key, $value);
-                }
+            }
+            $where = $this->data->getWhere();
+            foreach ($where as $key => $value) {
+                $model->where($key, $value);
             }
             
             // 限制条数
@@ -221,10 +223,10 @@ class TablePlugin
      * 设置查询回调
      * @param Closure $queryHandler <p>
      * 匿名函数包涵2个参数<br />
-     * <b>{@see \BusyPHP\model\Model} $model 当前查询模型</b><br />
-     * <b>{@see \BusyPHP\model\Map} $data 查询参数</b><br /><br />
+     * <b>{@see Model} $model 当前查询模型</b><br />
+     * <b>{@see Map} $data 查询参数</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function(\BusyPHP\model\Model $model, \BusyPHP\model\Map $data) {
+     * <pre>$this->setQueryCallback(function({@see Model} $model, {@see Map} $data) {
      *      $model->where('id', 1);
      *      $data->delete('id');
      *      $data->set('id', 2);
@@ -232,9 +234,11 @@ class TablePlugin
      * });</pre>
      * </p>
      */
-    public function setQueryHandler(Closure $queryHandler) : void
+    public function setQueryHandler(Closure $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
+        
+        return $this;
     }
     
     
@@ -242,9 +246,9 @@ class TablePlugin
      * 设置数据列表处理回调
      * @param Closure $listHandler <p>
      * 匿名函数包涵1个参数<br />
-     * <b>{@see \BusyPHP\model\Field[]}|array $list 查询得到的数据</b><br />
+     * <b>{@see Field[]}|array $list 查询得到的数据</b><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function(array &$list) {
+     * <pre>$this->setQueryCallback(function({@see Field[]}|array &$list) {
      *      foreach($list as $i => $item) {
      *      }
      *
@@ -252,8 +256,10 @@ class TablePlugin
      * });</pre>
      * </p>
      */
-    public function setListHandler(Closure $listHandler) : void
+    public function setListHandler(Closure $listHandler) : self
     {
         $this->listHandler = $listHandler;
+        
+        return $this;
     }
 }
