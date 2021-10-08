@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\helper\util\Filter;
 use think\facade\Route;
+use think\helper\Str;
 
 /**
  * 系统菜单模型信息结构
@@ -65,8 +66,8 @@ class SystemMenuInfo extends SystemMenuField
     
     public function onParseAfter()
     {
-        $this->hash       = md5($this->path);
-        $this->parentHash = $this->parentPath ? md5($this->parentPath) : '';
+        $this->hash       = md5(Str::snake($this->path));
+        $this->parentHash = $this->parentPath ? md5(Str::snake($this->parentPath)) : '';
         $this->hide       = $this->hide > 0;
         $this->disabled   = $this->disabled > 0;
         $this->system     = $this->system > 0;

@@ -18,6 +18,7 @@ use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
+use think\helper\Str;
 use think\Response;
 use think\response\View;
 use Throwable;
@@ -110,7 +111,7 @@ class AdminHandle extends Handle
         $menuModel   = SystemMenu::init();
         $hashList    = $menuModel->getHashList();
         $breadcrumb  = [];
-        $currentMenu = $hashList[md5($request->getPath())] ?? null;
+        $currentMenu = $hashList[md5(Str::snake($request->getPath()))] ?? null;
         if ($currentMenu) {
             $idList     = $menuModel->getIdList();
             $parentList = $menuModel->getIdParens();
