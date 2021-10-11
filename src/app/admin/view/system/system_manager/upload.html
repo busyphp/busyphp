@@ -2,121 +2,119 @@
 <block name="content">
     <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
 
-        <div class="panel panel-default no-margin-bottom">
-            <include file="@admin:system/system_manager/nav"/>
+        <include file="@admin:system/system_manager/nav"/>
 
-            <div class="panel-body">
-                <div class="form-group-title">基础设置</div>
+        <div class="form-group-title">基础设置</div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">存储引擎</label>
+            <div class="col-sm-10 col-md-8">
+                <div class="btn-group" data-toggle="buttons">
+                    <foreach name="disks" item="vo">
+                        <label class="btn btn-outline-primary {$vo['checked'] ? 'active' : ''}">
+                            <input type="radio" name="data[disk]" value="{$vo.type}" <?=is_checked($vo['checked'])?>>
+                            {$vo.name}
+                        </label>
+                    </foreach>
+                </div>
+                <div class="help-block">
+                    <div>设置上传存储引擎：</div>
+                    <foreach name="disks" item="vo">
+                        <div><span class="badge">{$vo.name}</span> {$vo.desc}</div>
+                    </foreach>
+                    <div>更多存储引擎可以在 <code>config/filesystem.php</code> 中对 <code>disks</code> 进行配置</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group-title">本地上传设置</div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">目录生成方式</label>
+            <div class="col-sm-10 col-md-8">
+                <select class="form-control" name="data[dir_generate_type]">
+                    <option value="">不设置目录</option>
+                    <optgroup label="日期格式">
+                        <option value="Ymd"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Ymd')?>>
+                            年月日
+                        </option>
+                        <option value="Y/md"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/md')?>>
+                            年/月日
+                        </option>
+                        <option value="Y/m/d"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/m/d')?>>
+                            年/月/日
+                        </option>
+                        <option value="Y/m/d/H"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/m/d/H')?>>
+                            年/月/日/时
+                        </option>
+                        <option value="Y/mdH"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/mdH')?>>
+                            年/月日时
+                        </option>
+                        <option value="YmdH"<?=is_selected(($info['dir_generate_type'] ?? '') == 'YmdH')?>>
+                            年月日时
+                        </option>
+                    </optgroup>
+                    <optgroup label="hash格式">
+                        <option value="hash-1"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-1')?>>
+                            hash目录1层
+                        </option>
+                        <option value="hash-2"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-2')?>>
+                            hash目录2层
+                        </option>
+                        <option value="hash-3"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-3')?>>
+                            hash目录3层
+                        </option>
+                    </optgroup>
+                </select>
+                <div class="help-block">
+                    设置目录生成规则：
+                    <div><span class="badge">日期格式</span> 目录将按照对应的日期格式生成</div>
+                    <div><span class="badge">hash格式</span> 对文件进行哈希取值后，取对应的前几个字符做为目录层级</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group-title">
+            客户端限制设置
+        </div>
+        <foreach name="clients" item="vo">
+            <fieldset class="fieldset">
+                <legend>{$vo.name}</legend>
                 <div class="form-group">
-                    <label class="col-sm-2 control-label">存储引擎</label>
+                    <label class="col-sm-2 control-label">上传类型限制</label>
                     <div class="col-sm-10 col-md-8">
-                        <div class="btn-group" data-toggle="buttons">
-                            <foreach name="disks" item="vo">
-                                <label class="btn btn-outline-primary {$vo['checked'] ? 'active' : ''}">
-                                    <input type="radio" name="data[disk]" value="{$vo.type}" <?=is_checked($vo['checked'])?>>
-                                    {$vo.name}
-                                </label>
-                            </foreach>
-                        </div>
-                        <div class="help-block">
-                            <div>设置上传存储引擎：</div>
-                            <foreach name="disks" item="vo">
-                                <div><span class="badge">{$vo.name}</span> {$vo.desc}</div>
-                            </foreach>
-                            <div>更多存储引擎可以在 <code>config/filesystem.php</code> 中对 <code>disks</code> 进行配置</div>
-                        </div>
+                        <input type="text" class="form-control" name="data[clients][{$vo.dir}][allow_extensions]" value="{$info['clients'][$vo['dir']]['allow_extensions']|default=''}" placeholder="请输入允许上传的文件扩展名"/>
+                        <span class="help-block">设置允许上传的文件扩展名，多个请用 <code>,</code> 号隔开，如：jpg,png,exe，不限请留空</span>
                     </div>
                 </div>
-
-                <div class="form-group-title">本地上传设置</div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">目录生成方式</label>
+                <div class="form-group no-margin-bottom">
+                    <label class="col-sm-2 control-label">上传大小限制</label>
                     <div class="col-sm-10 col-md-8">
-                        <select class="form-control" name="data[dir_generate_type]">
-                            <option value="">不设置目录</option>
-                            <optgroup label="日期格式">
-                                <option value="Ymd"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Ymd')?>>
-                                    年月日
-                                </option>
-                                <option value="Y/md"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/md')?>>
-                                    年/月日
-                                </option>
-                                <option value="Y/m/d"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/m/d')?>>
-                                    年/月/日
-                                </option>
-                                <option value="Y/m/d/H"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/m/d/H')?>>
-                                    年/月/日/时
-                                </option>
-                                <option value="Y/mdH"<?=is_selected(($info['dir_generate_type'] ?? '') == 'Y/mdH')?>>
-                                    年/月日时
-                                </option>
-                                <option value="YmdH"<?=is_selected(($info['dir_generate_type'] ?? '') == 'YmdH')?>>
-                                    年月日时
-                                </option>
-                            </optgroup>
-                            <optgroup label="hash格式">
-                                <option value="hash-1"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-1')?>>
-                                    hash目录1层
-                                </option>
-                                <option value="hash-2"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-2')?>>
-                                    hash目录2层
-                                </option>
-                                <option value="hash-3"<?=is_selected(($info['dir_generate_type'] ?? '') == 'hash-3')?>>
-                                    hash目录3层
-                                </option>
-                            </optgroup>
-                        </select>
-                        <div class="help-block">
-                            设置目录生成规则：
-                            <div><span class="badge">日期格式</span> 目录将按照对应的日期格式生成</div>
-                            <div><span class="badge">hash格式</span> 对文件进行哈希取值后，取对应的前几个字符做为目录层级</div>
+                        <div class="input-group">
+                            <input type="number" size="0.01" class="form-control" name="data[clients][{$vo.dir}][max_size]" value="{$info['clients'][$vo['dir']]['max_size']|default='0'}" placeholder="请输入允许上传的文件大小"/>
+                            <div class="input-group-addon">MB</div>
                         </div>
+                        <span class="help-block">设置最大允许上传的文件大小，不限请填 <code>0</code></span>
                     </div>
                 </div>
+            </fieldset>
+        </foreach>
 
-                <div class="form-group-title">
-                    客户端限制设置
-                </div>
-                <foreach name="clients" item="vo">
-                    <fieldset class="fieldset">
-                        <legend>{$vo.name}</legend>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">上传类型限制</label>
-                            <div class="col-sm-10 col-md-8">
-                                <input type="text" class="form-control" name="data[clients][{$vo.dir}][allow_extensions]" value="{$info['clients'][$vo['dir']]['allow_extensions']|default=''}" placeholder="请输入允许上传的文件扩展名"/>
-                                <span class="help-block">设置允许上传的文件扩展名，多个请用 <code>,</code> 号隔开，如：jpg,png,exe，不限请留空</span>
-                            </div>
-                        </div>
-                        <div class="form-group no-margin-bottom">
-                            <label class="col-sm-2 control-label">上传大小限制</label>
-                            <div class="col-sm-10 col-md-8">
-                                <div class="input-group">
-                                    <input type="number" size="0.01" class="form-control" name="data[clients][{$vo.dir}][max_size]" value="{$info['clients'][$vo['dir']]['max_size']|default='0'}" placeholder="请输入允许上传的文件大小"/>
-                                    <div class="input-group-addon">MB</div>
-                                </div>
-                                <span class="help-block">设置最大允许上传的文件大小，不限请填 <code>0</code></span>
-                            </div>
-                        </div>
-                    </fieldset>
-                </foreach>
-
-                <div class="form-group-title">其它设置</div>
-                <ba:access value="watermark">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">水印设置</label>
-                        <div class="col-sm-10 col-md-8">
+        <div class="form-group-title">其它设置</div>
+        <ba:access value="watermark">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印设置</label>
+                <div class="col-sm-10 col-md-8">
                         <a class="btn btn-outline-success"
                            data-toggle="busy-modal"
                            data-url="{:url('watermark')}"
                            data-ok="设置"><i class="fa fa-image"></i> 图片水印设置</a>
-                            <div class="help-block">设置全局水印配置，设置后<code>动态缩图</code>，<code>上传</code>打水印才可以生效</div>
-                        </div>
-                    </div>
-                </ba:access>
-                <ba:access value="file_class">
-                    <div class="form-group no-margin-bottom">
-                        <label class="col-sm-2 control-label">分类设置</label>
-                        <div class="col-sm-10 col-md-8">
+                    <div class="help-block">设置全局水印配置，设置后<code>动态缩图</code>，<code>上传</code>打水印才可以生效</div>
+                </div>
+            </div>
+        </ba:access>
+        <ba:access value="file_class">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">分类设置</label>
+                <div class="col-sm-10 col-md-8">
                         <a class="btn btn-outline-dark"
                            data-toggle="busy-modal"
                            data-url="{:url('file_class')}"
@@ -129,15 +127,13 @@
                             <i class="fa fa-cogs"></i>
                             分类上传设置
                         </a>
-                            <div class="help-block">对分类的文件进行更详细的设置，如格式、缩图、水印等</div>
-                        </div>
-                    </div>
-                </ba:access>
+                    <div class="help-block">对分类的文件进行更详细的设置，如格式、缩图、水印等</div>
+                </div>
             </div>
-            <div class="panel-footer text-center">
-                <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
-                <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
-            </div>
+        </ba:access>
+        <div class="text-center">
+            <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
+            <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
         </div>
     </form>
 </block>
