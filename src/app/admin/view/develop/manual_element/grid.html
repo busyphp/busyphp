@@ -1,0 +1,134 @@
+<extend name="@admin:layout"/>
+<block name="head">
+    <style>
+        .busy-demo-content .row [class^="col-"] { border: 1px #BBB solid; background: #E9ECEF; min-height: 40px;}
+    </style>
+</block>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+通过基础的 12 分栏，迅速简便地创建布局。
+
+### 基本示例
+
+```demo:实例
+#demo1
+```
+
+### 删除填充
+
+```demo:实例
+#demo2
+```
+
+### 列偏移
+
+```demo:实例
+#demo3
+```
+
+### 嵌套列
+
+```demo:实例
+#demo4
+```
+
+### 列排序
+
+```demo:实例
+#demo5
+```
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <div class="row">
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+            <div class="col-md-1">.col-md-1</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">.col-md-8</div>
+            <div class="col-md-4">.col-md-4</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">.col-md-4</div>
+            <div class="col-md-4">.col-md-4</div>
+            <div class="col-md-4">.col-md-4</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">.col-md-6</div>
+            <div class="col-md-6">.col-md-6</div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo2">
+        <div class="row row-no-gutters">
+            <div class="col-xs-12 col-md-8">.col-xs-12 .col-md-8</div>
+            <div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
+        </div>
+        <div class="row row-no-gutters">
+            <div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
+            <div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
+            <div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
+        </div>
+        <div class="row row-no-gutters">
+            <div class="col-xs-6">.col-xs-6</div>
+            <div class="col-xs-6">.col-xs-6</div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo3">
+        <div class="row">
+            <div class="col-md-4">.col-md-4</div>
+            <div class="col-md-4 col-md-offset-4">.col-md-4 .col-md-offset-4</div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 col-md-offset-3">.col-md-3 .col-md-offset-3</div>
+            <div class="col-md-3 col-md-offset-3">.col-md-3 .col-md-offset-3</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">.col-md-6 .col-md-offset-3</div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo4">
+        <div class="row">
+            <div class="col-sm-9">
+                Level 1: .col-sm-9
+                <div class="row">
+                    <div class="col-xs-8 col-sm-6">
+                        Level 2: .col-xs-8 .col-sm-6
+                    </div>
+                    <div class="col-xs-4 col-sm-6">
+                        Level 2: .col-xs-4 .col-sm-6
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo5">
+        <div class="row">
+            <div class="col-md-9 col-md-push-3">.col-md-9 .col-md-push-3</div>
+            <div class="col-md-3 col-md-pull-9">.col-md-3 .col-md-pull-9</div>
+        </div>
+    </template>
+</block>

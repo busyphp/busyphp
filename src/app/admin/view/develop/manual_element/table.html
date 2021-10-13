@@ -1,0 +1,444 @@
+<extend name="@admin:layout"/>
+<block name="head">
+    <style>
+        .busy-demo-content { background: white;}
+    </style>
+</block>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+
+### 基本示例
+
+为任意 `<table>` 标签添加 `.table` 类可以为其赋予基本的样式
+
+```demo:实例
+#demo1
+```
+
+### 条纹状表格
+
+通过 `.table-striped` 类可以给 `<tbody>` 之内的每一行增加斑马条纹样式。
+
+```demo:实例
+#demo2
+```
+
+### 带边框的表格
+
+添加 `.table-bordered` 类为表格和其中的每个单元格增加边框。
+
+```demo:实例
+#demo3
+```
+
+### 鼠标悬停
+
+通过添加 `.table-hover` 类可以让 `<tbody>` 中的每一行对鼠标悬停状态作出响应。
+
+```demo:实例
+#demo4
+```
+
+### 紧缩表格
+
+通过添加 `.table-condensed` 类可以让表格更加紧凑，单元格中的内补（padding）均会减半。
+
+```demo:实例
+#demo5
+```
+
+### 表格状态
+
+```demo:实例
+#demo6
+```
+
+### 响应式表格
+
+通过添加 `.table-nowrap` 类可以让表格内容不换行。
+
+```demo:实例
+#demo7
+```
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <table class="table">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo2">
+        <table class="table table-striped">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo3">
+        <table class="table table-striped table-bordered">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo4">
+        <table class="table table-striped table-bordered table-hover">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo5">
+        <table class="table table-striped table-bordered table-hover table-condensed">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo6">
+        <table class="table table-striped table-bordered table-hover">
+            <caption>标题</caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>标题1</th>
+                    <th>标题2</th>
+                    <th>标题3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr class="active">
+                    <th scope="row">2</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr class="success">
+                    <th scope="row">3</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr class="warning">
+                    <th scope="row">4</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr class="danger">
+                    <th scope="row">5</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+                <tr class="info">
+                    <th scope="row">5</th>
+                    <td>张三</td>
+                    <td>李四</td>
+                    <td>王武</td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+    <template class="hide" id="demo7">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover table-condensed table-nowrap">
+                <caption>标题</caption>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>标题1</th>
+                        <th>标题2</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                        <th>标题3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>张三</td>
+                        <td>李四</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                        <td>王武</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </template>
+</block>

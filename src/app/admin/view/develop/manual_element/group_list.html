@@ -1,0 +1,107 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 基本示例
+
+```demo:实例
+#demo1
+```
+
+### 徽章
+
+```demo:实例
+#demo2
+```
+
+
+### 链接
+
+```demo:实例
+#demo3
+```
+
+### 情境类
+
+```demo:实例
+#demo4
+```
+
+### 定制内容
+
+```demo:实例
+#demo5
+```
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <ul class="list-group no-margin-bottom">
+            <li class="list-group-item">选项1</li>
+            <li class="list-group-item disabled">选项2</li>
+            <li class="list-group-item">选项3</li>
+            <li class="list-group-item">选项4</li>
+            <li class="list-group-item">选项5</li>
+        </ul>
+    </template>
+
+    <template class="hide" id="demo2">
+        <ul class="list-group no-margin-bottom">
+            <li class="list-group-item"><span class="badge">14</span> 选项1</li>
+            <li class="list-group-item"><span class="badge">2</span> 选项2</li>
+            <li class="list-group-item disabled"><span class="badge">0</span> 选项3</li>
+            <li class="list-group-item"><span class="badge">12</span> 选项4</li>
+            <li class="list-group-item"><span class="badge">134</span> 选项5</li>
+        </ul>
+    </template>
+    
+    <template class="hide" id="demo3">
+        <div class="list-group no-margin-bottom">
+            <a class="list-group-item active"><span class="badge">14</span> 选项1</a>
+            <a class="list-group-item disabled"><span class="badge">2</span> 选项2</a>
+            <a class="list-group-item"><span class="badge">0</span> 选项3</a>
+            <button class="list-group-item"><span class="badge">12</span> 选项4</button>
+            <button class="list-group-item"><span class="badge">134</span> 选项5</button>
+        </div>
+    </template>
+    
+    <template class="hide" id="demo4">
+        <ul class="list-group no-margin-bottom">
+            <li class="list-group-item list-group-item-success">选项1</li>
+            <li class="list-group-item list-group-item-warning">选项2</li>
+            <li class="list-group-item list-group-item-danger">选项3</li>
+            <li class="list-group-item list-group-item-info">选项4</li>
+            <li class="list-group-item list-group-item-secondary">选项5</li>
+            <li class="list-group-item list-group-item-dark">选项6</li>
+        </ul>
+    </template>
+    
+    <template class="hide" id="demo5">
+        <div class="list-group no-margin-bottom">
+            <a class="list-group-item active">
+                <h4 class="list-group-item-heading">标题1</h4>
+                <p class="list-group-item-text">内容1</p>
+            </a>
+            <a class="list-group-item">
+                <h4 class="list-group-item-heading">标题2</h4>
+                <p class="list-group-item-text">内容2</p>
+            </a>
+            <a class="list-group-item">
+                <h4 class="list-group-item-heading">标题3</h4>
+                <p class="list-group-item-text">内容3</p>
+            </a>
+            <a class="list-group-item">
+                <h4 class="list-group-item-heading">标题4</h4>
+                <p class="list-group-item-text">内容4</p>
+            </a>
+        </div>
+    </template>
+
+</block>

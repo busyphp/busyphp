@@ -55,4 +55,58 @@ class ManualElementController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 面板
+     */
+    public function panel()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 选项卡
+     */
+    public function tabs()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 列表组
+     */
+    public function group_list()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 列表布局
+     */
+    public function list_item()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 布局
+     */
+    public function grid()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 表格
+     */
+    public function table()
+    {
+        return $this->display();
+    }
 }
