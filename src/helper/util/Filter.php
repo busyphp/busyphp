@@ -10,7 +10,6 @@ namespace BusyPHP\helper\util;
  */
 class Filter
 {
-    
     /**
      * 保留最小值
      * @param int $number
@@ -66,8 +65,10 @@ class Filter
      */
     public static function trimArray($array, $isRest = false)
     {
-        $array = is_array($array) ? $array : array();
-        $array = array_map('trim', $array);
+        $array = is_array($array) ? $array : [];
+        $array = array_map(function($str) {
+            return trim((string) $str);
+        }, $array);
         $array = array_filter($array);
         $array = array_unique($array);
         
@@ -93,7 +94,7 @@ class Filter
             
             return $data;
         } elseif (is_string($data)) {
-            return trim($data);
+            return trim((string) $data);
         } else {
             return $data;
         }
@@ -118,7 +119,7 @@ class Filter
      */
     public static function safeString($content = '')
     {
-        return str_replace(array('"', "'"), array('&quot;', '&#039;'), strip_tags($content));
+        return str_replace(['"', "'"], ['&quot;', '&#039;'], strip_tags($content));
     }
     
     
@@ -130,13 +131,13 @@ class Filter
      */
     public static function searchWord($string, $replaceSpace = true)
     {
-        $string = trim($string);
+        $string = trim((string) $string);
         if (!$string) {
             return $string;
         }
         $string = self::nowrap($string);
-        $string = str_replace(array('%', '_'), array('\%', '\_'), $string);
-        $array  = array("\t", "\r\n", "\r", "\n");
+        $string = str_replace(['%', '_'], ['\%', '\_'], $string);
+        $array  = ["\t", "\r\n", "\r", "\n"];
         if ($replaceSpace) {
             $array[] = ' ';
         }
@@ -213,7 +214,7 @@ class Filter
      */
     public static function safeHtml($content, $tags = null)
     {
-        $content = trim($content);
+        $content = trim((string) $content);
         //完全过滤注释
         $content = preg_replace('/<!--?.*-->/', '', $content);
         //完全过滤动态代码

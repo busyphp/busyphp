@@ -96,20 +96,20 @@ class SelectPickerPlugin
     {
         $this->request = Container::getInstance()->make(Request::class);
         
-        $this->isValue   = $this->request->get('action', '', 'trim') === 'value';
-        $this->page      = $this->request->get('page', 1, 'intval');
-        $this->length    = $this->request->get('length', 0, 'intval');
-        $this->idField   = $this->request->get('id_field', '', 'trim');
-        $this->textField = $this->request->get('text_field', '', 'trim');
-        $this->order     = $this->request->get('order', '', 'trim');
-        $this->isExtend  = $this->request->get('extend', 0, 'intval') > 0;
+        $this->isValue   = $this->request->get('action/s', '', 'trim') === 'value';
+        $this->page      = $this->request->get('page/d', 1);
+        $this->length    = $this->request->get('length/d', 0);
+        $this->idField   = $this->request->get('id_field/s', '', 'trim');
+        $this->textField = $this->request->get('text_field/s', '', 'trim');
+        $this->order     = $this->request->get('order/s', '', 'trim');
+        $this->isExtend  = $this->request->get('extend/b', false);
         $this->word      = $this->request->get('word');
         
         $this->idField   = $this->idField ?: 'id';
         $this->textField = $this->textField ?: 'name';
         $this->length    = $this->length < 0 ? 20 : $this->length;
         $this->order     = Filter::trimArray(explode(',', $this->order));
-        $this->word      = is_array($this->word) ? Filter::trimArray($this->word) : trim($this->word);
+        $this->word      = is_array($this->word) ? Filter::trimArray($this->word) : trim((string) $this->word);
         $this->page      = $this->page <= 1 ? 1 : $this->page;
     }
     
