@@ -1,0 +1,356 @@
+<extend name="@admin:layout"/>
+<block name="head">
+    <style>
+        .busy-demo-content .row [class^="col-"] { border: 1px #BBB solid; background: #E9ECEF; min-height: 40px;}
+    </style>
+</block>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+### 标题
+
+HTML 中的所有标题标签，`<h1>` 到 `<h6>` 均可使用。另外，还提供了 `.h1` 到 `.h6` 类，为的是给内联（inline）属性的文本赋予标题的样式。在标题内还可以包含 `<small>` 标签或赋予 `.small` 类的元素，可以用来标记副标题。
+
+```demo:实例
+#demo1
+```
+
+### 中心内容
+
+通过添加 `.lead` 类可以让段落突出显示。
+
+```demo:实例
+#demo2
+```
+
+### 内联文本元素
+
+要突出显示与其他上下文相关的一系列文本，请使用 `<mark>` `<code>` `<kbd>` 标记。
+
+```demo:实例
+#demo3
+```
+
+### 对齐
+
+通过文本对齐类，可以简单方便的将文字重新对齐。
+
+```demo:实例
+#demo4
+```
+
+### 文本辅助
+
+```demo:实例
+#demo5
+```
+
+### 描述
+
+```demo:实例
+#demo6
+```
+
+### 水平排列的描述
+
+```demo:实例
+#demo7
+```
+
+### 背景色
+
+```demo:实例
+#demo8
+```
+
+### 关闭按钮/三角符号
+
+```demo:实例
+#demo9
+```
+
+### 快速浮动
+
+通过 `.pull-left` `.pull-right` 快速浮动，通过 `.clearfix` 清除浮动
+
+```demo:实例
+#demo10
+```
+
+### 块居中
+
+为任意元素设置 `display: block` 属性并通过 `margin` 属性让其中的内容居中
+
+```demo:实例
+#demo11
+```
+
+### 显示或隐藏内容
+
+通过 `.show` 和 `.hidden` `.hide` 类可以强制任意元素显示或隐藏，通过 `.invisible` 类可以被用来影响元素的可见性，也就是说，元素的 `display` 属性不被改变，并且这个元素仍然能够影响文档流的排布。
+
+### 页头
+
+页头组件能够为 `h1` 标签增加适当的空间，并且与页面的其他部分形成一定的分隔。它支持 `h1` 标签内内嵌 `small` 元素的默认效果，还支持大部分其他组件（需要增加一些额外的样式）。
+
+```demo:实例
+#demo12
+```
+
+### 边框
+
+```demo:实例
+#demo13
+```
+
+### 阴影
+
+```demo:实例
+#demo14
+```
+
+
+### 辅助样式
+
+| 辅助类:240 | 描述 |
+| - | :- |
+| 宽/高:title |  |
+| `.width-*` | 控制宽度 |
+| `.height-*` | 控制高度 |
+| 间距:title |  |
+| `.margin-*` | 控制间距 |
+| `.no-margin` | 清除间距 |
+| `.no-margin-left` | 清除左间距 |
+| `.no-margin-right` | 清除右间距 |
+| `.no-margin-top` | 清除上间距 |
+| `.no-margin-bottom` | 清除下间距 |
+| 填充:title |  |
+| `.padding-*` | 控制填充 |
+| `.no-padding` | 清除填充 |
+| `.no-padding-left` | 清除左填充 |
+| `.no-padding-right` | 清除右填充 |
+| `.no-padding-top` | 清除上填充 |
+| `.no-padding-bottom` | 清除下填充 |
+| 分割线:title |  |
+| `.hr` | 分割线 |
+| `.hr-*` | 间距不同的分割线 |
+| 间隔:title |  |
+| `.space` | 间隔 |
+| `.space-*` | 间距不同的间隔 |
+| 边框:title |  |
+| `.border-dotted` | 细虚线边框 |
+| `.border-dashed` | 粗虚线边框 |
+| `.border-solid` | 实线边框 |
+| `.border-double` | 双实现边框 |
+| `.no-border` | 清除边框 |
+| `.no-border-left` | 清除左边框 |
+| `.no-border-right` | 清除右边框 |
+| `.no-border-top` | 清除上边框 |
+| `.no-border-bottom` | 清除下边框 |
+| 圆角:title |  |
+| `.no-radius` | 清除圆角 |
+| `.no-radius-left` | 清除左圆角 |
+| `.no-radius-right` | 清除右圆角 |
+| `.no-radius-top` | 清除上圆角 |
+| `.no-radius-bottom` | 清除下圆角 |
+| 阴影:title |  |
+| `.no-box-shadow` | 清除容器阴影 |
+| `.no-text-shadow` | 清除文字阴影 |
+| 其它:title |  |
+| `.font-tab` | 制表符字体 |
+| `.cursor-*` | 鼠标样式 |
+
+            </script>
+        </div>
+    </div>
+
+    <template class="hide" id="demo1">
+        <h1>h1. 标题 <small>小标题</small></h1>
+        <hr/>
+        <h2>h2. 标题 <small>小标题</small></h2>
+        <hr/>
+        <h3>h3. 标题 <small>小标题</small></h3>
+        <hr/>
+        <h4>h4. 标题 <small>小标题</small></h4>
+        <hr/>
+        <h5>h5. 标题 <small>小标题</small></h5>
+        <hr/>
+        <h6>h6. 标题 <small>小标题</small></h6>
+    </template>
+
+    <template class="hide" id="demo2">
+        <p class="lead no-margin-bottom">段落,意思是指根据文章或事情的内容、阶段划分的相对独立的部分</p>
+    </template>
+
+    <template class="hide" id="demo3">
+        <mark>段落,</mark>
+        意思是指根据文章或<code>事情</code>的<kbd>内容</kbd>、阶段划分的相对独立的部分
+    </template>
+
+    <template class="hide" id="demo4">
+        <div class="text-left">左对齐</div>
+        <div class="text-right">右对齐</div>
+        <div class="text-center">居中对齐</div>
+        <div class="text-justify">左右对齐</div>
+        <div class="text-nowrap">禁止换行</div>
+    </template>
+
+    <template class="hide" id="demo5">
+        <h4>大小写转换</h4>
+        <p class="text-lowercase">Lowercased text.</p>
+        <p class="text-uppercase">Uppercased text.</p>
+        <p class="text-capitalize">Capitalized text.</p>
+        <hr/>
+        <h4>加粗/取消加粗</h4>
+        <p>通过 <code>.text-bold</code> 为<span class="text-bold">元素</span>加粗，通过 <code>.text-no-bold</code>
+            将<b class="text-no-bold">加粗</b>元素取消 </p>
+        <hr/>
+        <h4>文本颜色</h4>
+        <p class="text-primary">文本</p>
+        <p class="text-secondary">文本</p>
+        <p class="text-info">文本</p>
+        <p class="text-warning">文本</p>
+        <p class="text-danger">文本</p>
+        <p class="text-success">文本</p>
+        <p class="text-light">文本</p>
+        <p class="text-dark">文本</p>
+        <hr/>
+        <h4>更多颜色</h4>
+        <p class="text-red">红色</p>
+        <p class="text-orange">橙色</p>
+        <p class="text-green">绿色</p>
+        <p class="text-blue">蓝色</p>
+        <p class="text-black">黑色</p>
+        <p class="text-pink">粉红色</p>
+        <p class="text-purple">紫色</p>
+        <p class="text-indigo">靛蓝</p>
+        <p class="text-teal">蓝绿色</p>
+        <p class="text-cyan">青色</p>
+        <p class="text-gray">灰色</p>
+        <p class="text-gray-dark">灰暗色</p>
+        <hr/>
+    </template>
+
+    <template class="hide" id="demo6">
+        <dl>
+            <dt>这个世界，正奖励那些活出自己的人</dt>
+            <dd>生活充满了风、雨、阳光、花、草和荆棘。四季在移动，命运相遇，悲喜交集，逐渐实现。活到某个年龄，我相信每个人都会明白，那些零碎的日子，旅途中的满足或遗憾，是生命的厚重和丰富。</dd>
+
+            <dt>心若美好，一切皆美好</dt>
+            <dd>佛说：你心里有什么，你看到的就是什么。一个人内心恬静，摒弃了世俗繁琐丑恶，相信了美好的存在，那他看到的一切自然也是美好的，包括自己，与别人。</dd>
+        </dl>
+    </template>
+
+    <template class="hide" id="demo7">
+        <dl class="dl-horizontal">
+            <dt>这个世界，正奖励那些活出自己的人</dt>
+            <dd>生活充满了风、雨、阳光、花、草和荆棘。四季在移动，命运相遇，悲喜交集，逐渐实现。活到某个年龄，我相信每个人都会明白，那些零碎的日子，旅途中的满足或遗憾，是生命的厚重和丰富。</dd>
+
+            <dt>心若美好，一切皆美好</dt>
+            <dd>佛说：你心里有什么，你看到的就是什么。一个人内心恬静，摒弃了世俗繁琐丑恶，相信了美好的存在，那他看到的一切自然也是美好的，包括自己，与别人。</dd>
+        </dl>
+    </template>
+
+    <template class="hide" id="demo8">
+        <p class="bg-primary">...</p>
+        <p class="bg-success">...</p>
+        <p class="bg-info">...</p>
+        <p class="bg-warning">...</p>
+        <p class="bg-danger">...</p>
+        <p class="bg-dark">...</p>
+        <p class="bg-light">...</p>
+        <p class="bg-secondary">...</p>
+        <p class="bg-white">...</p>
+        <p class="bg-black">...</p>
+    </template>
+
+    <template class="hide" id="demo9">
+        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <span class="caret"></span>
+    </template>
+
+    <template class="hide" id="demo10">
+        <div class="clearfix">
+            <div class="pull-left">左浮动</div>
+            <div class="pull-right">右浮动</div>
+        </div>
+    </template>
+
+    <template class="hide" id="demo11">
+        <div class="center-block width-100 bg-primary">...</div>
+    </template>
+
+    <template class="hide" id="demo12">
+        <div class="page-header">
+            <h1>页头标题 <small>副标题</small></h1>
+        </div>
+    </template>
+
+    <template class="hide" id="demo13">
+        <div class="clearfix">
+            <div class="border width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-primary width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-secondary width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-success width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-warning width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-info width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-dark width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-light width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-white width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border border-black width-100 height-100 pull-left"></div>
+        </div>
+        <hr/>
+        <h4>控制边框显示</h4>
+        <div class="clearfix">
+            <div class="border no-border-left width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border no-border-top width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border no-border-right width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="border no-border-bottom width-100 height-100 pull-left"></div>
+        </div>
+        <hr/>
+        <h4>圆角</h4>
+        <div class="clearfix">
+            <div class="border radius width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="bg-primary radius width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="bg-primary radius-circle width-100 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="bg-primary radius-pill width-180 height-100 pull-left"></div>
+        </div>
+        <hr/>
+        <h4>圆角尺寸</h4>
+        <div class="clearfix">
+            <div class="bg-primary radius-sm width-180 height-100 pull-left"></div>
+            <div class="width-10 height-10 pull-left"></div>
+            <div class="bg-primary radius-lg width-180 height-100 pull-left"></div>
+        </div>
+    </template>
+
+
+    <template class="hide" id="demo14">
+        <div class="box-shadow bg-white radius height-50">普通</div>
+        <hr />
+        <div class="box-shadow-sm bg-white radius-sm height-50">小阴影</div>
+        <hr />
+        <div class="box-shadow-lg bg-white radius-lg height-50">大阴影</div>
+    </template>
+</block>

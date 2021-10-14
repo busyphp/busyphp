@@ -109,4 +109,13 @@ class ManualElementController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 基本
+     */
+    public function base()
+    {
+        return $this->display();
+    }
 }
