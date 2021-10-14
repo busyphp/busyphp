@@ -295,4 +295,16 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    /**
+     * Checkbox/Radio
+     */
+    public function checkbox_radio()
+    {
+        if ($this->requestPluginName === 'Checkbox' || $this->requestPluginName === 'Radio') {
+            return $this->success();
+        }
+        
+        return $this->display();
+    }
 }
