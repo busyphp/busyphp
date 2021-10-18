@@ -1,0 +1,91 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="dropdown"` 来触发
+
+### 标签结构
+
+```html
+<div class="dropdown">
+  <button type="button" data-toggle="dropdown">
+        Dropdown trigger
+        <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+        ...
+  </ul>
+</div>
+```
+
+### 事件
+
+| 事件名称:240 | 描述 |
+| :-: | :- |
+| show.bs.dropdown | 显示未执行动画时触发 |
+| shown.bs.dropdown | 显示已执行完毕动画时触发 |
+| hide.bs.dropdown | 隐藏未执行动画时触发 |
+| hidden.bs.dropdown | 隐藏已执行完毕动画时触发 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+                向下弹出
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="#">选项1</a></li>
+                <li><a href="#">选项2</a></li>
+                <li><a href="#">选项3</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">选项4</a></li>
+            </ul>
+        </div>
+        <div class="btn-group dropup">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+                向上弹出
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="#">选项1</a></li>
+                <li><a href="#">选项2</a></li>
+                <li><a href="#">选项3</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">选项4</a></li>
+            </ul>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+                靠左弹出
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-left">
+                <li><a href="#">选项1</a></li>
+                <li><a href="#">选项2</a></li>
+                <li><a href="#">选项3</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">选项4</a></li>
+            </ul>
+        </div>
+    </template>
+</block>

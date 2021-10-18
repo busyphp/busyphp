@@ -296,6 +296,7 @@ class ManualComponentController extends InsideController
         return $this->display();
     }
     
+    
     /**
      * Checkbox/Radio
      */
@@ -305,6 +306,51 @@ class ManualComponentController extends InsideController
             return $this->success();
         }
         
+        return $this->display();
+    }
+    
+    
+    /**
+     * 下拉菜单
+     */
+    public function dropdown()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 选项卡
+     */
+    public function tab()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 工具提示
+     */
+    public function tooltip()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 工具提示
+     */
+    public function popover()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 折叠面板
+     */
+    public function collapse()
+    {
         return $this->display();
     }
 }

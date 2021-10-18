@@ -1,0 +1,103 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="collapse"` 来触发
+
+```html
+<a class="btn btn-primary" data-toggle="collapse" href="#collapseExample">开关</a>
+<div class="collapse" id="collapseExample">内容</div>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-parent | string | 否 | `false` | 设置父选择器，设置后可实现手风琴效果 |
+
+### 事件
+
+| 事件名称:240 | 描述 |
+| :-: | :- |
+| show.bs.collapse | 显示未执行动画时触发 |
+| shown.bs.collapse | 显示已执行完毕动画时触发 |
+| hide.bs.collapse | 隐藏未执行动画时触发 |
+| hidden.bs.collapse | 隐藏已执行完毕动画时触发 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+
+#### 手风琴示例
+```demo:实例
+#demo2
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <h4>默认隐藏</h4>
+        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample">开关</a>
+        <div class="collapse" id="collapseExample">内容</div>
+
+        <hr/>
+        <h4>默认显示</h4>
+        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample1">开关</a>
+        <div class="collapse in" id="collapseExample1">内容</div>
+    </template>
+
+    <template id="demo2" class="hide">
+        <div class="panel-group no-margin-bottom" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingThree">
+                    <h4 class="panel-title">
+                        <a class="" data-toggle="collapse" data-parent="#accordion" href="#collapse1">可折叠组项目 #1</a>
+                    </h4>
+                </div>
+                <div id="collapse1" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        陈词滥调的制造商指责灵魂指责古怪的理查森是一个如此高尚的乌贼。然而，Moon wolf 3 服务并不渴望滑板浪漫的早午餐。像这样的食品卡车藜麦小吃。早午餐 3 狼月时间，在上面放一只小鸟鱿鱼单品咖啡，喝一些 shoreditch。keffiyeh helvetica 精酿啤酒 wes anderson 相信他们不知道如何明智地工作。素食主义者例外屠夫而不是lomo。紧身裤和百叶窗工艺啤酒从农场到餐桌，您可能没有听说过的原始牛仔布美学合成器同事指责他们穿着可持续的 VHS。
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingThree">
+                    <h4 class="panel-title">
+                        <a class="" data-toggle="collapse" data-parent="#accordion" href="#collapse2">可折叠组项目 #2</a>
+                    </h4>
+                </div>
+                <div id="collapse2" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        陈词滥调的制造商指责灵魂指责古怪的理查森是一个如此高尚的乌贼。然而，Moon wolf 3 服务并不渴望滑板浪漫的早午餐。像这样的食品卡车藜麦小吃。早午餐 3 狼月时间，在上面放一只小鸟鱿鱼单品咖啡，喝一些 shoreditch。keffiyeh helvetica 精酿啤酒 wes anderson 相信他们不知道如何明智地工作。素食主义者例外屠夫而不是lomo。紧身裤和百叶窗工艺啤酒从农场到餐桌，您可能没有听说过的原始牛仔布美学合成器同事指责他们穿着可持续的 VHS。
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingThree">
+                    <h4 class="panel-title">
+                        <a class="" data-toggle="collapse" data-parent="#accordion" href="#collapse3">可折叠组项目 #3</a>
+                    </h4>
+                </div>
+                <div id="collapse3" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        陈词滥调的制造商指责灵魂指责古怪的理查森是一个如此高尚的乌贼。然而，Moon wolf 3 服务并不渴望滑板浪漫的早午餐。像这样的食品卡车藜麦小吃。早午餐 3 狼月时间，在上面放一只小鸟鱿鱼单品咖啡，喝一些 shoreditch。keffiyeh helvetica 精酿啤酒 wes anderson 相信他们不知道如何明智地工作。素食主义者例外屠夫而不是lomo。紧身裤和百叶窗工艺啤酒从农场到餐桌，您可能没有听说过的原始牛仔布美学合成器同事指责他们穿着可持续的 VHS。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</block>

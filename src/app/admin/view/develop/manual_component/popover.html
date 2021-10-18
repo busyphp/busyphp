@@ -1,0 +1,62 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="popover"` 来触发
+
+```html
+<div data-toggle="popover" title="标题" data-content="内容"></div>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-container | string,false | 否 | `false` | 将工具提示附加到特定元素 |
+| data-content | string,function | 否 | - | 设置弹出框内容 |
+| data-delay | number,object | 否 | `0` | 延迟显示和隐藏工具提示(毫秒)，如果设置数字，则延迟应用于隐藏/显示，对象结构为：`{ "show": 500, "hide": 100 }` |
+| data-html | boolean | 否 | `false` | 提示内容是否支持HTML |
+| data-placement | string | 否 | `top` | 设置提示方向，支持：`top`，`bottom`，`left`，`right`，`auto` |
+| data-selector | string | 否 | `false` | 如果提供了选择器，工具提示对象将被委托给指定的目标。在实践中，这也用于将工具提示应用于动态添加的 DOM 元素（jQuery.on支持） |
+| data-title | string,function | 否 | - | 设置弹出框标题 |
+| data-trigger | string | 否 | `click` | 设置触发工具提示的方式 - `click:单击`，`hover:悬停`，`focus:焦点`，`manual:手动`。可以传递多个触发器；用空格分隔它们。`manual`不能与任何其他触发器结合使用。 |
+| data-viewport | string,object,function | 否 | `{ selector: 'body', padding: 0 }` | 将工具提示保持在此元素的范围内。示例：`viewport: '#viewport'` 或 `{ "selector": "#viewport", "padding": 0 }` <br />如果给定了一个函数，它会以触发元素 DOM 节点作为唯一参数被调用。该`this`情境设置为提示实例。 |
+| data-sanitize | boolean | 否 | `true` | 启用或禁用清理 |
+
+### 事件
+
+| 事件名称:240 | 描述 |
+| :-: | :- |
+| show.bs.popover | 显示未执行动画时触发 |
+| shown.bs.popover | 显示已执行完毕动画时触发 |
+| hide.bs.popover | 隐藏未执行动画时触发 |
+| hidden.bs.popover | 隐藏已执行完毕动画时触发 |
+| inserted.bs.popover | 当弹出框模板添加到 DOM 时，会在`show.bs.popover`事件之后触发此事件 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <button type="button" class="btn btn-default" data-trigger="focus" data-toggle="popover" data-placement="left" title="左弹出" data-content="内容">左弹出，可消失</button>
+        <button type="button" class="btn btn-default" data-toggle="popover" data-placement="top" title="上弹出" data-content="内容">上弹出</button>
+        <button type="button" class="btn btn-default" data-toggle="popover" data-placement="bottom" title="下弹出" data-content="内容">下弹出</button>
+        <button type="button" class="btn btn-default" data-toggle="popover" data-placement="right" title="右弹出" data-content="内容">右弹出</button>
+    </template>
+</block>

@@ -59,6 +59,14 @@
 ```demo:实例
 #demo4
 ```
+
+### Bootstrap按钮风格
+
+> 注意：该组件为`Bootstrap`提供的内置组件，不支持以上参数以及方法
+
+```demo:实例
+#demo6
+```
             </script>
         </div>
     </div>
@@ -156,5 +164,34 @@
         
         <input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="1" title="男">
         <input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="2" title="女">
+    </template>
+
+
+    <template id="demo6" class="hide">
+        <h4>Checkbox</h4>
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary active">
+                <input type="checkbox" checked> 选项1(已选中)
+            </label>
+            <label class="btn btn-primary">
+                <input type="checkbox"> 选项2
+            </label>
+            <label class="btn btn-primary">
+                <input type="checkbox"> 选项3
+            </label>
+        </div>
+        <hr />
+        <h4>Radio</h4>
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary active">
+                <input type="radio" name="options" checked> 选项1(已选中)
+            </label>
+            <label class="btn btn-primary">
+                <input type="radio" name="options"> 选项2
+            </label>
+            <label class="btn btn-primary">
+                <input type="radio" name="options"> 选项3
+            </label>
+        </div>
     </template>
 </block>

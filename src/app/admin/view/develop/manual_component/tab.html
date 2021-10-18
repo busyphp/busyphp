@@ -1,0 +1,94 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="tab"` 来触发
+
+### 标签结构
+
+```html
+<div>
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#tab1" data-toggle="tab">选项1</a></li>
+        <li><a href="#tab2" data-toggle="tab">选项2</a></li>
+        <li><a href="#tab3" data-toggle="tab">选项3</a></li>
+        <li><a href="#tab4" data-toggle="tab">选项4</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="tab1">...</div>
+        <div class="tab-pane" id="tab2">...</div>
+        <div class="tab-pane" id="tab3">...</div>
+        <div class="tab-pane" id="tab4">...</div>
+    </div>
+</div>
+```
+
+### 事件
+
+使用 `event.target` 和 `event.relatedTarget` 分别定位 `当前选项卡` 和 `上一个选项卡`
+
+| 事件名称:240 | 描述 |
+| :-: | :- |
+| show.bs.tab | 显示未执行动画时触发 |
+| shown.bs.tab | 显示已执行完毕动画时触发 |
+| hide.bs.tab | 隐藏未执行动画时触发 |
+| hidden.bs.tab | 隐藏已执行完毕动画时触发 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <div>
+            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+                <li class="active">
+                    <a href="#tab1" data-toggle="tab">选项卡1</a>
+                </li>
+                <li class="">
+                    <a href="#tab2" data-toggle="tab">选项卡2</a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">更多选项 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#tab3" data-toggle="tab">选项卡3</a>
+                        </li>
+                        <li>
+                            <a href="#tab4" data-toggle="tab">选项卡4</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade active in" id="tab1">
+                    <p>选项卡内容1</p>
+                </div>
+                <div class="tab-pane fade" id="tab2">
+                    <p>选项卡内容2</p>
+                </div>
+                <div class="tab-pane fade" id="tab3">
+                    <p>选项卡内容3</p>
+                </div>
+                <div class="tab-pane fade" id="tab4">
+                    <p>选项卡内容4</p>
+                </div>
+            </div>
+        </div>
+    </template>
+</block>
