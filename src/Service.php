@@ -11,6 +11,7 @@ use BusyPHP\app\admin\controller\develop\ManualElementController;
 use BusyPHP\app\admin\controller\develop\SystemConfigController;
 use BusyPHP\app\admin\controller\develop\SystemFileClassController;
 use BusyPHP\app\admin\controller\develop\SystemMenuController;
+use BusyPHP\app\admin\controller\develop\SystemPluginController;
 use BusyPHP\app\admin\controller\system\SystemFileController;
 use BusyPHP\app\admin\controller\system\SystemLogsController;
 use BusyPHP\app\admin\controller\system\SystemManagerController;
@@ -288,6 +289,7 @@ class Service extends ThinkService
                 'system_menu'       => ['group' => 'develop', 'class' => SystemMenuController::class,],
                 'system_config'     => ['group' => 'develop', 'class' => SystemConfigController::class],
                 'system_file_class' => ['group' => 'develop', 'class' => SystemFileClassController::class],
+                'system_plugin'     => ['group' => 'develop', 'class' => SystemPluginController::class],
                 'manual_component'  => ['group' => 'develop', 'class' => ManualComponentController::class],
                 'manual_element'    => ['group' => 'develop', 'class' => ManualElementController::class],
                 'system_file'       => ['group' => 'system', 'class' => SystemFileController::class],
