@@ -85,6 +85,16 @@ class AdminSetting extends Setting
     
     
     /**
+     * 获取登录页背景图
+     * @return string
+     */
+    public function getLoginBg() : string
+    {
+        return $this->get('login_bg', '') ?: '';
+    }
+    
+    
+    /**
      * 获取登录是否需要验证码
      * @return bool
      */

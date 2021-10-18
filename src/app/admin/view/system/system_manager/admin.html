@@ -96,7 +96,7 @@
             <label class="col-sm-2 col-md-2 control-label">后台Logo</label>
             <div class="col-sm-10 col-md-8">
                 <input type="text" class="form-control" name="data[logo_horizontal]" data-toggle="busy-upload" placeholder="请上传管理系统LOGO" value="{$info.logo_horizontal|default=''}" data-class-type="image" data-class-value="system_logo_horizontal"/>
-                <span class="help-block">上传管理系统Logo，建议尺寸：<code>420×80像素</code> 设置后将显示在管理系统的左上角，此时管理系统名称将不显示。</span>
+                <span class="help-block">设置管理系统Logo，建议尺寸：<code>420×80像素</code> 设置后将显示在管理系统的左上角，此时管理系统名称将不显示。</span>
             </div>
         </div>
 
@@ -104,7 +104,15 @@
             <label class="col-sm-2 col-md-2 control-label">后台图标</label>
             <div class="col-sm-10 col-md-8">
                 <input type="text" class="form-control" name="data[logo_icon]" data-toggle="busy-upload" placeholder="请上传管理系统图标" value="{$info.logo_icon|default=''}" data-class-type="image" data-class-value="system_logo_icon"/>
-                <span class="help-block">上传管理系统图标，建议尺寸：<code>68×68像素</code> 设置后将在管理系统激活迷你菜单的时候的显示，此时管理系统Logo将不显示。</span>
+                <span class="help-block">设置管理系统图标，建议尺寸：<code>68×68像素</code> 设置后将在管理系统激活迷你菜单的时候的显示，此时管理系统Logo将不显示。</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 col-md-2 control-label">登录页背景图</label>
+            <div class="col-sm-10 col-md-8">
+                <input type="text" class="form-control" name="data[login_bg]" data-toggle="busy-upload" placeholder="请上传登录页背景图" value="{$info.login_bg|default=''}" data-class-type="image" data-class-value="system_login_bg"/>
+                <span class="help-block">设置管理系统登录页背景图，设置后登录页将显示该背景图。</span>
             </div>
         </div>
         <div class="text-center">

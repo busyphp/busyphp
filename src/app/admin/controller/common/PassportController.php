@@ -2,7 +2,9 @@
 
 namespace BusyPHP\app\admin\controller\common;
 
+use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\general\controller\VerifyController;
 use BusyPHP\exception\VerifyException;
@@ -86,19 +88,24 @@ class PassportController extends InsideController
             }
         }
         
-        $list  = glob($this->app->getPublicPath('assets/admin/images/login/*.*'));
-        $array = [];
-        foreach ($list as $item) {
-            $array[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
-        }
-        
         $adminSetting  = AdminSetting::init();
         $publicSetting = PublicSetting::init();
+        $loginBg       = $adminSetting->getLoginBg();
+        if ($loginBg && is_file(App::urlToPath($loginBg))) {
+            $bg = $loginBg;
+        } else {
+            $bgList = [];
+            foreach (glob($this->app->getPublicPath('assets/admin/images/login/*.*')) as $item) {
+                $bgList[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
+            }
+            $bg = $bgList[rand(0, count($bgList) - 1)];
+        }
+        
         $this->assign('admin_title', $adminSetting->getTitle());
         $this->assign('is_verify', $adminSetting->isVerify());
         $this->assign('save_login', $adminSetting->getSaveLogin() > 0);
         $this->assign('logo', $adminSetting->getLogoHorizontal());
-        $this->assign('bg', $array[rand(0, count($array) - 1)]);
+        $this->assign('bg', $bg);
         $this->assign('verify_url', VerifyController::url('admin_login'));
         $this->assign('copyright', $publicSetting->getCopyright());
         $this->assign('icp_no', $publicSetting->getIcpNo());
