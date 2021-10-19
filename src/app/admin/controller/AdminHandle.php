@@ -18,7 +18,6 @@ use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
-use think\helper\Str;
 use think\Response;
 use think\response\View;
 use Throwable;
@@ -80,7 +79,7 @@ class AdminHandle extends Handle
      */
     public static function isSinglePage() : bool
     {
-        return Request::init()->header('Busy-Admin-Plugin', '') === 'SinglePage';
+        return App::init()->request->header('Busy-Admin-Plugin', '') === 'SinglePage';
     }
     
     
@@ -94,7 +93,7 @@ class AdminHandle extends Handle
      */
     public static function templateBaseData($pageTitle = '', ?AdminUserInfo $adminUser = null) : array
     {
-        $request = Request::init();
+        $request = App::init()->request;
         $data    = [];
         
         // 全局URL
@@ -111,7 +110,7 @@ class AdminHandle extends Handle
         $menuModel   = SystemMenu::init();
         $hashList    = $menuModel->getHashList();
         $breadcrumb  = [];
-        $currentMenu = $hashList[md5(Str::snake($request->getPath()))] ?? null;
+        $currentMenu = $hashList[md5($request->getRoutePath(true))] ?? null;
         if ($currentMenu) {
             $idList     = $menuModel->getIdList();
             $parentList = $menuModel->getIdParens();
@@ -161,14 +160,16 @@ class AdminHandle extends Handle
         ];
         
         // 系统信息
-        $pageTitleSuffix = ' - ' . AdminSetting::init()->getTitle();
+        $adminSetting    = AdminSetting::init();
+        $publicSetting   = PublicSetting::init();
+        $pageTitleSuffix = ' - ' . $adminSetting->getTitle();
         $data['system']  = [
-            'title'             => AdminSetting::init()->getTitle(),
+            'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
             'page_title_suffix' => $pageTitleSuffix,
-            'favicon'           => PublicSetting::init()->getFavicon(),
-            'logo_icon'         => AdminSetting::init()->getLogoIcon(),
-            'logo_horizontal'   => AdminSetting::init()->getLogoHorizontal(),
+            'favicon'           => $publicSetting->getFavicon(),
+            'logo_icon'         => $adminSetting->getLogoIcon(),
+            'logo_horizontal'   => $adminSetting->getLogoHorizontal(),
             'user'              => $adminUser ?? [],
             'breadcrumb'        => $breadcrumb,
             'frame_config'      => json_encode([
@@ -177,7 +178,7 @@ class AdminHandle extends Handle
                 'version'    => $data['skin']['version'],
                 'configs'    => [
                     'app'    => [
-                        'errorImgUrl'     => "/assets/data/images/no_image.jpeg?v={$data['skin']['version']}",
+                        'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder() . "?v={$data['skin']['version']}",
                         'url'             => $data['url']['app'],
                         'navSingleHold'   => $theme['nav_single_hold'],
                         'navMode'         => $theme['nav_mode'],

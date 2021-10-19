@@ -28,7 +28,7 @@ return [
     'logo_status' => false,
     
     // LOGO路径
-    'logo_path'   => App::getInstance()->getPublicPath('assets/data/images/qr_logo.png'),
+    'logo_path'   => App::init()->getPublicPath('assets/data/images/qr_logo.png'),
     
     // LOGO大小 数值越大，logo越小
     'logo_size'   => 5

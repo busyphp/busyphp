@@ -1,0 +1,91 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="page-header">
+        <h4>{$system.page_title} <small>设置系统动态生成二维码的尺寸、Logo等配置</small></h4>
+    </div>
+
+    <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
+        <fieldset class="fieldset white">
+            <legend>基本设置</legend>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">绑定域名</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="url" class="form-control" name="data[domain]" value="{$info.domain|default=''}" placeholder="请输入绑定域名"/>
+                    <span class="help-block">设置绑定域名，必须包涵<code>http://</code>或<code>https://</code>，不设置将默认使用当前域名</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">还原率等级</label>
+                <div class="col-sm-10 col-md-8">
+                    <select class="form-control" name="data[level]">
+                        {$level_options}
+                    </select>
+                    <span class="help-block">设置二维码还原率等级，等级越高，二维码越大，当二维码识别率不足时，可以设置该项进行调整</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">空白间距</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="number" class="form-control" name="data[margin]" value="{$info.margin|default=''}" placeholder="请输入空白间距"/>
+                    <span class="help-block">设置空白间距，数字越大间距越大</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">图片质量</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="number" class="form-control" min="1" max="100" name="data[quality]" value="{$info.quality|default=''}" placeholder="请输入图片质量"/>
+                    <span class="help-block">设置图片质量，范围<code>1-100</code>，质量越大，二维码字节越大</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">图片尺寸</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="number" class="form-control" min="1" max="10" name="data[size]" value="{$info.size|default=''}" placeholder="请输入图片尺寸"/>
+                    <span class="help-block">设置图片尺寸，范围<code>1-10</code>，数字越大，二维码尺寸越大</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">保存到本地</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="radio">
+                        <input type="radio" name="data[save_local]" data-toggle="busy-radio" value="1" title="是" <?=is_checked(($info['save_local'] ?? 0) == 1)?>/>
+                        <input type="radio" name="data[save_local]" data-toggle="busy-radio" value="0" title="否" <?=is_checked(($info['save_local'] ?? 0) == 0)?>/>
+                    </div>
+                    <span class="help-block">启用后，动态生成的二维码将保存到<code>/public/qrcodes/</code>目录下，缩图效率更高效</span>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="fieldset white">
+            <legend>Logo设置</legend>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">是否加Logo</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="radio">
+                        <input type="radio" name="data[logo_status]" data-toggle="busy-radio" value="1" title="是" <?=is_checked(($info['logo_status'] ?? 0) == 1)?>/>
+                        <input type="radio" name="data[logo_status]" data-toggle="busy-radio" value="0" title="否" <?=is_checked(($info['logo_status'] ?? 0) == 0)?>/>
+                    </div>
+                    <span class="help-block">启用后，生成的二维码将显示Logo</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Logo图标</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" data-toggle="busy-upload" name="data[logo_path]" value="{$info.logo_path|default=''}" placeholder="上传logo图标" data-class-type="image" data-class-value="system_qrcode_logo"/>
+                    <span class="help-block">上传logo图标文件，建议使用<code>png</code>透明格式的图标尺寸，尺寸比例为：<code>1:1</code></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Logo尺寸</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="number" class="form-control" name="data[logo_size]" value="{$info.logo_size|default=''}" placeholder="请输入Logo尺寸等级" />
+                    <span class="help-block">设置Logo尺寸，数字越大Logo越小</span>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="text-center">
+            <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
+            <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
+        </div>
+    </form>
+</block>

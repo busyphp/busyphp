@@ -51,10 +51,6 @@
 			],
 			"extract"  : {
 				"src/data/app_assets.zip" : "public/assets"
-			},
-			"config"   : {
-				"thumb"  : "src/data/config_thumb.php",
-				"qrcode" : "src/data/config_qrcode.php"
 			}
 		}
 	}

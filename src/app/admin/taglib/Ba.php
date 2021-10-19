@@ -36,27 +36,32 @@ class Ba extends TagLib
      */
     protected function tagAccess(array $tag, string $content) : string
     {
-        $value = $tag['value'] ?? '';
-        
-        // 解析变量
-        $flag = substr($value, 0, 1);
-        if ($flag === '$' || $flag === ':') {
-            $value = $this->autoBuildVar($value);
-        } else {
-            $values = explode('/', $value) ?: [];
-            // 需要获取控制器补全
-            if (count($values) == 1) {
-                $controller = App::getInstance()->request->controller();
-                $value      = "'{$controller}/{$value}'";
+        $value = (string) ($tag['value'] ?? '');
+        $list  = explode(',', $value);
+        $path  = [];
+        foreach ($list as $item) {
+            // 解析变量
+            $flag = substr($item, 0, 1);
+            if ($flag === '$' || $flag === ':') {
+                $item = $this->autoBuildVar($item);
             } else {
-                $value = "'{$value}'";
+                $values = explode('/', $item) ?: [];
+                // 需要获取控制器补全
+                if (count($values) == 1) {
+                    $controller = App::init()->request->controller();
+                    $item       = "'{$controller}/{$item}'";
+                } else {
+                    $item = "'{$item}'";
+                }
             }
+            $path[] = $item;
         }
+        $path = implode(',', $path);
         
         $groupClass = AdminGroup::class;
         
         return <<<HTML
-<?php if ({$groupClass}::checkPermission(\$system['user'] ?? null, {$value})): ?>{$content}<?php endif; ?>
+<?php if ({$groupClass}::checkPermission(\$system['user'] ?? null, {$path})): ?>{$content}<?php endif; ?>
 HTML;
     }
 }

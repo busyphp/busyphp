@@ -4,8 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Filter;
-use think\Container;
+use BusyPHP\helper\util\Str;
 use think\facade\Config;
 use think\file\UploadedFile;
 
@@ -45,16 +44,6 @@ class Request extends \think\Request
      * @var string
      */
     protected $webUrl;
-    
-    
-    /**
-     * 单例
-     * @return Request
-     */
-    public static function init() : self
-    {
-        return Container::getInstance()->make(self::class);
-    }
     
     
     /**
@@ -109,19 +98,15 @@ class Request extends \think\Request
     
     
     /**
-     * 获取url的path部分，不含应用名称和扩展名
+     * 获取路由路径
+     * @param bool $isSnake 是否转换为下划线形式
      * @return string
      */
-    public function getPath() : string
+    public function getRoutePath(bool $isSnake = false) : string
     {
-        $path = $this->url();
-        $path = ltrim(trim(parse_url($path, PHP_URL_PATH)), '/');
-        if (false !== $index = strrpos($path, '.')) {
-            $path = substr($path, 0, $index);
-        }
-        $path = ltrim(substr("/{$path}", strlen($this->root())), '/');
+        $path = $this->controller() . '/' . $this->action();
         
-        return $path;
+        return $isSnake ? Str::snake($path) : $path;
     }
     
     
@@ -342,7 +327,7 @@ class Request extends \think\Request
      */
     public function getAssetsUrl(bool $domain = false) : string
     {
-        if ($domainAssets = App::getInstance()->config->get('route.domain_assets')) {
+        if ($domainAssets = App::init()->config->get('route.domain_assets')) {
             return rtrim($domainAssets, '/') . '/';
         } else {
             return $this->getWebUrl($domain) . 'assets/';

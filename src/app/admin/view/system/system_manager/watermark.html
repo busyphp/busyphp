@@ -1,74 +1,103 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <title>{$system.page_title}</title>
-    <div class="form-group">
-        <label>水印文件</label>
-        <input type="text" class="form-control" data-toggle="busy-upload" name="data[file]" value="{$info.file|default=''}" placeholder="请上传水印文件" data-class-type="image" data-class-value="system_watermark"/>
-        <span class="help-block">上传水印图片文件，建议使用<code>png</code>透明格式的水印图片文件</span>
+    <div class="page-header">
+        <h4>{$system.page_title} <small>设置图片水印文件、位置等相关配置</small></h4>
     </div>
-    <div class="form-group">
-        <label>水印透明度</label>
-        <input type="number" min="1" max="100" class="form-control" name="data[opacity]" value="{$info.opacity|default='1'}" placeholder="请输入水印透明度"/>
-        <span class="help-block">设置水印透明度，范围：<code>1-100</code></span>
-    </div>
-    <div class="form-group">
-        <label>水印偏移值</label>
-        <div class="input-group">
-            <div class="input-group-addon">x</div>
-            <input type="number" class="form-control" name="data[offset_x]" value="{$info.offset_x|default=''}" placeholder="请输入x轴方向偏移值"/>
-            <div class="input-group-addon no-border-left no-border-right">y</div>
-            <input type="number" class="form-control" name="data[offset_y]" value="{$info.offset_y|default=''}" placeholder="请输入y轴方向偏移值"/>
+
+    <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
+        <fieldset class="fieldset white">
+            <legend>水印文件</legend>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印文件</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" data-toggle="busy-upload" name="data[file]" value="{$info.file|default=''}" placeholder="上传水印文件" data-class-type="image" data-class-value="system_watermark"/>
+                    <span class="help-block">上传水印图片文件，建议使用<code>png</code>透明格式的水印图片文件</span>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="fieldset white">
+            <legend>其它配置</legend>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印透明度</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="number" min="1" max="100" class="form-control" name="data[opacity]" value="{$info.opacity|default='1'}" placeholder="请输入水印透明度"/>
+                    <span class="help-block">设置水印透明度，范围：<code>1-100</code></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印偏移值</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="input-group">
+                        <div class="input-group-addon">x</div>
+                        <input type="number" class="form-control" name="data[offset_x]" value="{$info.offset_x|default=''}" placeholder="请输入x轴方向偏移值"/>
+                        <div class="input-group-addon no-border-left no-border-right">y</div>
+                        <input type="number" class="form-control" name="data[offset_y]" value="{$info.offset_y|default=''}" placeholder="请输入y轴方向偏移值"/>
+                    </div>
+                    <span class="help-block">设置水印相对于图片的偏移值，通过此参数可以调整水印具体的位置</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印角度</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="input-group">
+                        <input type="number" min="0" max="360" class="form-control" name="data[offset_rotate]" value="{$info.offset_rotate|default=''}" placeholder="请输入水印角度"/>
+                        <div class="input-group-addon no-border-left no-border-right">度</div>
+                    </div>
+                    <span class="help-block">设置水印角度，范围：<code>0-360</code></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">水印位置</label>
+                <div class="col-sm-10 col-md-8">
+                    <table class="table table-bordered no-margin-bottom">
+                        <tr class="text-center">
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="1" title="左上" <?=is_checked(($info['position'] ?? 0) == 1)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="2" title="正上" <?=is_checked(($info['position'] ?? 0) == 2)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="3" title="右上" <?=is_checked(($info['position'] ?? 0) == 3)?>/>
+                            </td>
+                        </tr>
+                        <tr class="text-center">
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="4" title="正左" <?=is_checked(($info['position'] ?? 0) == 4)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="5" title="中心" <?=is_checked(($info['position'] ?? 0) == 5)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="6" title="正右" <?=is_checked(($info['position'] ?? 0) == 6)?>/>
+                            </td>
+                        </tr>
+                        <tr class="text-center">
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="7" title="左下" <?=is_checked(($info['position'] ?? 0) == 7)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="8" title="正下" <?=is_checked(($info['position'] ?? 0) == 8)?>/>
+                            </td>
+                            <td>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="9" title="右下" <?=is_checked(($info['position'] ?? 0) == 9)?>/>
+                            </td>
+                        </tr>
+                        <tr class="text-center">
+                            <td colspan="3">
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="0" title="随机方向" <?=is_checked(($info['position'] ?? 0) == 0)?>/>
+                                <input data-toggle="busy-radio" type="radio" name="data[position]" value="10" title="铺满图片" <?=is_checked(($info['position'] ?? 0) == 10)?>/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="text-center">
+            <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
+            <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
         </div>
-        <span class="help-block">设置水印相对于图片的偏移值，通过此参数可以调整水印具体的位置</span>
-    </div>
-    <div class="form-group">
-        <label>水印角度</label>
-        <div class="input-group">
-            <input type="number" min="0" max="360" class="form-control" name="data[offset_rotate]" value="{$info.offset_rotate|default=''}" placeholder="请输入水印角度"/>
-            <div class="input-group-addon no-border-left no-border-right">度</div>
-        </div>
-        <span class="help-block">设置水印角度，范围：<code>0-360</code></span>
-    </div>
-    <label>水印位置</label>
-    <table class="table table-bordered no-margin-bottom">
-        <tr class="text-center">
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="1" title="左上" <?=is_checked(($info['position'] ?? 0) == 1)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="2" title="正上" <?=is_checked(($info['position'] ?? 0) == 2)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="3" title="右上" <?=is_checked(($info['position'] ?? 0) == 3)?>/>
-            </td>
-        </tr>
-        <tr class="text-center">
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="4" title="正左" <?=is_checked(($info['position'] ?? 0) == 4)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="5" title="中心" <?=is_checked(($info['position'] ?? 0) == 5)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="6" title="正右" <?=is_checked(($info['position'] ?? 0) == 6)?>/>
-            </td>
-        </tr>
-        <tr class="text-center">
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="7" title="左下" <?=is_checked(($info['position'] ?? 0) == 7)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="8" title="正下" <?=is_checked(($info['position'] ?? 0) == 8)?>/>
-            </td>
-            <td>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="9" title="右下" <?=is_checked(($info['position'] ?? 0) == 9)?>/>
-            </td>
-        </tr>
-        <tr class="text-center">
-            <td colspan="3">
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="0" title="随机方向" <?=is_checked(($info['position'] ?? 0) == 0)?>/>
-                <input data-toggle="busy-radio" type="radio" name="data[position]" value="10" title="铺满图片" <?=is_checked(($info['position'] ?? 0) == 10)?>/>
-            </td>
-        </tr>
-    </table>
+    </form>
 </block>

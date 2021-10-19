@@ -3,10 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\file\image;
 
-use BusyPHP\Request;
-use think\App;
-use think\Config;
-use think\Container;
+use BusyPHP\App;
+use BusyPHP\app\admin\setting\ThumbSetting;
 
 /**
  * 动态缩图URL生成
@@ -22,33 +20,33 @@ class ThumbUrl
     const EMPTY_IMAGE_VAR = 'no_picture';
     
     /**
-     * 公共配置
-     * @var Config
-     */
-    protected static $config;
-    
-    /**
      * @var string
      */
     protected $url;
     
     /**
      * 缩图配置
-     * @var array
+     * @var ThumbSetting
      */
-    protected $options;
+    protected $setting;
     
     /**
      * 缩图类型
      * @var string
      */
-    private $type;
+    protected $type;
     
     /**
      * 缩图配置
      * @var string
      */
-    private $size;
+    protected $size;
+    
+    /**
+     * 域名地址
+     * @var bool|string
+     */
+    protected $domain = false;
     
     
     /**
@@ -56,24 +54,7 @@ class ThumbUrl
      */
     public function __construct()
     {
-        if (!isset(self::$config)) {
-            $app = App::getInstance();
-            $app->config->load($app->getConfigPath() . 'extend' . DIRECTORY_SEPARATOR . 'thumb.php', 'thumb');
-            
-            self::$config = $app->config;
-        }
-        
-        $this->options = self::$config->get('thumb');
-    }
-    
-    
-    /**
-     * 获取配置
-     * @return Config
-     */
-    public function getConfig() : Config
-    {
-        return self::$config;
+        $this->setting = ThumbSetting::init();
     }
     
     
@@ -84,7 +65,7 @@ class ThumbUrl
      */
     public function url($url) : self
     {
-        $this->url = $url;
+        $this->url = trim((string) $url);
         
         return $this;
     }
@@ -117,6 +98,19 @@ class ThumbUrl
     
     
     /**
+     * 设置是否输出域名
+     * @param bool|string $domain 域名地址
+     * @return $this
+     */
+    public function domain($domain) : self
+    {
+        $this->domain = $domain;
+        
+        return $this;
+    }
+    
+    
+    /**
      * 生成URL
      * @return string
      */
@@ -126,20 +120,19 @@ class ThumbUrl
             return $this->url;
         }
         
-        $this->url         = $this->url ?: ($this->options['empty_image_var'] ?: self::EMPTY_IMAGE_VAR);
-        $info              = pathinfo($this->url);
-        $info['extension'] = $info['extension'] ?? 'jpg';
-        $info['extension'] = $info['extension'] ?: 'jpg';
-        if ('/' === $info['dirname'] || '.' === $info['dirname']) {
+        $info              = pathinfo($this->url ?: $this->setting->getEmptyImageVar());
+        $info['extension'] = $info['extension'] ?? 'jpeg';
+        $info['dirname']   = $info['dirname'] ?? '';
+        if ($info['dirname'] === '/' || $info['dirname'] === '.') {
             $info['dirname'] = '';
         }
         
-        /** @var Request $request */
-        $request = Container::getInstance()->make(Request::class);
-        
-        // 绑定域名
-        $domain = $this->options['domain'] ?: $request->getWebUrl();
-        $domain = rtrim($domain, '/') . '/';
+        // 域名
+        $domain = '/';
+        if ($this->domain) {
+            $domain = $this->domain === true ? ($this->setting->getDomain() ?: App::init()->request->getWebUrl()) : $this->domain;
+            $domain = rtrim($domain, '/') . '/';
+        }
         
         return "{$domain}thumbs/{$this->type}{$info['dirname']}/{$info['filename']}_{$this->size}.{$info['extension']}";
     }

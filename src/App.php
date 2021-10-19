@@ -41,6 +41,21 @@ class App extends \think\App
     ];
     
     
+    /**
+     * 单例
+     * @return App
+     */
+    public static function init()
+    {
+        return App::getInstance()->make(App::class);
+    }
+    
+    
+    /**
+     * 构造
+     * App constructor.
+     * @param string $rootPath
+     */
     public function __construct(string $rootPath = '')
     {
         $this->bind([
@@ -226,7 +241,11 @@ class App extends \think\App
      */
     public static function urlToPath(string $url) : string
     {
-        return App::getInstance()->getPublicPath($url);
+        if (!$url) {
+            return '';
+        }
+        
+        return App::init()->getPublicPath($url);
     }
     
     

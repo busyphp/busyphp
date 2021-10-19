@@ -3,11 +3,11 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\setting;
 
+use BusyPHP\App;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
-use BusyPHP\Request;
 use think\db\exception\DbException;
 
 /**
@@ -80,7 +80,7 @@ class AdminSetting extends Setting
      */
     public function getLogoIcon() : string
     {
-        return $this->get('logo_icon', '') ?: Request::init()->getAssetsUrl() . 'admin/images/busy-php-icon.png';
+        return $this->get('logo_icon', '') ?: App::init()->request->getAssetsUrl() . 'admin/images/busy-php-icon.png';
     }
     
     

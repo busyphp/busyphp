@@ -38,7 +38,7 @@ class SystemMenu extends Model
     const TARGET_IFRAME = 'iframe';
     
     /** @var bool 开发模式 */
-    const DEBUG = true;
+    const DEBUG = false;
     
     protected $dataNotFoundMessage = '菜单不存在';
     
@@ -465,7 +465,7 @@ class SystemMenu extends Model
             // 系统管理员
             if ($adminUserInfo->groupHasSystem) {
                 // 系统菜单在非开发模式下不输出
-                if ($info->system && !App::getInstance()->isDebug()) {
+                if ($info->system && !App::init()->isDebug()) {
                     return false;
                 }
             } else {

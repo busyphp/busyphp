@@ -291,7 +291,7 @@ class SystemFileClassField extends Field
      */
     public function setWatermark($watermark)
     {
-        $this->watermark = Transform::dataToBool($watermark);
+        $this->watermark = intval($watermark);
         
         return $this;
     }

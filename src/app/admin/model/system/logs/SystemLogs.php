@@ -5,7 +5,6 @@ namespace BusyPHP\app\admin\model\system\logs;
 
 use BusyPHP\App;
 use BusyPHP\model;
-use BusyPHP\Request;
 use BusyPHP\Service;
 use Exception;
 use think\db\exception\DbException;
@@ -95,7 +94,7 @@ class SystemLogs extends Model
     public function record(int $type, string $name, string $result = '')
     {
         try {
-            $request    = Request::init();
+            $request    = App::init()->request;
             $isCli      = $request->isCli();
             $filterKeys = array_merge($this->getOptions('logs_params_keys') ?: [], [
                 Service::ROUTE_VAR_DIR,
@@ -121,7 +120,7 @@ class SystemLogs extends Model
             $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
             $insert->classType  = $this->getOptions('logs_class_type') ?: 0;
             $insert->classValue = $this->getOptions('logs_class_value') ?: '';
-            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : App::getInstance()->getDirName();
+            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : App::init()->getDirName();
             $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
             $insert->url        = $isCli ? '' : ($request->url() ?: '');
             $insert->headers    = json_encode($request->header() ?: [], JSON_UNESCAPED_UNICODE);

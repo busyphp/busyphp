@@ -8,10 +8,15 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\setting\AdminSetting;
+use BusyPHP\app\admin\setting\CaptchaSetting;
+use BusyPHP\app\admin\setting\QrcodeSetting;
+use BusyPHP\app\admin\setting\ThumbSetting;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
+use BusyPHP\file\QRCode;
+use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -216,6 +221,71 @@ class SystemManagerController extends InsideController
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
         $this->assign('type', SystemFile::getTypes());
         $this->assign('info', UploadSetting::init()->get());
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 缩图生成设置
+     * @throws DbException
+     */
+    public function thumb()
+    {
+        if ($this->isPost()) {
+            $data = $this->post('data/a');
+            ThumbSetting::init()->set($data);
+            $this->log()->record(self::LOG_UPDATE, '缩图生成设置');
+            $this->updateCache();
+            
+            return $this->success('设置成功');
+        }
+        
+        $this->assign('info', ThumbSetting::init()->get());
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 图形验证码设置
+     * @throws DbException
+     */
+    public function captcha()
+    {
+        if ($this->isPost()) {
+            $data = $this->post('data/a');
+            CaptchaSetting::init()->set($data);
+            $this->log()->record(self::LOG_UPDATE, '图形验证码设置');
+            $this->updateCache();
+            
+            return $this->success('设置成功');
+        }
+        
+        $this->assign('info', CaptchaSetting::init()->get());
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 二维码生成设置
+     * @throws DbException
+     */
+    public function qrcode()
+    {
+        if ($this->isPost()) {
+            $data = $this->post('data/a');
+            QrcodeSetting::init()->set($data);
+            $this->log()->record(self::LOG_UPDATE, '二维码生成设置');
+            $this->updateCache();
+            
+            return $this->success('设置成功');
+        }
+        
+        $this->assign('level_options', Transform::arrayToOption(QRCode::getLevels(), '__index', '__index', QrcodeSetting::init()
+            ->getLevel()));
+        $this->assign('info', QrcodeSetting::init()->get());
         
         return $this->display();
     }

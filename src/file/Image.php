@@ -11,6 +11,7 @@ use phpthumb_functions;
 use think\exception\FileException;
 use think\facade\Filesystem;
 use think\facade\Log;
+use think\Response;
 
 /**
  * 图片处理类
@@ -190,7 +191,7 @@ class Image
         $this->phpThumb->config_cache_directory_depth = 3;
         $this->phpThumb->config_temp_directory        = $cacheDir;
         $this->phpThumb->config_cache_directory       = $cacheDir;
-        $this->phpThumb->config_document_root         = App::getInstance()->getRootPath();
+        $this->phpThumb->config_document_root         = App::init()->getRootPath();
         $this->src($src);
     }
     
@@ -490,10 +491,10 @@ class Image
     /**
      * 执行缩放
      * @param bool $return 是否返回图像内容
-     * @return string
+     * @return Response
      * @throws AppException
      */
-    public function exec(bool $return = false)
+    public function exec(bool $return = false) : ?Response
     {
         $this->isExec = true;
         $data         = null;
@@ -544,7 +545,13 @@ class Image
             throw new AppException($message);
         }
         
-        return $data;
+        if ($return) {
+            return Response::create($data, 'html', 200)
+                ->header(['Content-Length' => strlen($data)])
+                ->contentType($this->getMimeType());
+        }
+        
+        return null;
     }
     
     
@@ -559,5 +566,51 @@ class Image
         }
         
         return phpthumb_functions::ImageTypeToMIMEtype($this->getPhpThumb()->thumbnailFormat);
+    }
+    
+    
+    /**
+     * 数字转水印位置
+     * @param int $number
+     * @return string
+     */
+    public static function numberToWatermarkPosition(int $number) : string
+    {
+        $number   = $number == 0 ? rand(1, 9) : $number;
+        $position = Image::P_BOTTOM_RIGHT;
+        switch ($number) {
+            case 1:
+                $position = Image::P_TOP_LEFT;
+            break;
+            case 2:
+                $position = Image::P_TOP;
+            break;
+            case 3:
+                $position = Image::P_TOP_RIGHT;
+            break;
+            case 4:
+                $position = Image::P_LEFT;
+            break;
+            case 5:
+                $position = Image::P_CENTER;
+            break;
+            case 6:
+                $position = Image::P_RIGHT;
+            break;
+            case 7:
+                $position = Image::P_BOTTOM_LEFT;
+            break;
+            case 8:
+                $position = Image::P_BOTTOM;
+            break;
+            case 9:
+                $position = Image::P_BOTTOM_RIGHT;
+            break;
+            case 10:
+                $position = Image::P_FILL;
+            break;
+        }
+        
+        return $position;
     }
 }

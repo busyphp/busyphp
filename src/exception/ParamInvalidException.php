@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\exception;
 
-use RuntimeException;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -12,7 +12,7 @@ use Throwable;
  * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午11:25 上午 ParamInvalidException.php $
  */
-class ParamInvalidException extends RuntimeException
+class ParamInvalidException extends InvalidArgumentException
 {
     /**
      * 出错的参数

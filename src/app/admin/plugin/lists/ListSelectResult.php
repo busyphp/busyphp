@@ -6,7 +6,6 @@ namespace BusyPHP\app\admin\plugin\lists;
 use BusyPHP\App;
 use BusyPHP\model\Field;
 use BusyPHP\model\Map;
-use BusyPHP\Request;
 use think\Paginator;
 
 /**
@@ -59,7 +58,7 @@ class ListSelectResult extends Map
      */
     public function __construct(array $list = [], int $listRows = 30, int $currentPage = 1, int $total = 0, bool $simple = false, ?string $drive = null)
     {
-        App::getInstance()->bind(Paginator::class, $drive ?: ListSelectPaginator::class);
+        App::init()->bind(Paginator::class, $drive ?: ListSelectPaginator::class);
         
         // 全部数据
         if ($listRows <= 0) {
@@ -68,7 +67,7 @@ class ListSelectResult extends Map
         }
         
         $this->paginator = Paginator::make($list, $listRows, $currentPage, $simple ? null : $total, $simple, [
-            'query' => Request::init()->get(),
+            'query' => App::init()->request->get(),
             'path'  => (string) url(),
         ]);
         $this->list      = $this->paginator->all();

@@ -9,7 +9,6 @@ use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\util\Str;
 use BusyPHP\model;
-use BusyPHP\Request;
 use Exception;
 use League\Flysystem\FileNotFoundException;
 use think\db\exception\DataNotFoundException;
@@ -72,7 +71,7 @@ class SystemFile extends Model
         
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
-        $insert->client     = Request::init()->isCli() ? SystemLogs::CLI_CLIENT_KEY : App::getInstance()->getDirName();
+        $insert->client     = App::init()->request->isCli() ? SystemLogs::CLI_CLIENT_KEY : App::init()->getDirName();
         $insert->type       = $classInfo->type;
         
         return $this->addData($insert);

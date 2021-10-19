@@ -3,9 +3,20 @@
 // + 公共助手函数库
 // +----------------------------------------------------
 
+use BusyPHP\App;
 use BusyPHP\file\qrcode\QRCodeUrl;
 use BusyPHP\file\image\ThumbUrl;
-use BusyPHP\Request;
+
+if (!function_exists('is_mobile')) {
+    /**
+     * 是否移动端
+     * @return bool
+     */
+    function is_mobile() : bool
+    {
+        return App::init()->request->isMobile();
+    }
+}
 
 if (!function_exists('is_android')) {
     /**
@@ -15,7 +26,7 @@ if (!function_exists('is_android')) {
      */
     function is_android($ua = '') : bool
     {
-        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
         
         return stripos($ua, 'android') !== false;
     }
@@ -30,7 +41,7 @@ if (!function_exists('is_ios')) {
      */
     function is_ios($ua = '') : bool
     {
-        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
         
         return stripos($ua, 'iphone') !== false || stripos($ua, 'ipad');
     }
@@ -45,7 +56,7 @@ if (!function_exists('is_wechat_client')) {
      */
     function is_wechat_client($ua = '') : bool
     {
-        $ua = $ua ?: Request::init()->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
         
         return strpos($ua, 'MicroMessenger') !== false;
     }

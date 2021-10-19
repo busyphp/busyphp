@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\setting;
 
+use BusyPHP\App;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\util\Filter;
 
@@ -75,5 +76,18 @@ class PublicSetting extends Setting
         $year = date('Y');
         
         return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP' target='_blank'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
+    }
+    
+    
+    /**
+     * 获取错误占位图
+     * @param bool $isPath
+     * @return string
+     */
+    public function getImgErrorPlaceholder(bool $isPath = false) : string
+    {
+        $image = $this->get('img_error_placeholder', '') ?: App::init()->request->getAssetsUrl() . 'data/images/no_image.jpeg';
+        
+        return $isPath ? App::urlToPath($image) : $image;
     }
 }

@@ -258,42 +258,7 @@ abstract class Upload
                         $image = new Image($struct->file->getRealPath());
                     }
                     
-                    $positionSet = $this->watermarkSetting->getPosition();
-                    $positionSet = $positionSet == 0 ? rand(1, 9) : $positionSet;
-                    $position    = Image::P_BOTTOM_RIGHT;
-                    switch ($positionSet) {
-                        case 1:
-                            $position = Image::P_TOP_LEFT;
-                        break;
-                        case 2:
-                            $position = Image::P_TOP;
-                        break;
-                        case 3:
-                            $position = Image::P_TOP_RIGHT;
-                        break;
-                        case 4:
-                            $position = Image::P_LEFT;
-                        break;
-                        case 5:
-                            $position = Image::P_CENTER;
-                        break;
-                        case 6:
-                            $position = Image::P_RIGHT;
-                        break;
-                        case 7:
-                            $position = Image::P_BOTTOM_LEFT;
-                        break;
-                        case 8:
-                            $position = Image::P_BOTTOM;
-                        break;
-                        case 9:
-                            $position = Image::P_BOTTOM_RIGHT;
-                        break;
-                        case 10:
-                            $position = Image::P_FILL;
-                        break;
-                    }
-                    $image->watermark($this->watermarkSetting->getFile(), $position, $this->watermarkSetting->getOpacity(), $this->watermarkSetting->getOffsetX(), $this->watermarkSetting->getOffsetY(), $this->watermarkSetting->getOffsetRotate());
+                    $image->watermark($this->watermarkSetting->getFile(), Image::numberToWatermarkPosition($this->watermarkSetting->getPosition()), $this->watermarkSetting->getOpacity(), $this->watermarkSetting->getOffsetX(), $this->watermarkSetting->getOffsetY(), $this->watermarkSetting->getOffsetRotate());
                 }
                 
                 // 图片处理

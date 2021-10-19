@@ -491,7 +491,7 @@ class AdminUser extends Model
             $theme  = json_decode((string) $theme, true) ?: [];
         }
         
-        $config                   = App::getInstance()->config;
+        $config                   = App::init()->config;
         $theme['skin']            = trim($theme['skin'] ?? '');
         $theme['skin']            = $theme['skin'] ?: $config->get('app.theme_skin', 'default-light');
         $theme['nav_mode']        = (isset($theme['nav_mode']) ? intval($theme['nav_mode']) : $config->get('app.theme_nav_mode', 0)) > 0;

@@ -3,12 +3,15 @@
 namespace BusyPHP\app\general\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\setting\ThumbSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\Controller;
-use BusyPHP\exception\AppException;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\file\Image;
-use BusyPHP\file\image\ThumbUrl;
-use think\Exception;
+use DomainException;
+use Exception;
+use RangeException;
+use think\exception\FileException;
 
 /**
  * 动态缩图
@@ -28,146 +31,93 @@ class ThumbController extends Controller
             $src = $this->param('src/s', 'trim');
             $src = ltrim($src, '/');
             if (!$src) {
-                throw new AppException('图片地址不存在');
+                throw new ParamInvalidException('src');
             }
             
-            // 解析地址中最后一个_的位置
-            if (false === $sizeIndex = strrpos($src, '_')) {
-                throw new AppException('无法解析图片地址: ' . $src);
+            // 解析图片地址
+            $pathInfo  = pathinfo($src);
+            $filename  = $pathInfo['filename'] ?? '';
+            $extension = $pathInfo['extension'] ?? 'jpeg';
+            $dirname   = $pathInfo['dirname'] ?? '';
+            
+            
+            // 获取缩图方式
+            if (!$dirname) {
+                throw new ParamInvalidException('src');
+            }
+            if (false === $thumbTypeIndex = strpos($dirname, '/')) {
+                $thumbType = $dirname;
+            } else {
+                $thumbType = substr($dirname, 0, $thumbTypeIndex);
+                $dirname   = substr($dirname, $thumbTypeIndex + 1);
             }
             
-            // 获取地址中最后一个.的位置
-            if (false === $dotIndex = strrpos($src, '.')) {
-                throw new AppException('无法解析图片地址: ' . $src);
-            }
             
-            $typeIndex = strpos($src, '/');
-            $type      = substr($src, 0, $typeIndex);
-            $size      = substr($src, $sizeIndex + 1, $dotIndex - $sizeIndex - 1);
-            $filename  = substr($src, $typeIndex + 1, $sizeIndex - $typeIndex - 1);
-            $extension = substr($src, $dotIndex + 1);
-            if (!$size || !$extension || !$filename) {
-                throw new AppException('无法解析图片地址: ' . $src);
+            // 获取尺寸配置
+            if (false === $thumbSizeIndex = strrpos($filename, '_')) {
+                throw new ParamInvalidException('src');
+            }
+            $thumbSize  = substr($filename, $thumbSizeIndex + 1);
+            $filename   = substr($filename, 0, $thumbSizeIndex);
+            $sourceFile = App::urlToPath($dirname . DIRECTORY_SEPARATOR . $filename . '.' . $extension);
+            if (!$thumbType || !$thumbSize || !$filename) {
+                throw new ParamInvalidException('src');
             }
             
             // 解析尺寸
-            $config          = (new ThumbUrl())->getConfig()->get('thumb');
-            $config['sizes'] = $config['sizes'] ?? null;
-            if (is_array($config['sizes'])) {
-                if ($sizeConfig = $config['sizes'][$size] ?? null) {
-                    [$width, $height] = $sizeConfig;
-                } elseif (in_array($size, array_values($config['sizes']))) {
-                    [$width, $height] = $this->parseSize($size);
-                } else {
-                    throw new AppException('配置不存在: ' . $size);
-                }
+            $thumbSetting = ThumbSetting::init();
+            if ($thumbSetting->isUnlimitedSize()) {
+                $size = str_replace('x', '-', strtolower($thumbSize));
+                $size = false === strpos($size, '-') ? $size . '-' : $size;
+                [$width, $height] = explode('-', $size);
             } else {
-                [$width, $height] = $this->parseSize($size);
+                if (!$sizes = $thumbSetting->getSize($thumbSize)) {
+                    throw new RangeException('配置不存在: ' . $thumbSize);
+                }
+                $width  = $sizes['width'];
+                $height = $sizes['height'];
             }
             
             
-            $width  = intval($width);
-            $height = intval($height);
+            $width  = (int) $width;
+            $height = (int) $height;
             $height = $height <= 0 ? $width : $height;
             if ($width < 1 || $height < 1) {
-                throw new AppException("尺寸无效, width: {$width}, height: {$height}");
-            }
-            
-            // 拼接源图路径
-            $noWatermark = false;
-            if ($filename === ($config['empty_image_var'] ?: ThumbUrl::EMPTY_IMAGE_VAR)) {
-                $noWatermark = true;
-                $source      = $config['empty_image_path'] ?: $this->app->getPublicPath('assets/data/no_image.jpeg');
-                if (!$source) {
-                    throw new AppException('没有配置无图图片资源路径: empty_image_path');
-                }
-                if (!is_file($source)) {
-                    throw new AppException('无图图片资源不存在: ' . $source);
-                }
-            } else {
-                $source = $this->app->getPublicPath($filename . '.' . $extension);
-                if (!is_file($source)) {
-                    throw new AppException('图片资源不存在: ' . $src);
-                }
+                throw new DomainException("尺寸无效, width: {$width}, height: {$height}");
             }
             
             
-            // 图片缩放
+            // 无图
+            $isError = false;
+            if ($filename == $thumbSetting->getEmptyImageVar() || !is_file($sourceFile)) {
+                $isError    = true;
+                $sourceFile = $thumbSetting->getErrorPlaceholder(true);
+                if (!$sourceFile || !is_file($sourceFile)) {
+                    throw new FileException("错误占位图不存在: {$sourceFile}");
+                }
+            }
+            
+            // 实例化图片缩放
             $thumb = new Image();
-            $thumb->src($source)
+            $thumb->src($sourceFile)
                 ->format($extension)
-                ->save($config['save_local'] ?? false, $this->app->getPublicPath('thumbs' . $src))
+                ->save($isError ? false : $thumbSetting->isSaveLocal(), $this->app->getPublicPath("thumbs/{$src}"))
                 ->width($width)
                 ->height($height)
-                ->thumb($type)
-                ->bgColor($config['bg_color'] ?: 'FFFFFF');
+                ->thumb($thumbType)
+                ->bgColor($thumbSetting->getBgColor());
             
-            // 水印
-            if (($config['watermark_status'] ?? false) && !$noWatermark) {
-                $setting       = WatermarkSetting::init();
-                $waterPath     = $config['watermark_image_path'] ?: '';
-                $waterPosition = $config['watermark_position'] ?: '';
-                if (!$waterPosition) {
-                    switch ($setting->getPosition()) {
-                        case 4:
-                        case 1:
-                            $waterPosition = Image::P_TOP_LEFT;
-                        break;
-                        case 2:
-                            $waterPosition = Image::P_TOP;
-                        break;
-                        case 6:
-                        case 3:
-                            $waterPosition = Image::P_TOP_RIGHT;
-                        break;
-                        case 5:
-                            $waterPosition = Image::P_CENTER;
-                        break;
-                        case 7:
-                            $waterPosition = Image::P_BOTTOM_LEFT;
-                        break;
-                        case 8:
-                            $waterPosition = Image::P_BOTTOM;
-                        break;
-                        case 0:
-                            $waterPosition = Image::P_FILL;
-                        break;
-                        case 9:
-                        default:
-                            $waterPosition = Image::P_BOTTOM_RIGHT;
-                    }
-                }
-                if (!$waterPath) {
-                    $waterPath = App::urlToPath($setting->getFile());
-                }
-                
-                if (is_file($waterPath)) {
-                    $thumb->watermark($waterPath, $waterPosition, $config['watermark_opacity'] ?? 25, $config['watermark_x'] ?? 0, $config['watermark_y'] ?? 0);
-                }
+            // 加水印
+            $watermarkSetting = WatermarkSetting::init();
+            if ($thumbSetting->isWatermark() && !$isError) {
+                $thumb->watermark($watermarkSetting->getFile(), Image::numberToWatermarkPosition($watermarkSetting->getPosition()), $watermarkSetting->getOpacity(), $watermarkSetting->getOffsetX(), $watermarkSetting->getOffsetY(), $watermarkSetting->getOffsetRotate());
             }
             
-            $content = $thumb->exec(true);
-            
-            return response($content, 200, ['Content-Length' => strlen($content)])->contentType($thumb->getMimeType());
+            return $thumb->exec(true);
         } catch (Exception $e) {
             abort(404, $e->getMessage());
             
             return null;
         }
-    }
-    
-    
-    /**
-     * 解析尺寸
-     * @param $size
-     * @return array
-     */
-    private function parseSize($size) : array
-    {
-        $size   = str_replace('x', '-', strtolower($size));
-        $size   = false === strpos($size, '-') ? $size . '-' : $size;
-        $expArr = explode('-', $size);
-        
-        return $expArr ? $expArr : [0, 0];
     }
 }

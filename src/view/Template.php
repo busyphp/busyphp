@@ -747,13 +747,13 @@ class Template extends \think\Template
             // @app:
             // 解析到 src/app 目录
             if (0 === strpos($template, '@app:')) {
-                $template = App::getInstance()->getFrameworkPath('app/' . ltrim(substr($template, 5), '/') . '.html');
+                $template = App::init()->getFrameworkPath('app/' . ltrim(substr($template, 5), '/') . '.html');
             }
             
             // @admin:
             // 解析到 src/admin/view 目录
             elseif (0 === strpos($template, '@admin:')) {
-                $template = App::getInstance()
+                $template = App::init()
                     ->getFrameworkPath('app/admin/view/' . ltrim(substr($template, 7), '/') . '.html');
             }
             

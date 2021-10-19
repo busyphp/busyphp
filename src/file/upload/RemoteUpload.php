@@ -3,9 +3,9 @@ declare(strict_types = 1);
 
 namespace BusyPHP\file\upload;
 
+use BusyPHP\App;
 use BusyPHP\file\Upload;
 use BusyPHP\helper\net\Http;
-use BusyPHP\Request;
 use Exception;
 use League\Flysystem\Util\MimeType;
 use think\exception\FileException;
@@ -131,7 +131,7 @@ class RemoteUpload extends Upload
             throw new FileException("下载地址无效: {$url}");
         }
         
-        $ignoreHosts = array_merge($this->ignoreHosts, [Request::init()->host(true)]);
+        $ignoreHosts = array_merge($this->ignoreHosts, [App::init()->request->host(true)]);
         if (in_array($parse['host'], $ignoreHosts)) {
             throw new FileException("下载地址中包含忽略域名: {$url}");
         }

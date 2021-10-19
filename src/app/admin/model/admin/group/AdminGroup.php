@@ -313,10 +313,10 @@ class AdminGroup extends Model
     /**
      * 检测权限
      * @param AdminUserInfo $adminUserInfo 用户数据
-     * @param string        $path 检测的路由路径
+     * @param string        ...$paths 检测的路由路径
      * @return bool
      */
-    public static function checkPermission(?AdminUserInfo $adminUserInfo, $path = null) : bool
+    public static function checkPermission(?AdminUserInfo $adminUserInfo, ?string ...$paths) : bool
     {
         if (!$adminUserInfo) {
             return false;
@@ -327,16 +327,23 @@ class AdminGroup extends Model
             return true;
         }
         
-        // 放行白名单
-        $request     = App::getInstance()->request;
-        $currentPath = Str::snake($path ?: $request->controller() . '/' . $request->action());
-        foreach (self::$allowControllers as $item) {
-            if (0 === strpos($currentPath, $item)) {
-                return true;
-            }
+        if (!$paths) {
+            $paths[] = App::init()->request->getRoutePath(true);
         }
         
-        // 是否在规则内
-        return in_array(Str::snake($path ?: App::getInstance()->request->getPath()), $adminUserInfo->groupRulePaths);
+        foreach ($paths as $path) {
+            // 放行白名单
+            $currentPath = Str::snake($path);
+            foreach (self::$allowControllers as $item) {
+                if (0 === strpos($currentPath, $item)) {
+                    return true;
+                }
+            }
+            
+            // 是否在规则内
+            return in_array($currentPath, $adminUserInfo->groupRulePaths);
+        }
+        
+        return false;
     }
 }

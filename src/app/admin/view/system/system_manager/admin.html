@@ -1,120 +1,126 @@
 <extend name="@admin:layout"/>
 <block name="content">
+    <div class="page-header">
+        <h4>{$system.page_title} <small>设置本管理系统的安全配置及界面配置</small></h4>
+    </div>
+    
     <form action="__SELF__" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
 
-        <include file="@admin:system/system_manager/nav"/>
+        <fieldset class="fieldset white">
+            <legend>安全设置</legend>
 
-        <div class="form-group-title">安全设置</div>
-
-
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">登录验证码</label>
-            <div class="col-sm-10 col-md-8">
-                <div class="radio">
-                    <input name="data[verify]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['verify'] ?? 0) > 0)?> title="开启"/>
-                    <input name="data[verify]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['verify'] ?? 0) < 1)?> title="关闭"/>
-                </div>
-                <span class="help-block">开启后登录则需要输入 <code>图形验证码</code></span>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">多设备登录</label>
-            <div class="col-sm-10 col-md-8">
-                <div class="radio">
-                    <input name="data[multiple_client]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['multiple_client'] ?? 0) > 0)?> title="开启"/>
-                    <input name="data[multiple_client]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['multiple_client'] ?? 0) < 1)?> title="关闭"/>
-                </div>
-                <span class="help-block">开启后将允许一个账号同时在多个设备登录，<span class="text-danger">注意切换该模式会造成所有已登录账号重新登录的现象</span>。</span>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">记住登录</label>
-            <div class="col-sm-10 col-md-8">
-                <div class="input-group">
-                    <input type="number" class="form-control" name="data[save_login]" value="{$info.save_login|default='0'}" placeholder="请输入记住登录时长"/>
-                    <div class="input-group-addon">天</div>
-                </div>
-                <span class="help-block">设置记住登录的天数，设置后登录页面会显示 <code>记住登录</code> 的功能，如果不想开启此功能，请设为 <code>0</code></span>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">保持登录</label>
-            <div class="col-sm-10 col-md-8">
-                <div class="input-group">
-                    <input type="number" class="form-control" name="data[often]" value="{$info.often|default='0'}"/>
-                    <div class="input-group-addon">分钟</div>
-                </div>
-                <span class="help-block">设置用户登录后多少时间内无操作，则退出登录，如果不想开启此功能，请设为 <code>0</code></span>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">登录错误锁定</label>
-            <div class="col-sm-10 col-md-8">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" name="data[login_error_minute]" value="{$info.login_error_minute|default='0'}" placeholder="请输入限定分钟数"/>
-                            <div class="input-group-addon">分钟</div>
-                        </div>
-                        <div class="space-5 visible-xs"></div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">登录验证码</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="radio">
+                        <input name="data[verify]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['verify'] ?? 0) > 0)?> title="开启"/>
+                        <input name="data[verify]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['verify'] ?? 0) < 1)?> title="关闭"/>
                     </div>
-                    <div class="col-sm-4">
-                        <div class="input-group">
-                            <div class="input-group-addon">错误</div>
-                            <input type="number" class="form-control" name="data[login_error_max]" value="{$info.login_error_max|default='0'}" placeholder="请输入错误次数"/>
-                            <div class="input-group-addon">次</div>
-                        </div>
-                        <div class="space-5 visible-xs"></div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="input-group">
-                            <div class="input-group-addon">锁定</div>
-                            <input type="number" class="form-control" name="data[login_error_lock_minute]" value="{$info.login_error_lock_minute|default='0'}" placeholder="请输入锁定分钟数"/>
-                            <div class="input-group-addon">分钟</div>
-                        </div>
-                    </div>
+                    <span class="help-block">开启后登录则需要输入 <code>图形验证码</code></span>
                 </div>
-
-                <span class="help-block">设置在<code>一定时间内</code>连续登录错误出现<code>多少次</code> 则锁定账户 <code>多少分钟</code>，锁定后将无法继续登录。如果不想启用该功能，请将任意一项设为 <code>0</code> 即可</span>
             </div>
-        </div>
-
-
-        <div class="form-group-title">界面设置</div>
-
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">后台名称</label>
-            <div class="col-sm-10 col-md-8">
-                <input type="text" class="form-control" name="data[title]" placeholder="请输入管理系统名称" value="{$info.title|default=''}"/>
-                <span class="help-block">设置管理系统名称，将显示在浏览器标签上及管理系统的左上角。</span>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">多设备登录</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="radio">
+                        <input name="data[multiple_client]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['multiple_client'] ?? 0) > 0)?> title="开启"/>
+                        <input name="data[multiple_client]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['multiple_client'] ?? 0) < 1)?> title="关闭"/>
+                    </div>
+                    <span class="help-block">开启后将允许一个账号同时在多个设备登录，<span class="text-danger">注意切换该模式会造成所有已登录账号重新登录的现象</span>。</span>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">后台Logo</label>
-            <div class="col-sm-10 col-md-8">
-                <input type="text" class="form-control" name="data[logo_horizontal]" data-toggle="busy-upload" placeholder="请上传管理系统LOGO" value="{$info.logo_horizontal|default=''}" data-class-type="image" data-class-value="system_logo_horizontal"/>
-                <span class="help-block">设置管理系统Logo，建议尺寸：<code>420×80像素</code> 设置后将显示在管理系统的左上角，此时管理系统名称将不显示。</span>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">记住登录</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="data[save_login]" value="{$info.save_login|default='0'}" placeholder="请输入记住登录时长"/>
+                        <div class="input-group-addon">天</div>
+                    </div>
+                    <span class="help-block">设置记住登录的天数，设置后登录页面会显示 <code>记住登录</code> 的功能，如果不想开启此功能，请设为 <code>0</code></span>
+                </div>
             </div>
-        </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">保持登录</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="data[often]" value="{$info.often|default='0'}"/>
+                        <div class="input-group-addon">分钟</div>
+                    </div>
+                    <span class="help-block">设置用户登录后多少时间内无操作，则退出登录，如果不想开启此功能，请设为 <code>0</code></span>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">后台图标</label>
-            <div class="col-sm-10 col-md-8">
-                <input type="text" class="form-control" name="data[logo_icon]" data-toggle="busy-upload" placeholder="请上传管理系统图标" value="{$info.logo_icon|default=''}" data-class-type="image" data-class-value="system_logo_icon"/>
-                <span class="help-block">设置管理系统图标，建议尺寸：<code>68×68像素</code> 设置后将在管理系统激活迷你菜单的时候的显示，此时管理系统Logo将不显示。</span>
-            </div>
-        </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">登录错误锁定</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="data[login_error_minute]" value="{$info.login_error_minute|default='0'}" placeholder="请输入限定分钟数"/>
+                                <div class="input-group-addon">分钟</div>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <div class="input-group-addon">错误</div>
+                                <input type="number" class="form-control" name="data[login_error_max]" value="{$info.login_error_max|default='0'}" placeholder="请输入错误次数"/>
+                                <div class="input-group-addon">次</div>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <div class="input-group-addon">锁定</div>
+                                <input type="number" class="form-control" name="data[login_error_lock_minute]" value="{$info.login_error_lock_minute|default='0'}" placeholder="请输入锁定分钟数"/>
+                                <div class="input-group-addon">分钟</div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            <label class="col-sm-2 col-md-2 control-label">登录页背景图</label>
-            <div class="col-sm-10 col-md-8">
-                <input type="text" class="form-control" name="data[login_bg]" data-toggle="busy-upload" placeholder="请上传登录页背景图" value="{$info.login_bg|default=''}" data-class-type="image" data-class-value="system_login_bg"/>
-                <span class="help-block">设置管理系统登录页背景图，设置后登录页将显示该背景图。</span>
+                    <span class="help-block">设置在<code>一定时间内</code>连续登录错误出现<code>多少次</code> 则锁定账户 <code>多少分钟</code>，锁定后将无法继续登录。如果不想启用该功能，请将任意一项设为 <code>0</code> 即可</span>
+                </div>
             </div>
-        </div>
+        </fieldset>
+
+
+        <fieldset class="fieldset white">
+            <legend>界面设置</legend>
+
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">后台名称</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" name="data[title]" placeholder="请输入管理系统名称" value="{$info.title|default=''}"/>
+                    <span class="help-block">设置管理系统名称，将显示在浏览器标签上及管理系统的左上角。</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">后台Logo</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" name="data[logo_horizontal]" data-toggle="busy-upload" placeholder="请上传管理系统LOGO" value="{$info.logo_horizontal|default=''}" data-class-type="image" data-class-value="system_logo_horizontal"/>
+                    <span class="help-block">设置管理系统Logo，建议尺寸：<code>420×80像素</code> 设置后将显示在管理系统的左上角，此时管理系统名称将不显示。</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">后台图标</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" name="data[logo_icon]" data-toggle="busy-upload" placeholder="请上传管理系统图标" value="{$info.logo_icon|default=''}" data-class-type="image" data-class-value="system_logo_icon"/>
+                    <span class="help-block">设置管理系统图标，建议尺寸：<code>68×68像素</code> 设置后将在管理系统激活迷你菜单的时候的显示，此时管理系统Logo将不显示。</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">登录页背景图</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" name="data[login_bg]" data-toggle="busy-upload" placeholder="请上传登录页背景图" value="{$info.login_bg|default=''}" data-class-type="image" data-class-value="system_login_bg"/>
+                    <span class="help-block">设置管理系统登录页背景图，设置后登录页将显示该背景图。</span>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="text-center">
             <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
             <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>

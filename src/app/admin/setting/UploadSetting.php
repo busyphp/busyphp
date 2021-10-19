@@ -115,7 +115,7 @@ class UploadSetting extends Setting
      */
     public function getClientInfo(string $client = '') : ?array
     {
-        $client  = $client ?: App::getInstance()->getDirName();
+        $client  = $client ?: App::init()->getDirName();
         $clients = $this->get('clients', []);
         
         return $clients[$client] ?? null;
@@ -180,7 +180,7 @@ class UploadSetting extends Setting
     
     
     /**
-     * 获取是否加水印
+     * 上传是否加水印
      * @param string $classType
      * @return bool
      * @throws DataNotFoundException
@@ -193,7 +193,7 @@ class UploadSetting extends Setting
             $watermark = $config->watermark;
         }
         
-        return $watermark && WatermarkSetting::init()->status();
+        return $watermark && WatermarkSetting::init()->hasFile();
     }
     
     

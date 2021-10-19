@@ -5,6 +5,7 @@ namespace BusyPHP\file;
 
 use BusyPHP\exception\AppException;
 use BusyPHP\helper\file\File;
+use BusyPHP\Model;
 use Exception;
 use PHPQRCode\Constants;
 use PHPQRCode\QRencode;
@@ -22,27 +23,16 @@ class QRCode
     // +----------------------------------------------------
     // + 识别率级别
     // +----------------------------------------------------
-    /**
-     * 还原率7％
-     */
+    /** @var string 还原率7％ */
     const LEVEL_L = 'L';
     
-    /**
-     * 还原率15%
-     * @var string
-     */
+    /** @var string 还原率15% */
     const LEVEL_M = 'M';
     
-    /**
-     * 还原率25%
-     * @var string
-     */
+    /** @var string 还原率25% */
     const LEVEL_Q = 'Q';
     
-    /**
-     * 还原率30%
-     * @var string
-     */
+    /** @var string 还原率30% */
     const LEVEL_H = 'H';
     
     /**
@@ -397,5 +387,17 @@ class QRCode
         ImageDestroy($base_image);
         
         return $target_image;
+    }
+    
+    
+    /**
+     * 获取还原率
+     * @return array
+     */
+    public static function getLevels() : array
+    {
+        return Model::parseConst(self::class, 'LEVEL_', [], function($map) {
+            return $map['name'];
+        });
     }
 }

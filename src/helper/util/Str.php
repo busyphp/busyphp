@@ -20,7 +20,7 @@ class Str extends \think\helper\Str
     public static function parseAtVar(string $content, $name = [], $value = null) : string
     {
         if (!is_array($name) && $name) {
-            $name = array($name => $value);
+            $name = [$name => $value];
         }
         
         return preg_replace_callback('/\{@(.*?)\}/', function($array) use ($name) {
@@ -97,15 +97,15 @@ class Str extends \think\helper\Str
             $string = strip_tags($string);
         }
         
-        $string = str_replace(array('&nbsp;', '&#160;', '&#xA0;', '　'), '', $string);
-        $string = str_replace(array('&quot;', '&#34;', '&#x22;'), '"', $string);
-        $string = str_replace(array('&apos;', '&#039;'), '\'', $string);
-        $string = str_replace(array("\r\n", "\r", "\n", "\t"), '', $string);
-        $string = str_replace(array('&amp;', '&#38;', '&#x26;'), '&', $string);
+        $string = str_replace(['&nbsp;', '&#160;', '&#xA0;', '　'], '', $string);
+        $string = str_replace(['&quot;', '&#34;', '&#x22;'], '"', $string);
+        $string = str_replace(['&apos;', '&#039;'], '\'', $string);
+        $string = str_replace(["\r\n", "\r", "\n", "\t"], '', $string);
+        $string = str_replace(['&amp;', '&#38;', '&#x26;'], '&', $string);
         $string = self::cut($string, $length, false);
         $string = str_replace('&', '&amp;', $string);
         
-        return str_replace(array('\'', '"'), array('&apos;', '&quot;'), $string);
+        return str_replace(['\'', '"'], ['&apos;', '&quot;'], $string);
     }
     
     
@@ -120,5 +120,43 @@ class Str extends \think\helper\Str
         $uuid   = substr($charId, 0, 8) . $hyphen . substr($charId, 8, 4) . $hyphen . substr($charId, 12, 4) . $hyphen . substr($charId, 16, 4) . $hyphen . substr($charId, 20, 12);
         
         return $uuid;
+    }
+    
+    
+    public static function wordwrap($str, $width = 75, $break = "\n", $cut = false)
+    {
+        $lines = explode($break, $str);
+        foreach ($lines as &$line) {
+            $line = rtrim($line);
+            if (mb_strlen($line) <= $width) {
+                continue;
+            }
+            
+            $words  = explode(' ', $line);
+            $line   = '';
+            $actual = '';
+            foreach ($words as $word) {
+                if (mb_strlen($actual . $word) <= $width)
+                    $actual .= $word . ' '; else {
+                    if ($actual != '') {
+                        $line .= rtrim($actual) . $break;
+                    }
+                    
+                    $actual = $word;
+                    if ($cut) {
+                        while (mb_strlen($actual) > $width) {
+                            $line .= mb_substr($actual, 0, $width) . $break;
+                            
+                            $actual = mb_substr($actual, $width);
+                        }
+                    }
+                    
+                    $actual .= ' ';
+                }
+            }
+            $line .= trim($actual);
+        }
+        
+        return implode($break, $lines);
     }
 }

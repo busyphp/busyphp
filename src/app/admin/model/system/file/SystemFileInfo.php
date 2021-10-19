@@ -103,7 +103,7 @@ class SystemFileInfo extends SystemFileField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = Arr::listByKey(App::getInstance()->getList(), AppListItem::dir());
+            static::$_appList = Arr::listByKey(App::init()->getList(), AppListItem::dir());
         }
         
         if (!is_array(static::$_fileClassList)) {

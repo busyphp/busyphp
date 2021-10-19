@@ -116,10 +116,10 @@ class WatermarkSetting extends Setting
     
     
     /**
-     * 是否启用水印
+     * 水印文件是否存在
      * @return bool
      */
-    public function status() : bool
+    public function hasFile() : bool
     {
         $watermarkFile = $this->getFile();
         clearstatcache(false, $watermarkFile);
