@@ -4,6 +4,9 @@
 // +----------------------------------------------------
 
 use BusyPHP\App;
+use BusyPHP\exception\VerifyException;
+use BusyPHP\file\Captcha;
+use BusyPHP\file\captcha\CaptchaUrl;
 use BusyPHP\file\qrcode\QRCodeUrl;
 use BusyPHP\file\image\ThumbUrl;
 
@@ -139,5 +142,44 @@ if (!function_exists('qr_code_url')) {
     function qr_code_url($text, $logo = '') : QRCodeUrl
     {
         return BusyPHP\facade\QRCodeUrl::text($text)->logo($logo);
+    }
+}
+
+
+if (!function_exists('captcha_url')) {
+    /**
+     * 生成验证码URL
+     * @param string $key 验证码标识
+     * @param int    $width 宽度
+     * @param int    $height 高度
+     * @return CaptchaUrl
+     */
+    function captcha_url($key, $width = 0, $height = 0) : CaptchaUrl
+    {
+        return \BusyPHP\facade\CaptchaUrl::key($key)->width($width)->height($height);
+    }
+}
+
+if (!function_exists('captcha_check')) {
+    /**
+     * 检测验证码
+     * @param string $code 验证码内容
+     * @param string $key 验证码标识
+     * @throws VerifyException
+     */
+    function captcha_check($code, string $key)
+    {
+        (new Captcha(App::init()->getDirName()))->check($code, $key);
+    }
+}
+
+if (!function_exists('captcha_clear')) {
+    /**
+     * 清空验证码
+     * @param string $key 验证码标识
+     */
+    function captcha_clear(string $key)
+    {
+        (new Captcha(App::init()->getDirName()))->clear($key);
     }
 }

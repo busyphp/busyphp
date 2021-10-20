@@ -4,13 +4,11 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\setting\PublicSetting;
-use BusyPHP\app\general\controller\VerifyController;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\exception\AppException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
+use BusyPHP\facade\CaptchaUrl;
 use think\Response;
 
 /**
@@ -50,9 +48,8 @@ class PassportController extends InsideController
                 $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify) {
                     if (AdminSetting::init()->isVerify()) {
                         try {
-                            VerifyController::check('admin_login', $verify);
-                            VerifyController::clear('admin_login');
-                        } catch (AppException $e) {
+                            captcha_check($verify, 'admin_login');
+                        } catch (VerifyException $e) {
                             throw new VerifyException($e->getMessage(), 'verify');
                         }
                     }
@@ -106,7 +103,7 @@ class PassportController extends InsideController
         $this->assign('save_login', $adminSetting->getSaveLogin() > 0);
         $this->assign('logo', $adminSetting->getLogoHorizontal());
         $this->assign('bg', $bg);
-        $this->assign('verify_url', VerifyController::url('admin_login'));
+        $this->assign('verify_url', CaptchaUrl::key('admin_login'));
         $this->assign('copyright', $publicSetting->getCopyright());
         $this->assign('icp_no', $publicSetting->getIcpNo());
         $this->assign('police_no', $publicSetting->getPoliceNo());

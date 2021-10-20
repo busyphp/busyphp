@@ -1,24 +1,174 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="page-header">
-        <h4>{$system.page_title} <small>设置图形验证码生成方式等相关配置</small></h4>
+        <h4>{$system.page_title} <small>设置图形验证码生成方式、验证难度、等相关配置</small></h4>
     </div>
 
     <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
-        <fieldset class="fieldset white">
-            <legend>水印文件</legend>
-            <div class="form-group">
-                <label class="col-sm-2 control-label">水印文件</label>
-                <div class="col-sm-10 col-md-8">
-                    <input type="text" class="form-control" data-toggle="busy-upload" name="data[file]" value="{$info.file|default=''}" placeholder="上传水印文件" data-class-type="image" data-class-value="system_watermark"/>
-                    <span class="help-block">上传水印图片文件，建议使用<code>png</code>透明格式的水印图片文件</span>
+        <foreach name="clients" item="vo">
+            <fieldset class="fieldset white">
+                <legend>{$vo.name} 验证码配置</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">是否画混淆曲线</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="radio">
+                            <input type="radio" name="data[clients][{$vo.dir}][curve]" data-toggle="busy-radio" value="1" title="是" <?=is_checked(($info['clients'][$vo['dir']]['curve'] ?? 0) == 1)?>/>
+                            <input type="radio" name="data[clients][{$vo.dir}][curve]" data-toggle="busy-radio" value="0" title="否" <?=is_checked(($info['clients'][$vo['dir']]['curve'] ?? 0) == 0)?>/>
+                        </div>
+                        <span class="help-block">启用后，将增加验证码的识别难度，验证码更安全</span>
+                    </div>
                 </div>
-            </div>
-        </fieldset>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">是否添加杂点</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="radio">
+                            <input type="radio" name="data[clients][{$vo.dir}][noise]" data-toggle="busy-radio" value="1" title="是" <?=is_checked(($info['clients'][$vo['dir']]['noise'] ?? 0) == 1)?>/>
+                            <input type="radio" name="data[clients][{$vo.dir}][noise]" data-toggle="busy-radio" value="0" title="否" <?=is_checked(($info['clients'][$vo['dir']]['noise'] ?? 0) == 0)?>/>
+                        </div>
+                        <span class="help-block">启用后，将增加验证码的识别难度，验证码更安全</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">是否使用背景图</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="radio">
+                            <input type="radio" name="data[clients][{$vo.dir}][bg_image]" data-toggle="busy-radio" value="1" title="是" <?=is_checked(($info['clients'][$vo['dir']]['bg_image'] ?? 0) == 1)?>/>
+                            <input type="radio" name="data[clients][{$vo.dir}][bg_image]" data-toggle="busy-radio" value="0" title="否" <?=is_checked(($info['clients'][$vo['dir']]['bg_image'] ?? 0) == 0)?>/>
+                        </div>
+                        <span class="help-block">启用后，系统内置的8个背景图将随机增加到验证码中来提高识别难度，验证码更安全</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">验证码长度</label>
+                    <div class="col-sm-10 col-md-8">
+                        <input type="number" class="form-control" name="data[clients][{$vo.dir}][length]" value="{$info['clients'][$vo['dir']]['length']|default=''}" placeholder="请输入验证码长度"/>
+                        <span class="help-block">设置验证码长度，系统默认设置为<code>4位</code></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">过期时间</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="data[clients][{$vo.dir}][expire_minute]" value="{$info['clients'][$vo['dir']]['expire_minute']|default=''}" placeholder="请输入过期分钟数"/>
+                            <div class="input-group-addon">分钟</div>
+                        </div>
+                        <span class="help-block">设置验证码长度，系统默认设置为<code>10分钟</code></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">混淆码</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="input-group">
+                            <input type="text" maxlength="32" class="form-control" name="data[clients][{$vo.dir}][token]" value="{$info['clients'][$vo['dir']]['token']|default=''}" placeholder="请输入混淆码" id="clients_{$vo.dir}_token"/>
+                            <div class="input-group-btn">
+                                <a class="btn btn-secondary" data-toggle="busy-random" data-target="#clients_{$vo.dir}_token">随机</a>
+                            </div>
+                        </div>
+                        <span class="help-block">设置验证码混淆码，可以用来增强验证码安全</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">背景色</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="input-group" data-toggle="busy-color-picker">
+                            <input type="text" class="form-control" name="data[clients][{$vo.dir}][bg_color]" value="{$info['clients'][$vo['dir']]['bg_color']|default=''}" placeholder="请选择背景色" readonly/>
+                            <div class="input-group-addon no-border-left">
+                                <i style="background: rgb(243, 251, 254)"><span class="caret"></span></i></div>
+                            <div class="input-group-btn"><a class="btn btn-secondary btn-clear">清空</a></div>
+                        </div>
+                        <span class="help-block">设置验证码背景色，如果启用了验证码背景图片，则该项失效</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">验证码类型</label>
+                    <div class="col-sm-10 col-md-8">
+                        <select class="form-control" name="data[clients][{$vo.dir}][type]">
+                            <option value="">默认(英文数字)</option>
+                            <option value="1" <?=is_selected(($info['clients'][$vo['dir']]['type'] ?? 0) == 1)?>>纯英文</option>
+                            <option value="2" <?=is_selected(($info['clients'][$vo['dir']]['type'] ?? 0) == 2)?>>纯数字</option>
+                            <option value="3" <?=is_selected(($info['clients'][$vo['dir']]['type'] ?? 0) == 3)?>>中文</option>
+                        </select>
+                        <span class="help-block">设置验证码类型</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">验证码字体大小</label>
+                    <div class="col-sm-10 col-md-8">
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="data[clients][{$vo.dir}][font_size]" value="{$info['clients'][$vo['dir']]['font_size']|default=''}" placeholder="请输入验证码字体大小"/>
+                            <div class="input-group-addon">像素</div>
+                        </div>
+                        <span class="help-block">设置验证码字体大小，系统默认为<code>25像素</code></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">验证码字体</label>
+                    <div class="col-sm-10 col-md-8">
+                        <select class="form-control" name="data[clients][{$vo.dir}][font]">
+                            <option value="">随机</option>
+                            <optgroup label="英文数字">
+                                <option value="1" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 1)?>>
+                                    3x5
+                                </option>
+                                <option value="2" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 2)?>>
+                                    13_Misa
+                                </option>
+                                <option value="3" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 3)?>>
+                                    Add_Cityboy
+                                </option>
+                                <option value="4" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 4)?>>
+                                    Airbus Special
+                                </option>
+                                <option value="5" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 5)?>>
+                                    Yahoo
+                                </option>
+                                <option value="6" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 6)?>>
+                                    Stencil Four
+                                </option>
+                            </optgroup>
+                            <optgroup label="中文">
+                                <option value="zh_1" <?=is_selected(($info['clients'][$vo['dir']]['font'] ?? 0) == 'zh_1')?>>
+                                    方正大黑简体
+                                </option>
+                            </optgroup>
+                        </select>
+                        <span class="help-block">设置验证码字体，提高识别率。<span class="text-red">注意：请确认对应字体是否获得商业授权，由此引发的法律责任开发方将不承担任何责任。</span></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">自定义字体</label>
+                    <div class="col-sm-10 col-md-8">
+                        <input type="text" class="form-control" data-toggle="busy-upload" name="data[clients][{$vo.dir}][font_file]" value="{$info['clients'][$vo['dir']]['font_file']|default=''}" placeholder="上传自定义验证码字体" data-class-type="file" data-class-value="system_font"/>
+                        <span class="help-block">设置自定义验证码字体文件，请上传<code>ttf</code>格式的验证码字体。<span class="text-red">注意：请确认对应字体是否获得商业授权，由此引发的法律责任开发方将不承担任何责任。</span></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">验证码字符</label>
+                    <div class="col-sm-10 col-md-8">
+                        <textarea type="text" class="form-control" name="data[clients][{$vo.dir}][code]" placeholder="请输入验证码字符">{$info['clients'][$vo['dir']]['code']|default=''}</textarea>
+                        <span class="help-block">设置验证码字符，可以用来控制验证码只输出数字或字符等，支持中文。默认为英文数字混合</span>
+                    </div>
+                </div>
+            </fieldset>
+        </foreach>
+
 
         <div class="text-center">
             <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
             <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
         </div>
     </form>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.ready(function () {
+            $('.btn-clear').on('click', function () {
+                var $parent = $(this).closest('.input-group');
+                var $input  = $parent.find('input');
+                var $picker = $parent.find('i');
+                $input.val('');
+                $picker.css({background : 'rgb(243, 251, 254)'});
+            });
+        });
+    </script>
 </block>

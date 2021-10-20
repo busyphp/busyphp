@@ -262,6 +262,7 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
+        $this->assign('clients', $this->app->getList());
         $this->assign('info', CaptchaSetting::init()->get());
         
         return $this->display();

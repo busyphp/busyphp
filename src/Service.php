@@ -21,7 +21,7 @@ use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\app\general\controller\InstallController;
 use BusyPHP\app\general\controller\QRCodeController;
 use BusyPHP\app\general\controller\ThumbController;
-use BusyPHP\app\general\controller\VerifyController;
+use BusyPHP\app\general\controller\CaptchaController;
 use BusyPHP\cache\File;
 use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
@@ -264,7 +264,7 @@ class Service extends ThinkService
     private function configRoutes(Route $route)
     {
         // 验证码路由
-        $route->rule('general/verify', VerifyController::class . '@index');
+        $route->rule('general/captcha', CaptchaController::class . '@index');
         
         // 动态缩图路由
         $route->rule('thumbs/<src>', ThumbController::class . '@index')->pattern(['src' => '.+']);

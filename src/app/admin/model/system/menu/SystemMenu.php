@@ -38,7 +38,7 @@ class SystemMenu extends Model
     const TARGET_IFRAME = 'iframe';
     
     /** @var bool 开发模式 */
-    const DEBUG = false;
+    const DEBUG = true;
     
     protected $dataNotFoundMessage = '菜单不存在';
     

@@ -6,7 +6,6 @@ use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\util\Str;
-use think\Container;
 use think\db\exception\DbException;
 
 /**
@@ -35,7 +34,7 @@ abstract class Setting
     
     public function __construct()
     {
-        $this->app = Container::getInstance()->make(App::class);
+        $this->app = App::init();
         
         if (!$this->key) {
             $this->getKey();
