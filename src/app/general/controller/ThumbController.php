@@ -13,6 +13,7 @@ use DomainException;
 use Exception;
 use RangeException;
 use think\exception\FileException;
+use think\exception\HttpException;
 
 /**
  * 动态缩图
@@ -116,9 +117,7 @@ class ThumbController extends Controller
             
             return $thumb->exec(true);
         } catch (Exception $e) {
-            abort(404, $e->getMessage());
-            
-            return null;
+            throw new HttpException(404, $e->getMessage());
         }
     }
 }
