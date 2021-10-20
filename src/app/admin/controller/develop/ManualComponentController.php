@@ -353,4 +353,13 @@ class ManualComponentController extends InsideController
     {
         return $this->display();
     }
+    
+    
+    /**
+     * 随机字符
+     */
+    public function random()
+    {
+        return $this->display();
+    }
 }
