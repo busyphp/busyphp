@@ -15,6 +15,7 @@ use think\Facade;
  * @method static \BusyPHP\file\image\ThumbUrl url(string $url) 设置图片URL
  * @method static \BusyPHP\file\image\ThumbUrl type(string $type) 设置缩图类型
  * @method static \BusyPHP\file\image\ThumbUrl size(string $size) 设置缩图配置
+ * @method static \BusyPHP\file\image\ThumbUrl domain(bool|string $domain) 设置绑定域名
  * @method static string build() 生成URL
  */
 class ThumbUrl extends Facade

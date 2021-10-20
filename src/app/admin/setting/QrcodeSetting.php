@@ -112,11 +112,14 @@ class QrcodeSetting extends Setting
     
     /**
      * 获取Logo路径
+     * @param bool $isPath
      * @return string
      */
-    public function getLogoPath() : string
+    public function getLogoPath(bool $isPath = false) : string
     {
-        return App::urlToPath($this->get('logo_path', ''));
+        $logo = $this->get('logo_path', '');
+        
+        return $isPath ? App::urlToPath($logo) : $logo;
     }
     
     

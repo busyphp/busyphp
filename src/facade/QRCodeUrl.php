@@ -12,12 +12,13 @@ use think\Facade;
  * @version $Id: 2020/6/12 下午7:41 下午 QRCodeUrl.php $
  * @mixin \BusyPHP\file\qrcode\QRCodeUrl
  * @see \BusyPHP\file\qrcode\QRCodeUrl
- * @method \BusyPHP\file\qrcode\QRCodeUrl text(string $text) 设置文本
- * @method \BusyPHP\file\qrcode\QRCodeUrl size(int $size) 设置尺寸
- * @method \BusyPHP\file\qrcode\QRCodeUrl margin(int $margin) 设置空白间距
- * @method \BusyPHP\file\qrcode\QRCodeUrl level(int $margin) 设置识别率等级
- * @method \BusyPHP\file\qrcode\QRCodeUrl logo(string $logo) 设置LOGO url 相对于根目录的URL
- * @method string build() 生成URL
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl text(string $text) 设置文本
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl size(int $size) 设置尺寸
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl margin(int $margin) 设置空白间距
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl level(int $margin) 设置识别率等级
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl logo(string $logo, int $size) 设置LOGO url 相对于根目录的URL
+ * @method static \BusyPHP\file\qrcode\QRCodeUrl domain(bool|string $domain) 设置绑定域名
+ * @method static string build() 生成URL
  */
 class QRCodeUrl extends Facade
 {

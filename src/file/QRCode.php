@@ -3,14 +3,16 @@ declare(strict_types = 1);
 
 namespace BusyPHP\file;
 
-use BusyPHP\exception\AppException;
-use BusyPHP\helper\file\File;
+use BusyPHP\app\admin\setting\QrcodeSetting;
 use BusyPHP\Model;
 use Exception;
+use LogicException;
 use PHPQRCode\Constants;
 use PHPQRCode\QRencode;
 use PHPQRCode\QRtools;
 use think\Config;
+use think\exception\FileException;
+use think\Response;
 
 /**
  * 二维码生成类
@@ -91,9 +93,9 @@ class QRCode
     
     /**
      * 缩图配置
-     * @var array
+     * @var QrcodeSetting
      */
-    protected $options;
+    protected $setting;
     
     /**
      * 公共配置
@@ -108,23 +110,16 @@ class QRCode
      */
     public function __construct($text = '')
     {
-        if (!isset(self::$config)) {
-            $app = app();
-            $app->config->load($app->getConfigPath() . 'extend' . DIRECTORY_SEPARATOR . 'qrcode.php', 'qrcode');
-            
-            self::$config = $app->config;
-        }
+        $this->setting = QrcodeSetting::init();
+        $this->level($this->setting->getLevel());
+        $this->margin($this->setting->getMargin());
+        $this->size($this->setting->getSize());
+        $this->quality($this->setting->getQuality());
         
-        $this->options = self::$config->get('qrcode');
-        $this->level   = $this->options['level'] ?? $this->level;
-        $this->margin  = $this->options['margin'] ?? $this->margin;
-        $this->size    = $this->options['size'] ?? $this->size;
-        $this->quality = $this->options['quality'] ?? $this->quality;
-        
-        // LOGO
-        if (($this->options['logo_status'] ?? false) && is_file($this->options['logo_path'] ?? '')) {
-            $this->logo     = $this->options['logo_path'];
-            $this->logoSize = $this->options['logo_size'] ?? $this->logoSize;
+        // Logo
+        $logoPath = $this->setting->getLogoPath(true);
+        if ($this->setting->isLogoStatus() && is_file($logoPath)) {
+            $this->logo($logoPath, $this->setting->getLogoSize());
         }
         
         $this->text($text);
@@ -200,16 +195,16 @@ class QRCode
      * @param string $logo
      * @param int    $size 大小 1 - 100 数值越大，LOGO越小
      * @return $this
-     * @throws AppException
      */
     public function logo(string $logo, int $size = null) : self
     {
+        if (!is_file($logo)) {
+            throw new FileException("Logo不存在: {$logo}");
+        }
+        
         $this->logo = $logo;
         if ($size) {
             $this->logoSize = $size;
-        }
-        if (!is_file($this->logo)) {
-            throw new AppException('LOGO资源不存在: ' . $logo);
         }
         
         return $this;
@@ -218,18 +213,21 @@ class QRCode
     
     /**
      * 设置是否保存到本地
-     * @param bool   $status
-     * @param string $local
+     * @param bool   $status 是否保存
+     * @param string $local 保存路径
      * @return $this
-     * @throws AppException
      */
     public function save(bool $status, string $local = null) : self
     {
         $this->save  = $status;
         $this->local = $local;
+        
         if ($this->local) {
-            if (!File::createDir($this->local, true)) {
-                throw new AppException('文件夹不可写: ' . $this->local);
+            $dir = dirname($local);
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0775, true)) {
+                    throw new FileException("文件夹不可写: {$this->local}");
+                }
             }
         }
         
@@ -252,11 +250,11 @@ class QRCode
     
     /**
      * 生成二维码
-     * @param bool $return 是否返回图片内容
-     * @return string|null
-     * @throws AppException
+     * @param bool $return 是否返回响应内容
+     * @return Response
+     * @throws Exception
      */
-    public function exec($return = false)
+    public function exec($return = false) : ?Response
     {
         try {
             $encode = QRencode::factory($this->level, $this->size, $this->margin);
@@ -265,12 +263,12 @@ class QRCode
             $err = ob_get_contents();
             ob_end_clean();
             if ($err != '') {
-                throw new Exception('ERROR: ' . $err);
+                throw new LogicException("QrCodeError: {$err}");
             }
             
-            $code    = null;
-            $maxSize = (int) (Constants::QR_PNG_MAXIMUM_SIZE / (count($tab) + 2 * $this->margin));
-            $image   = $this->image($tab, min(max(1, $this->size), $maxSize), $this->margin);
+            $response = null;
+            $maxSize  = (int) (Constants::QR_PNG_MAXIMUM_SIZE / (count($tab) + 2 * $this->margin));
+            $image    = $this->image($tab, min(max(1, $this->size), $maxSize), $this->margin);
             
             // 加LOGO
             !$return or ob_start();
@@ -282,14 +280,17 @@ class QRCode
             
             if ($return) {
                 header_remove('Content-type');
-                $code = ob_get_clean();
+                $code     = ob_get_clean();
+                $response = Response::create($code, 'html', 200)
+                    ->header(['Content-Length' => strlen($code)])
+                    ->contentType('image/jpeg');
             }
             
-            return $code;
+            return $response;
         } catch (Exception $e) {
             QRtools::log(false, $e->getMessage());
             
-            throw new AppException($e->getMessage());
+            throw $e;
         }
     }
     
@@ -367,24 +368,24 @@ class QRCode
         $imgW = $w + 2 * $outerFrame;
         $imgH = $h + 2 * $outerFrame;
         
-        $base_image = ImageCreate($imgW, $imgH);
+        $base_image = imagecreate($imgW, $imgH);
         
-        $col[0] = ImageColorAllocate($base_image, 255, 255, 255);
-        $col[1] = ImageColorAllocate($base_image, 0, 0, 0);
+        $col[0] = imagecolorallocate($base_image, 255, 255, 255);
+        $col[1] = imagecolorallocate($base_image, 0, 0, 0);
         
         imagefill($base_image, 0, 0, $col[0]);
         
         for ($y = 0; $y < $h; $y++) {
             for ($x = 0; $x < $w; $x++) {
                 if ($frame[$y][$x] == '1') {
-                    ImageSetPixel($base_image, $x + $outerFrame, $y + $outerFrame, $col[1]);
+                    imagesetpixel($base_image, $x + $outerFrame, $y + $outerFrame, $col[1]);
                 }
             }
         }
         
-        $target_image = ImageCreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
-        ImageCopyResized($target_image, $base_image, 0, 0, 0, 0, $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH);
-        ImageDestroy($base_image);
+        $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+        imagecopyresized($target_image, $base_image, 0, 0, 0, 0, $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH);
+        imagedestroy($base_image);
         
         return $target_image;
     }

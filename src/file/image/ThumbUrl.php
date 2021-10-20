@@ -55,6 +55,11 @@ class ThumbUrl
     public function __construct()
     {
         $this->setting = ThumbSetting::init();
+        
+        $domain = $this->setting->getDomain();
+        if ($domain) {
+            $this->domain($domain);
+        }
     }
     
     
@@ -128,9 +133,10 @@ class ThumbUrl
         }
         
         // 域名
-        $domain = '/';
+        $request = App::init()->request;
+        $domain  = $request->getWebUrl(false);
         if ($this->domain) {
-            $domain = $this->domain === true ? ($this->setting->getDomain() ?: App::init()->request->getWebUrl()) : $this->domain;
+            $domain = $this->domain === true ? $request->getWebUrl(true) : $this->domain;
             $domain = rtrim($domain, '/') . '/';
         }
         

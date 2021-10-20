@@ -77,8 +77,8 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label">Logo尺寸</label>
                 <div class="col-sm-10 col-md-8">
-                    <input type="number" class="form-control" name="data[logo_size]" value="{$info.logo_size|default=''}" placeholder="请输入Logo尺寸等级" />
-                    <span class="help-block">设置Logo尺寸，数字越大Logo越小</span>
+                    <input type="number" class="form-control" min="1" max="100" name="data[logo_size]" value="{$info.logo_size|default=''}" placeholder="请输入Logo尺寸等级" />
+                    <span class="help-block">设置Logo尺寸，范围<code>1-100</code>，数字越大Logo越小</span>
                 </div>
             </div>
         </fieldset>

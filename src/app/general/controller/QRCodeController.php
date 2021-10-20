@@ -1,11 +1,14 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\general\controller;
 
+use BusyPHP\app\admin\setting\QrcodeSetting;
 use BusyPHP\Controller;
-use BusyPHP\exception\AppException;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\file\QRCode;
+use Exception;
+use think\exception\HttpException;
 
 /**
  * 动态二维码生成
@@ -17,24 +20,30 @@ class QRCodeController extends Controller
 {
     public function index()
     {
-        $path    = $this->param('src', 'trim');
-        $path    = trim($path, '/');
-        $info    = pathinfo($path);
-        $list    = explode('.', $info['filename'], 2);
+        $src      = $this->param('src/s', 'trim');
+        $src      = trim($src, '/');
+        $pathInfo = pathinfo($src);
+        
+        // 通过文件名获取到二维码内容和配置
+        $list    = explode('.', $pathInfo['filename'], 2);
         $content = $list[0] ?? '';
         $config  = $list[1] ?? '';
+        
+        // 解析二维码内容提取出内容和LOGO
         $content = Transform::base64decodeUrl($content);
-        $list    = explode('###', $content, 2);
+        $list    = explode('#!logo!#', $content, 2);
         $text    = $list[0] ?? '';
         $logo    = $list[1] ?? '';
-        $list    = explode('X', strtoupper($config), 3);
-        $level   = $list[0] ?? null;
-        $size    = $list[1] ?? null;
-        $margin  = $list[2] ?? null;
+        
+        // 提取配置
+        $list   = explode('X', strtoupper($config), 3);
+        $level  = $list[0] ?? null;
+        $size   = $list[1] ?? null;
+        $margin = $list[2] ?? null;
         
         try {
-            $qrCode = new QRCode();
-            $config = $qrCode->getConfig()->get('qrcode');
+            $setting = QrcodeSetting::init();
+            $qrCode  = new QRCode();
             $qrCode->text($text);
             
             // 识别率
@@ -58,17 +67,13 @@ class QRCodeController extends Controller
             }
             
             // 保存到本地
-            if ($config['save_local'] ?? false) {
-                $qrCode->save(true, $this->app->getPublicPath("qrcodes/{$info['dirname']}/{$info['basename']}"));
+            if ($setting->isSaveLocal()) {
+                $qrCode->save(true, $this->app->getPublicPath("qrcodes/{$pathInfo['dirname']}/{$pathInfo['basename']}"));
             }
             
-            $data = $qrCode->exec(true);
-            
-            return response($data, 200, ['Content-Length' => strlen($data)])->contentType('image/jpeg');
-        } catch (AppException $e) {
-            abort(404, $e->getMessage());
-            
-            return null;
+            return $qrCode->exec(true);
+        } catch (Exception $e) {
+            throw new HttpException(404, $e->getMessage());
         }
     }
 }

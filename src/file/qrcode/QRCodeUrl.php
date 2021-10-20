@@ -4,11 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\file\qrcode;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\setting\QrcodeSetting;
 use BusyPHP\helper\util\Transform;
-use BusyPHP\file\QRCode;
-use BusyPHP\Request;
-use think\Config;
-use think\Container;
 
 /**
  * 动态二维码URL生成
@@ -49,14 +46,15 @@ class QRCodeUrl
     protected $logo;
     
     /**
-     * @var Config
+     * @var QrcodeSetting
      */
-    protected static $config;
+    protected $setting;
     
     /**
-     * @var array
+     * 域名
+     * @var bool|string
      */
-    protected $options;
+    protected $domain = false;
     
     
     /**
@@ -64,11 +62,24 @@ class QRCodeUrl
      */
     public function __construct()
     {
-        if (!isset(self::$config)) {
-            self::$config = (new QRCode())->getConfig();
+        $this->setting = QrcodeSetting::init();
+        $domain        = $this->setting->getDomain();
+        if ($domain) {
+            $this->domain($domain);
         }
+    }
+    
+    
+    /**
+     * 绑定域名
+     * @param bool|string $domain
+     * @return $this
+     */
+    public function domain($domain) : self
+    {
+        $this->domain = $domain;
         
-        $this->options = self::$config->get('qrcode');
+        return $this;
     }
     
     
@@ -147,20 +158,22 @@ class QRCodeUrl
     public function build() : string
     {
         $text     = $this->text ?? '';
-        $text     .= $this->logo ? '###' . $this->logo : '';
+        $text     .= $this->logo ? '#!logo!#' . $this->logo : '';
         $text     = Transform::base64encodeUrl($text);
         $filename = "{$text}.{$this->level}X{$this->size}X{$this->margin}.png";
-        $hash     = md5($filename);
-        $path     = substr($hash, 4, 1);
-        $path     .= '/' . substr($hash, 8, 1);
-        $path     .= '/' . substr($hash, 12, 1);
         
-        /** @var Request $request */
-        $request = Container::getInstance()->make(Request::class);
+        $hash = md5($filename);
+        $path = substr($hash, 4, 1);
+        $path .= '/' . substr($hash, 8, 1);
+        $path .= '/' . substr($hash, 12, 1);
         
         // 绑定域名
-        $domain = $this->options['domain'] ?: $request->getWebUrl();
-        $domain = rtrim($domain, '/') . '/';
+        $request = App::init()->request;
+        $domain  = $request->getWebUrl(false);
+        if ($this->domain) {
+            $domain = $this->domain === true ? $request->getWebUrl(true) : $this->domain;
+            $domain = rtrim($domain, '/') . '/';
+        }
         
         return "{$domain}qrcodes/{$path}/{$filename}";
     }
