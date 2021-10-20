@@ -101,7 +101,9 @@ class ThumbSetting extends Setting
      */
     public function isWatermark() : bool
     {
-        return (bool) $this->get('watermark', false);
+        $status = (bool) $this->get('watermark', false);
+        
+        return $status && WatermarkSetting::init()->hasFile();
     }
     
     
