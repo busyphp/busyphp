@@ -1,14 +1,17 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\general\controller;
 
+use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
-use BusyPHP\helper\file\File;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
-use BusyPHP\app\admin\model\system\config\SystemConfig;
-use mysqli;
-use think\Exception;
+use Exception;
+use think\db\ConnectionInterface;
+use think\exception\FileException;
+use think\exception\HttpResponseException;
+use think\facade\Db;
 
 /**
  * BusyPHP数据库安装
@@ -31,31 +34,36 @@ class InstallController extends Controller
         
         // 检测是否安装完毕
         if (is_file($this->lockFile) && !in_array($this->request->action(), ['index', 'finish'])) {
-            $this->redirect(url('general/install/index'))->send();
-            exit;
+            throw new HttpResponseException($this->redirect(url('/general/install/index')));
         }
     }
     
     
+    /**
+     * @inheritDoc
+     */
     protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
     {
-        $template = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . $this->request->action() . '.html';
-        
-        // 步进值
-        $step  = array_search($this->request->action(), ['index', 'env', 'db', 'finish']);
-        $steps = [];
-        for ($i = 0; $i <= $step; $i++) {
-            if ($i == $step) {
-                $steps[$i] = ' step-info';
-            } else {
-                $steps[$i] = ' step-success';
+        if (!$template) {
+            $template = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . $this->request->action() . '.html';
+            
+            // 步进值
+            $step  = array_search($this->request->action(), ['index', 'env', 'db', 'finish']);
+            $steps = [];
+            for ($i = 0; $i <= $step; $i++) {
+                if ($i == $step) {
+                    $steps[$i] = ' step-info';
+                } else {
+                    $steps[$i] = ' step-success';
+                }
             }
+            
+            $progress = $step * 25 + 25;
+            $this->assign('steps', $steps);
+            $this->assign('progress', $progress);
+            $this->assign('version_name', $this->app->getFrameworkVersion());
+            $this->assign('title', $this->app->getFrameworkName());
         }
-        $progress = $step * 25 + 25;
-        $this->assign('steps', $steps);
-        $this->assign('progress', $progress);
-        $this->assign('version_name', $this->app->getFrameworkVersion());
-        $this->assign('title', $this->app->getFrameworkName());
         
         return parent::display($template, $charset, $contentType, $content);
     }
@@ -69,7 +77,7 @@ class InstallController extends Controller
     private function isDirWriteable($dir)
     {
         if (!is_dir($dir)) {
-            if (false === mkdir($dir, 0775)) {
+            if (false === mkdir($dir, 0775, true)) {
                 return false;
             }
         }
@@ -86,32 +94,28 @@ class InstallController extends Controller
     
     
     /**
-     * 连接mysql
-     * @param $host
-     * @param $user
-     * @param $pass
-     * @param $port
-     * @return mysqli
-     * @throws Exception
+     * 连接数据库
+     * @param string $host
+     * @param string $user
+     * @param string $pass
+     * @param int    $port
+     * @param string $dbName
+     * @return ConnectionInterface
      */
-    private function mysqlInit($host, $user, $pass, $port)
+    private function initDb(string $host, string $user, string $pass, int $port, string $dbName = '') : ConnectionInterface
     {
-        $mysql = new mysqli($host, $user, $pass, null, $port);
-        if ($mysql->connect_errno) {
-            switch (intval($mysql->connect_errno)) {
-                case 1045:
-                    $message = '您的数据库访问用户名或是密码错误';
-                break;
-                case 2002:
-                    $message = '您的数据库连接失败';
-                break;
-                default:
-                    $message = "[{$mysql->connect_errno}]{$mysql->connect_error}";
-            }
-            throw new Exception($message);
-        }
+        $database                           = $this->app->config->get('database');
+        $database['connections']['install'] = [
+            'type'     => 'mysql',
+            'hostname' => $host,
+            'username' => $user,
+            'password' => $pass,
+            'hostport' => $port,
+            'database' => $dbName,
+        ];
+        $this->app->config->set($database, 'database');
         
-        return $mysql;
+        return Db::connect('install', true);
     }
     
     
@@ -119,22 +123,22 @@ class InstallController extends Controller
      * 解析SQL语句
      * @param string $file
      * @param string $prefix
-     * @param array  $serach
+     * @param array  $search
      * @param array  $replace
      * @return array
-     * @throws Exception
+     * @throws FileException
      */
-    private function parseSql($file, $prefix, $serach = [], $replace = [])
+    private function parseSql($file, $prefix, $search = [], $replace = [])
     {
         // 读取SQL文件
         if (!is_file($file)) {
-            throw new Exception("安装包不正确, 数据安装脚本缺失: {$file}");
+            throw new FileException("安装包不正确, 数据安装脚本缺失: {$file}");
         }
         
         $sql = file_get_contents($file);
         $sql = str_replace('#__table__#', $prefix, $sql);
-        if ($serach && $replace) {
-            $sql = str_replace($serach, $replace, $sql);
+        if ($search && $replace) {
+            $sql = str_replace($search, $replace, $sql);
         }
         
         $sql = str_replace("\r", "\n", $sql);
@@ -149,8 +153,21 @@ class InstallController extends Controller
      * 配置.env文件
      * @param array $db
      */
-    private function configEnv(array $db)
+    private function setConfig(array $db)
     {
+        // 配置MySQL
+        $database                                     = $this->app->config->get('database');
+        $database['connections']['mysql']['hostname'] = $db['server'];
+        $database['connections']['mysql']['database'] = $db['name'];
+        $database['connections']['mysql']['username'] = $db['username'];
+        $database['connections']['mysql']['password'] = $db['password'];
+        $database['connections']['mysql']['hostport'] = $db['port'];
+        $database['connections']['mysql']['prefix']   = $db['prefix'];
+        $database['connections']['mysql']['charset']  = 'utf8mb4';
+        $this->app->config->set($database, 'database');
+        
+        
+        // 写 .env 文件
         $file    = $this->app->getRootPath() . '.env';
         $content = file_get_contents($file);
         $content = preg_replace_callback('/\[DATABASE\](.*?)\[/s', function() use ($db) {
@@ -163,13 +180,17 @@ PREFIX = {$db['prefix']}
 USERNAME = {$db['username']}
 PASSWORD = {$db['password']}
 HOSTPORT = {$db['port']}
-CHARSET = utf8
+CHARSET = utf8mb4
 
 [
 HTML;
         }, $content);
+        file_put_contents($file, $content);
         
-        File::write($file, $content);
+        
+        // 创建锁文件
+        $time = date('Y-m-d H:i:s');
+        file_put_contents($this->lockFile, "该文件为系统安装完毕后生成，如果需要重新安装，请删除该文件\n\n安装时间: {$time}");
     }
     
     
@@ -360,13 +381,13 @@ HTML;
         
         $ret['continue'] = true;
         foreach ($ret['php'] as $opt) {
-            if ($opt['failed']) {
+            if (($opt['failed'] ?? false)) {
                 $ret['continue'] = false;
                 break;
             }
         }
         foreach ($ret['write'] as $opt) {
-            if ($opt['failed']) {
+            if (($opt['failed'] ?? false)) {
                 $ret['continue'] = false;
                 break;
             }
@@ -384,102 +405,62 @@ HTML;
     public function db()
     {
         // 安装数据库
-        if ($this->isPost() && $this->post('action') === 'install') {
+        if ($this->isPost() && $this->post('action/s') === 'install') {
             set_time_limit(0);
             
-            $db    = Filter::trim($this->post('db'));
-            $user  = Filter::trim($this->post('user'));
-            $site  = Filter::trim($this->post('site'));
+            $db    = Filter::trim($this->post('db/a'));
+            $user  = Filter::trim($this->post('user/a'));
             $mysql = null;
             try {
-                $mysql = $this->mysqlInit($db['server'], $db['username'], $db['password'], $db['port']);
-                $mysql->query("SET character_set_connection=utf8mb4, character_set_results=utf8mb4, character_set_client=binary");
-                $mysql->query("SET sql_mode=''");
-                if ($mysql->error) {
-                    throw new Exception($mysql->error);
-                }
-                
                 // 创建数据库
-                $showDBSQL = "SHOW DATABASES LIKE  '{$db['name']}';";
-                if (!$mysql->query($showDBSQL)->fetch_assoc()) {
-                    $mysql->query("CREATE DATABASE IF NOT EXISTS `{$db['name']}` DEFAULT CHARACTER SET utf8mb4");
+                $mysql = $this->initDb($db['server'], $db['username'], $db['password'], (int) $db['port']);
+                if (!$mysql->query("SHOW DATABASES LIKE '{$db['name']}';")) {
+                    $mysql->execute("CREATE DATABASE IF NOT EXISTS `{$db['name']}` DEFAULT CHARACTER SET utf8mb4");
                 }
+                $mysql->close();
+                $mysql = null;
                 
-                // 检测数据库
-                if (!$mysql->query($showDBSQL)->fetch_assoc()) {
-                    throw new Exception('数据库不存在且创建数据库失败.');
-                }
                 
-                if ($mysql->errno) {
-                    throw new Exception($mysql->error);
-                }
-                
-                // 选择创建好的数据
-                $mysql->select_db($db['name']);
+                // 连接数据库
+                $mysql = $this->initDb($db['server'], $db['username'], $db['password'], (int) $db['port'], $db['name']);
                 $mysql->query("SET character_set_connection=utf8mb4, character_set_results=utf8mb4, character_set_client=binary");
                 $mysql->query("SET sql_mode=''");
                 
                 
-                // 读取SQL文件
-                $title  = trim($site['title']);
-                $title  = $title ? $title : 'BusyPHP';
-                $length = strlen($title);
-                $sql    = $this->parseSql($this->app->getFrameworkPath('data/install.sql'), $db['prefix'], [
+                // 分析SQL语句
+                $sql = $this->parseSql($this->app->getFrameworkPath('data/install.sql'), $db['prefix'], [
                     '#__username__#',
                     '#__password__#',
                     '#__create_time__#',
-                    '#__title__#'
                 ], [
                     $user['username'],
-                    AdminUser::createPassword($user['password']),
+                    password_hash(AdminUser::createPassword($user['password']), PASSWORD_DEFAULT),
                     time(),
-                    "s:{$length}:\"{$title}\""
                 ]);
                 
+                // 遍历SQL语句并执行
                 foreach ($sql as $item) {
                     $item = trim($item);
                     if (!$item) {
                         continue;
                     }
                     
-                    $res = $mysql->query($item);
-                    if (!$res) {
-                        throw new Exception("安装基本数据库SQL语句错误: [{$mysql->errno}] {$mysql->error}");
-                    }
+                    $mysql->execute($item);
                 }
+                $mysql->close();
+                $mysql = null;
                 
-                
-                // 读取扩展SQL文件
-                $extendSqlFile = $this->app->getPublicPath('install/sql.sql');
-                if (is_file($extendSqlFile)) {
-                    $extendSql = $this->parseSql($extendSqlFile, $db['prefix']);
-                    foreach ($extendSql as $item) {
-                        $item = trim($item);
-                        if (!$item) {
-                            continue;
-                        }
-                        
-                        $res = $mysql->query($item);
-                        if (!$res) {
-                            throw new Exception("安装扩展数据库SQL语句错误: [{$mysql->errno}] {$mysql->error}");
-                        }
-                    }
-                }
-                
-                // 配置.env文件
-                $this->configEnv($db);
-                
-                // 创建锁文件
-                $time = date('Y-m-d H:i:s');
-                File::write($this->lockFile, "该文件为系统安装完毕后生成，如果需要重新安装，请删除该文件\n\n安装时间: {$time}");
+                // 设置配置
+                $this->setConfig($db);
                 
                 // 生成缓存
                 SystemConfig::init()->updateCache();
             } catch (Exception $e) {
+                if ($mysql instanceof ConnectionInterface) {
+                    $mysql->close();
+                }
+                
                 return $this->error($e->getMessage());
-            }
-            if ($mysql instanceof mysqli) {
-                $mysql->close();
             }
             
             return $this->redirect(url('general/install/finish'));
@@ -488,26 +469,24 @@ HTML;
         
         // 校验数据库
         if ($this->isAjax()) {
-            $host  = $this->request('db_host', 'trim');
-            $user  = $this->request('db_user', 'trim');
-            $pass  = $this->request('db_pass', 'trim');
-            $port  = $this->request('db_port', 'trim');
+            $host  = $this->get('db_host/s', 'trim');
+            $user  = $this->get('db_user/s', 'trim');
+            $pass  = $this->get('db_pass/s', 'trim');
+            $port  = $this->get('db_port/d');
             $mysql = null;
             try {
-                $mysql = $this->mysqlInit($host, $user, $pass, $port);
-                if (false === $result = $mysql->query("SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA`")) {
-                    throw new Exception($mysql->error);
-                }
+                $mysql     = $this->initDb($host, $user, $pass, $port);
+                $list      = $mysql->query("SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA`");
                 $databases = [];
-                while ($vo = $result->fetch_array()) {
-                    $databases[] = $vo[0];
+                foreach ($list as $vo) {
+                    $databases[] = $vo['SCHEMA_NAME'];
                 }
                 $result = ['code' => '200', 'data' => implode(',', $databases)];
             } catch (Exception $e) {
                 $result = ['code' => '100', 'msg' => $e->getMessage()];
             }
             
-            if ($mysql instanceof mysqli) {
+            if ($mysql instanceof ConnectionInterface) {
                 $mysql->close();
             }
             

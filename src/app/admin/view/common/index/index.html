@@ -22,11 +22,11 @@
                     </tr>
                     <tr>
                         <td width="130">上一次登录IP</td>
-                        <td>{$system.user.last_ip}</td>
+                        <td>{$system.user.last_ip|default='--'}</td>
                     </tr>
                     <tr>
                         <td>最后一次登录时间</td>
-                        <td>{$system.user.format_last_time}</td>
+                        <td>{$system.user.format_last_time|default='--'}</td>
                     </tr>
                     <tr>
                         <td>登录次数</td>

@@ -276,11 +276,12 @@ class Service extends ThinkService
         
         // 数据库安装路由
         $route->group(function() use ($route) {
-            $route->rule('general/install/<action>', InstallController::class . '@<action>');
-            $route->rule('general/install', InstallController::class . '@index')->append(['action' => 'index']);
+            $actionPattern  = '<' . self::ROUTE_VAR_ACTION . '>';
+            $route->rule("general/install/{$actionPattern}", InstallController::class . "@{$actionPattern}");
+            $route->rule('general/install', InstallController::class . '@index')->append([self::ROUTE_VAR_ACTION => 'index']);
         })->append([
-            'type'    => 'plugin',
-            'control' => 'Install'
+            self::ROUTE_VAR_TYPE    => 'plugin',
+            self::ROUTE_VAR_CONTROL => 'Install'
         ]);
         
         // 后台路由

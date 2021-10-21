@@ -31,10 +31,10 @@
     <div class="row well well-lg">
         <div class="col-xs-12">
             <div class="step">
-                <div class="col-md-3 {$steps[0]}"><em>1</em>许可协议</div>
-                <div class="col-md-3 {$steps[1]}"><em>2</em>环境监测</div>
-                <div class="col-md-3 {$steps[2]}"><em>3</em>参数配置</div>
-                <div class="col-md-3 {$steps[3]}"><em>4</em>安装成功</div>
+                <div class="col-md-3 {$steps.0|default=''}"><em>1</em>许可协议</div>
+                <div class="col-md-3 {$steps.1|default=''}"><em>2</em>环境监测</div>
+                <div class="col-md-3 {$steps.2|default=''}"><em>3</em>参数配置</div>
+                <div class="col-md-3 {$steps.3|default=''}"><em>4</em>安装成功</div>
             </div>
             <div class="progress" title="安装进度">
                 <div class="progress-bar progress-bar-{$finish ? 'success' : 'info progress-bar-striped active'}" role="progressbar" aria-valuenow="{$progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$progress}%;">
@@ -48,7 +48,7 @@
     </div>
     <div class="footer" style="margin:15px auto;">
         <div class="text-center">
-            Powered by <a target="_blank" href="http://www.harter.cn"><b>山西函拓科技有限公司</b></a> &copy; 2015-2027
+            Powered by <a target="_blank" href="http://www.harter.cn"><b>山西函拓科技有限公司</b></a> &copy; 2015-{:date('Y')}
             <a target="_blank" href="http://www.harter.cn">www.harter.cn</a>
         </div>
     </div>
