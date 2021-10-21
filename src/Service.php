@@ -18,7 +18,6 @@ use BusyPHP\app\admin\controller\system\SystemManagerController;
 use BusyPHP\app\admin\controller\system\SystemUserController;
 use BusyPHP\app\admin\controller\system\SystemGroupController;
 use BusyPHP\app\admin\taglib\Ba;
-use BusyPHP\app\general\controller\InstallController;
 use BusyPHP\app\general\controller\QRCodeController;
 use BusyPHP\app\general\controller\ThumbController;
 use BusyPHP\app\general\controller\CaptchaController;
@@ -273,16 +272,6 @@ class Service extends ThinkService
         // 动态二维码路由
         $route->rule('qrcodes/<src>', QRCodeController::class . '@index')->pattern(['src' => '.+']);
         $route->rule('qrcodes', QRCodeController::class . '@index');
-        
-        // 数据库安装路由
-        $route->group(function() use ($route) {
-            $actionPattern  = '<' . self::ROUTE_VAR_ACTION . '>';
-            $route->rule("general/install/{$actionPattern}", InstallController::class . "@{$actionPattern}");
-            $route->rule('general/install', InstallController::class . '@index')->append([self::ROUTE_VAR_ACTION => 'index']);
-        })->append([
-            self::ROUTE_VAR_TYPE    => 'plugin',
-            self::ROUTE_VAR_CONTROL => 'Install'
-        ]);
         
         // 后台路由
         if ($this->app->http->getName() === 'admin') {

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\command;
 
+use BusyPHP\contract\interfaces\PluginInitialize;
 use BusyPHP\helper\FileHelper;
 use Exception;
 use think\console\Command;
@@ -44,12 +45,12 @@ class InstallCommand extends Command
             return;
         }
         
-        $message = '';
-        if (!is_file($this->app->getRootPath() . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'install.lock')) {
-            $message = '，请访问: http://您的域名/general/install/index.html 按照提示安装数据库.';
+        // 初始化插件
+        if (!$this->pluginInitialize()) {
+            return;
         }
         
-        $output->writeln("<info>安装完成{$message}</info>");
+        $output->writeln("<info>安装成功</info>");
     }
     
     
@@ -209,6 +210,41 @@ class InstallCommand extends Command
         }
         
         $this->output->writeln('<info>配置文件安装成功!</info>');
+        
+        return true;
+    }
+    
+    
+    /**
+     * 初始化插件
+     */
+    protected function pluginInitialize()
+    {
+        $packages    = $this->getPackages();
+        $initializes = [];
+        foreach ($packages as $package) {
+            if (!empty($package['extra']['busyphp']['initializes'])) {
+                foreach (is_array($package['extra']['busyphp']['initializes']) ?: [] as $initialize) {
+                    $initializes[] = $initialize;
+                }
+            }
+        }
+        
+        foreach ($initializes as $initialize) {
+            if (!$initialize || !class_exists($initialize)) {
+                continue;
+            }
+            $obj = new $initialize;
+            if (!$obj instanceof PluginInitialize) {
+                continue;
+            }
+            
+            try {
+                $obj->handle($this->output);
+            } catch (Exception $e) {
+                return false;
+            }
+        }
         
         return true;
     }
