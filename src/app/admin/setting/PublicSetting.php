@@ -86,7 +86,7 @@ class PublicSetting extends Setting
      */
     public function getImgErrorPlaceholder(bool $isPath = false) : string
     {
-        $image = $this->get('img_error_placeholder', '') ?: App::init()->request->getAssetsUrl() . 'data/images/no_image.jpeg';
+        $image = $this->get('img_error_placeholder', '') ?: App::init()->request->getAssetsUrl() . 'static/images/no_image.jpeg';
         
         return $isPath ? App::urlToPath($image) : $image;
     }
