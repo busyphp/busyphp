@@ -3,7 +3,11 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\general\controller;
 
+use BusyPHP\app\admin\model\admin\group\AdminGroup;
+use BusyPHP\app\admin\model\admin\group\AdminGroupField;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\Controller;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\FilterHelper;
@@ -453,6 +457,16 @@ HTML;
                 
                 // 设置配置
                 $this->setConfig($db);
+                
+                // 设置默认用户组
+                $systemMenu          = SystemMenu::init()
+                    ->whereEntity(SystemMenuField::path('#system'))
+                    ->failException(true)
+                    ->findInfo(null, '没有找到系统菜单');
+                $save                = AdminGroupField::init();
+                $save->defaultMenuId = $systemMenu->id;
+                $save->rule          = ",{$systemMenu->id},";
+                AdminGroup::init()->whereEntity(AdminGroupField::id(1))->saveData($save);
                 
                 // 生成缓存
                 SystemConfig::init()->updateCache();
