@@ -4,11 +4,11 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Filter;
-use BusyPHP\helper\util\Regex;
+use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\RegexHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 管理员表模型字段
@@ -232,7 +232,7 @@ class AdminUserField extends Field
     {
         $this->email = trim((string) $email);
         if ($this->email) {
-            if (!Regex::email($this->email)) {
+            if (!RegexHelper::email($this->email)) {
                 throw new VerifyException('请输入有效的邮箱地址', 'email');
             }
         }
@@ -251,7 +251,7 @@ class AdminUserField extends Field
     {
         $this->phone = trim((string) $phone);
         if ($this->phone) {
-            if (!Regex::phone($phone)) {
+            if (!RegexHelper::phone($phone)) {
                 throw new VerifyException('请输入有效的手机号', 'phone');
             }
         }
@@ -280,7 +280,7 @@ class AdminUserField extends Field
      */
     public function setChecked($checked)
     {
-        $this->checked = Transform::dataToBool($checked);
+        $this->checked = TransHelper::dataToBool($checked);
         
         return $this;
     }
@@ -295,7 +295,7 @@ class AdminUserField extends Field
     public function setGroupIds(array $groupIds)
     {
         $groupIds = array_map('intval', $groupIds);
-        $groupIds = Filter::trimArray($groupIds);
+        $groupIds = FilterHelper::trimArray($groupIds);
         if (!$groupIds) {
             throw new VerifyException('请选择权限', 'group_ids');
         }

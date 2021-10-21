@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
 use BusyPHP\file\QRCode;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\model\Setting;
 
 /**
@@ -34,7 +34,7 @@ class QrcodeSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data = Filter::trim($data);
+        $data = FilterHelper::trim($data);
         
         return $data;
     }

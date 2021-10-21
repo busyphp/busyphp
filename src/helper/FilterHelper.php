@@ -1,14 +1,14 @@
 <?php
 
-namespace BusyPHP\helper\util;
+namespace BusyPHP\helper;
 
 /**
- * 过滤类
+ * 数据过滤辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
- * @version $Id: 2017-06-19 上午10:33 Filter.php busy^life $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:19 FilterHelper.php $
  */
-class Filter
+class FilterHelper
 {
     /**
      * 保留最小值
@@ -48,7 +48,7 @@ class Filter
         }
         
         $string = explode($symbol, $string);
-        $string = Filter::trim($string);
+        $string = FilterHelper::trim($string);
         $string = array_filter($string);
         $string = array_unique($string);
         $string = implode($symbol, $string);

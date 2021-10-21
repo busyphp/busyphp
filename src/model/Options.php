@@ -2,7 +2,7 @@
 
 namespace BusyPHP\model;
 
-use BusyPHP\helper\util\Arr;
+use BusyPHP\helper\ArrayHelper;
 
 /**
  * 选项对象
@@ -43,7 +43,7 @@ class Options implements \ArrayAccess
      */
     public function get(string $key, $default = null)
     {
-        return Arr::get($this->options, $key, $default);
+        return ArrayHelper::get($this->options, $key, $default);
     }
     
     
@@ -55,7 +55,7 @@ class Options implements \ArrayAccess
      */
     public function set(string $key, $value) : array
     {
-        return Arr::set($this->options, $key, $value);
+        return ArrayHelper::set($this->options, $key, $value);
     }
     
     

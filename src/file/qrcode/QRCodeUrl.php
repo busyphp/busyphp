@@ -5,7 +5,7 @@ namespace BusyPHP\file\qrcode;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\setting\QrcodeSetting;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 动态二维码URL生成
@@ -159,7 +159,7 @@ class QRCodeUrl
     {
         $text     = $this->text ?? '';
         $text     .= $this->logo ? '#!logo!#' . $this->logo : '';
-        $text     = Transform::base64encodeUrl($text);
+        $text     = TransHelper::base64encodeUrl($text);
         $filename = "{$text}.{$this->level}X{$this->size}X{$this->margin}.png";
         
         $hash = md5($filename);

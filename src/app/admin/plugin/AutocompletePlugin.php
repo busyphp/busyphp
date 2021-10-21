@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\Request;
@@ -98,7 +98,7 @@ class AutocompletePlugin
         
         if ($model instanceof Model) {
             if ($this->word) {
-                $model->whereLike($this->textField, '%' . Filter::searchWord($this->word) . '%');
+                $model->whereLike($this->textField, '%' . FilterHelper::searchWord($this->word) . '%');
             }
             
             // 自定义查询条件

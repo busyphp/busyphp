@@ -7,7 +7,7 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Arr;
+use BusyPHP\helper\ArrayHelper;
 use Exception;
 use think\Response;
 
@@ -111,7 +111,7 @@ class UserController extends InsideController
             $config['sort']  = $config['sort'] ?? (1000 + $i);
             $list[]          = $config;
         }
-        $list = Arr::listSortBy($list, 'sort', Arr::ORDER_BY_ASC);
+        $list = ArrayHelper::listSortBy($list, 'sort', ArrayHelper::ORDER_BY_ASC);
         $this->assign('list', $list);
         $this->assign('info', AdminUser::init()->getTheme($this->adminUser));
         $this->setPageTitle('主题设置');

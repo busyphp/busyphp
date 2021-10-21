@@ -6,11 +6,11 @@ namespace BusyPHP\app\admin\model\system\file\classes;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Regex;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\RegexHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 
 /**
@@ -159,13 +159,13 @@ class SystemFileClassField extends Field
         if (!$this->var) {
             throw new VerifyException('请输入文件分类标识', 'var');
         }
-        if (!Regex::account($this->var)) {
+        if (!RegexHelper::account($this->var)) {
             throw new VerifyException('文件分类标识格式有误，只能包含英文、数字、下划线', 'var');
         }
         
         // 只能是英文开头
-        $this->var = Str::snake($this->var);
-        if (!Regex::english(substr($this->var, 0, 1))) {
+        $this->var = StringHelper::snake($this->var);
+        if (!RegexHelper::english(substr($this->var, 0, 1))) {
             throw new VerifyException('文件分类标识不能为数字或下划线开头', 'var');
         }
         
@@ -200,7 +200,7 @@ class SystemFileClassField extends Field
      */
     public function setSystem($system)
     {
-        $this->system = Transform::dataToBool($system);
+        $this->system = TransHelper::dataToBool($system);
         
         return $this;
     }

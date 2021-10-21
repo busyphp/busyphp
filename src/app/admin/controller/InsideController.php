@@ -2,7 +2,7 @@
 
 namespace BusyPHP\app\admin\controller;
 
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\Service;
 
 /**
@@ -43,13 +43,13 @@ class InsideController extends AdminController
         $controller = $this->request->controller();
         if (false !== strpos($controller, '.')) {
             [$group, $controller] = explode('.', $controller);
-            $group = Str::snake($group) . DIRECTORY_SEPARATOR;
+            $group = StringHelper::snake($group) . DIRECTORY_SEPARATOR;
         }
-        $controller = Str::snake($controller);
+        $controller = StringHelper::snake($controller);
         
         $dir = $this->request->route(Service::ROUTE_VAR_DIR);
         if ($dir) {
-            $dir = Str::snake($dir) . DIRECTORY_SEPARATOR;
+            $dir = StringHelper::snake($dir) . DIRECTORY_SEPARATOR;
         }
         
         return $this->getViewPath() . $dir . $group . $controller . DIRECTORY_SEPARATOR;

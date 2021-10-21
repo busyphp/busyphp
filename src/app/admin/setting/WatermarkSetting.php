@@ -6,7 +6,7 @@ namespace BusyPHP\app\admin\setting;
 use BusyPHP\App;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model\Setting;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 
 /**
  * 图片水印配置
@@ -23,14 +23,14 @@ class WatermarkSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data = Filter::trim($data);
+        $data = FilterHelper::trim($data);
         
-        $data['position']      = Filter::min($data['position']);
-        $data['position']      = Filter::max($data['position'], 10);
-        $data['opacity']       = Filter::min($data['opacity'], 1);
-        $data['opacity']       = Filter::max($data['opacity'], 100);
-        $data['offset_rotate'] = Filter::min($data['offset_rotate'], 0);
-        $data['offset_rotate'] = Filter::max($data['offset_rotate'], 360);
+        $data['position']      = FilterHelper::min($data['position']);
+        $data['position']      = FilterHelper::max($data['position'], 10);
+        $data['opacity']       = FilterHelper::min($data['opacity'], 1);
+        $data['opacity']       = FilterHelper::max($data['opacity'], 100);
+        $data['offset_rotate'] = FilterHelper::min($data['offset_rotate'], 0);
+        $data['offset_rotate'] = FilterHelper::max($data['offset_rotate'], 360);
         if ($data['file'] && !is_file(App::urlToPath($data['file']))) {
             throw new VerifyException('水印文件不存在', 'file');
         }

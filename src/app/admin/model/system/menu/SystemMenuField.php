@@ -7,7 +7,7 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 后台菜单模型字段
@@ -230,7 +230,7 @@ class SystemMenuField extends Field
      */
     public function setHide($hide)
     {
-        $this->hide = Transform::dataToBool($hide);
+        $this->hide = TransHelper::dataToBool($hide);
         
         return $this;
     }
@@ -243,7 +243,7 @@ class SystemMenuField extends Field
      */
     public function setDisabled($disabled)
     {
-        $this->disabled = Transform::dataToBool($disabled);
+        $this->disabled = TransHelper::dataToBool($disabled);
         
         return $this;
     }

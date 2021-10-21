@@ -5,9 +5,9 @@ namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Setting;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -29,7 +29,7 @@ class UploadSetting extends Setting
     public static function parseExtensions($extensions, bool $returnArray = false)
     {
         $extensions = explode(',', $extensions);
-        $extensions = Filter::trimArray($extensions);
+        $extensions = FilterHelper::trimArray($extensions);
         
         if ($returnArray) {
             return $extensions;
@@ -60,7 +60,7 @@ class UploadSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data = Filter::trim($data);
+        $data = FilterHelper::trim($data);
         
         $data['disk'] = $data['disk'] ?? '';
         $data['disk'] = $data['disk'] ?: 'public';
@@ -69,7 +69,7 @@ class UploadSetting extends Setting
         $data['clients'] = $data['clients'] ?? [];
         foreach ($data['clients'] as $client => $item) {
             $item['allow_extensions'] = self::parseExtensions($item['allow_extensions'] ?? '');
-            $item['max_size']         = Transform::formatMoney(floatval($item['max_size'] ?? 0));
+            $item['max_size']         = TransHelper::formatMoney(floatval($item['max_size'] ?? 0));
             $data['clients'][$client] = $item;
         }
         
@@ -138,7 +138,7 @@ class UploadSetting extends Setting
             }
         }
         
-        return Filter::trimArray(explode(',', $this->getClientInfo($client)['allow_extensions'] ?? ''));
+        return FilterHelper::trimArray(explode(',', $this->getClientInfo($client)['allow_extensions'] ?? ''));
     }
     
     

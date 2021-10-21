@@ -5,8 +5,8 @@ namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
-use BusyPHP\helper\util\Str;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\StringHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -136,14 +136,14 @@ class AdminUserInfo extends AdminUserField
         
         $this->theme              = json_decode($this->theme, true) ?: [];
         $this->skin               = $this->theme['skin'] ?? '';
-        $this->formatCreateTime   = Transform::date($this->createTime);
-        $this->formatUpdateTime   = Transform::date($this->updateTime);
-        $this->formatLastTime     = $this->lastTime > 0 ? Transform::date($this->lastTime) : '';
-        $this->formatLoginTime    = $this->loginTime > 0 ? Transform::date($this->loginTime) : '';
+        $this->formatCreateTime   = TransHelper::date($this->createTime);
+        $this->formatUpdateTime   = TransHelper::date($this->updateTime);
+        $this->formatLastTime     = $this->lastTime > 0 ? TransHelper::date($this->lastTime) : '';
+        $this->formatLoginTime    = $this->loginTime > 0 ? TransHelper::date($this->loginTime) : '';
         $this->checked            = $this->checked > 0;
         $this->system             = $this->system > 0;
         $this->isTempLock         = $this->errorRelease > time();
-        $this->formatErrorRelease = $this->errorRelease > 0 ? Transform::date($this->errorRelease) : '';
+        $this->formatErrorRelease = $this->errorRelease > 0 ? TransHelper::date($this->errorRelease) : '';
         
         $groupIds             = explode(',', $this->groupIds);
         $this->groupIds       = [];
@@ -172,7 +172,7 @@ class AdminUserInfo extends AdminUserField
                 $this->groupHasSystem = true;
             }
         }
-        $this->groupRulePaths = array_map([Str::class, 'snake'], $this->groupRulePaths);
+        $this->groupRulePaths = array_map([StringHelper::class, 'snake'], $this->groupRulePaths);
         
         if (!$this->defaultGroupId || !isset($this->groupList[$this->defaultGroupId])) {
             $this->defaultGroupId = end($this->groupIds);

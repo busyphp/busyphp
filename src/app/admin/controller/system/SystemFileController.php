@@ -4,7 +4,7 @@ namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\model\Map;
@@ -76,7 +76,7 @@ class SystemFileController extends InsideController
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限类型'));
-        $this->assign('client_options', Transform::arrayToOption($this->app->getList(), 'dir', 'name'));
+        $this->assign('client_options', TransHelper::arrayToOption($this->app->getList(), 'dir', 'name'));
         $this->assign('time', $timeRange);
         
         return $this->display();

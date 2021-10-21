@@ -2,7 +2,7 @@
 
 namespace BusyPHP\model;
 
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use think\db\Raw;
 
 
@@ -161,7 +161,7 @@ class Entity
     public function field(bool $raw = false, bool $camel = false) : string
     {
         if ($raw) {
-            return $camel ? Str::camel($this->field) : $this->field;
+            return $camel ? StringHelper::camel($this->field) : $this->field;
         }
         
         return $this->__toString();

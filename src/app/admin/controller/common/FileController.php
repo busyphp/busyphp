@@ -11,7 +11,7 @@ use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\exception\PartUploadSuccessException;
 use BusyPHP\file\upload\PartUpload;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -134,14 +134,14 @@ class FileController extends InsideController
         
         // 允许的后缀
         if ($extensions) {
-            $extensionsList = Filter::trimArray(explode(',', $extensions));
+            $extensionsList = FilterHelper::trimArray(explode(',', $extensions));
             if ($extensionsList) {
                 $this->model->whereEntity(SystemFileField::extension('in', $extensionsList));
             }
         }
         
         if ($word) {
-            $this->model->whereEntity(SystemFileField::name('like', '%' . Filter::searchWord($word) . '%'));
+            $this->model->whereEntity(SystemFileField::name('like', '%' . FilterHelper::searchWord($word) . '%'));
         }
         
         

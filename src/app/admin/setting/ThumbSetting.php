@@ -5,8 +5,8 @@ namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
 use BusyPHP\file\image\ThumbUrl;
-use BusyPHP\helper\util\Filter;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Setting;
 
 /**
@@ -35,14 +35,14 @@ class ThumbSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data                   = Filter::trim($data);
-        $data['save_local']     = Transform::dataToBool($data['save_local'] ?? 0);
-        $data['unlimited_size'] = Transform::dataToBool($data['unlimited_size'] ?? 0);
-        $data['watermark']      = Transform::dataToBool($data['watermark'] ?? 0);
+        $data                   = FilterHelper::trim($data);
+        $data['save_local']     = TransHelper::dataToBool($data['save_local'] ?? 0);
+        $data['unlimited_size'] = TransHelper::dataToBool($data['unlimited_size'] ?? 0);
+        $data['watermark']      = TransHelper::dataToBool($data['watermark'] ?? 0);
         $sizes                  = [];
         foreach ($data['sizes'] ?? [] as $vo) {
-            $width  = Filter::min((int) ($vo['width'] ?? 0));
-            $height = Filter::min((int) ($vo['height'] ?? 0));
+            $width  = FilterHelper::min((int) ($vo['width'] ?? 0));
+            $height = FilterHelper::min((int) ($vo['height'] ?? 0));
             $alias  = trim((string) ($vo['alias'] ?? ''));
             if ($width <= 0 || $height <= 0) {
                 continue;

@@ -5,7 +5,7 @@ namespace BusyPHP\model;
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use think\db\exception\DbException;
 
 /**
@@ -67,7 +67,7 @@ abstract class Setting
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
-            $this->key = Str::snake($name);
+            $this->key = StringHelper::snake($name);
         }
         
         return $this->key;
@@ -112,7 +112,7 @@ abstract class Setting
         $data   = $this->get();
         $string = '';
         foreach ($data as $k => $v) {
-            $name = ucfirst(Str::camel($k));
+            $name = ucfirst(StringHelper::camel($k));
             if (is_bool($v)) {
                 $type = 'bool';
             } elseif (is_array($v)) {

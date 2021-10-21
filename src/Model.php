@@ -6,8 +6,8 @@ namespace BusyPHP;
 use ArrayAccess;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Query;
 use Closure;
@@ -1620,11 +1620,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         $key    = Entity::parse($key ?: 'id');
         $field  = Entity::parse($field ?: 'id');
         $list   = [];
-        $values = Filter::trimArray($values);
+        $values = FilterHelper::trimArray($values);
         if ($values) {
             $this->where($key, 'in', $values);
             $list = $isExtend ? $this->selectExtendList() : $this->selectList();
-            $list = Arr::listByKey($list, $field);
+            $list = ArrayHelper::listByKey($list, $field);
         }
         
         return $list;

@@ -1,15 +1,15 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\helper\util;
+namespace BusyPHP\helper;
 
 /**
- * 正则验证助手
+ * 正则验证辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/5/28 下午1:32 下午 Regex.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:19 RegexHelper.php $
  */
-class Regex
+class RegexHelper
 {
     protected static $validate = [
         'require'  => '/.+/',

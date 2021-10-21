@@ -6,7 +6,7 @@ namespace BusyPHP\app\admin\model\system\file\classes;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
-use BusyPHP\helper\util\Arr;
+use BusyPHP\helper\ArrayHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -190,7 +190,7 @@ class SystemFileClass extends Model
             $list = $this->order(SystemFileClassField::sort(), 'asc')
                 ->order(SystemFileClassField::id(), 'desc')
                 ->selectList();
-            $list = Arr::listByKey($list, SystemFileClassField::var());
+            $list = ArrayHelper::listByKey($list, SystemFileClassField::var());
             $this->setCache('list', $list);
         }
         

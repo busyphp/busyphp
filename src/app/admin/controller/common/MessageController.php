@@ -9,7 +9,7 @@ use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
 use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 通用通知/待办
@@ -89,7 +89,7 @@ class MessageController extends InsideController
                 'id'          => $item->getId(),
                 'title'       => $item->getTitle(),
                 'desc'        => $item->getDesc(),
-                'create_time' => Transform::date($item->getCreateTime()),
+                'create_time' => TransHelper::date($item->getCreateTime()),
                 'is_read'     => $item->isRead(),
                 'url'         => $item->getOperateUrl(),
                 'icon'        => [

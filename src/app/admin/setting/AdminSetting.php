@@ -5,8 +5,8 @@ namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
 use BusyPHP\model\Setting;
-use BusyPHP\helper\util\Filter;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use think\db\exception\DbException;
 
@@ -25,14 +25,14 @@ class AdminSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data                            = Filter::trim($data);
-        $data['verify']                  = Transform::dataToBool($data['verify']);
-        $data['multiple_client']         = Transform::dataToBool($data['multiple_client']);
-        $data['often']                   = Filter::min(intval($data['often']), 0);
-        $data['save_login']              = Filter::min(intval($data['save_login']), 0);
-        $data['login_error_minute']      = Filter::min(intval($data['login_error_minute']), 0);
-        $data['login_error_max']         = Filter::min(intval($data['login_error_max']), 0);
-        $data['login_error_lock_minute'] = Filter::min(intval($data['login_error_lock_minute']), 0);
+        $data                            = FilterHelper::trim($data);
+        $data['verify']                  = TransHelper::dataToBool($data['verify']);
+        $data['multiple_client']         = TransHelper::dataToBool($data['multiple_client']);
+        $data['often']                   = FilterHelper::min(intval($data['often']), 0);
+        $data['save_login']              = FilterHelper::min(intval($data['save_login']), 0);
+        $data['login_error_minute']      = FilterHelper::min(intval($data['login_error_minute']), 0);
+        $data['login_error_max']         = FilterHelper::min(intval($data['login_error_max']), 0);
+        $data['login_error_lock_minute'] = FilterHelper::min(intval($data['login_error_lock_minute']), 0);
         
         // 切换多设备登录，则清理
         if ($data['multiple_client'] !== $this->get('multiple_client')) {

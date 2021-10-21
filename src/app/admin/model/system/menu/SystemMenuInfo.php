@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\menu;
 
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use think\facade\Route;
 use think\helper\Str;
 
@@ -71,7 +71,7 @@ class SystemMenuInfo extends SystemMenuField
         $this->hide       = $this->hide > 0;
         $this->disabled   = $this->disabled > 0;
         $this->system     = $this->system > 0;
-        $this->paramList  = Filter::trimArray(explode(',', $this->params) ?: []);
+        $this->paramList  = FilterHelper::trimArray(explode(',', $this->params) ?: []);
         
         if (0 === strpos($this->path, '#')) {
             $this->url = '';

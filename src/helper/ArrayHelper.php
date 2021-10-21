@@ -1,16 +1,17 @@
 <?php
 
-namespace BusyPHP\helper\util;
+namespace BusyPHP\helper;
 
 use think\Collection;
+use think\helper\Arr;
 
 /**
- * 数组操作类
+ * 数组操作辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/16 下午4:27 下午 Arr.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:21 ArrayHelper.php $
  */
-class Arr extends \think\helper\Arr
+class ArrayHelper extends Arr
 {
     /** 升序 */
     const ORDER_BY_ASC = 'asc';

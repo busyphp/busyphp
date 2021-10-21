@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\Request;
@@ -108,8 +108,8 @@ class SelectPickerPlugin
         $this->idField   = $this->idField ?: 'id';
         $this->textField = $this->textField ?: 'name';
         $this->length    = $this->length < 0 ? 20 : $this->length;
-        $this->order     = Filter::trimArray(explode(',', $this->order));
-        $this->word      = is_array($this->word) ? Filter::trimArray($this->word) : trim((string) $this->word);
+        $this->order     = FilterHelper::trimArray(explode(',', $this->order));
+        $this->word      = is_array($this->word) ? FilterHelper::trimArray($this->word) : trim((string) $this->word);
         $this->page      = $this->page <= 1 ? 1 : $this->page;
     }
     
@@ -145,7 +145,7 @@ class SelectPickerPlugin
             // 查询列表
             else {
                 if ($this->word) {
-                    $model->whereLike($this->textField, '%' . Filter::searchWord($this->word) . '%');
+                    $model->whereLike($this->textField, '%' . FilterHelper::searchWord($this->word) . '%');
                 }
                 
                 if ($this->length > 0) {

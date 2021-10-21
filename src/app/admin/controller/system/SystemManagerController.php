@@ -16,7 +16,7 @@ use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\file\QRCode;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -284,7 +284,7 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $this->assign('level_options', Transform::arrayToOption(QRCode::getLevels(), '__index', '__index', QrcodeSetting::init()
+        $this->assign('level_options', TransHelper::arrayToOption(QRCode::getLevels(), '__index', '__index', QrcodeSetting::init()
             ->getLevel()));
         $this->assign('info', QrcodeSetting::init()->get());
         

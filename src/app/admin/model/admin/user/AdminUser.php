@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\util\Regex;
+use BusyPHP\helper\RegexHelper;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\crypt\TripleDES;
@@ -257,9 +257,9 @@ class AdminUser extends Model
         $this->startTrans();
         try {
             // 查询账户
-            if (Regex::email($username)) {
+            if (RegexHelper::email($username)) {
                 $this->whereEntity(AdminUserField::email($username));
-            } elseif (Regex::phone($username)) {
+            } elseif (RegexHelper::phone($username)) {
                 $this->whereEntity(AdminUserField::phone($username));
             } else {
                 $this->whereEntity(AdminUserField::username($username));

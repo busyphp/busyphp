@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\model\Map;
@@ -149,11 +149,11 @@ class TablePlugin
                 if ($this->accurate) {
                     $model->where($this->field, $this->word);
                 } else {
-                    $model->whereLike($this->field, '%' . Filter::searchWord($this->word) . '%');
+                    $model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
                 }
             } elseif ($this->word && $this->searchable) {
                 foreach ($this->searchable as $field) {
-                    $model->whereLike($field, '%' . Filter::searchWord($this->word) . '%');
+                    $model->whereLike($field, '%' . FilterHelper::searchWord($this->word) . '%');
                 }
             }
             

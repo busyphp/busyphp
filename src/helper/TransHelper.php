@@ -1,14 +1,14 @@
 <?php
 
-namespace BusyPHP\helper\util;
+namespace BusyPHP\helper;
 
 /**
- * 数据转换类
+ * 数据转换辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/6 下午9:10 上午 Transform.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:18 TransHelper.php $
  */
-class Transform
+class TransHelper
 {
     /**
      * 转换时间范围条件，用于按照时间搜索的时候使用
@@ -23,8 +23,8 @@ class Transform
     {
         $startField = $startField ?: 'start_time';
         $endField   = $endField ?: 'end_time';
-        $defStart   = $defStart ?: Transform::date(strtotime(date('Y-m-d')));
-        $defEnd     = $defEnd ?: Transform::date(strtotime(date('Y-m-d 23:59:59')));
+        $defStart   = $defStart ?: self::date(strtotime(date('Y-m-d')));
+        $defEnd     = $defEnd ?: self::date(strtotime(date('Y-m-d 23:59:59')));
         if (!isset($data[$startField])) {
             $data[$startField] = $defStart;
         }

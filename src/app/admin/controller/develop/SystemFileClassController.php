@@ -3,7 +3,7 @@
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
@@ -61,7 +61,7 @@ class SystemFileClassController extends InsideController
         }
         
         
-        $this->assign('type_options', Transform::arrayToOption(SystemFile::getTypes()));
+        $this->assign('type_options', TransHelper::arrayToOption(SystemFile::getTypes()));
         
         return $this->display();
     }
@@ -87,7 +87,7 @@ class SystemFileClassController extends InsideController
         }
         
         $this->assign('info', [
-            'type_options' => Transform::arrayToOption(SystemFile::getTypes()),
+            'type_options' => TransHelper::arrayToOption(SystemFile::getTypes()),
             'system'       => 0,
         ]);
         
@@ -118,7 +118,7 @@ class SystemFileClassController extends InsideController
         }
         
         $info                 = $this->model->getInfo($this->get('id'));
-        $info['type_options'] = Transform::arrayToOption(SystemFile::getTypes(), '', '', $info->type);
+        $info['type_options'] = TransHelper::arrayToOption(SystemFile::getTypes(), '', '', $info->type);
         $this->assign('info', $info);
         
         return $this->display('add');

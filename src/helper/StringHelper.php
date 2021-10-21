@@ -1,14 +1,16 @@
 <?php
 
-namespace BusyPHP\helper\util;
+namespace BusyPHP\helper;
+
+use think\helper\Str;
 
 /**
- * 字符串相关处理类
+ * 字符串处理辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/6 下午9:45 上午 Str.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:20 StringHelper.php $
  */
-class Str extends \think\helper\Str
+class StringHelper extends Str
 {
     /**
      * 替换变量{@xxx}
@@ -123,6 +125,14 @@ class Str extends \think\helper\Str
     }
     
     
+    /**
+     * 分割字符，支持中文
+     * @param string $str
+     * @param int    $width
+     * @param string $break
+     * @param bool   $cut
+     * @return string
+     */
     public static function wordwrap($str, $width = 75, $break = "\n", $cut = false)
     {
         $lines = explode($break, $str);

@@ -4,11 +4,11 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Regex;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\RegexHelper;
+use BusyPHP\helper\TransHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -123,13 +123,13 @@ class SystemConfigField extends Field
         if (!$this->type) {
             throw new VerifyException('请输入配置标识', 'type');
         }
-        if (!Regex::account($this->type)) {
+        if (!RegexHelper::account($this->type)) {
             throw new VerifyException('配置标识格式有误，只能包含英文、数字、下划线', 'type');
         }
         
         // 只能是英文开头
-        $this->type = Str::snake($this->type);
-        if (!Regex::english(substr($this->type, 0, 1))) {
+        $this->type = StringHelper::snake($this->type);
+        if (!RegexHelper::english(substr($this->type, 0, 1))) {
             throw new VerifyException('配置标识不能为数字或下划线开头', 'type');
         }
         
@@ -144,7 +144,7 @@ class SystemConfigField extends Field
      */
     public function setSystem($system)
     {
-        $this->system = Transform::dataToBool($system);
+        $this->system = TransHelper::dataToBool($system);
         
         return $this;
     }
@@ -157,7 +157,7 @@ class SystemConfigField extends Field
      */
     public function setAppend($append)
     {
-        $this->append = Transform::dataToBool($append);
+        $this->append = TransHelper::dataToBool($append);
         
         return $this;
     }

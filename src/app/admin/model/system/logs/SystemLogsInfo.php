@@ -5,8 +5,8 @@ namespace BusyPHP\app\admin\model\system\logs;
 
 use BusyPHP\App;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 操作记录模型信息结构
@@ -46,10 +46,10 @@ class SystemLogsInfo extends SystemLogsField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = Arr::listByKey(App::init()->getList(), AppListItem::dir());
+            static::$_appList = ArrayHelper::listByKey(App::init()->getList(), AppListItem::dir());
         }
         
-        $this->formatCreateTime = Transform::date($this->createTime);
+        $this->formatCreateTime = TransHelper::date($this->createTime);
         $this->typeName         = SystemLogs::getTypes($this->type);
         $this->clientName       = $this->client === SystemLogs::CLI_CLIENT_KEY ? SystemLogs::CLI_CLIENT_NAME : (static::$_appList[$this->client]->name ?? '') ?: $this->client;
         $this->params           = json_decode($this->params, true) ?: [];

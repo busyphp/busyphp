@@ -9,7 +9,7 @@ use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
-use BusyPHP\helper\util\Arr;
+use BusyPHP\helper\ArrayHelper;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -184,7 +184,7 @@ class SystemMenu extends Model
             }
             
             // 删除子菜单
-            $childIds = array_keys(Arr::listByKey($this->getChildList($info->path), SystemMenuField::id()));
+            $childIds = array_keys(ArrayHelper::listByKey($this->getChildList($info->path), SystemMenuField::id()));
             if ($childIds) {
                 $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
             }
@@ -231,8 +231,8 @@ class SystemMenu extends Model
      */
     public function getChildList($path) : array
     {
-        $list = Arr::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
-        $list = Arr::treeToList($list, SystemMenuInfo::child());
+        $list = ArrayHelper::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
+        $list = ArrayHelper::treeToList($list, SystemMenuInfo::child());
         
         return $list;
     }
@@ -302,7 +302,7 @@ class SystemMenu extends Model
      */
     public function getPathList(bool $safe = false) : array
     {
-        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::path());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::path());
     }
     
     
@@ -315,7 +315,7 @@ class SystemMenu extends Model
      */
     public function getIdList(bool $safe = false) : array
     {
-        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::id());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::id());
     }
     
     
@@ -328,7 +328,7 @@ class SystemMenu extends Model
      */
     public function getHashList(bool $safe = false) : array
     {
-        return Arr::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuInfo::hash());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuInfo::hash());
     }
     
     
@@ -344,7 +344,7 @@ class SystemMenu extends Model
         $cacheName = 'tree';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "");
+            $list = ArrayHelper::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "");
             $this->setCache($cacheName, $list);
         }
         
@@ -423,7 +423,7 @@ class SystemMenu extends Model
         $cacheName = 'safe_tree';
         $tree      = $this->getCache($cacheName);
         if (!$tree || $must) {
-            $tree = Arr::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $item) {
+            $tree = ArrayHelper::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $item) {
                 if ($item->disabled || $item->system) {
                     return false;
                 }
@@ -449,7 +449,7 @@ class SystemMenu extends Model
         $parentsIdsList = $this->getIdParens();
         $list           = $this->getIdList();
         
-        return Arr::listToTree($list, SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
+        return ArrayHelper::listToTree($list, SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
             if ($info->hide && isset($parentsIdsList[$info->id])) {
                 $parentId = array_shift($parentsIdsList[$info->id]);
                 if (isset($list[$parentId])) {

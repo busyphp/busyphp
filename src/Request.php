@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use think\facade\Config;
 use think\file\UploadedFile;
 
@@ -106,7 +106,7 @@ class Request extends \think\Request
     {
         $path = $this->controller() . '/' . $this->action();
         
-        return $isSnake ? Str::snake($path) : $path;
+        return $isSnake ? StringHelper::snake($path) : $path;
     }
     
     

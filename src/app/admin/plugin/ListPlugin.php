@@ -6,7 +6,7 @@ namespace BusyPHP\app\admin\plugin;
 use BusyPHP\App;
 use BusyPHP\app\admin\plugin\lists\ListSelectResult;
 use BusyPHP\exception\ClassNotExtendsException;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
@@ -118,7 +118,7 @@ class ListPlugin
         $this->field    = $this->request->get('field/s', '', 'trim');
         $this->accurate = $this->request->get('accurate/b', false);
         $this->page     = $this->request->get('page/d', 0);
-        $this->page     = Filter::min($this->page, 1);
+        $this->page     = FilterHelper::min($this->page, 1);
         $this->limit    = $this->request->get('limit/d', $this->limit);
         $this->sorts    = $this->request->get('sorts/list');
         $this->isExtend = $this->request->get('extend/b', false);
@@ -145,7 +145,7 @@ class ListPlugin
             if ($this->accurate) {
                 $this->model->where($this->field, $this->word);
             } else {
-                $this->model->whereLike($this->field, '%' . Filter::searchWord($this->word) . '%');
+                $this->model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
             }
         }
         

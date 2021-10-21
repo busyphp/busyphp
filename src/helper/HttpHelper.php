@@ -3,7 +3,7 @@
 namespace BusyPHP\helper;
 
 use BusyPHP\exception\HttpRequestException;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use CURLFile;
 use DomainException;
 use think\exception\FileException;
@@ -646,9 +646,9 @@ class HttpHelper
     {
         if (is_array($xml)) {
             if ($encode === false || $root === false) {
-                $xml = Transform::dataToXml($xml);
+                $xml = TransHelper::dataToXml($xml);
             } else {
-                $xml = Transform::xmlEncode($xml, $encode, 'root');
+                $xml = TransHelper::xmlEncode($xml, $encode, 'root');
             }
         }
         

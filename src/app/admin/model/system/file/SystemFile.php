@@ -7,7 +7,7 @@ use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\model;
 use Exception;
 use League\Flysystem\FileNotFoundException;
@@ -212,7 +212,7 @@ class SystemFile extends Model
      */
     public static function createTempClassValue($value = null)
     {
-        return self::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . Str::random(32));
+        return self::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . StringHelper::random(32));
     }
     
     

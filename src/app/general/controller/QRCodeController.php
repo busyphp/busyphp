@@ -5,7 +5,7 @@ namespace BusyPHP\app\general\controller;
 
 use BusyPHP\app\admin\setting\QrcodeSetting;
 use BusyPHP\Controller;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\file\QRCode;
 use Exception;
 use think\exception\HttpException;
@@ -30,7 +30,7 @@ class QRCodeController extends Controller
         $config  = $list[1] ?? '';
         
         // 解析二维码内容提取出内容和LOGO
-        $content = Transform::base64decodeUrl($content);
+        $content = TransHelper::base64decodeUrl($content);
         $list    = explode('#!logo!#', $content, 2);
         $text    = $list[0] ?? '';
         $logo    = $list[1] ?? '';

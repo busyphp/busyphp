@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
 use BusyPHP\model\Setting;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 
 /**
  * 系统基本配置
@@ -17,7 +17,7 @@ class PublicSetting extends Setting
 {
     protected function parseSet($data)
     {
-        return Filter::trim($data);
+        return FilterHelper::trim($data);
     }
     
     

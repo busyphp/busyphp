@@ -6,7 +6,7 @@ namespace BusyPHP\app\general\controller;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use Exception;
 use think\db\ConnectionInterface;
@@ -409,8 +409,8 @@ HTML;
         if ($this->isPost() && $this->post('action/s') === 'install') {
             set_time_limit(0);
             
-            $db    = Filter::trim($this->post('db/a'));
-            $user  = Filter::trim($this->post('user/a'));
+            $db    = FilterHelper::trim($this->post('db/a'));
+            $user  = FilterHelper::trim($this->post('user/a'));
             $mysql = null;
             try {
                 // 创建数据库

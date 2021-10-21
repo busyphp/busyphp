@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\model;
 
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 
 /**
  * Map
@@ -15,7 +15,7 @@ class Map extends Field
 {
     public function __get($name)
     {
-        if (isset($this->{Str::camel($name)})) {
+        if (isset($this->{StringHelper::camel($name)})) {
             return parent::__get($name);
         }
         
@@ -31,7 +31,7 @@ class Map extends Field
      */
     public function get($key, $default = null)
     {
-        return $this->{Str::camel($key)} ?? $default;
+        return $this->{StringHelper::camel($key)} ?? $default;
     }
     
     
@@ -42,7 +42,7 @@ class Map extends Field
      */
     public function set($key, $value)
     {
-        $this->{Str::camel($key)} = $value;
+        $this->{StringHelper::camel($key)} = $value;
     }
     
     
@@ -53,7 +53,7 @@ class Map extends Field
     public function remove(...$keys)
     {
         foreach ($keys as $key) {
-            unset($this->{Str::camel($key)});
+            unset($this->{StringHelper::camel($key)});
         }
     }
 }

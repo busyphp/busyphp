@@ -9,7 +9,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\Handle;
-use BusyPHP\helper\util\Arr;
+use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Request;
 use BusyPHP\Url;
 use Exception;
@@ -216,7 +216,7 @@ class AdminHandle extends Handle
         $url = (string) $url;
         
         if ($code === 1) {
-            if ($result && !Arr::isAssoc($result)) {
+            if ($result && !ArrayHelper::isAssoc($result)) {
                 return self::restResponse(0, '返回数据结构必须是键值对形式');
             }
         } else {

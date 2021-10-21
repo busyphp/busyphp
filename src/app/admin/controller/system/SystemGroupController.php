@@ -12,7 +12,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -96,7 +96,7 @@ class SystemGroupController extends InsideController
         
         // 显示修改
         $this->assign('info', ['status' => true, 'system' => false]);
-        $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
+        $this->assign('menu_options', TransHelper::arrayToOption(SystemMenu::init()
             ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name()));
         $this->assign('group_options', $this->model->getTreeOptions($this->get('id/s')));
         
@@ -138,7 +138,7 @@ class SystemGroupController extends InsideController
         
         // 修改显示
         $this->assign('info', $info);
-        $this->assign('menu_options', Transform::arrayToOption(SystemMenu::init()
+        $this->assign('menu_options', TransHelper::arrayToOption(SystemMenu::init()
             ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name(), $info->defaultMenuId));
         $this->assign('group_options', $this->model->getTreeOptions($info->parentId, $info->id));
         

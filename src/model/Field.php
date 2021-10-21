@@ -5,7 +5,7 @@ namespace BusyPHP\model;
 
 use ArrayAccess;
 use BusyPHP\exception\MethodNotFoundException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use JsonSerializable;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
@@ -46,7 +46,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
     {
         $obj = static::init();
         foreach ($array as $key => $value) {
-            $obj->{Str::camel($key)} = $value;
+            $obj->{StringHelper::camel($key)} = $value;
         }
         
         // 后置操作
@@ -60,13 +60,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
     
     public function __get($name)
     {
-        return $this->{Str::camel($name)};
+        return $this->{StringHelper::camel($name)};
     }
     
     
     public function __set($name, $value)
     {
-        $this->{Str::camel($name)} = $value;
+        $this->{StringHelper::camel($name)} = $value;
     }
     
     
@@ -86,9 +86,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
         }
         
         // 静态方法名称存在属性中，则返回属性名称
-        if (in_array(Str::camel($name), $fields[$key])) {
+        if (in_array(StringHelper::camel($name), $fields[$key])) {
             $info  = new Entity();
-            $field = Str::snake($name);
+            $field = StringHelper::snake($name);
             $info->setField($field);
             
             if (self::$_fieldJoinAliasList[static::class] ?? false) {
@@ -166,11 +166,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
     public function __call($name, $arguments)
     {
         if (substr($name, 0, 3) == 'set') {
-            $this->{Str::camel(substr($name, 3))} = $arguments[0];
+            $this->{StringHelper::camel(substr($name, 3))} = $arguments[0];
             
             return $this;
         } elseif (substr($name, 0, 3) == 'get') {
-            return $this->{Str::camel(substr($name, 3))};
+            return $this->{StringHelper::camel(substr($name, 3))};
         }
         
         throw new MethodNotFoundException($this, $name);
@@ -192,7 +192,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
                 continue;
             }
             
-            $key = Str::snake($key);
+            $key = StringHelper::snake($key);
             
             // 布尔类型转 1 0
             $value = is_bool($value) ? ($value ? 1 : 0) : $value;
@@ -237,7 +237,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
                 continue;
             }
             
-            $key = Str::snake($key);
+            $key = StringHelper::snake($key);
             
             // 布尔类型转 1 0
             $value        = is_bool($value) ? ($value ? 1 : 0) : $value;
@@ -259,7 +259,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
             }
             
             // 转换键
-            $key = Str::snake($key);
+            $key = StringHelper::snake($key);
             
             $params[$key] = $value;
         }
@@ -282,25 +282,25 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
     
     public function offsetExists($offset)
     {
-        return isset($this->{Str::camel($offset)});
+        return isset($this->{StringHelper::camel($offset)});
     }
     
     
     public function offsetGet($offset)
     {
-        return $this->{Str::camel($offset)};
+        return $this->{StringHelper::camel($offset)};
     }
     
     
     public function offsetSet($offset, $value)
     {
-        $this->{Str::camel($offset)} = $value;
+        $this->{StringHelper::camel($offset)} = $value;
     }
     
     
     public function offsetUnset($offset)
     {
-        $this->{Str::camel($offset)} = null;
+        $this->{StringHelper::camel($offset)} = null;
     }
     
     

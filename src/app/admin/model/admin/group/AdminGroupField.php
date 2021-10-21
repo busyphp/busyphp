@@ -4,10 +4,10 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\util\Filter;
+use BusyPHP\helper\FilterHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 
 /**
  * 用户组模型字段
@@ -117,7 +117,7 @@ class AdminGroupField extends Field
     public function setRule(array $rule) : self
     {
         $rule = array_map('intval', $rule);
-        $rule = Filter::trimArray($rule);
+        $rule = FilterHelper::trimArray($rule);
         if (!$rule) {
             throw new VerifyException('请选择角色权限', 'rule');
         }
@@ -165,7 +165,7 @@ class AdminGroupField extends Field
      */
     public function setStatus($status) : self
     {
-        $this->status = Transform::dataToBool($status);
+        $this->status = TransHelper::dataToBool($status);
         
         return $this;
     }

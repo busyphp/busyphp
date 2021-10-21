@@ -10,7 +10,7 @@ use BusyPHP\app\admin\setting\UploadSetting;
 use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\contract\structs\results\UploadResult;
 use BusyPHP\exception\PartUploadSuccessException;
-use BusyPHP\helper\util\Str;
+use BusyPHP\helper\StringHelper;
 use Exception;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -418,7 +418,7 @@ abstract class Upload
         
         return $this->classType . $dir . DIRECTORY_SEPARATOR . md5(implode(',', [
                 microtime(true),
-                Str::random(32),
+                StringHelper::random(32),
                 $this->classType,
                 $this->classValue,
                 $this->userId

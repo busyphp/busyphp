@@ -6,7 +6,7 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\logs\SystemLogsField;
 use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Map;
 use think\db\exception\DataNotFoundException;
@@ -54,8 +54,8 @@ class SystemLogsController extends InsideController
             return $this->success($this->pluginTable->build(SystemLogs::init()));
         }
         
-        $this->assign('type_options', Transform::arrayToOption(SystemLogs::getTypes()));
-        $this->assign('client_options', Transform::arrayToOption($this->app->getList(), AppListItem::dir(), AppListItem::name()));
+        $this->assign('type_options', TransHelper::arrayToOption(SystemLogs::getTypes()));
+        $this->assign('client_options', TransHelper::arrayToOption($this->app->getList(), AppListItem::dir(), AppListItem::name()));
         $this->assign('time', $timeRange);
         
         return $this->display();

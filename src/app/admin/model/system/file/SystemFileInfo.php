@@ -8,8 +8,8 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\contract\structs\items\AppListItem;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\helper\util\Arr;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -103,7 +103,7 @@ class SystemFileInfo extends SystemFileField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = Arr::listByKey(App::init()->getList(), AppListItem::dir());
+            static::$_appList = ArrayHelper::listByKey(App::init()->getList(), AppListItem::dir());
         }
         
         if (!is_array(static::$_fileClassList)) {
@@ -113,9 +113,9 @@ class SystemFileInfo extends SystemFileField
         $this->typeName         = SystemFile::getTypes((string) $this->type);
         $this->classInfo        = static::$_fileClassList[$this->classType] ?? null;
         $this->className        = $this->classInfo->name ?? '';
-        $this->formatCreateTime = Transform::date($this->createTime);
+        $this->formatCreateTime = TransHelper::date($this->createTime);
         
-        $sizes            = Transform::formatBytes($this->size, true);
+        $sizes            = TransHelper::formatBytes($this->size, true);
         $this->sizeUnit   = $sizes['unit'];
         $this->sizeNum    = $sizes['number'];
         $this->formatSize = "{$this->sizeNum} {$this->sizeUnit}";

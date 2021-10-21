@@ -4,8 +4,8 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
-use BusyPHP\helper\util\Filter;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Setting;
 
 /**
@@ -37,13 +37,13 @@ class CaptchaSetting extends Setting
      */
     protected function parseSet($data)
     {
-        $data    = Filter::trim($data);
+        $data    = FilterHelper::trim($data);
         $clients = [];
         
         foreach ($data['clients'] ?? [] as $client => $vo) {
-            $vo['curve']      = Transform::dataToBool($vo['curve'] ?? false);
-            $vo['noise']      = Transform::dataToBool($vo['noise'] ?? false);
-            $vo['bg_image']   = Transform::dataToBool($vo['bg_image'] ?? false);
+            $vo['curve']      = TransHelper::dataToBool($vo['curve'] ?? false);
+            $vo['noise']      = TransHelper::dataToBool($vo['noise'] ?? false);
+            $vo['bg_image']   = TransHelper::dataToBool($vo['bg_image'] ?? false);
             $clients[$client] = $vo;
         }
         

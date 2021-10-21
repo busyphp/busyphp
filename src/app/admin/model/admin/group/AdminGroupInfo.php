@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
-use BusyPHP\helper\util\Transform;
+use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -84,7 +84,7 @@ class AdminGroupInfo extends AdminGroupField
             static::$_menuIdList = SystemMenu::init()->getIdList();
         }
         
-        $this->system = Transform::dataToBool($this->system);
+        $this->system = TransHelper::dataToBool($this->system);
         
         // 遍历权限剔除失效节点
         $rule            = [];
