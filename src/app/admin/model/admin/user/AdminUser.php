@@ -6,9 +6,9 @@ namespace BusyPHP\app\admin\model\admin\user;
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\RegexHelper;
+use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\crypt\TripleDES;
 use BusyPHP\app\admin\setting\AdminSetting;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -346,15 +346,14 @@ class AdminUser extends Model
      */
     public function checkLogin($saveOperateTime = false)
     {
-        $cookieUserId  = floatval(Cookie::get(AdminUser::COOKIE_USER_ID, 0));
+        $cookieUserId  = intval(Cookie::get(AdminUser::COOKIE_USER_ID, '0'));
         $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY, ''));
         if (!$cookieUserId || !$cookieAuthKey) {
             throw new VerifyException('缺少COOKIE', 'cookie');
         }
         
         $user          = $this->getInfo($cookieUserId);
-        $tDes          = new TripleDES($user->token);
-        $cookieAuthKey = $tDes->decrypt($cookieAuthKey);
+        $cookieAuthKey = TripleDesHelper::decrypt($cookieAuthKey, $user->token);
         if (!$cookieAuthKey || $cookieAuthKey != AdminUser::createAuthKey($user, $user->token)) {
             throw new VerifyException('通行密钥错误', 'auth');
         }
@@ -403,8 +402,7 @@ class AdminUser extends Model
         $this->saveData($save);
         
         // 加密数据
-        $tDes          = new TripleDES($token);
-        $cookieAuthKey = $tDes->encrypt(self::createAuthKey($userInfo, $token));
+        $cookieAuthKey = TripleDesHelper::encrypt(self::createAuthKey($userInfo, $token), $token);
         $cookieUserId  = $userInfo->id;
         
         // 设置COOKIE
