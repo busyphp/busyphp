@@ -99,7 +99,7 @@ class UserController extends InsideController
                 continue;
             }
             $content = file_get_contents($cssFile);
-            if (!preg_match('/\/\*\*!!config(.*?)!!\*\//is', $content, $match)) {
+            if (!preg_match('/\/\*!!config(.*?)!!\*\//is', $content, $match)) {
                 continue;
             }
             
