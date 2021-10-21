@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\controller\common;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\setting\UploadSetting;
-use BusyPHP\exception\AppException;
+use BusyPHP\exception\VerifyException;
 use BusyPHP\file\upload\Base64Upload;
 use BusyPHP\file\upload\LocalUpload;
 use BusyPHP\file\upload\RemoteUpload;
@@ -210,7 +210,7 @@ JS;
         $jsonData['state'] = 'SUCCESS';
         try {
             if (!$this->isLogin()) {
-                throw new AppException('请登录后上传');
+                throw new VerifyException('请登录后上传', 'need_login');
             }
             
             // 上传
@@ -269,7 +269,7 @@ JS;
         $jsonData['state'] = 'SUCCESS';
         try {
             if (!$this->isLogin()) {
-                throw new AppException('请登录后上传');
+                throw new VerifyException('请登录后上传', 'need_login');
             }
             
             $classType  = $this->post('class_image_type/s', 'trim');

@@ -26,13 +26,14 @@ class RsaHelper
      * @return string
      * @throws DomainException
      * @throws FileException
+     * @throws RuntimeException
      */
     public static function sign(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, string $name = '') : string
     {
         $resource = self::getPrivateCert($privateCert, $isFile, $rsa2, $name);
         if (!openssl_sign($value, $sign, $resource, $rsa2 ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA1)) {
             openssl_free_key($resource);
-            throw new DomainException('签名失败');
+            throw new RuntimeException('签名失败');
         }
         
         openssl_free_key($resource);
@@ -74,11 +75,12 @@ class RsaHelper
      * @return string
      * @throws DomainException
      * @throws FileException
+     * @throws RuntimeException
      */
     public static function encryptPrivate(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
         if (!openssl_private_encrypt($value, $result, self::getPrivateCert($privateCert, $isFile, $rsa2, $name))) {
-            throw new DomainException('加密失败');
+            throw new RuntimeException('加密失败');
         }
         
         return base64_encode($result);
@@ -95,11 +97,12 @@ class RsaHelper
      * @return string
      * @throws DomainException
      * @throws FileException
+     * @throws RuntimeException
      */
     public static function decryptPrivate(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
         if (!openssl_private_decrypt(base64_decode($value), $result, self::getPrivateCert($privateCert, $isFile, $rsa2, $name))) {
-            throw new DomainException('解密失败');
+            throw new RuntimeException('解密失败');
         }
         
         return $result;
@@ -116,11 +119,12 @@ class RsaHelper
      * @return string
      * @throws DomainException
      * @throws FileException
+     * @throws RuntimeException
      */
     public static function encryptPublic(string $value, string $publicCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
         if (!openssl_public_encrypt($value, $result, self::getPublicCert($publicCert, $isFile, $rsa2, $name))) {
-            throw new DomainException('加密失败');
+            throw new RuntimeException('加密失败');
         }
         
         return base64_encode($result);
@@ -137,11 +141,12 @@ class RsaHelper
      * @return string
      * @throws DomainException
      * @throws FileException
+     * @throws RuntimeException
      */
     public static function decryptPublic(string $value, string $publicCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
         if (!openssl_public_decrypt(base64_decode($value), $result, self::getPublicCert($publicCert, $isFile, $rsa2, $name))) {
-            throw new DomainException('解密失败');
+            throw new RuntimeException('解密失败');
         }
         
         return $result;

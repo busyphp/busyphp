@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\exception;
 
-use InvalidArgumentException;
+use think\exception\InvalidArgumentException;
 use Throwable;
 
 /**

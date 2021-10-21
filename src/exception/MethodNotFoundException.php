@@ -1,16 +1,19 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\exception;
 
+use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
 use Throwable;
 
 /**
  * 找不到方法异常类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/11/15 下午3:15 下午 MethodNotFonundException.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午下午1:11 MethodNotFoundException.php $
  */
-class MethodNotFoundException extends AppException
+class MethodNotFoundException extends RuntimeException implements NotFoundExceptionInterface
 {
     /**
      * @var string
@@ -38,14 +41,7 @@ class MethodNotFoundException extends AppException
         }
         $this->class   = $class;
         $this->message = $method;
-        $message       = (!empty($message) ? "{$message} " : '') . "method {$method} does not exist in
-
- {$class}";
-        
-        $this->setData('METHOD NOT FOUND', [
-            'class'  => $class,
-            'method' => $method
-        ]);
+        $message       = (!empty($message) ? "{$message} " : '') . "method {$method} does not exist in {$class}";
         
         parent::__construct($message, $code, $previous);
     }

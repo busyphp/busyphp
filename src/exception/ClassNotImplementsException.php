@@ -2,15 +2,16 @@
 
 namespace BusyPHP\exception;
 
+use RuntimeException;
 use Throwable;
 
 /**
- * 类未实线接口异常
+ * 类未实现接口异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/11/14 下午11:48 下午 ClassInterfaceException.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午下午1:10 ClassNotImplementsException.php $
  */
-class ClassNotImplementsException extends AppException
+class ClassNotImplementsException extends RuntimeException
 {
     /**
      * @var string
@@ -44,11 +45,6 @@ class ClassNotImplementsException extends AppException
         $this->class     = $class;
         $this->interface = $interface;
         $message         = (!empty($message) ? "{$message} " : '') . "{$class} must implements {$interface}";
-        
-        $this->setData('CLASS MUST IMPLEMENTS', [
-            'class'     => $class,
-            'interface' => $interface
-        ]);
         
         parent::__construct($message, $code, $previous);
     }

@@ -2,15 +2,17 @@
 
 namespace BusyPHP\exception;
 
+use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
 use Throwable;
 
 /**
  * 类不存在异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/11/14 下午11:48 下午 ClassNotFoundException.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午下午1:09 ClassNotFoundException.php $
  */
-class ClassNotFoundException extends AppException
+class ClassNotFoundException extends RuntimeException implements NotFoundExceptionInterface
 {
     /**
      * @var string
@@ -33,10 +35,6 @@ class ClassNotFoundException extends AppException
         
         $this->class = $class;
         $message     = (!empty($message) ? "{$message} " : '') . "class not found {$class}";
-        
-        $this->setData('CLASS NOT FOUND', [
-            'class' => $class,
-        ]);
         
         parent::__construct($message, $code, $previous);
     }

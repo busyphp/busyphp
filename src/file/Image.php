@@ -4,10 +4,11 @@ declare(strict_types = 1);
 namespace BusyPHP\file;
 
 use BusyPHP\App;
-use BusyPHP\exception\AppException;
+use Exception;
 use LogicException;
 use phpthumb;
 use phpthumb_functions;
+use RuntimeException;
 use think\exception\FileException;
 use think\facade\Filesystem;
 use think\facade\Log;
@@ -492,7 +493,7 @@ class Image
      * 执行缩放
      * @param bool $return 是否返回图像内容
      * @return Response
-     * @throws AppException
+     * @throws RuntimeException
      */
     public function exec(bool $return = false) : ?Response
     {
@@ -500,13 +501,13 @@ class Image
         $data         = null;
         try {
             if (!$this->phpThumb->GenerateThumbnail()) {
-                throw new AppException($this->phpThumb->fatalerror);
+                throw new Exception($this->phpThumb->fatalerror);
             }
             
             // 保存到本地
             if ($this->save) {
                 if (!$this->phpThumb->RenderToFile($this->local)) {
-                    throw new AppException($this->phpThumb->fatalerror);
+                    throw new Exception($this->phpThumb->fatalerror);
                 }
                 
                 if ($return) {
@@ -521,18 +522,18 @@ class Image
             else {
                 if ($return) {
                     if (!$this->phpThumb->RenderOutput()) {
-                        throw new AppException($this->phpThumb->fatalerror);
+                        throw new Exception($this->phpThumb->fatalerror);
                     }
                     $this->phpThumb->purgeTempFiles();
                     
                     $data = $this->phpThumb->outputImageData;
                 } else {
                     if (!$this->phpThumb->OutputThumbnail()) {
-                        throw new AppException($this->phpThumb->fatalerror);
+                        throw new Exception($this->phpThumb->fatalerror);
                     }
                 }
             }
-        } catch (AppException $e) {
+        } catch (Exception $e) {
             $record = '';
             foreach ($this->phpThumb->debugmessages as $i => $msg) {
                 $record .= PHP_EOL . str_pad($i . ".", 3, ' ') . ' ' . $msg;
@@ -542,7 +543,7 @@ class Image
             $message = $e->getMessage();
             $message = explode('phpthumb.sourceforge.net', $message);
             $message = '缩图失败: ' . trim($message[1]);
-            throw new AppException($message);
+            throw new RuntimeException($message, 0, $e);
         }
         
         if ($return) {

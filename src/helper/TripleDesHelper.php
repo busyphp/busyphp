@@ -3,7 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
-use DomainException;
+use BusyPHP\exception\ParamInvalidException;
+use RuntimeException;
 
 /**
  * 3DES加密解密辅助类
@@ -19,18 +20,19 @@ class TripleDesHelper
      * @param string $key 密钥
      * @param string $iv 向量
      * @return string
-     * @throws DomainException
+     * @throws RuntimeException
+     * @throws ParamInvalidException
      */
     public static function encrypt(string $value, string $key = '', string $iv = 'BusyPHP.') : string
     {
         if (strlen($iv) != 8) {
-            throw new DomainException('IV必须8位字符');
+            throw new ParamInvalidException('IV必须8位字符');
         }
         
         
         $result = openssl_encrypt($value, 'des-ede3-cbc', $key, OPENSSL_RAW_DATA, $iv);
         if (!$result) {
-            throw new DomainException('加密失败');
+            throw new RuntimeException('加密失败');
         }
         
         return (string) base64_encode($result);
@@ -43,17 +45,18 @@ class TripleDesHelper
      * @param string $key 密钥
      * @param string $iv 向量
      * @return string
-     * @throws DomainException
+     * @throws RuntimeException
+     * @throws ParamInvalidException
      */
     public static function decrypt(string $value, string $key = '', string $iv = 'BusyPHP.') : string
     {
         if (strlen($iv) != 8) {
-            throw new DomainException('IV必须8位字符');
+            throw new ParamInvalidException('IV必须8位字符');
         }
         
         $result = openssl_decrypt(base64_decode($value), 'des-ede3-cbc', $key, OPENSSL_RAW_DATA, $iv);
         if (!$result) {
-            throw new DomainException('解密失败');
+            throw new RuntimeException('解密失败');
         }
         
         return (string) $result;
