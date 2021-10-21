@@ -11,7 +11,7 @@ use BusyPHP\app\admin\plugin\TreePlugin;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
-use BusyPHP\helper\file\File;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
@@ -366,14 +366,14 @@ abstract class AdminController extends Controller
                 continue;
             }
             
-            File::deleteDir($this->app->getRuntimeRootPath("{$value}/temp"));
-            File::deleteDir($this->app->getRuntimeRootPath("{$value}/cache"));
+            FileHelper::deleteDir($this->app->getRuntimeRootPath("{$value}/temp"));
+            FileHelper::deleteDir($this->app->getRuntimeRootPath("{$value}/cache"));
         }
         
         // 清理系统缓存
-        File::deleteDir($this->app->getRuntimeCachePath());
+        FileHelper::deleteDir($this->app->getRuntimeCachePath());
         // 清理临时配置
-        File::deleteDir($this->app->getRuntimeConfigPath());
+        FileHelper::deleteDir($this->app->getRuntimeConfigPath());
         // 清理基本缓存
         Cache::clear();
         

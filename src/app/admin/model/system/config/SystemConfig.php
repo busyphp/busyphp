@@ -7,7 +7,7 @@ use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\Handle;
-use BusyPHP\helper\file\File;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\model;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -207,6 +207,6 @@ class SystemConfig extends Model
         
         // 生成系统配置
         $string = var_export($config, true);
-        File::write(App::init()->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
+        FileHelper::write(App::init()->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
     }
 }

@@ -7,7 +7,7 @@ use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\file\File;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\util\Arr;
 use BusyPHP\helper\util\Transform;
 use BusyPHP\model\Entity;
@@ -119,7 +119,7 @@ class SystemFileInfo extends SystemFileField
         $this->sizeUnit   = $sizes['unit'];
         $this->sizeNum    = $sizes['number'];
         $this->formatSize = "{$this->sizeNum} {$this->sizeUnit}";
-        $this->filename   = File::pathInfo($this->url, PATHINFO_BASENAME);
+        $this->filename   = FileHelper::pathInfo($this->url, PATHINFO_BASENAME);
         $this->clientName = (static::$_appList[$this->client]->name ?? '') ?: $this->client;
     }
 }

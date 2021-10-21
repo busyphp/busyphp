@@ -3,11 +3,13 @@ declare (strict_types = 1);
 
 namespace BusyPHP\command;
 
-use BusyPHP\helper\file\File;
+use BusyPHP\helper\FileHelper;
+use Exception;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\Exception;
+use think\exception\ClassNotFoundException;
+use think\exception\FileException;
 use ZipArchive;
 
 /**
@@ -131,24 +133,24 @@ class InstallCommand extends Command
         
         try {
             if (!class_exists('ZipArchive')) {
-                throw new Exception('PHP需要安装ZipArchive扩展才能继续安装');
+                throw new ClassNotFoundException('PHP需要安装ZipArchive扩展才能继续安装');
             }
             
             $this->output->info("开始解压文件: {$source} 至 {$toDir}");
             $zip = new ZipArchive();
             $res = $zip->open($sourceFile);
             if (true !== $res) {
-                throw new Exception("打开文件失败: {$source}");
+                throw new FileException("打开文件失败: {$source}");
             }
             
             if (!$res = $zip->extractTo($this->app->getRootPath() . $toDir)) {
                 $zip->close();
                 
-                throw new Exception("解压文件失败: {$source}");
+                throw new FileException("解压文件失败: {$source}");
             }
             $zip->close();
             
-            File::write($lockFile, "本文件为系统解压文件 {$source} 至 {$toDir} 后自动生成的防止重复解压锁，删除后执行Composer将导致对应的文件重新被覆盖");
+            FileHelper::write($lockFile, "本文件为系统解压文件 {$source} 至 {$toDir} 后自动生成的防止重复解压锁，删除后执行Composer将导致对应的文件重新被覆盖");
             
             $this->output->info("解压文件至: {$toDir} 成功!");
             
@@ -172,7 +174,7 @@ class InstallCommand extends Command
         $packages  = $this->getPackages();
         $configDir = $this->app->getConfigPath() . DIRECTORY_SEPARATOR . 'extend' . DIRECTORY_SEPARATOR;
         if (!is_dir($configDir)) {
-            if (!File::createDir($configDir)) {
+            if (!FileHelper::createDir($configDir)) {
                 $this->output->error("配置文件目录不可写: {$configDir}");
                 
                 return false;
@@ -222,7 +224,7 @@ class InstallCommand extends Command
         if (is_file($path = $this->app->getRootPath() . 'vendor/composer/installed.json')) {
             $packages = json_decode(@file_get_contents($path), true);
         }
-    
+        
         // Compatibility with Composer 2.0
         if (isset($packages['packages'])) {
             $packages = $packages['packages'];

@@ -5,6 +5,7 @@ namespace BusyPHP\app\general\controller;
 
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\util\Filter;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use Exception;
@@ -185,12 +186,12 @@ CHARSET = utf8mb4
 [
 HTML;
         }, $content);
-        file_put_contents($file, $content);
+        FileHelper::write($file, $content);
         
         
         // 创建锁文件
         $time = date('Y-m-d H:i:s');
-        file_put_contents($this->lockFile, "该文件为系统安装完毕后生成，如果需要重新安装，请删除该文件\n\n安装时间: {$time}");
+        FileHelper::write($this->lockFile, "该文件为系统安装完毕后生成，如果需要重新安装，请删除该文件\n\n安装时间: {$time}");
     }
     
     

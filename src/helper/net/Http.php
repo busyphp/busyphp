@@ -2,55 +2,46 @@
 
 namespace BusyPHP\helper\net;
 
-use BusyPHP\helper\file\File;
+use BusyPHP\exception\HttpRequestException;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\util\Transform;
 use CURLFile;
-use think\Exception;
+use DomainException;
 use think\exception\FileException;
+use think\exception\FuncNotFoundException;
 use think\exception\InvalidArgumentException;
-use think\exception\ValidateException;
 
 /**
  * HTTP请求类
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-01-06 下午7:22 Http.php busy^life $
+ * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午9:55 Http.php $
  */
 class Http
 {
-    /** 超时时长，单位秒 */
-    const REQUEST_TIMEOUT = 30;
-    
     /** @var array 请求参数 */
     protected $options = [];
     
     
     /**
      * Http constructor.
-     * @throws Exception
      */
     public function __construct()
     {
         if (!function_exists('curl_init')) {
-            throw new Exception('未开启curl');
+            throw new FuncNotFoundException('未开启curl');
         }
         
-        // 超时时间
-        // $this->setTimeout(self::REQUEST_TIMEOUT);
         // 浏览器Ua
         $this->setUserAgent(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Mozilla/5.0');
+        
         // 基本设置
         $options = [
-            // SSL验证, 禁止验证对等证书
-            CURLOPT_SSL_VERIFYPEER => false,
-            // SSL验证，禁止检测域名
-            CURLOPT_SSL_VERIFYHOST => false,
-            // 重定向时自动设置header中的Referer
-            CURLOPT_AUTOREFERER    => true,
-            // 将curl_exec()获取的信息以文件流的形式返回，而不是直接输出
-            CURLOPT_RETURNTRANSFER => true,
-            // 返回响应头
-            CURLOPT_HEADER         => true
+            CURLOPT_SSL_VERIFYPEER => false, // SSL验证, 禁止验证对等证书
+            CURLOPT_SSL_VERIFYHOST => false,  // SSL验证，禁止检测域名
+            CURLOPT_AUTOREFERER    => true, // 重定向时自动设置header中的Referer
+            CURLOPT_RETURNTRANSFER => true, // 将curl_exec()获取的信息以文件流的形式返回，而不是直接输出
+            CURLOPT_HEADER         => true // 返回响应头
         ];
         
         // safe_mode：PHP安全模式，当开启时一些PHP函数将被禁用
@@ -300,8 +291,9 @@ class Http
             }
         } else {
             if (!$filename) {
-                throw new InvalidArgumentException('附件路径不能为空');
+                throw new FileException('附件路径不能为空');
             }
+            
             $filename = realpath(ltrim($filename, '@'));
             if (!is_file($filename)) {
                 throw new FileException("附件不存在: {$filename}");
@@ -323,7 +315,6 @@ class Http
      * @param string       $url 要解析的地址
      * @param array|string $query 追加Query参数会覆盖url中包含的参数
      * @return string
-     * @throws ValidateException
      */
     protected function parseUrl($url, $query = [])
     {
@@ -334,7 +325,7 @@ class Http
         }
         
         if (!$array = parse_url($url)) {
-            throw new InvalidArgumentException('请检查提交地址是否有效');
+            throw new DomainException('请检查提交地址是否有效');
         }
         
         $urlTemp = '';
@@ -391,9 +382,10 @@ class Http
     /**
      * 执行请求
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public function request()
     {
@@ -456,7 +448,7 @@ class Http
                 break;
             }
             
-            throw new Exception($errorMessage, $errorCode);
+            throw new HttpRequestException($errorMessage, (int) $errorCode);
         }
         
         curl_close($curl);
@@ -538,9 +530,10 @@ class Http
      * @param string|array $params POST参数
      * @param Http|null    $http 指定实例化好的请求类
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function get($url, $params = [], $http = null)
     {
@@ -560,9 +553,10 @@ class Http
      * @param string|array $params POST参数
      * @param Http|null    $http 指定实例化好的请求类
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function post($url, $params = [], $http = null)
     {
@@ -589,9 +583,10 @@ class Http
      * @param string    $contentType 字符串类型
      * @param Http|null $http 指定实例化好的请求类
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function postString($url, $string = '', $contentType = '', $http = null)
     {
@@ -616,9 +611,10 @@ class Http
      * @param Http|null    $http 指定实例化好的请求类
      * @param bool         $unescapedUnicode JSON遇到中文是否保留中文，针对$json为数组的时候有效，默认保留
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function postJSON($url, $json = '', $http = null, $unescapedUnicode = false)
     {
@@ -642,9 +638,10 @@ class Http
      * @param string|false $root 根节点名称，默认为root,针对$xml为数组的时候有效
      * @param string|false $encode XML ENCode 编码
      * @return string
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function postXML($url, $xml = '', $http = null, $root = 'root', $encode = 'utf-8')
     {
@@ -667,9 +664,10 @@ class Http
      * @param array  $params 附件参数
      * @param Http   $http Http实例
      * @param int    $mode 文件夹权限
-     * @throws Exception
+     * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
+     * @throws DomainException
      */
     public static function download($url, $filename, $params = [], $http = null, $mode = 0775)
     {
@@ -678,7 +676,7 @@ class Http
         }
         
         // 创建文件夹
-        $dir = File::pathInfo($filename, PATHINFO_DIRNAME);
+        $dir = FileHelper::pathInfo($filename, PATHINFO_DIRNAME);
         if (!is_dir($dir)) {
             if (!mkdir($dir, $mode, true)) {
                 throw new FileException("创建文件夹失败: {$dir}");

@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\helper\file;
+namespace BusyPHP\helper;
 
 /**
  * 文件操作类
@@ -8,7 +8,7 @@ namespace BusyPHP\helper\file;
  * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
  * @version $Id: 2018-02-03 上午10:14 File.php busy^life $
  */
-class File
+class FileHelper
 {
     /**
      * 获取文件mimeType
@@ -102,10 +102,10 @@ class File
      */
     public static function write(string $filename, string $string = '') : bool
     {
-        $string  = $string ?? '';
-        $dirPath = dirname($filename);
-        if (!is_dir($dirPath)) {
-            if (!mkdir($dirPath, 0775, true)) {
+        $string = $string ?? '';
+        $path   = dirname($filename);
+        if (!is_dir($path)) {
+            if (!mkdir($path, 0775, true)) {
                 return false;
             }
         }
@@ -127,15 +127,14 @@ class File
     
     /**
      * 创建文件夹
-     * @param string $dirPath 文件夹路径，支持传入包含文件名的路径
-     * @param bool   $hasFilename 传入的$dirPath是否包含文件名
+     * @param string $path 路径
      * @return bool
      */
-    public static function createDir(string $dirPath, bool $hasFilename = false) : bool
+    public static function createDir(string $path) : bool
     {
-        $dirPath = $hasFilename ? dirname($dirPath) : $dirPath;
-        if (!is_dir($dirPath)) {
-            return mkdir($dirPath, 0777, true);
+        $path = dirname($path);
+        if (!is_dir($path)) {
+            return mkdir($path, 0777, true);
         }
         
         return true;
@@ -144,35 +143,35 @@ class File
     
     /**
      * 删除文件夹
-     * @param string $dirPath 文件夹路径
-     * @param bool   $isRetainDir 是否保留文件夹，true 保留，false 不保留，默认不保留
+     * @param string $path 路径
+     * @param bool   $retain 是否保留文件夹，true 保留，false 不保留，默认不保留
      * @return bool
      */
-    public static function deleteDir(string $dirPath, bool $isRetainDir = false) : bool
+    public static function deleteDir(string $path, bool $retain = false) : bool
     {
-        if (!is_dir($dirPath)) {
+        if (!is_dir($path)) {
             return false;
         }
         
-        $handle = opendir($dirPath);
+        $handle = opendir($path);
         while ($file = readdir($handle)) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
             
-            $filePath = $dirPath . '/' . $file;
+            $filePath = $path . '/' . $file;
             if (!is_dir($filePath)) {
-                unlink($filePath);
+                @unlink($filePath);
             } else {
                 self::deleteDir($filePath, false);
             }
         }
         closedir($handle);
         
-        if ($isRetainDir) {
+        if ($retain) {
             return true;
         }
         
-        return rmdir($dirPath);
+        return rmdir($path);
     }
 }
