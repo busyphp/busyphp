@@ -93,7 +93,8 @@ class AdminHandle extends Handle
      */
     public static function templateBaseData($pageTitle = '', ?AdminUserInfo $adminUser = null) : array
     {
-        $request = App::init()->request;
+        $app     = App::init();
+        $request = $app->request;
         $data    = [];
         
         // 全局URL
@@ -156,7 +157,7 @@ class AdminHandle extends Handle
             'lib'     => $skinRoot . 'lib/',
             'themes'  => $skinRoot . 'themes/',
             'theme'   => $skinRoot . "themes/{$theme['skin']}.css",
-            'version' => time(),
+            'version' => $app->isDebug() && $app->config->get('app.debug', false) ? time() : $app->getFrameworkVersion(),
         ];
         
         // 系统信息
