@@ -1,9 +1,8 @@
 <?php
 
-namespace BusyPHP\helper\net;
+namespace BusyPHP\helper;
 
 use BusyPHP\exception\HttpRequestException;
-use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\util\Transform;
 use CURLFile;
 use DomainException;
@@ -12,12 +11,12 @@ use think\exception\FuncNotFoundException;
 use think\exception\InvalidArgumentException;
 
 /**
- * HTTP请求类
+ * HTTP请求辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/10/21 下午上午9:55 Http.php $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:11 HttpHelper.php $
  */
-class Http
+class HttpHelper
 {
     /** @var array 请求参数 */
     protected $options = [];
@@ -526,9 +525,9 @@ class Http
     
     /**
      * 执行GET请求
-     * @param string       $url 请求地址
-     * @param string|array $params POST参数
-     * @param Http|null    $http 指定实例化好的请求类
+     * @param string          $url 请求地址
+     * @param string|array    $params POST参数
+     * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
      * @throws HttpRequestException
      * @throws InvalidArgumentException
@@ -538,7 +537,7 @@ class Http
     public static function get($url, $params = [], $http = null)
     {
         if (is_null($http)) {
-            $http = new Http();
+            $http = new HttpHelper();
         }
         
         $http->setUrl($url, $params);
@@ -549,9 +548,9 @@ class Http
     
     /**
      * 执行POST请求
-     * @param string       $url 请求地址
-     * @param string|array $params POST参数
-     * @param Http|null    $http 指定实例化好的请求类
+     * @param string          $url 请求地址
+     * @param string|array    $params POST参数
+     * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
      * @throws HttpRequestException
      * @throws InvalidArgumentException
@@ -561,7 +560,7 @@ class Http
     public static function post($url, $params = [], $http = null)
     {
         if (is_null($http)) {
-            $http = new Http();
+            $http = new HttpHelper();
         }
         
         if (!is_array($params)) {
@@ -578,10 +577,10 @@ class Http
     
     /**
      * 执行提交字符串请求
-     * @param string    $url 请求地址
-     * @param string    $string 要提交的字符串
-     * @param string    $contentType 字符串类型
-     * @param Http|null $http 指定实例化好的请求类
+     * @param string          $url 请求地址
+     * @param string          $string 要提交的字符串
+     * @param string          $contentType 字符串类型
+     * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
      * @throws HttpRequestException
      * @throws InvalidArgumentException
@@ -591,7 +590,7 @@ class Http
     public static function postString($url, $string = '', $contentType = '', $http = null)
     {
         if (is_null($http)) {
-            $http = new Http();
+            $http = new HttpHelper();
         }
         
         $contentType = trim($contentType);
@@ -606,10 +605,10 @@ class Http
     
     /**
      * 执行JSON请求
-     * @param string       $url 请求地址
-     * @param string|array $json 要提交的JSON字符串或数组
-     * @param Http|null    $http 指定实例化好的请求类
-     * @param bool         $unescapedUnicode JSON遇到中文是否保留中文，针对$json为数组的时候有效，默认保留
+     * @param string          $url 请求地址
+     * @param string|array    $json 要提交的JSON字符串或数组
+     * @param HttpHelper|null $http 指定实例化好的请求类
+     * @param bool            $unescapedUnicode JSON遇到中文是否保留中文，针对$json为数组的时候有效，默认保留
      * @return string
      * @throws HttpRequestException
      * @throws InvalidArgumentException
@@ -632,11 +631,11 @@ class Http
     
     /**
      * 执行XML请求
-     * @param string       $url 请求地址
-     * @param string|array $xml 要提交的XML字符串或数组
-     * @param Http|null    $http 指定实例化好的请求类
-     * @param string|false $root 根节点名称，默认为root,针对$xml为数组的时候有效
-     * @param string|false $encode XML ENCode 编码
+     * @param string          $url 请求地址
+     * @param string|array    $xml 要提交的XML字符串或数组
+     * @param HttpHelper|null $http 指定实例化好的请求类
+     * @param string|false    $root 根节点名称，默认为root,针对$xml为数组的时候有效
+     * @param string|false    $encode XML ENCode 编码
      * @return string
      * @throws HttpRequestException
      * @throws InvalidArgumentException
@@ -659,11 +658,11 @@ class Http
     
     /**
      * 下载文件
-     * @param string $url 地址
-     * @param string $filename 保存路径
-     * @param array  $params 附件参数
-     * @param Http   $http Http实例
-     * @param int    $mode 文件夹权限
+     * @param string     $url 地址
+     * @param string     $filename 保存路径
+     * @param array      $params 附件参数
+     * @param HttpHelper $http Http实例
+     * @param int        $mode 文件夹权限
      * @throws HttpRequestException
      * @throws InvalidArgumentException
      * @throws FileException
@@ -671,8 +670,8 @@ class Http
      */
     public static function download($url, $filename, $params = [], $http = null, $mode = 0775)
     {
-        if (!$http instanceof Http) {
-            $http = new Http();
+        if (!$http instanceof HttpHelper) {
+            $http = new HttpHelper();
         }
         
         // 创建文件夹

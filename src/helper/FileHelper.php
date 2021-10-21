@@ -3,10 +3,10 @@
 namespace BusyPHP\helper;
 
 /**
- * 文件操作类
+ * 文件操作辅助类
  * @author busy^life <busy.life@qq.com>
- * @copyright 2015 - 2018 busy^life <busy.life@qq.com>
- * @version $Id: 2018-02-03 上午10:14 File.php busy^life $
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2021/10/21 下午上午10:12 FileHelper.php $
  */
 class FileHelper
 {

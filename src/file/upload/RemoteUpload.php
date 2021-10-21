@@ -5,7 +5,7 @@ namespace BusyPHP\file\upload;
 
 use BusyPHP\App;
 use BusyPHP\file\Upload;
-use BusyPHP\helper\net\Http;
+use BusyPHP\helper\HttpHelper;
 use Exception;
 use League\Flysystem\Util\MimeType;
 use think\exception\FileException;
@@ -20,7 +20,7 @@ use think\exception\FileException;
 class RemoteUpload extends Upload
 {
     /**
-     * @var Http
+     * @var HttpHelper
      */
     protected $http;
     
@@ -47,15 +47,15 @@ class RemoteUpload extends Upload
     {
         parent::__construct($target);
         
-        $this->http = Http::init();
+        $this->http = HttpHelper::init();
     }
     
     
     /**
      * 获取请求
-     * @return Http
+     * @return HttpHelper
      */
-    public function getHttp() : Http
+    public function getHttp() : HttpHelper
     {
         return $this->http;
     }
@@ -142,7 +142,7 @@ class RemoteUpload extends Upload
         $headerHttp->setOpt(CURLOPT_NOBODY, true);
         $headerHttp->setOpt(CURLOPT_POST, false);
         $headerHttp->request();
-        $headers       = Http::parseResponseHeaders($headerHttp->getResponseHeaders());
+        $headers       = HttpHelper::parseResponseHeaders($headerHttp->getResponseHeaders());
         $contentType   = trim($headers['content-type'] ?? '');
         $contentLength = intval($headers['content-length'] ?? 0);
         
@@ -190,7 +190,7 @@ class RemoteUpload extends Upload
         $file = $system->path($path);
         
         // 执行下载
-        Http::download($url, $file, [], $this->http);
+        HttpHelper::download($url, $file, [], $this->http);
         
         // 检测图片
         try {
