@@ -9,6 +9,7 @@ use Exception;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\Container;
 use think\exception\ClassNotFoundException;
 use think\exception\FileException;
 use ZipArchive;
@@ -234,7 +235,8 @@ class InstallCommand extends Command
             if (!$initialize || !class_exists($initialize)) {
                 continue;
             }
-            $obj = new $initialize;
+            
+            $obj = Container::getInstance()->make($initialize, [], true);
             if (!$obj instanceof PluginCommandInitialize) {
                 continue;
             }
