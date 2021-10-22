@@ -8,7 +8,7 @@
 			"email" : "busy.life@qq.com"
 		}
 	],
-	"license"     : "Creative Commons",
+	"license"     : "CC-BY-NC-4.0",
 	"require"     : {
 		"php"                      : ">=7.1.0",
 		"topthink/framework"       : "6.0.7",
