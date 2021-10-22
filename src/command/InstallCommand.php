@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\command;
 
-use BusyPHP\contract\interfaces\PluginInitialize;
+use BusyPHP\contract\interfaces\PluginCommandInitialize;
 use BusyPHP\helper\FileHelper;
 use Exception;
 use think\console\Command;
@@ -235,12 +235,12 @@ class InstallCommand extends Command
                 continue;
             }
             $obj = new $initialize;
-            if (!$obj instanceof PluginInitialize) {
+            if (!$obj instanceof PluginCommandInitialize) {
                 continue;
             }
             
             try {
-                $obj->handle($this->output);
+                $obj->initialize($this->output);
             } catch (Exception $e) {
                 return false;
             }
