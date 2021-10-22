@@ -129,8 +129,8 @@ class Service extends ThinkService
         
         // 绑定命令行
         $this->commands([
-            'busy_install' => InstallCommand::class,
-            'busy_version' => VersionCommand::class,
+            'bp:install' => InstallCommand::class,
+            'bp:version' => VersionCommand::class,
         ]);
         
         

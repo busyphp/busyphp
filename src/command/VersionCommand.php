@@ -17,12 +17,12 @@ class VersionCommand extends Command
 {
     protected function configure()
     {
-        $this->setName('busyphp_version')->setDescription('BusyPHP get version command');
+        $this->setName('bp:version')->setDescription('BusyPHP get version command');
     }
     
     
     protected function execute(Input $input, Output $output)
     {
-        $output->writeln("<info>V{$this->app->getFrameworkVersion()}</info>");
+        $output->info("V{$this->app->getFrameworkVersion()}");
     }
 }
