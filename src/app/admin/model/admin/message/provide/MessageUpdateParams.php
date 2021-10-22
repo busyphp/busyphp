@@ -6,7 +6,7 @@ namespace BusyPHP\app\admin\model\admin\message\provide;
 /**
  * 消息参数模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/17 下午9:17 下午 MessageNoticeUpdateParams.php $
  */
 class MessageUpdateParams extends MessageParams

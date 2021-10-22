@@ -8,7 +8,7 @@ use think\Facade;
 /**
  * 验证码URL生成类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/20 下午下午2:18 CaptchaUrl.php $
  * @mixin \BusyPHP\file\captcha\CaptchaUrl
  * @see \BusyPHP\file\captcha\CaptchaUrl

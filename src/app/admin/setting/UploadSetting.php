@@ -15,7 +15,7 @@ use think\db\exception\DbException;
 /**
  * 上传设置
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/20 下午上午11:20 UploadSetting.php $
  */
 class UploadSetting extends Setting

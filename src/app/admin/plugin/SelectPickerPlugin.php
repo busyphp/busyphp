@@ -15,7 +15,7 @@ use think\db\exception\DbException;
 /**
  * SelectPicker Js 插件
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/8/30 下午下午1:55 SelectPickerPlugin.php $
  */
 class SelectPickerPlugin

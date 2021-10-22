@@ -14,7 +14,7 @@ use think\db\Raw;
 /**
  * 模型字段基本类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午3:07 下午 Field.php $
  * @method void onParseAfter() 将数据转为对象后的后置方法
  */

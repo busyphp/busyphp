@@ -9,7 +9,7 @@ use BusyPHP\model\Field;
 /**
  * 系统操作日志字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午5:01 SystemLogsField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity createTime($op = null, $value = null) 操作时间

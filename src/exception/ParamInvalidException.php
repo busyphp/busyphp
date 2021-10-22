@@ -9,7 +9,7 @@ use Throwable;
 /**
  * 参数无效异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午11:25 上午 ParamInvalidException.php $
  */
 class ParamInvalidException extends InvalidArgumentException

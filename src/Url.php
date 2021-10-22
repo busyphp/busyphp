@@ -8,7 +8,7 @@ use InvalidArgumentException;
 /**
  * URL基本类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/10 下午9:44 下午 Url.php $
  */
 class Url extends \think\app\Url

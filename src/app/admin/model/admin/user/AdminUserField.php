@@ -13,7 +13,7 @@ use BusyPHP\helper\TransHelper;
 /**
  * 管理员表模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:47 AdminUserField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity username($op = null, $value = null) 帐号

@@ -16,7 +16,7 @@ use think\db\exception\DbException;
 /**
  * Table Js 插件
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/7 下午下午8:32 TablePlugin.php $
  */
 class TablePlugin

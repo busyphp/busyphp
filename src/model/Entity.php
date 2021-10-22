@@ -9,7 +9,7 @@ use think\db\Raw;
 /**
  * 模型字段实体
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午上午10:55 Entity.php $
  */
 class Entity

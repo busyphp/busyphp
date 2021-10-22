@@ -16,7 +16,7 @@ use think\Response;
 /**
  * 开发模式-系统附件分类管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:34 下午 SystemFileClass.php $
  */
 class SystemFileClassController extends InsideController

@@ -8,7 +8,7 @@ use BusyPHP\model\Entity;
 /**
  * 后台消息信息结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:31 AdminMessageInfo.php $
  * @method static Entity iconColor() 图标颜色
  * @method static Entity iconIsClass() 图标是否css类

@@ -10,7 +10,7 @@ use Throwable;
 /**
  * 国际化通用异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/11/15 下午12:02 上午 LocaleAppException.php $
  */
 class LocaleException extends RuntimeException

@@ -12,7 +12,7 @@ use think\File;
 /**
  * 分块上传
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/21 下午上午12:53 PartUpload.php $
  */
 class PartUpload extends Upload

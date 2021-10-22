@@ -9,7 +9,7 @@ use Throwable;
 /**
  * 国际化验证异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/11/14 下午11:59 下午 LocaleVerifyException.php $
  */
 class LocaleVerifyException extends VerifyException

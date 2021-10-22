@@ -7,7 +7,7 @@ use think\paginator\driver\Bootstrap;
 /**
  * 分页
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/8 下午下午4:00 ListSelectPaginator.php $
  */
 class ListSelectPaginator extends Bootstrap

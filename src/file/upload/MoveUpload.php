@@ -12,7 +12,7 @@ use think\file\UploadedFile;
 /**
  * 移动文件上传类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/22 下午上午10:54 MoveUpload.php $
  */
 class MoveUpload extends Upload

@@ -7,7 +7,7 @@ use think\facade\Event;
 /**
  * 事件订阅基本类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午11:54 上午 Subscribe.php $
  * @method void subscribe() 手动订阅
  */

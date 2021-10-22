@@ -6,7 +6,7 @@ namespace BusyPHP\cache;
 /**
  * 文件缓存类扩展
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/31 下午10:21 上午 BaseFileCache.php $
  */
 class File extends \think\cache\driver\File

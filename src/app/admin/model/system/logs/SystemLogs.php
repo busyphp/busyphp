@@ -12,7 +12,7 @@ use think\db\exception\DbException;
 /**
  * 系统操作记录模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:59 SystemLogs.php $
  * @method SystemLogsInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemLogsInfo getInfo($data, $notFoundMessage = null)

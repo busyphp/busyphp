@@ -14,7 +14,7 @@ use think\db\exception\DbException;
 /**
  * 管理员信息结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:48 AdminUserInfo.php $
  * @method static Entity groupList($op = null, $value = null) 权限组数据
  * @method static Entity groupRulePaths($op = null, $value = null) 权限规则路径集合

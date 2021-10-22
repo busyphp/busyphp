@@ -38,7 +38,7 @@ use think\Service as ThinkService;
 /**
  * 应用服务类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午11:41 上午 Service.php $
  * @property App $app
  */

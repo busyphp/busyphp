@@ -8,7 +8,7 @@ use BusyPHP\Service;
 /**
  * admin内部基本控制器
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午6:33 下午 InsideController.php $
  * @internal
  */

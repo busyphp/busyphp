@@ -13,7 +13,7 @@ use think\Response;
 /**
  * 开发模式-系统键值对配置管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:35 下午 SystemConfig.php $
  */
 class SystemConfigController extends InsideController

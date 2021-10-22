@@ -9,7 +9,7 @@ use BusyPHP\model\Field;
 /**
  * 后台消息模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:30 AdminMessageField.php $
  * @method static Entity id($op = null, $value = null)
  * @method static Entity userId($op = null, $value = null) 管理员ID

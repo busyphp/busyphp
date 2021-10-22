@@ -15,7 +15,7 @@ use think\Response;
 /**
  * 开发模式-后台菜单管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:35 下午 SystemMenu.php $
  */
 class SystemMenuController extends InsideController

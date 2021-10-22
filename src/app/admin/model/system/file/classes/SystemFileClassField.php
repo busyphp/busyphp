@@ -16,7 +16,7 @@ use BusyPHP\app\admin\model\system\file\SystemFile;
 /**
  * 附件分类模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:32 SystemFileClassField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity name($op = null, $value = null) 分类名称

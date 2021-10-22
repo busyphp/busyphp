@@ -9,7 +9,7 @@ use stdClass;
 /**
  * Tree Js 节点结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/23 下午上午9:43 TreeItemStruct.php $
  */
 abstract class TreeItemStruct extends Map

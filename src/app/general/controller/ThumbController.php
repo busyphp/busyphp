@@ -18,7 +18,7 @@ use think\exception\HttpException;
 /**
  * 动态缩图
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/26 下午下午3:44 ThumbController.php $
  */
 class ThumbController extends Controller

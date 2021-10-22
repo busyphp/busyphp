@@ -18,7 +18,7 @@ use think\db\exception\DbException;
 /**
  * 用户组模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:56 下午 AdminGroup.php $
  * @method AdminGroupInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminGroupInfo getInfo($data, $notFoundMessage = null)

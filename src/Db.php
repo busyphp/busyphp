@@ -17,7 +17,7 @@ use think\db\ConnectionInterface;
 /**
  * Db
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/16 下午8:39 上午 BaseDb.php $
  */
 class Db extends \think\Db

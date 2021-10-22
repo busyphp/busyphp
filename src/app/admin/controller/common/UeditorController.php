@@ -17,7 +17,7 @@ use think\Response;
 /**
  * 百度UEditor编辑器
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/8/28 下午上午9:52 UeditorController.php $
  */
 class UeditorController extends InsideController

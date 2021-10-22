@@ -32,7 +32,7 @@ use think\model\concern\TimeStamp;
 /**
  * 数据模型基本类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午9:22 上午 Model.php $
  * @method mixed onBeforeInsert() 新增前回调, 返回false阻止新增
  * @method mixed onBeforeUpdate() 更新前回调, 返回false阻止更新

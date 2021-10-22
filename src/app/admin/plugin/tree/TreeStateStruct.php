@@ -8,7 +8,7 @@ use BusyPHP\model\Map;
 /**
  * Tree Js 节点状态结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/23 下午上午9:43 TreeStateStruct.php $
  */
 class TreeStateStruct extends Map

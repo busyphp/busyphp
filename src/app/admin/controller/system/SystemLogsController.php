@@ -17,7 +17,7 @@ use think\response\View;
 /**
  * 系统日志管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/18 下午下午3:46 SystemLogsController.php $
  */
 class SystemLogsController extends InsideController

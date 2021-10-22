@@ -7,7 +7,7 @@ namespace BusyPHP\view\taglib;
  * 基础标签解析器
  * 本解析器继承自TP默认的标签库，主要为了解决一些默认库遗留的BUG，也可以写自己标签
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/3 下午9:24 上午 Cx.php $
  */
 class Cx extends \think\template\taglib\Cx

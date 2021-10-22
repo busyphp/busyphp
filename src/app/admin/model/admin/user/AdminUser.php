@@ -20,7 +20,7 @@ use think\helper\Str;
 /**
  * 管理员模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:57 下午 AdminUser.php $
  * @method AdminUserInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminUserInfo getInfo($data, $notFoundMessage = null)

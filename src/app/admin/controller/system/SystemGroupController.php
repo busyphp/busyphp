@@ -22,7 +22,7 @@ use think\Response;
 /**
  * 后台用户组权限管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午12:11 下午 Group.php $
  */
 class SystemGroupController extends InsideController

@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\event;
 /**
  * 后台管理面板事件基本类返回对象
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/10/13 下午1:21 下午 AdminPanelDisplayEventResult.php $
  */
 class AdminPanelDisplayEventResult implements \ArrayAccess

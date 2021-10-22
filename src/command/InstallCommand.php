@@ -19,7 +19,7 @@ use ZipArchive;
 /**
  * Composer安装指令
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午9:49 下午 Install.php $
  * @property App $app
  */

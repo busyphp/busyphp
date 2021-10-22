@@ -9,7 +9,7 @@ use Throwable;
 /**
  * 验证异常
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午11:03 上午 VerifyException.php $
  */
 class VerifyException extends RuntimeException

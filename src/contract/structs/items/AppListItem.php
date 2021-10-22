@@ -8,7 +8,7 @@ use BusyPHP\model\Map;
 /**
  * 应用集合结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/25 下午下午5:50 AppListItem.php $
  * @see App::getList()
  * @method static mixed dir();

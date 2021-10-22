@@ -7,7 +7,7 @@ use BusyPHP\app\admin\controller\InsideController;
 /**
  * TODO 插件管理
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/18 下午下午6:38 SystemPluginController.php $
  */
 class SystemPluginController extends InsideController

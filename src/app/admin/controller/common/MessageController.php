@@ -14,7 +14,7 @@ use BusyPHP\helper\TransHelper;
 /**
  * 通用通知/待办
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/3 下午下午9:08 MessageController.php $
  */
 class MessageController extends InsideController

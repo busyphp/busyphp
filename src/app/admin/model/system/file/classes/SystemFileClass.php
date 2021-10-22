@@ -15,7 +15,7 @@ use think\db\exception\DbException;
 /**
  * 附件分类模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:56 SystemFileClass.php $
  * @method SystemFileClassInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemFileClassInfo getInfo($data, $notFoundMessage = null)

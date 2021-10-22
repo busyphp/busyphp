@@ -10,7 +10,7 @@ use think\template\TagLib;
 /**
  * BusyPHP后端模板标签库
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/2 下午6:04 下午 Ba.php $
  */
 class Ba extends TagLib

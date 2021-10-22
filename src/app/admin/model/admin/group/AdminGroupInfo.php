@@ -13,7 +13,7 @@ use think\db\exception\DbException;
 /**
  * 管理员用户组信息结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午12:57 AdminGroupInfo.php $
  * @method static Entity child() 子节点数据
  * @method static Entity ruleIds() 权限ID集合

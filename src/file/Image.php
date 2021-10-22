@@ -17,7 +17,7 @@ use think\Response;
 /**
  * 图片处理类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/12 下午1:40 下午 Image.php $
  * @link http://phpthumb.sourceforge.net/demo/demo/phpThumb.demo.demo.php
  */

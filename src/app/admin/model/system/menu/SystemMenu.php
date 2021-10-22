@@ -17,7 +17,7 @@ use think\db\exception\DbException;
 /**
  * 后台菜单模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午2:45 下午 SystemMenu.php $
  * @method SystemMenuInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemMenuInfo getInfo($data, $notFoundMessage = null)

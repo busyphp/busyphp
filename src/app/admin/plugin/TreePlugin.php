@@ -14,7 +14,7 @@ use think\db\exception\DbException;
 /**
  * Tree Js插件
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/23 下午上午9:32 TreePlugin.php $
  */
 class TreePlugin

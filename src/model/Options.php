@@ -7,7 +7,7 @@ use BusyPHP\helper\ArrayHelper;
 /**
  * 选项对象
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/19 下午上午11:17 Options.php $
  */
 class Options implements \ArrayAccess

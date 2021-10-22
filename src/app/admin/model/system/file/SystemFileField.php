@@ -9,7 +9,7 @@ use BusyPHP\model\Field;
 /**
  * 文件管理模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/6 下午2:54 下午 SystemFileField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity createTime($op = null, $value = null) 上传时间

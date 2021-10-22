@@ -11,7 +11,7 @@ use BusyPHP\contract\abstracts\Subscribe;
 /**
  * 待办消息订阅器
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午12:18 下午 MessageAgencySubscribe.php $
  */
 class MessageAgencySubscribe extends Subscribe

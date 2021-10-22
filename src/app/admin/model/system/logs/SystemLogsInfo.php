@@ -11,7 +11,7 @@ use BusyPHP\helper\TransHelper;
 /**
  * 操作记录模型信息结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午5:04 SystemLogsInfo.php $
  * @method static string formatCreateTime();
  * @method static string typeName();

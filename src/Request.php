@@ -11,7 +11,7 @@ use think\file\UploadedFile;
 /**
  * Request
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/27 下午8:32 上午 Request.php $
  * @method mixed param($name = '', $default = null, callable $filter = '')
  * @method mixed get($name = '', $default = null, callable $filter = '')

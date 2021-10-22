@@ -10,7 +10,7 @@ use think\console\Output;
 /**
  * 获取版本号
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/12 下午6:43 下午 Version.php $
  */
 class VersionCommand extends Command

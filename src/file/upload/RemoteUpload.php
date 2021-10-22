@@ -13,7 +13,7 @@ use think\exception\FileException;
 /**
  * 抓取远程文件上传类
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/20 下午下午4:07 RemoteUpload.php $
  * @todo 下载超大文件没有进行测试
  */

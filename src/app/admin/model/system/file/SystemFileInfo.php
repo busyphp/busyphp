@@ -17,7 +17,7 @@ use think\db\exception\DbException;
 /**
  * 附件模型信息结构
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午3:26 SystemFileInfo.php $
  * @method static Entity typeName($op = null, $value = null) 附件类型名称;
  * @method static Entity clientName($op = null, $value = null) 客户端名称;

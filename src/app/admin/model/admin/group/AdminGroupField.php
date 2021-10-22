@@ -12,7 +12,7 @@ use BusyPHP\helper\TransHelper;
 /**
  * 用户组模型字段
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午12:54 AdminGroupField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity parentId($op = null, $value = null) 上级权限ID

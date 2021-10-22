@@ -8,7 +8,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 /**
  * 消息参数模型
  * @author busy^life <busy.life@qq.com>
- * @copyright (c) 2015--2019 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/17 下午9:17 下午 MessageParams.php $
  */
 class MessageParams
