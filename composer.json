@@ -42,13 +42,14 @@
 	},
 	"extra"       : {
 		"busyphp" : {
-			"services" : [
+			"services"    : [
 			],
-			"extract"  : {
-				"src/data/app_assets.zip" : "public/assets"
-			},
 			"initializes" : [
-			]
+			],
+			"extract"     : {
+			},
+			"config"      : {
+			}
 		}
 	}
 }
