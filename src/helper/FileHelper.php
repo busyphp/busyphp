@@ -2,6 +2,9 @@
 
 namespace BusyPHP\helper;
 
+use think\exception\HttpException;
+use think\Response;
+
 /**
  * 文件操作辅助类
  * @author busy^life <busy.life@qq.com>
@@ -173,5 +176,43 @@ class FileHelper
         }
         
         return rmdir($path);
+    }
+    
+    
+    /**
+     * 响应资源文件
+     * @param string $filename
+     * @param int    $expireSecond
+     * @return Response
+     */
+    public static function responseAssets(string $filename, int $expireSecond = 31536000) : Response
+    {
+        if (!$filename || !is_file($filename)) {
+            throw new HttpException(404, "资源不存在: {$filename}");
+        }
+        
+        // 判断类型
+        switch (strtolower((string) pathinfo($filename, PATHINFO_EXTENSION))) {
+            case 'css':
+                $mimeType = 'text/css';
+            break;
+            case 'js':
+                $mimeType = 'application/javascript';
+            break;
+            default:
+                $mimeType = FileHelper::getMimeType($filename);
+        }
+        
+        $response = Response::create(file_get_contents($filename), 'html', 200);
+        $response->contentType($mimeType);
+        $response->lastModified(gmdate('D, d M Y H:i:s', filemtime($filename)) . ' GMT');
+        $response->eTag('"' . md5_file($filename) . '"');
+        if ($expireSecond > 1) {
+            $response->cacheControl("max-age={$expireSecond}");
+            $response->expires(gmdate('D, d M Y H:i:s', time() + $expireSecond) . ' GMT');
+            $response->allowCache(true);
+        }
+        
+        return $response;
     }
 }
