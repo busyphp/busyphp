@@ -24,6 +24,7 @@ use BusyPHP\app\general\controller\CaptchaController;
 use BusyPHP\cache\File;
 use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\model\Query;
 use BusyPHP\view\taglib\Cx;
 use BusyPHP\view\View;
@@ -334,6 +335,22 @@ class Service extends ThinkService
                 ])->name('admin_out');
             })->append([self::ROUTE_VAR_TYPE => 'plugin', self::ROUTE_VAR_GROUP => 'Common']);
         }
+        
+        // 注册后台资源路由
+        $route->rule('assets/admin/<path>', function($path) {
+            $parse = parse_url($path);
+            $path  = $parse['path'] ?? '';
+            
+            return FileHelper::responseAssets(__DIR__ . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . ltrim($path, '/'));
+        })->pattern(['path' => '.*']);
+        
+        // 注册通用静态资源路由
+        $route->rule('assets/static/<path>', function($path) {
+            $parse = parse_url($path);
+            $path  = $parse['path'] ?? '';
+            
+            return FileHelper::responseAssets(__DIR__ . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . ltrim($path, '/'));
+        })->pattern(['path' => '.*']);
     }
     
     
