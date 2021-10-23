@@ -74,7 +74,7 @@
                 <th class="text-center" width="100" data-field="<?=SystemLogsInfo::username();?>" data-sortable="true">
                     用户
                 </th>
-                <th class="text-center" width="80" data-field="<?=SystemLogsInfo::userId();?>" data-sortable="true">
+                <th class="text-center" width="80" data-field="<?=SystemLogsInfo::userId();?>" data-sortable="true" data-formatter="@">
                     用户ID
                 </th>
                 <th class="text-center" width="150" data-field="<?=SystemLogsInfo::formatCreateTime();?>" data-sortable="true">
@@ -119,6 +119,10 @@
                 <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
             </div>
         </div>
+    </script>
+
+    <script type="text/html" id="<?=SystemLogsInfo::userId();?>">
+        <a href="{:url('?field=user_id&word=')}{{value}}">{{value}}</a>
     </script>
 
     <script type="text/html" id="operate">
