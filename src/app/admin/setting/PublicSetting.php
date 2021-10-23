@@ -86,7 +86,20 @@ class PublicSetting extends Setting
      */
     public function getImgErrorPlaceholder(bool $isPath = false) : string
     {
-        $image = $this->get('img_error_placeholder', '') ?: App::init()->request->getAssetsUrl() . 'static/images/no_image.jpeg';
+        $image = $this->get('img_error_placeholder', '');
+        if (!$image) {
+            $image = $this->app->request->getAssetsUrl() . 'static/images/no_image.jpeg';
+            
+            if ($isPath) {
+                // 资源真实存在于assets目录下，则返回该资源
+                if (is_file($image = App::urlToPath($image))) {
+                    return $image;
+                }
+                
+                // 返回系统资源
+                return $this->app->getFrameworkPath('static/images/no_image.jpeg');
+            }
+        }
         
         return $isPath ? App::urlToPath($image) : $image;
     }

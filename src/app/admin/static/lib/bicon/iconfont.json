@@ -1,0 +1,492 @@
+{
+  "id": "2783607",
+  "name": "busyphp",
+  "font_family": "bicon",
+  "css_prefix_text": "bicon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "8940182",
+      "name": "主题",
+      "font_class": "theme",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "24412791",
+      "name": "scan-code",
+      "font_class": "scan-code",
+      "unicode": "e88a",
+      "unicode_decimal": 59530
+    },
+    {
+      "icon_id": "24435490",
+      "name": "Location",
+      "font_class": "location",
+      "unicode": "e8ec",
+      "unicode_decimal": 59628
+    },
+    {
+      "icon_id": "24435491",
+      "name": "Notification",
+      "font_class": "notification",
+      "unicode": "e8ed",
+      "unicode_decimal": 59629
+    },
+    {
+      "icon_id": "24435492",
+      "name": "Close",
+      "font_class": "close-o",
+      "unicode": "e8ee",
+      "unicode_decimal": 59630
+    },
+    {
+      "icon_id": "24435494",
+      "name": "Search",
+      "font_class": "search",
+      "unicode": "e8ef",
+      "unicode_decimal": 59631
+    },
+    {
+      "icon_id": "24435495",
+      "name": "Music",
+      "font_class": "music-player",
+      "unicode": "e8f0",
+      "unicode_decimal": 59632
+    },
+    {
+      "icon_id": "24435496",
+      "name": "Calendar",
+      "font_class": "calendar",
+      "unicode": "e8f1",
+      "unicode_decimal": 59633
+    },
+    {
+      "icon_id": "24435497",
+      "name": "Imac",
+      "font_class": "pc",
+      "unicode": "e8f2",
+      "unicode_decimal": 59634
+    },
+    {
+      "icon_id": "24435500",
+      "name": "Power",
+      "font_class": "power-off",
+      "unicode": "e8f3",
+      "unicode_decimal": 59635
+    },
+    {
+      "icon_id": "24435502",
+      "name": "Setting",
+      "font_class": "setting-switch",
+      "unicode": "e8f4",
+      "unicode_decimal": 59636
+    },
+    {
+      "icon_id": "24435504",
+      "name": "Timer",
+      "font_class": "clock",
+      "unicode": "e8f5",
+      "unicode_decimal": 59637
+    },
+    {
+      "icon_id": "24435505",
+      "name": "Radio",
+      "font_class": "radio-set",
+      "unicode": "e8f6",
+      "unicode_decimal": 59638
+    },
+    {
+      "icon_id": "24435506",
+      "name": "Photo",
+      "font_class": "camera",
+      "unicode": "e8f7",
+      "unicode_decimal": 59639
+    },
+    {
+      "icon_id": "24435507",
+      "name": "Video",
+      "font_class": "projector",
+      "unicode": "e8f8",
+      "unicode_decimal": 59640
+    },
+    {
+      "icon_id": "24435509",
+      "name": "Vinil",
+      "font_class": "platter",
+      "unicode": "e8f9",
+      "unicode_decimal": 59641
+    },
+    {
+      "icon_id": "24435511",
+      "name": "OK",
+      "font_class": "success-o",
+      "unicode": "e8fa",
+      "unicode_decimal": 59642
+    },
+    {
+      "icon_id": "1788675",
+      "name": "管理员",
+      "font_class": "user-manager",
+      "unicode": "e696",
+      "unicode_decimal": 59030
+    },
+    {
+      "icon_id": "145426",
+      "name": "飞机场",
+      "font_class": "plane",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "493428",
+      "name": "音乐",
+      "font_class": "music",
+      "unicode": "e79a",
+      "unicode_decimal": 59290
+    },
+    {
+      "icon_id": "852328",
+      "name": "火车",
+      "font_class": "train",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "954208",
+      "name": "添加",
+      "font_class": "plus",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    },
+    {
+      "icon_id": "994738",
+      "name": "摩托车",
+      "font_class": "motorcycle",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "1167182",
+      "name": "视频",
+      "font_class": "video",
+      "unicode": "e644",
+      "unicode_decimal": 58948
+    },
+    {
+      "icon_id": "2256789",
+      "name": "编辑 ",
+      "font_class": "edit",
+      "unicode": "e67f",
+      "unicode_decimal": 59007
+    },
+    {
+      "icon_id": "2420371",
+      "name": "轿车",
+      "font_class": "car",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "2471384",
+      "name": "树型",
+      "font_class": "tree",
+      "unicode": "e67b",
+      "unicode_decimal": 59003
+    },
+    {
+      "icon_id": "2827352",
+      "name": "清理",
+      "font_class": "clear",
+      "unicode": "e65e",
+      "unicode_decimal": 58974
+    },
+    {
+      "icon_id": "3025757",
+      "name": "客车",
+      "font_class": "bus",
+      "unicode": "e67d",
+      "unicode_decimal": 59005
+    },
+    {
+      "icon_id": "4464755",
+      "name": "骑车",
+      "font_class": "bicycle",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
+      "icon_id": "6475931",
+      "name": "物流 卡车",
+      "font_class": "truck",
+      "unicode": "e636",
+      "unicode_decimal": 58934
+    },
+    {
+      "icon_id": "7587933",
+      "name": "菜单",
+      "font_class": "menu",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "8159860",
+      "name": "添加",
+      "font_class": "plus-o",
+      "unicode": "e63b",
+      "unicode_decimal": 58939
+    },
+    {
+      "icon_id": "8536565",
+      "name": "169权限",
+      "font_class": "user-lock",
+      "unicode": "e667",
+      "unicode_decimal": 58983
+    },
+    {
+      "icon_id": "11463977",
+      "name": "群组",
+      "font_class": "user-group",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "12550621",
+      "name": "表格",
+      "font_class": "table",
+      "unicode": "e639",
+      "unicode_decimal": 58937
+    },
+    {
+      "icon_id": "12788673",
+      "name": "dialog",
+      "font_class": "dialog",
+      "unicode": "e6b0",
+      "unicode_decimal": 59056
+    },
+    {
+      "icon_id": "17692264",
+      "name": "下拉菜单",
+      "font_class": "down-menu",
+      "unicode": "e70a",
+      "unicode_decimal": 59146
+    },
+    {
+      "icon_id": "17817826",
+      "name": "删除",
+      "font_class": "trash",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "18878480",
+      "name": "摩托头盔",
+      "font_class": "helmet",
+      "unicode": "e6be",
+      "unicode_decimal": 59070
+    },
+    {
+      "icon_id": "21060746",
+      "name": "图片预览",
+      "font_class": "image-viewer",
+      "unicode": "e7dc",
+      "unicode_decimal": 59356
+    },
+    {
+      "icon_id": "22385284",
+      "name": "生成模型缓存并发布",
+      "font_class": "re-create",
+      "unicode": "ee1b",
+      "unicode_decimal": 60955
+    },
+    {
+      "icon_id": "22385724",
+      "name": "颜色库",
+      "font_class": "color",
+      "unicode": "ee22",
+      "unicode_decimal": 60962
+    },
+    {
+      "icon_id": "18367953",
+      "name": "菜单  展开",
+      "font_class": "menu-close",
+      "unicode": "e67a",
+      "unicode_decimal": 59002
+    },
+    {
+      "icon_id": "24305052",
+      "name": "菜单  展开",
+      "font_class": "menu-open",
+      "unicode": "eadc",
+      "unicode_decimal": 60124
+    },
+    {
+      "icon_id": "4899688",
+      "name": "退出",
+      "font_class": "exit",
+      "unicode": "e666",
+      "unicode_decimal": 58982
+    },
+    {
+      "icon_id": "4420913",
+      "name": "密码",
+      "font_class": "lock",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "9472098",
+      "name": "验证码",
+      "font_class": "safe",
+      "unicode": "e63c",
+      "unicode_decimal": 58940
+    },
+    {
+      "icon_id": "14138568",
+      "name": "个人资料",
+      "font_class": "user-profile",
+      "unicode": "e678",
+      "unicode_decimal": 59000
+    },
+    {
+      "icon_id": "19689748",
+      "name": "user",
+      "font_class": "user",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
+      "icon_id": "504573",
+      "name": "刷新",
+      "font_class": "refresh",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
+      "icon_id": "8300840",
+      "name": "消息",
+      "font_class": "bell",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "11459683",
+      "name": "待办",
+      "font_class": "wait-handle",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    },
+    {
+      "icon_id": "4685755",
+      "name": "展开",
+      "font_class": "full-screen",
+      "unicode": "e6a2",
+      "unicode_decimal": 59042
+    },
+    {
+      "icon_id": "4685760",
+      "name": "收缩",
+      "font_class": "shrink-screen",
+      "unicode": "e6a3",
+      "unicode_decimal": 59043
+    },
+    {
+      "icon_id": "348460",
+      "name": "file",
+      "font_class": "file",
+      "unicode": "eaac",
+      "unicode_decimal": 60076
+    },
+    {
+      "icon_id": "348489",
+      "name": "folder",
+      "font_class": "folder",
+      "unicode": "eac9",
+      "unicode_decimal": 60105
+    },
+    {
+      "icon_id": "348490",
+      "name": "folder-o",
+      "font_class": "folder-o",
+      "unicode": "eaca",
+      "unicode_decimal": 60106
+    },
+    {
+      "icon_id": "348492",
+      "name": "file-o",
+      "font_class": "file-o",
+      "unicode": "eacc",
+      "unicode_decimal": 60108
+    },
+    {
+      "icon_id": "348506",
+      "name": "folder-open",
+      "font_class": "folder-open",
+      "unicode": "eada",
+      "unicode_decimal": 60122
+    },
+    {
+      "icon_id": "348507",
+      "name": "folder-open-o",
+      "font_class": "folder-open-o",
+      "unicode": "eadb",
+      "unicode_decimal": 60123
+    },
+    {
+      "icon_id": "4551254",
+      "name": "列表收起",
+      "font_class": "list-close",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "4551257",
+      "name": "列表展开",
+      "font_class": "list-open",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "9974753",
+      "name": "方框-减",
+      "font_class": "checkbox-undetermined",
+      "unicode": "e70f",
+      "unicode_decimal": 59151
+    },
+    {
+      "icon_id": "10907427",
+      "name": "check",
+      "font_class": "check",
+      "unicode": "e626",
+      "unicode_decimal": 58918
+    },
+    {
+      "icon_id": "20981612",
+      "name": "circle",
+      "font_class": "radio-no-checked",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "20981683",
+      "name": "radio",
+      "font_class": "radio-checked",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "8316569",
+      "name": "icon-checkbox",
+      "font_class": "checkbox-checked",
+      "unicode": "e608",
+      "unicode_decimal": 58888
+    },
+    {
+      "icon_id": "8316574",
+      "name": "icon-no-checkbox",
+      "font_class": "checkbox-no-checked",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    }
+  ]
+}

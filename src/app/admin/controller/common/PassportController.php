@@ -95,6 +95,11 @@ class PassportController extends InsideController
             foreach (glob($this->app->getPublicPath('assets/admin/images/login/*.*')) as $item) {
                 $bgList[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
             }
+            if (!$bgList) {
+                foreach (glob($this->app->getFrameworkPath('app/admin/static/images/login/*.*')) as $item) {
+                    $bgList[] = $this->request->getAssetsUrl() . 'admin/images/login/' . pathinfo($item, PATHINFO_BASENAME);
+                }
+            }
             $bg = $bgList[rand(0, count($bgList) - 1)];
         }
         

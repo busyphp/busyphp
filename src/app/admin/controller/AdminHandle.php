@@ -179,7 +179,7 @@ class AdminHandle extends Handle
                 'version'    => $data['skin']['version'],
                 'configs'    => [
                     'app'    => [
-                        'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder() . "?v={$data['skin']['version']}",
+                        'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder(false) . "?v={$data['skin']['version']}",
                         'url'             => $data['url']['app'],
                         'navSingleHold'   => $theme['nav_single_hold'],
                         'navMode'         => $theme['nav_mode'],
