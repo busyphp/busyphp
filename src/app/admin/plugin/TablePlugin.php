@@ -102,28 +102,28 @@ class TablePlugin
     public function __construct()
     {
         $this->request    = Container::getInstance()->make(Request::class);
-        $this->isExtend   = $this->request->get('extend', 0, 'intval') > 0;
-        $this->limit      = $this->request->get('limit', 0, 'intval');
-        $this->offset     = $this->request->get('offset', 0, 'intval');
-        $this->word       = $this->request->get('word', '', 'trim');
+        $this->isExtend   = $this->request->get('extend/b', false);
+        $this->limit      = $this->request->get('limit/d', 0);
+        $this->offset     = $this->request->get('offset/d', 0);
+        $this->word       = $this->request->get('word/s', '', 'trim');
         $this->field      = $this->request->get('field', '', 'trim');
-        $this->accurate   = $this->request->get('accurate', 0, 'intval') > 0;
-        $this->sortOrder  = $this->request->get('order', '', 'trim');
+        $this->accurate   = $this->request->get('accurate/b', false);
+        $this->sortOrder  = $this->request->get('order/s', '', 'trim');
         $this->sortOrder  = $this->sortOrder ?: 'desc';
-        $this->sortField  = $this->request->get('sort', '', 'trim');
+        $this->sortField  = $this->request->get('sort/s', '', 'trim');
         $this->sortField  = $this->sortField ?: 'id';
-        $this->searchable = $this->request->get('searchable');
+        $this->searchable = $this->request->get('searchable/a', []);
         
         // 附加数据
-        $data = $this->request->get('static', []);
+        $data = $this->request->get('static/a', []);
         foreach ($data as $key => $value) {
             $data[$key] = trim($value);
         }
         $this->data = Map::parse($data);
         
         // 扩展搜索词
-        if (!$this->word) {
-            $this->word = $this->request->get('search', '', 'trim');
+        if ($this->word === '') {
+            $this->word = $this->request->get('search/s', '', 'trim');
         }
     }
     
@@ -138,20 +138,20 @@ class TablePlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->get('model', '', 'trim');
+            $model = $this->request->get('model/s', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }
         
         if ($model instanceof Model) {
             // 搜索
-            if ($this->word && $this->field) {
+            if ($this->word !== '' && $this->field) {
                 if ($this->accurate) {
                     $model->where($this->field, $this->word);
                 } else {
                     $model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
                 }
-            } elseif ($this->word && $this->searchable) {
+            } elseif ($this->word !== '' && $this->searchable) {
                 foreach ($this->searchable as $field) {
                     $model->whereLike($field, '%' . FilterHelper::searchWord($this->word) . '%');
                 }

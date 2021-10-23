@@ -141,7 +141,7 @@ class ListPlugin
     public function select() : ListSelectResult
     {
         // 搜索
-        if ($this->word && $this->field) {
+        if ($this->word !== '' && $this->field) {
             if ($this->accurate) {
                 $this->model->where($this->field, $this->word);
             } else {

@@ -46,7 +46,7 @@ class TreePlugin
     public function __construct()
     {
         $this->request  = App::init()->request;
-        $this->isExtend = $this->request->get('extend', 0, 'intval') > 0;
+        $this->isExtend = $this->request->get('extend/b', false);
     }
     
     
@@ -60,7 +60,7 @@ class TreePlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->get('model', '', 'trim');
+            $model = $this->request->get('model/s', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }

@@ -51,7 +51,7 @@ class AutocompletePlugin
     
     /**
      * 搜索关键词或默认值
-     * @var mixed
+     * @var string
      */
     public $word;
     
@@ -71,11 +71,11 @@ class AutocompletePlugin
     public function __construct()
     {
         $this->request   = Container::getInstance()->make(Request::class);
-        $this->textField = $this->request->post('text_field', '', 'trim');
-        $this->order     = $this->request->post('order', '', 'trim');
-        $this->isExtend  = $this->request->post('extend', 0, 'intval') > 0;
-        $this->limit     = $this->request->post('limit', 0, 'intval');
-        $this->word      = $this->request->post('word');
+        $this->textField = $this->request->post('text_field/s', '', 'trim');
+        $this->order     = $this->request->post('order/s', '', 'trim');
+        $this->isExtend  = $this->request->post('extend/b', false);
+        $this->limit     = $this->request->post('limit/d', 0);
+        $this->word      = $this->request->post('word/s', '', 'trim');
         $this->textField = $this->textField ?: 'name';
         $this->limit     = $this->limit < 0 ? 20 : $this->limit;
     }
@@ -91,13 +91,13 @@ class AutocompletePlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->post('model', '', 'trim');
+            $model = $this->request->post('model/s', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }
         
         if ($model instanceof Model) {
-            if ($this->word) {
+            if ($this->word !== '') {
                 $model->whereLike($this->textField, '%' . FilterHelper::searchWord($this->word) . '%');
             }
             

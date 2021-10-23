@@ -124,7 +124,7 @@ class SelectPickerPlugin
     public function build(?Model $model = null) : ?array
     {
         if (!$model) {
-            $model = $this->request->get('model', '', 'trim');
+            $model = $this->request->get('model/s', '', 'trim');
             $model = str_replace('/', '\\', $model);
             $model = class_exists($model) ? new $model() : null;
         }
@@ -132,7 +132,7 @@ class SelectPickerPlugin
         if ($model instanceof Model) {
             // 查询值
             if ($this->isValue) {
-                if ($this->word) {
+                if ($this->word || (is_string($this->word) && $this->word !== '')) {
                     if (is_array($this->word)) {
                         $model->whereIn($this->idField, $this->word);
                     } else {
@@ -144,7 +144,7 @@ class SelectPickerPlugin
             //
             // 查询列表
             else {
-                if ($this->word) {
+                if ($this->word !== '') {
                     $model->whereLike($this->textField, '%' . FilterHelper::searchWord($this->word) . '%');
                 }
                 
