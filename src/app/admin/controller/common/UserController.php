@@ -94,28 +94,55 @@ class UserController extends InsideController
         }
         
         $list = [];
-        foreach (glob($this->app->getPublicPath('assets/admin/themes/*.*')) as $i => $cssFile) {
-            if (!is_file($cssFile)) {
-                continue;
-            }
-            $content = file_get_contents($cssFile);
-            if (!preg_match('/\/\*!!config(.*?)!!\*\//is', $content, $match)) {
+        $i    = 0;
+        foreach (glob($this->app->getFrameworkPath('app/admin/static/themes/*.*')) as $i => $cssFile) {
+            if (false === $config = $this->parseFile($cssFile, $i)) {
                 continue;
             }
             
-            $config = json_decode($match[1] ?? '{}', true) ?: [];
-            if (!isset($config['name'])) {
+            $list[$config['value']] = $config;
+        }
+        
+        foreach (glob($this->app->getPublicPath('assets/admin/themes/*.*')) as $cssFile) {
+            $i++;
+            if (false === $config = $this->parseFile($cssFile, $i)) {
                 continue;
             }
-            $config['value'] = pathinfo($cssFile, PATHINFO_FILENAME);
-            $config['sort']  = $config['sort'] ?? (1000 + $i);
-            $list[]          = $config;
+            $list[$config['value']] = $config;
         }
+        
         $list = ArrayHelper::listSortBy($list, 'sort', ArrayHelper::ORDER_BY_ASC);
         $this->assign('list', $list);
         $this->assign('info', AdminUser::init()->getTheme($this->adminUser));
         $this->setPageTitle('主题设置');
         
         return $this->display();
+    }
+    
+    
+    /**
+     * 解析主题文件
+     * @param string $cssFile
+     * @param int    $index
+     * @return array|false
+     */
+    private function parseFile(string $cssFile, int $index)
+    {
+        if (!is_file($cssFile)) {
+            return false;
+        }
+        $content = file_get_contents($cssFile);
+        if (!preg_match('/\/\*!!config(.*?)!!\*\//is', $content, $match)) {
+            return false;
+        }
+        
+        $config = json_decode($match[1] ?? '{}', true) ?: [];
+        if (!isset($config['name'])) {
+            return false;
+        }
+        $config['value'] = pathinfo($cssFile, PATHINFO_FILENAME);
+        $config['sort']  = $config['sort'] ?? (1000 + $index);
+        
+        return $config;
     }
 }
