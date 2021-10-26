@@ -1326,6 +1326,8 @@
           if (this.needFixedColumns && this.options.fixedRightNumber) {
             this.$fixedBodyRight.scrollTop(this.$tableBody.scrollTop());
           }
+        } else if (args[0] === 'load-success') { // 修复分页加载成功后，包涵 sticky-header 下错乱的BUG
+          this.renderStickyHeader();
         }
       }
     }, {
@@ -1391,9 +1393,11 @@
         var _this2 = this;
 
         if (this.options.height) {
-          this.needFixedColumns = this.$tableHeader.outerWidth(true) < this.$tableHeader.find('table').outerWidth(true);
+          // 修复存在 sticky-header 时，存在无法冻结列的情况
+          this.needFixedColumns = this.$tableHeader.outerWidth(true) < this.$tableHeader.find('> table').outerWidth(true);
         } else {
-          this.needFixedColumns = this.$tableBody.outerWidth(true) < this.$tableBody.find('table').outerWidth(true);
+          // 修复存在 sticky-header 时，存在无法冻结列的情况
+          this.needFixedColumns = this.$tableBody.outerWidth(true) < this.$tableBody.find('> table').outerWidth(true);
         }
 
         var initFixedHeader = function initFixedHeader($fixedColumns, isRight) {
@@ -1414,7 +1418,7 @@
 
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           this.$fixedHeaderRight = initFixedHeader(this.$fixedColumnsRight, true);
-          this.$fixedHeaderRight.scrollLeft(this.$fixedHeaderRight.find('table').width());
+          this.$fixedHeaderRight.scrollLeft(this.$fixedHeaderRight.find('> table').width());
         } else if (this.$fixedColumnsRight) {
           this.$fixedColumnsRight.html('').css('width', '');
         }
@@ -1435,7 +1439,7 @@
           var tableBody = _this3.$tableBody.get(0);
 
           var scrollHeight = tableBody.scrollWidth > tableBody.clientWidth ? Utils.getScrollBarWidth() : 0;
-          var height = _this3.$tableContainer.outerHeight(true) - scrollHeight - 1;
+          var height = _this3.$tableContainer.outerHeight(true) - scrollHeight - 3; // 修复高度超出问题
           $fixedColumns.css({
             height: height
           });
@@ -1451,7 +1455,7 @@
 
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           this.$fixedBodyRight = initFixedBody(this.$fixedColumnsRight, this.$fixedHeaderRight);
-          this.$fixedBodyRight.scrollLeft(this.$fixedBodyRight.find('table').width());
+          this.$fixedBodyRight.scrollLeft(this.$fixedBodyRight.find('> table').width());
           this.$fixedBodyRight.css('overflow-y', this.options.height ? 'auto' : 'hidden');
         }
       }
@@ -1473,7 +1477,7 @@
           width += this.$header.find("th[data-field=\"".concat(visibleFields[i], "\"]")).outerWidth(true);
         }
 
-        return width + marginRight + 1;
+        return width + marginRight; // 修复宽度问题
       }
     }, {
       key: "initFixedColumnsEvents",
@@ -1590,7 +1594,7 @@
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           var $stickyHeaderContainerRight = this.$fixedColumnsRight.find('.sticky-header-container');
           this.$fixedColumnsRight.css('z-index', 101);
-          $stickyHeaderContainerRight.css('left', '').scrollLeft($stickyHeaderContainerRight.find('.table').outerWidth()).width(this.$fixedColumnsRight.outerWidth());
+          $stickyHeaderContainerRight.css('left', '').width(this.$fixedColumnsRight.outerWidth()).scrollLeft($stickyHeaderContainerRight.find('.table').outerWidth()); // 修复右侧栏标题不对齐问题
         }
       }
     }, {

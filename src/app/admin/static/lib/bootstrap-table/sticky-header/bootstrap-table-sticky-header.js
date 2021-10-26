@@ -1218,9 +1218,10 @@
           }
 
           if (this.$el.closest('.bootstrap-table').hasClass('fullscreen')) {
-            stickyHeaderOffsetLeft = 0;
-            stickyHeaderOffsetRight = 0;
-            width = '100%';
+            // 移除全屏控制
+            //stickyHeaderOffsetLeft = 0;
+            //stickyHeaderOffsetRight = 0;
+            // width = '100%';
           }
 
           this.$stickyContainer.css('top', "".concat(this.options.stickyHeaderOffsetY, "px"));
