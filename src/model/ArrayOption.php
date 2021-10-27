@@ -2,15 +2,23 @@
 
 namespace BusyPHP\model;
 
+use ArrayAccess;
+use ArrayIterator;
 use BusyPHP\helper\ArrayHelper;
+use Countable;
+use Exception;
+use IteratorAggregate;
+use JsonSerializable;
+use think\contract\Jsonable;
+use Traversable;
 
 /**
- * 选项对象
+ * 数组选项对象
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/10/19 下午上午11:17 Options.php $
+ * @version $Id: 2021/10/19 下午上午11:17 ArrayOption.php $
  */
-class Options implements \ArrayAccess
+class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable, IteratorAggregate
 {
     /**
      * @var array
@@ -23,7 +31,7 @@ class Options implements \ArrayAccess
      * @param array $options
      * @return static
      */
-    public static function init(array $options) : Options
+    public static function init(array $options) : ArrayOption
     {
         return new static($options);
     }
@@ -140,5 +148,57 @@ class Options implements \ArrayAccess
     public function offsetUnset($offset)
     {
         unset($this->options[$offset]);
+    }
+    
+    
+    /**
+     * Count elements of an object
+     * @link https://php.net/manual/en/countable.count.php
+     * @return int The custom count as an integer.
+     * </p>
+     * <p>
+     * The return value is cast to an integer.
+     */
+    public function count()
+    {
+        return count($this->options);
+    }
+    
+    
+    public function toJson(int $options = JSON_UNESCAPED_UNICODE) : string
+    {
+        return json_encode($this->options, $options);
+    }
+    
+    
+    /**
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4
+     */
+    public function jsonSerialize()
+    {
+        return $this->options;
+    }
+    
+    
+    /**
+     * Retrieve an external iterator
+     * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
+     * @return Traversable An instance of an object implementing <b>Iterator</b> or
+     * <b>Traversable</b>
+     * @throws Exception on failure.
+     */
+    public function getIterator()
+    {
+        return new ArrayIterator($this->options);
+    }
+    
+    
+    public function __toString()
+    {
+        return $this->toJson();
     }
 }

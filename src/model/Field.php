@@ -6,10 +6,14 @@ namespace BusyPHP\model;
 use ArrayAccess;
 use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\StringHelper;
+use Countable;
+use Exception;
+use IteratorAggregate;
 use JsonSerializable;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\db\Raw;
+use Traversable;
 
 /**
  * 模型字段基本类
@@ -18,7 +22,7 @@ use think\db\Raw;
  * @version $Id: 2020/6/6 下午3:07 下午 Field.php $
  * @method void onParseAfter() 将数据转为对象后的后置方法
  */
-class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
+class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
     /**
      * Join别名
@@ -307,5 +311,32 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
     public function jsonSerialize()
     {
         return $this->toArray();
+    }
+    
+    
+    /**
+     * Retrieve an external iterator
+     * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
+     * @return Traversable An instance of an object implementing <b>Iterator</b> or
+     * <b>Traversable</b>
+     * @throws Exception on failure.
+     */
+    public function getIterator()
+    {
+        return new ArrayOption($this->toArray());
+    }
+    
+    
+    /**
+     * Count elements of an object
+     * @link https://php.net/manual/en/countable.count.php
+     * @return int The custom count as an integer.
+     * </p>
+     * <p>
+     * The return value is cast to an integer.
+     */
+    public function count()
+    {
+        return count($this->toArray());
     }
 }
