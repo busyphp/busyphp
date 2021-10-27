@@ -327,11 +327,19 @@ class AdminGroup extends Model
             return true;
         }
         
+        $request    = App::init()->request;
+        $controller = $request->controller();
         if (!$paths) {
-            $paths[] = App::init()->request->getRoutePath(true);
+            $paths[] = $request->getRoutePath(true);
         }
         
         foreach ($paths as $path) {
+            // 需要获取控制器补全
+            $values = explode('/', $path) ?: [];
+            if (count($values) == 1) {
+                $path = "{$controller}/{$values[0]}";
+            }
+            
             // 放行白名单
             $currentPath = StringHelper::snake($path);
             foreach (self::$allowControllers as $item) {
