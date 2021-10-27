@@ -95,10 +95,12 @@
 | 隐藏/显示:title |  |  |  |  |
 | data-visible | boolean | 否 | `true` | 设置是否显示该列 |
 | data-show-columns | boolean | 否 | `true` | 是否允许列隐藏显示控制 |
+| data-column-title | string | 否 | - | 指定控制列显示隐藏的选项名称，默认使用`title` |
 | data-switchable | boolean | 否 | `true` | 是否允许该列被用户自定义显示隐藏 |
 | 排序:title |  |  |  |  |
 | data-sortable | boolean | 否 | `false` | 指定是否启用列排序 |
 | data-sort-order | string | 否 | `asc` | 指定列排序的默认排序方式，支持：`asc`, `desc` |
+| data-sort-name | string | 否 | - | 指定列排序的字段 |
 | 搜索:title |  |  |  |  |
 | data-searchable | boolean | 否 | `true` | 是否允许搜索，ajax模式下默认不允许搜索 |
 | 表尾:title |  |  |  |  |
@@ -107,7 +109,9 @@
 | data-escape | boolean | 否 | `false` | 内容包涵html节点是否原样输出 |
 | data-event | string | 否 | - | 设置自定义单元格事件 `window全局变量名称` |
 | data-formatter | string | 否 | - | 设置自定义内容单元格的处理回调，`@`则使用 `artTemplate` 模板引擎解析 |
-
+| 样式:title |  |  |  |  |
+| data-cell-style | string,Function | 否 | - | 设置列样式回调方法，支持 `window全局变量名称`，返回 `{classes: '类名', css: '样式'}` |
+| data-row-style | string,Function | 否 | - | 设置行样式回调方法，支持 `window全局变量名称`，返回 `{classes: '类名', css: '样式'}` |
 
 ### 自定义`data-toolbar`中的元素属性
 
