@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.harter.cn/busyphp/ide-helper/admin.xsd"
+           xmlns="http://www.harter.cn/busyphp/ide-helper/admin.xsd"
+           elementFormDefault="qualified">
+
+    <!-- 权限检测 -->
+    <xs:element name="access" type="permissionType">
+        <xs:annotation>
+            <xs:documentation>权限检测</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="permissionType">
+        <xs:attribute name="value" use="required" type="xs:string" default="">
+            <xs:annotation>
+                <xs:documentation>路由路径</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>
