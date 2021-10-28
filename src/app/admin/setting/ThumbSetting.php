@@ -36,9 +36,9 @@ class ThumbSetting extends Setting
     protected function parseSet($data)
     {
         $data                   = FilterHelper::trim($data);
-        $data['save_local']     = TransHelper::dataToBool($data['save_local'] ?? 0);
-        $data['unlimited_size'] = TransHelper::dataToBool($data['unlimited_size'] ?? 0);
-        $data['watermark']      = TransHelper::dataToBool($data['watermark'] ?? 0);
+        $data['save_local']     = TransHelper::toBool($data['save_local'] ?? 0);
+        $data['unlimited_size'] = TransHelper::toBool($data['unlimited_size'] ?? 0);
+        $data['watermark']      = TransHelper::toBool($data['watermark'] ?? 0);
         $sizes                  = [];
         foreach ($data['sizes'] ?? [] as $vo) {
             $width  = FilterHelper::min((int) ($vo['width'] ?? 0));

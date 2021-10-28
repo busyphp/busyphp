@@ -41,9 +41,9 @@ class CaptchaSetting extends Setting
         $clients = [];
         
         foreach ($data['clients'] ?? [] as $client => $vo) {
-            $vo['curve']      = TransHelper::dataToBool($vo['curve'] ?? false);
-            $vo['noise']      = TransHelper::dataToBool($vo['noise'] ?? false);
-            $vo['bg_image']   = TransHelper::dataToBool($vo['bg_image'] ?? false);
+            $vo['curve']      = TransHelper::toBool($vo['curve'] ?? false);
+            $vo['noise']      = TransHelper::toBool($vo['noise'] ?? false);
+            $vo['bg_image']   = TransHelper::toBool($vo['bg_image'] ?? false);
             $clients[$client] = $vo;
         }
         

@@ -284,7 +284,7 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $this->assign('level_options', TransHelper::arrayToOption(QRCode::getLevels(), '__index', '__index', QrcodeSetting::init()
+        $this->assign('level_options', TransHelper::toOptionHtml(QRCode::getLevels(), QrcodeSetting::init()
             ->getLevel()));
         $this->assign('info', QrcodeSetting::init()->get());
         

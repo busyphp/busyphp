@@ -61,7 +61,7 @@ class SystemFileClassController extends InsideController
         }
         
         
-        $this->assign('type_options', TransHelper::arrayToOption(SystemFile::getTypes()));
+        $this->assign('type_options', TransHelper::toOptionHtml(SystemFile::getTypes()));
         
         return $this->display();
     }
@@ -87,7 +87,7 @@ class SystemFileClassController extends InsideController
         }
         
         $this->assign('info', [
-            'type_options' => TransHelper::arrayToOption(SystemFile::getTypes()),
+            'type_options' => TransHelper::toOptionHtml(SystemFile::getTypes()),
             'system'       => 0,
         ]);
         
@@ -118,7 +118,7 @@ class SystemFileClassController extends InsideController
         }
         
         $info                 = $this->model->getInfo($this->get('id'));
-        $info['type_options'] = TransHelper::arrayToOption(SystemFile::getTypes(), '', '', $info->type);
+        $info['type_options'] = TransHelper::toOptionHtml(SystemFile::getTypes(), $info->type);
         $this->assign('info', $info);
         
         return $this->display('add');

@@ -96,8 +96,8 @@ class SystemGroupController extends InsideController
         
         // 显示修改
         $this->assign('info', ['status' => true, 'system' => false]);
-        $this->assign('menu_options', TransHelper::arrayToOption(SystemMenu::init()
-            ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name()));
+        $this->assign('menu_options', TransHelper::toOptionHtml(SystemMenu::init()
+            ->getSafeTree(), null, SystemMenuField::id(), SystemMenuField::name()));
         $this->assign('group_options', $this->model->getTreeOptions($this->get('id/s')));
         
         return $this->display();
@@ -138,8 +138,8 @@ class SystemGroupController extends InsideController
         
         // 修改显示
         $this->assign('info', $info);
-        $this->assign('menu_options', TransHelper::arrayToOption(SystemMenu::init()
-            ->getSafeTree(), SystemMenuField::id(), SystemMenuField::name(), $info->defaultMenuId));
+        $this->assign('menu_options', TransHelper::toOptionHtml(SystemMenu::init()
+            ->getSafeTree(), $info->defaultMenuId, SystemMenuField::id(), SystemMenuField::name()));
         $this->assign('group_options', $this->model->getTreeOptions($info->parentId, $info->id));
         
         return $this->display('add');

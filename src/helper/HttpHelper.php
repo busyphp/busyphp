@@ -646,7 +646,7 @@ class HttpHelper
     {
         if (is_array($xml)) {
             if ($encode === false || $root === false) {
-                $xml = TransHelper::dataToXml($xml);
+                $xml = TransHelper::toXml($xml);
             } else {
                 $xml = TransHelper::xmlEncode($xml, $encode, 'root');
             }

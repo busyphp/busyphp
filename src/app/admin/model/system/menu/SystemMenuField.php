@@ -230,7 +230,7 @@ class SystemMenuField extends Field
      */
     public function setHide($hide)
     {
-        $this->hide = TransHelper::dataToBool($hide);
+        $this->hide = TransHelper::toBool($hide);
         
         return $this;
     }
@@ -243,7 +243,7 @@ class SystemMenuField extends Field
      */
     public function setDisabled($disabled)
     {
-        $this->disabled = TransHelper::dataToBool($disabled);
+        $this->disabled = TransHelper::toBool($disabled);
         
         return $this;
     }

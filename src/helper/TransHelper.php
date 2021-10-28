@@ -2,6 +2,11 @@
 
 namespace BusyPHP\helper;
 
+use JsonSerializable;
+use think\Collection;
+use think\contract\Arrayable;
+use think\contract\Jsonable;
+
 /**
  * 数据转换辅助类
  * @author busy^life <busy.life@qq.com>
@@ -11,53 +16,14 @@ namespace BusyPHP\helper;
 class TransHelper
 {
     /**
-     * 转换时间范围条件，用于按照时间搜索的时候使用
-     * @param array  $data 包含时间范围字段的数据
-     * @param string $startField 开始时间字段，默认start_time
-     * @param string $endField 结束时间字段，默认end_time
-     * @param string $defStart 默认开始时间，默认为今天的0点开始，精确到秒
-     * @param string $defEnd 默认结束时间，默认为今天的23:59结束，精确到秒
-     * @return array
-     */
-    public static function parseTimeRangeCondition($data, $startField = '', $endField = '', $defStart = '', $defEnd = '')
-    {
-        $startField = $startField ?: 'start_time';
-        $endField   = $endField ?: 'end_time';
-        $defStart   = $defStart ?: self::date(strtotime(date('Y-m-d')));
-        $defEnd     = $defEnd ?: self::date(strtotime(date('Y-m-d 23:59:59')));
-        if (!isset($data[$startField])) {
-            $data[$startField] = $defStart;
-        }
-        if (!isset($data[$endField])) {
-            $data[$endField] = $defEnd;
-        }
-        
-        $condition = [];
-        if ($data[$startField] && $data[$endField]) {
-            $condition = [
-                ['egt', strtotime($data[$startField])],
-                ['elt', strtotime($data[$endField])],
-                'AND'
-            ];
-        } elseif ($data[$startField] && !$data[$endField]) {
-            $condition = ['egt', strtotime($data[$startField])];
-        } elseif ($data[$endField] && !$data[$startField]) {
-            $condition = ['elt', strtotime($data[$endField])];
-        }
-        
-        return $condition;
-    }
-    
-    
-    /**
      * 将手机号的中间值变*
-     * @param $phone
+     * @param string $phone
      * @return string
      */
-    public static function safePhone($phone)
+    public static function safePhone(string $phone) : string
     {
-        $first = substr($phone, 0, 3);
-        $last  = substr($phone, -4);
+        $first = (string) substr($phone, 0, 3);
+        $last  = (string) substr($phone, -4);
         
         return "{$first}****{$last}";
     }
@@ -76,9 +42,22 @@ class TransHelper
     
     
     /**
+     * 格式化 GM DATE
+     * @param int    $time 时间戳
+     * @param string $format 格式
+     * @param string $suffix 后缀
+     * @return false|string
+     */
+    public static function gmDate($time = 0, $format = 'D, d M Y H:i:s', $suffix = ' GMT')
+    {
+        return gmdate($format, $time) . $suffix;
+    }
+    
+    
+    /**
      * 将UTF-8内容转换成GBK字符集
      * @param string $content 字符串
-     * @return string
+     * @return string|false
      */
     public static function UTF8ToGB2312($content = '')
     {
@@ -89,7 +68,7 @@ class TransHelper
     /**
      * 将GBK内容转换成UTF-8字符集
      * @param string $content 字符串
-     * @return string
+     * @return string|false
      */
     public static function GB2312ToUTF8($content = '')
     {
@@ -102,7 +81,7 @@ class TransHelper
      * @param mixed $content 要转换的内容
      * @return int
      */
-    public static function boolToNumber($content = null)
+    public static function toBoolInt($content = null) : int
     {
         return empty($content) ? 0 : 1;
     }
@@ -110,10 +89,10 @@ class TransHelper
     
     /**
      * 强制将数据转换成BOOL类型
-     * @param null $content
+     * @param mixed $content 要转换的内容
      * @return bool
      */
-    public static function dataToBool($content = null)
+    public static function toBool($content = null) : bool
     {
         if (is_string($content)) {
             $content = strtolower(trim($content));
@@ -131,42 +110,55 @@ class TransHelper
     
     /**
      * 将数组转换成option标签
-     * @param array        $array 要转换的数组
-     * @param string       $value option value 属性值的 数组键名，设置__index 代表取键名为参数
-     * @param string       $name option text 显示值的 数组键名，设置__index 代表取item为参数
-     * @param string|array $selectedValue 选中项的值 value，多个用半角逗号分割
-     * @param array        $attr 属性配置，格式 array(name => key)
+     * @param array        $list 要转换的数组
+     * @param string|array $selected 选中项值
+     * @param string       $nameKey 选项文本键名称
+     * @param string       $valueKey 选项值键名称
+     * @param array        $attrs 自定属性键值对
      * @return string
      */
-    public static function arrayToOption($array, $value = '', $name = '', $selectedValue = null, $attr = [])
+    public static function toOptionHtml(array $list, $selected = null, ?string $nameKey = '', ?string $valueKey = '', ?array $attrs = []) : string
     {
-        $defaultKey    = '__index';
-        $value         = $value ?: $defaultKey;
-        $name          = $name ?: $defaultKey;
-        $value         = (string) $value;
-        $name          = (string) $name;
-        $string        = '';
-        $selectedValue = !is_null($selectedValue) ? is_array($selectedValue) ? $selectedValue : explode(',', $selectedValue) : null;
-        foreach ($array as $index => $item) {
-            $current     = '';
-            $optionValue = $value == $defaultKey ? $index : $item[$value];
-            $optionName  = $name == $defaultKey ? $item : $item[$name];
-            if (!is_null($selectedValue) && in_array($optionValue, $selectedValue)) {
+        $selected = !is_array($selected) ? [$selected] : $selected;
+        $nameKey  = $nameKey ?: '';
+        $valueKey = $valueKey ?: '';
+        $attrs    = $attrs ?: [];
+        
+        $options = '';
+        foreach ($list as $index => $item) {
+            $value = (string) (empty($valueKey) ? $index : ($item[$valueKey] ?? ''));
+            $text  = (string) (empty($nameKey) ? $item : ($item[$nameKey] ?? ''));
+            
+            $current = '';
+            if (in_array($value, $selected)) {
                 $current = ' selected';
             }
             
+            // 自定义属性
             $attrString = '';
-            if ($attr) {
-                foreach ($attr as $attrName => $attrValue) {
-                    $attrValue  = $attrValue ?: $defaultKey;
-                    $attrValue  = $attrValue == $defaultKey ? $index : $item[$attrValue];
-                    $attrString .= " data-{$attrName}=\"{$attrValue}\"";
+            if (is_array($attrs) && $attrs) {
+                foreach ($attrs as $attrName => $attrValue) {
+                    if (is_bool($attrValue)) {
+                        $attrValue = $attrValue ? 'true' : 'false';
+                    } elseif (is_array($attrValue)) {
+                        $attrValue = json_encode($attrValue, JSON_UNESCAPED_UNICODE);
+                    } elseif ($attrValue instanceof Jsonable || $attrValue instanceof JsonSerializable || $attrValue instanceof Collection) {
+                        $attrValue = json_encode($attrValue, JSON_UNESCAPED_UNICODE);
+                    } elseif ($attrValue instanceof Arrayable) {
+                        $attrValue = json_encode($attrValue->toArray(), JSON_UNESCAPED_UNICODE);
+                    } elseif (is_scalar($attrValue)) {
+                        $attrValue = (string) $attrValue;
+                    } else {
+                        continue;
+                    }
+                    
+                    $attrString .= " {$attrName}='{$attrValue}'";
                 }
             }
-            $string .= '<option value="' . $optionValue . '"' . $attrString . $current . '>' . $optionName . '</option>';
+            $options .= '<option value="' . $value . '"' . $attrString . $current . '>' . $text . '</option>';
         }
         
-        return $string;
+        return $options;
     }
     
     
@@ -277,10 +269,10 @@ class TransHelper
     
     /**
      * 将字符串转换成base64格式便于在URL中携带
-     * @param $string
+     * @param string $string
      * @return string
      */
-    public static function base64encodeUrl($string)
+    public static function base64encodeUrl(string $string) : string
     {
         $string = base64_encode(trim($string));
         $string = str_replace('+', '_', $string);
@@ -293,10 +285,10 @@ class TransHelper
     
     /**
      * 将URL中的base64编码转换解码
-     * @param $string
+     * @param string $string
      * @return string
      */
-    public static function base64decodeUrl($string)
+    public static function base64decodeUrl(string $string) : string
     {
         $string = trim($string);
         $string = str_replace('_', '+', $string);
@@ -357,7 +349,7 @@ class TransHelper
     {
         $xml = '<?xml version="1.0" encoding="' . $encoding . '"?>';
         $xml .= '<' . $root . '>';
-        $xml .= self::dataToXml($data);
+        $xml .= static::toXml($data);
         $xml .= '</' . $root . '>';
         
         return $xml;
@@ -366,16 +358,16 @@ class TransHelper
     
     /**
      * 数据XML编码
-     * @param mixed $data 数据
+     * @param array $data 数据
      * @return string
      */
-    public static function dataToXml($data)
+    public static function toXml(array $data) : string
     {
         $xml = '';
         foreach ($data as $key => $val) {
             is_numeric($key) && $key = "item id=\"$key\"";
             $xml .= "<$key>";
-            $xml .= (is_array($val) || is_object($val)) ? self::dataToXml($val) : $val;
+            $xml .= (is_array($val) || is_object($val)) ? self::toXml($val) : $val;
             [$key,] = explode(' ', $key);
             $xml .= "</$key>";
         }

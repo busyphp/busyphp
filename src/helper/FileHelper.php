@@ -205,11 +205,11 @@ class FileHelper
         
         $response = Response::create(file_get_contents($filename), 'html', 200);
         $response->contentType($mimeType);
-        $response->lastModified(gmdate('D, d M Y H:i:s', filemtime($filename)) . ' GMT');
+        $response->lastModified(TransHelper::gmDate(filemtime($filename)));
         $response->eTag('"' . md5_file($filename) . '"');
         if ($expireSecond > 1) {
             $response->cacheControl("max-age={$expireSecond}");
-            $response->expires(gmdate('D, d M Y H:i:s', time() + $expireSecond) . ' GMT');
+            $response->expires(TransHelper::gmDate(time() + $expireSecond));
             $response->allowCache(true);
         }
         

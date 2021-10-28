@@ -280,7 +280,7 @@ class AdminUserField extends Field
      */
     public function setChecked($checked)
     {
-        $this->checked = TransHelper::dataToBool($checked);
+        $this->checked = TransHelper::toBool($checked);
         
         return $this;
     }

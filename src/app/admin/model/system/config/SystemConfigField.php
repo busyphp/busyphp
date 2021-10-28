@@ -144,7 +144,7 @@ class SystemConfigField extends Field
      */
     public function setSystem($system)
     {
-        $this->system = TransHelper::dataToBool($system);
+        $this->system = TransHelper::toBool($system);
         
         return $this;
     }
@@ -157,7 +157,7 @@ class SystemConfigField extends Field
      */
     public function setAppend($append)
     {
-        $this->append = TransHelper::dataToBool($append);
+        $this->append = TransHelper::toBool($append);
         
         return $this;
     }

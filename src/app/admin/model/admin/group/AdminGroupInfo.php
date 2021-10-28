@@ -84,7 +84,7 @@ class AdminGroupInfo extends AdminGroupField
             static::$_menuIdList = SystemMenu::init()->getIdList();
         }
         
-        $this->system = TransHelper::dataToBool($this->system);
+        $this->system = TransHelper::toBool($this->system);
         
         // 遍历权限剔除失效节点
         $rule            = [];

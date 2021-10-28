@@ -26,8 +26,8 @@ class AdminSetting extends Setting
     protected function parseSet($data)
     {
         $data                            = FilterHelper::trim($data);
-        $data['verify']                  = TransHelper::dataToBool($data['verify']);
-        $data['multiple_client']         = TransHelper::dataToBool($data['multiple_client']);
+        $data['verify']                  = TransHelper::toBool($data['verify']);
+        $data['multiple_client']         = TransHelper::toBool($data['multiple_client']);
         $data['often']                   = FilterHelper::min(intval($data['often']), 0);
         $data['save_login']              = FilterHelper::min(intval($data['save_login']), 0);
         $data['login_error_minute']      = FilterHelper::min(intval($data['login_error_minute']), 0);

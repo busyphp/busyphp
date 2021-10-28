@@ -54,8 +54,8 @@ class SystemLogsController extends InsideController
             return $this->success($this->pluginTable->build(SystemLogs::init()));
         }
         
-        $this->assign('type_options', TransHelper::arrayToOption(SystemLogs::getTypes()));
-        $this->assign('client_options', TransHelper::arrayToOption($this->app->getList(), AppListItem::dir(), AppListItem::name()));
+        $this->assign('type_options', TransHelper::toOptionHtml(SystemLogs::getTypes()));
+        $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, AppListItem::dir(), AppListItem::name()));
         $this->assign('time', $timeRange);
         
         return $this->display();

@@ -200,7 +200,7 @@ class SystemFileClassField extends Field
      */
     public function setSystem($system)
     {
-        $this->system = TransHelper::dataToBool($system);
+        $this->system = TransHelper::toBool($system);
         
         return $this;
     }

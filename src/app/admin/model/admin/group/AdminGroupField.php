@@ -165,7 +165,7 @@ class AdminGroupField extends Field
      */
     public function setStatus($status) : self
     {
-        $this->status = TransHelper::dataToBool($status);
+        $this->status = TransHelper::toBool($status);
         
         return $this;
     }
