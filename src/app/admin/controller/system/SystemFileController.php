@@ -75,7 +75,7 @@ class SystemFileController extends InsideController
             return $this->success($this->pluginTable->build($this->model));
         }
         
-        $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限类型'));
+        $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
         $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, 'dir', 'name'));
         $this->assign('time', $timeRange);
         

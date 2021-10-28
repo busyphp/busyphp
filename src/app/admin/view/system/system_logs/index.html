@@ -14,22 +14,29 @@
          data-fields="<?=SystemLogsInfo::name()?>:操作名称,<?=SystemLogsInfo::username()?>:操作用户名,<?=SystemLogsInfo::userId()?>:操作用户ID">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
-                <select class="form-control" name="type">
-                    <option value="-1">不限操作类型</option>
-                    {$type_options}
-                </select>
-            </div>
-            <div class="form-group">
-                <select class="form-control" name="client">
-                    <option value="">不限客户端</option>
-                    {$client_options}
-                    <option value="<?=SystemLogs::CLI_CLIENT_KEY;?>"><?=SystemLogs::CLI_CLIENT_NAME;?></option>
-                </select>
+                <div class="input-group">
+                    <div class="input-group-addon">时间范围</div>
+                    <input type="text" name="time" class="form-control date-ymdhis-range" value="{$time}" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                    <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                </div>
             </div>
             <div class="form-group">
                 <div class="input-group">
-                    <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
-                    <input type="text" name="time" class="form-control" value="{$time}" placeholder="请选择时间" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                    <div class="input-group-addon">操作类型</div>
+                    <select class="form-control" name="type">
+                        <option value="-1">不限</option>
+                        {$type_options}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">客户端</div>
+                    <select class="form-control" name="client">
+                        <option value="">不限</option>
+                        {$client_options}
+                        <option value="<?=SystemLogs::CLI_CLIENT_KEY;?>"><?=SystemLogs::CLI_CLIENT_NAME;?></option>
+                    </select>
                 </div>
             </div>
         </script>

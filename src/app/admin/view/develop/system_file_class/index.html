@@ -7,10 +7,13 @@
          data-fields="name:名称,var:标识">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
-                <select class="form-control" name="static[type]">
-                    <option value="">不限类型</option>
-                    {$type_options}
-                </select>
+                <div class="input-group">
+                    <div class="input-group-addon">文件类型</div>
+                    <select class="form-control" name="static[type]">
+                        <option value="">不限</option>
+                        {$type_options}
+                    </select>
+                </div>
             </div>
         </script>
     </div>
