@@ -231,4 +231,18 @@ class Entity
         
         return $field;
     }
+    
+    
+    /**
+     * 快速实例化
+     * @param string $field
+     * @return Entity
+     */
+    public static function init(string $field) : self
+    {
+        $info = new Entity();
+        $info->setField(StringHelper::snake($field));
+        
+        return $info;
+    }
 }
