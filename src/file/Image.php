@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\file;
 
 use BusyPHP\App;
+use BusyPHP\helper\LogHelper;
 use Exception;
 use LogicException;
 use phpthumb;
@@ -11,7 +12,6 @@ use phpthumb_functions;
 use RuntimeException;
 use think\exception\FileException;
 use think\facade\Filesystem;
-use think\facade\Log;
 use think\Response;
 
 /**
@@ -538,7 +538,7 @@ class Image
             foreach ($this->phpThumb->debugmessages as $i => $msg) {
                 $record .= PHP_EOL . str_pad($i . ".", 3, ' ') . ' ' . $msg;
             }
-            Log::record($record, 'error');
+            LogHelper::default()->error($record);
             
             $message = $e->getMessage();
             $message = explode('phpthumb.sourceforge.net', $message);

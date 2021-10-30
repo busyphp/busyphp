@@ -6,8 +6,6 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\LogHelper;
 use Exception;
 use think\App;
-use think\Container;
-use think\Log;
 use think\Request;
 use think\Response;
 use Throwable;
@@ -46,9 +44,8 @@ class Handle extends \think\exception\Handle
             }
             
             try {
-                $args          = func_get_args();
-                $prefixMessage = $args[1] ?? '';
-                $this->app->log->record(LogHelper::parse($exception, $prefixMessage), Log::ERROR);
+                $args = func_get_args();
+                LogHelper::default()->tag($args[1] ?? '')->error($exception);
             } catch (Exception $e) {
             }
         }
@@ -70,18 +67,5 @@ class Handle extends \think\exception\Handle
         }
         
         return parent::render($request, $e);
-    }
-    
-    
-    /**
-     * 记录异常数据
-     * @param Throwable $e 异常
-     * @param string    $message 异常消息
-     */
-    public static function log(Throwable $e, $message = '') : void
-    {
-        /** @var Handle $handle */
-        $handle = Container::getInstance()->make(Handle::class);
-        $handle->report($e, $message);
     }
 }

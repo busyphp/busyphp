@@ -6,8 +6,8 @@ namespace BusyPHP\app\admin\model\system\config;
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\Handle;
 use BusyPHP\helper\FileHelper;
+use BusyPHP\helper\LogHelper;
 use BusyPHP\model;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -164,7 +164,7 @@ class SystemConfig extends Model
                     ->failException(true)
                     ->findInfo(null, "找不到配置[{$key}]的数据");
             } catch (Exception $e) {
-                Handle::log($e);
+                LogHelper::default()->error($e);
                 $this->deleteCache($key);
                 
                 return null;
@@ -207,6 +207,7 @@ class SystemConfig extends Model
         
         // 生成系统配置
         $string = var_export($config, true);
-        FileHelper::write(App::init()->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
+        FileHelper::write(App::init()
+            ->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
     }
 }

@@ -4,12 +4,14 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use ArrayAccess;
+use BusyPHP\helper\LogHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\model\Query;
 use Closure;
+use Exception;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionException;
@@ -21,12 +23,12 @@ use think\db\exception\DbException;
 use think\db\exception\InvalidArgumentException;
 use think\db\Raw;
 use think\DbManager;
-use think\facade\Log;
 use think\helper\Str;
 use think\model\concern\Attribute;
 use think\model\concern\Conversion;
 use think\model\concern\ModelEvent;
 use think\model\concern\TimeStamp;
+use Throwable;
 
 /**
  * 数据模型基本类
@@ -882,17 +884,14 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         try {
             return call_user_func($closure);
-        } catch (\Exception | \Throwable $e) {
-            $message = $e->getMessage();
-            $message .= PHP_EOL . $e->getTraceAsString();
+        } catch (Exception | Throwable $e) {
             if ($type == 'sql') {
                 if ($this->getConfig('trigger_sql')) {
-                    Log::record($message, 'sql');
+                    LogHelper::default()->record($e, 'sql');
                 }
             } else {
-                Log::record(($errorPrefix ? "[ {$errorPrefix} ] " : '') . $message, $type);
+                LogHelper::default()->tag($errorPrefix)->record($e, $type);
             }
-            
             
             return $errorReturn;
         }
@@ -916,7 +915,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            Log::record("{$alias}startTrans", 'sql');
+            LogHelper::default()->record("{$alias}startTrans", 'sql');
         }
     }
     
@@ -937,7 +936,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            Log::record("{$alias}commit", 'sql');
+            LogHelper::default()->record("{$alias}commit", 'sql');
         }
     }
     
@@ -957,7 +956,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            Log::record("{$alias}rollback", 'sql');
+            LogHelper::default()->record("{$alias}rollback", 'sql');
         }
     }
     
