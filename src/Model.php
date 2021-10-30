@@ -8,7 +8,6 @@ use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FilterHelper;
-use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\model\Query;
 use Closure;
 use JsonSerializable;
@@ -127,7 +126,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * Db对象
-     * @var \BusyPHP\Db
+     * @var Db
      */
     protected static $db;
     
@@ -154,12 +153,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @var Model[]
      */
     protected static $instances = [];
-    
-    /**
-     * 增加删除或修改操作的数据
-     * @var array
-     */
-    private static $handleData = [];
     
     /**
      * 回调方法
@@ -806,15 +799,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     private function parseOnChanged($method, $options)
     {
-        // 记录数据
-        $this->addHandleData($method, 'method');
-        if (isset($options['where']) && $options['where']) {
-            $this->addHandleData($options['where'], 'where');
-        }
-        if (isset($options['data']) && $options['data']) {
-            $this->addHandleData($options['data'], 'data');
-        }
-        
         $id = '';
         $pk = $this->getPk();
         
@@ -1060,7 +1044,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     public function insertAll(array $dataSet = [], int $limit = 0) : int
     {
         $result = parent::insertAll($dataSet, $limit);
-        $this->addHandleData($dataSet, 'insert all');
         $this->removeOption();
         
         return $result;
@@ -1132,6 +1115,19 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         $this->removeOption();
         
         return $result;
+    }
+    
+    
+    /**
+     * 得到某个字段的值，{@see Model::value()} 别名
+     * @param Entity|string $field 字段名
+     * @param mixed         $default 默认值
+     * @return mixed
+     * @throws DbException
+     */
+    public function val($field, $default = null)
+    {
+        return $this->value(Entity::parse($field), $default);
     }
     
     
@@ -1282,7 +1278,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         }
         
         $result = $this->execute("UPDATE {$this->getTable()} SET " . implode(',', $item) . " WHERE {$pk} in (" . implode(',', $idIn) . ")");
-        $this->addHandleData($data, 'save all');
         
         // 触发回调
         if (method_exists($this, 'onSaveAll')) {
@@ -1687,57 +1682,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     final public function optimize()
     {
         $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
-    }
-    
-    
-    /**
-     * 获取增加或修改的处理数据
-     * @return array
-     */
-    final public function getHandleData()
-    {
-        return self::$handleData;
-    }
-    
-    
-    /**
-     * 设置增加或修改的处理数据
-     * @param mixed  $data 要追加的数据
-     * @param string $name 数据标识
-     * @return $this
-     */
-    final public function addHandleData($data, $name = '')
-    {
-        if ($this instanceof SystemLogs) {
-            return $this;
-        }
-        
-        if (is_array($data)) {
-            foreach ($data as $key => $value) {
-                if ($value instanceof Raw) {
-                    $data[$key] = $value->getValue();
-                }
-            }
-        }
-        
-        $table                    = $this->getTable();
-        self::$handleData[$table] = self::$handleData[$table] ?? [];
-        if ($name) {
-            self::$handleData[$table][$name] = $data;
-        } else {
-            self::$handleData[$table][] = $data;
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 清理增加或修改的处理数据
-     */
-    final public function clearHandleData()
-    {
-        self::$handleData = [];
     }
     
     
