@@ -48,7 +48,7 @@ class Handle extends \think\exception\Handle
             try {
                 $args          = func_get_args();
                 $prefixMessage = $args[1] ?? '';
-                $this->app->log->record(LogHelper::parseMessage($exception, $prefixMessage), Log::ERROR);
+                $this->app->log->record(LogHelper::parse($exception, $prefixMessage), Log::ERROR);
             } catch (Exception $e) {
             }
         }

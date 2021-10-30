@@ -25,11 +25,6 @@ class LogHelper
     protected $channel;
     
     /**
-     * @var App
-     */
-    protected $app;
-    
-    /**
      * @var LogHelper[]
      */
     protected static $instances = [];
@@ -38,7 +33,6 @@ class LogHelper
     public function __construct(Channel $channel)
     {
         $this->channel = $channel;
-        $this->app     = App::init();
     }
     
     
@@ -47,7 +41,7 @@ class LogHelper
         try {
             foreach ($arguments as $index => $argument) {
                 if ($argument instanceof Throwable || $argument instanceof Exception) {
-                    $arguments[$index] = self::parseMessage($argument);
+                    $arguments[$index] = static::parse($argument);
                 }
             }
             
@@ -64,7 +58,7 @@ class LogHelper
      * @param string    $title 消息标题
      * @return string
      */
-    public static function parseMessage(Throwable $exception, string $title = '') : string
+    public static function parse(Throwable $exception, string $title = '') : string
     {
         $message = static::getMessage($exception);
         $code    = static::getCode($exception);
