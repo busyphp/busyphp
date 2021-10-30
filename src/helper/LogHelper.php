@@ -4,7 +4,6 @@ namespace BusyPHP\helper;
 
 use BusyPHP\App;
 use Exception;
-use think\Exception as ThinkException;
 use think\exception\ErrorException;
 use think\facade\Log;
 use think\log\Channel;
@@ -79,7 +78,7 @@ class LogHelper
         
         // 扩展数据
         if ($app->config->get('log.record_data', true)) {
-            if ($exception instanceof ThinkException) {
+            if ($exception instanceof \think\Exception) {
                 $class = get_class($exception);
                 foreach ($exception->getData() as $label => $item) {
                     $msg .= PHP_EOL . "[LABEL] {$class} {$label}: ";
