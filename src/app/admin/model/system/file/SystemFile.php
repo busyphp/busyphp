@@ -71,7 +71,7 @@ class SystemFile extends Model
         
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
-        $insert->client     = App::init()->request->isCli() ? SystemLogs::CLI_CLIENT_KEY : App::init()->getDirName();
+        $insert->client     = App::init()->runningInConsole() ? SystemLogs::CLI_CLIENT_KEY : App::init()->getDirName();
         $insert->type       = $classInfo->type;
         
         return $this->addData($insert);

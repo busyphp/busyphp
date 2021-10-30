@@ -94,8 +94,9 @@ class SystemLogs extends Model
     public function record(int $type, string $name, string $result = '')
     {
         try {
-            $request    = App::init()->request;
-            $isCli      = $request->isCli();
+            $app        = App::init();
+            $request    = $app->request;
+            $isCli      = $app->runningInConsole();
             $filterKeys = array_merge($this->getOptions('logs_params_keys') ?: [], [
                 Service::ROUTE_VAR_DIR,
                 Service::ROUTE_VAR_CONTROL,
@@ -120,7 +121,7 @@ class SystemLogs extends Model
             $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
             $insert->classType  = $this->getOptions('logs_class_type') ?: 0;
             $insert->classValue = $this->getOptions('logs_class_value') ?: '';
-            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : App::init()->getDirName();
+            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : $app->getDirName();
             $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
             $insert->url        = $isCli ? '' : ($request->url() ?: '');
             $insert->headers    = json_encode($request->header() ?: [], JSON_UNESCAPED_UNICODE);
