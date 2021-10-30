@@ -3,9 +3,11 @@
 namespace BusyPHP;
 
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\LogHelper;
 use Exception;
 use think\App;
 use think\Container;
+use think\Log;
 use think\Request;
 use think\Response;
 use Throwable;
@@ -38,45 +40,15 @@ class Handle extends \think\exception\Handle
     public function report(Throwable $exception) : void
     {
         if (!$this->isIgnoreReport($exception)) {
-            $args          = func_get_args();
-            $prefixMessage = $args[1] ?? '';
-            $prefixMessage = $prefixMessage ? $prefixMessage . ': ' : '';
-            
             // 触发异常汇报事件
             if ($this->app->event->trigger(self::$reportEvent, $exception, true)) {
                 return;
             }
             
-            // 收集异常数据
-            $data = [
-                'file'    => $exception->getFile(),
-                'line'    => $exception->getLine(),
-                'message' => $this->getMessage($exception),
-                'code'    => $this->getCode($exception),
-            ];
-            $log  = "[{$data['code']}] {$prefixMessage}{$data['message']} [{$data['file']}:{$data['line']}]";
-            
-            // 扩展数据
-            if ($this->app->config->get('log.record_data', true)) {
-                if ($exception instanceof \think\Exception) {
-                    $class = get_class($exception);
-                    foreach ($exception->getData() as $label => $item) {
-                        $log .= PHP_EOL . "[LABEL] {$class} {$label}: ";
-                        foreach ($item as $key => $value) {
-                            $value = is_array($value) || is_object($value) ? json_encode($value) : $value;
-                            $log   .= PHP_EOL . "{$key}: {$value}";
-                        }
-                    }
-                }
-            }
-            
-            // 记录trace
-            if ($this->app->config->get('log.record_trace')) {
-                $log .= PHP_EOL . "Trace String: " . PHP_EOL . $exception->getTraceAsString();
-            }
-            
             try {
-                $this->app->log->record($log, 'error');
+                $args          = func_get_args();
+                $prefixMessage = $args[1] ?? '';
+                $this->app->log->record(LogHelper::parseMessage($exception, $prefixMessage), Log::ERROR);
             } catch (Exception $e) {
             }
         }
