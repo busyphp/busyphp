@@ -82,13 +82,15 @@ class LogHelper
     
     
     /**
-     * 日志标题
-     * @param string $title
+     * 日志标签/标题
+     * @param string $tag 标签/标题
+     * @param string $method 错误所在方法
      * @return $this
      */
-    public function tag(string $title) : self
+    public function tag(string $tag, string $method = '') : self
     {
-        $this->options['tag'] = $title;
+        $this->options['tag']    = $tag;
+        $this->options['method'] = $method;
         
         return $this;
     }
@@ -96,7 +98,7 @@ class LogHelper
     
     /**
      * 记录错误所在方法
-     * @param string $method
+     * @param string $method 错误所在方法
      * @return $this
      */
     public function method(string $method) : self
