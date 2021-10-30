@@ -29,12 +29,6 @@ use think\filesystem\Driver;
 abstract class Upload
 {
     /**
-     * 客户端类型
-     * @var int
-     */
-    protected $client = 0;
-    
-    /**
      * 用户ID
      * @var int
      */
