@@ -14,7 +14,6 @@ use BusyPHP\Request;
 use BusyPHP\Url;
 use Exception;
 use stdClass;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
@@ -212,8 +211,7 @@ class AdminHandle extends Handle
      */
     public static function restResponse(int $code = 1, string $message = '', array $result = [], $url = '')
     {
-        /** @var App $app */
-        $app = Container::getInstance()->make(App::class);
+        $app = App::init();
         $url = (string) $url;
         
         if ($code === 1) {

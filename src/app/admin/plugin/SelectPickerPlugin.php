@@ -3,12 +3,12 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
+use BusyPHP\App;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\Request;
 use Closure;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -94,8 +94,7 @@ class SelectPickerPlugin
     
     public function __construct()
     {
-        $this->request = Container::getInstance()->make(Request::class);
-        
+        $this->request   = App::init()->request;
         $this->isValue   = $this->request->get('action/s', '', 'trim') === 'value';
         $this->page      = $this->request->get('page/d', 1);
         $this->length    = $this->request->get('length/d', 0);

@@ -3,12 +3,12 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
+use BusyPHP\App;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\Request;
 use Closure;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -70,7 +70,7 @@ class AutocompletePlugin
     
     public function __construct()
     {
-        $this->request   = Container::getInstance()->make(Request::class);
+        $this->request   = App::init()->request;
         $this->textField = $this->request->post('text_field/s', '', 'trim');
         $this->order     = $this->request->post('order/s', '', 'trim');
         $this->isExtend  = $this->request->post('extend/b', false);

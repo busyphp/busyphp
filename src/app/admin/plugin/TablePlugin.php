@@ -3,13 +3,13 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\plugin;
 
+use BusyPHP\App;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
 use Closure;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -101,7 +101,7 @@ class TablePlugin
     
     public function __construct()
     {
-        $this->request    = Container::getInstance()->make(Request::class);
+        $this->request    = App::init()->request;
         $this->isExtend   = $this->request->get('extend/b', false);
         $this->limit      = $this->request->get('limit/d', 0);
         $this->offset     = $this->request->get('offset/d', 0);

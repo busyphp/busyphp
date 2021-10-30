@@ -12,7 +12,6 @@ use BusyPHP\contract\structs\results\UploadResult;
 use BusyPHP\exception\PartUploadSuccessException;
 use BusyPHP\helper\StringHelper;
 use Exception;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\FileException;
@@ -119,7 +118,7 @@ abstract class Upload
     public function __construct(?Upload $target = null)
     {
         set_time_limit(0);
-        $this->app              = Container::getInstance()->make(App::class);
+        $this->app              = App::init();
         $this->setting          = UploadSetting::init();
         $this->watermarkSetting = WatermarkSetting::init();
         $this->disk             = $this->setting->getDisk();
