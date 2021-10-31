@@ -257,8 +257,22 @@ class InstallCommand extends Command
             return $this->list;
         }
         
+        $this->list = self::packages($this->input->getOption('dev') ?: '');
+        
+        return $this->list;
+    }
+    
+    
+    /**
+     * 获取busyphp插件列表
+     * @param string $devComposerFile 开发文件
+     * @return array
+     */
+    public static function packages(?string $devComposerFile = null) : array
+    {
+        $app      = App::init();
         $packages = [];
-        if (is_file($path = $this->app->getRootPath() . 'vendor/composer/installed.json')) {
+        if (is_file($path = $app->getRootPath() . 'vendor/composer/installed.json')) {
             $packages = json_decode(@file_get_contents($path), true);
         }
         
@@ -267,10 +281,9 @@ class InstallCommand extends Command
             $packages = $packages['packages'];
         }
         
-        $devComposerFile = $this->input->getOption('dev') ?: '';
         if ($devComposerFile) {
             if (!is_file($devComposerFile)) {
-                $devComposerFile = $this->app->getRootPath() . $devComposerFile;
+                $devComposerFile = $app->getRootPath() . $devComposerFile;
             }
             
             $packages[] = json_decode(@file_get_contents($devComposerFile), true);
@@ -282,12 +295,20 @@ class InstallCommand extends Command
                 continue;
             }
             
-            $package['extra']['busyphp']['name'] = $package['name'];
-            $list[]                              = $package['extra']['busyphp'];
+            $item                = $package['extra']['busyphp'];
+            $item['services']    = $item['services'] ?? [];
+            $item['initializes'] = $item['initializes'] ?? [];
+            $item['extract']     = $item['extract'] ?? [];
+            $item['config']      = $item['config'] ?? [];
+            $item['manager']     = $item['manager'] ?? [];
+            $item['name']        = $package['name'] ?? '';
+            $item['description'] = $package['description'] ?? '';
+            $item['authors']     = $package['authors'] ?? [];
+            $item['keywords']    = $package['keywords'] ?? [];
+            $item['homepage']    = $package['homepage'] ?? '';
+            $list[]              = $item;
         }
         
-        $this->list = $list;
-        
-        return $this->list;
+        return $list;
     }
 }
