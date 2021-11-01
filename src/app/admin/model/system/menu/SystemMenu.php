@@ -194,15 +194,20 @@ class SystemMenu extends Model
     
     /**
      * 删除菜单
-     * @param int $data 菜单ID
+     * @param int  $data 菜单ID
+     * @param bool $disabledTrans 是否禁用事物
      * @return int
      * @throws Exception
      */
-    public function deleteInfo($data) : int
+    public function deleteInfo($data, $disabledTrans = false) : int
     {
-        $this->startTrans();
+        $this->startTrans($disabledTrans);
         try {
-            $info = $this->lock(true)->getInfo($data);
+            $info = $this->lock(true)->findInfo($data);
+            if (!$info) {
+                $result = 0;
+                goto commit;
+            }
             
             // 系统菜单不能删除
             if ($info->system) {
@@ -216,11 +221,13 @@ class SystemMenu extends Model
             }
             
             $result = parent::deleteInfo($info->id);
-            $this->commit();
+            
+            commit:
+            $this->commit($disabledTrans);
             
             return $result;
         } catch (Exception $e) {
-            $this->rollback();
+            $this->rollback($disabledTrans);
             
             throw $e;
         }
@@ -229,15 +236,19 @@ class SystemMenu extends Model
     
     /**
      * 通过路径删除菜单
-     * @param string $path
+     * @param string $path 菜单路径
+     * @param bool   $disabledTrans 是否禁用事物
      * @return int
      * @throws Exception
      */
-    public function deleteByPath(string $path)
+    public function deleteByPath(string $path, $disabledTrans = false)
     {
-        $info = $this->whereEntity(SystemFileField::path($path))->failException(true)->findInfo();
+        $info = $this->whereEntity(SystemFileField::path($path))->findInfo();
+        if (!$info) {
+            return 0;
+        }
         
-        return $this->deleteInfo($info->id);
+        return $this->deleteInfo($info->id, $disabledTrans);
     }
     
     
