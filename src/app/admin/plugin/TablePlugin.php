@@ -10,6 +10,7 @@ use BusyPHP\model\Field;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
 use Closure;
+use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -205,11 +206,11 @@ class TablePlugin
     
     /**
      * 返回数据处理
-     * @param array $data 数据
-     * @param int   $total 总条数
+     * @param array|Collection $data 数据
+     * @param int              $total 总条数
      * @return array
      */
-    public function result(array $data, int $total) : array
+    public function result($data, int $total) : array
     {
         return [
             'total'            => $total,
