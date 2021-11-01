@@ -74,10 +74,9 @@
         
         {{if item.can_uninstall}}
         <a class="btn btn-danger btn-xs"
-           data-toggle="busy-request"
-           data-confirm="确认要卸载 <code>{{item.package}}</code> 吗？<div class=text-danger>卸载后将影响相关功能使用，请谨慎操作</div>"
-           data-url="{:url('uninstall?package=')}{{item.package}}"
-           data-on-success="@table.reload">卸载</a>
+           data-toggle="busy-modal"
+           data-form-on-success="@table.reload"
+           data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
         {{/if}}
         
         {{if !item.can_setting && !item.can_install && !item.can_uninstall}}
