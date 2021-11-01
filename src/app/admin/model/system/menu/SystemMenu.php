@@ -48,17 +48,43 @@ class SystemMenu extends Model
     
     
     /**
+     * 快速添加菜单
+     * @param string $path 路径
+     * @param string $name 名称
+     * @param string $parentPath 上级路径
+     * @param string $icon 图标
+     * @param bool   $hide 是否隐藏
+     * @param string $params GET参数
+     * @return array
+     * @throws Exception
+     */
+    public function addMenu(string $path, string $name, string $parentPath = '', string $icon = '', bool $hide = false, string $params = '')
+    {
+        $data = SystemMenuField::init();
+        $data->setParentPath($parentPath);
+        $data->setName($name);
+        $data->setIcon($icon);
+        $data->setPath($path);
+        $data->setParams($params);
+        $data->setHide($hide);
+        
+        return $this->createMenu($data, [], '', true);
+    }
+    
+    
+    /**
      * 添加菜单
      * @param SystemMenuField $data 添加的数据
      * @param array           $auto 自动构建的菜单
      * @param string          $autoSuffix 自动创建菜单的后缀
+     * @param bool            $disabledTrans 是否禁用事物
      * @return array 增加成功的ID集合
      * @throws Exception
      */
-    public function createMenu(SystemMenuField $data, array $auto = [], string $autoSuffix = '')
+    public function createMenu(SystemMenuField $data, array $auto = [], string $autoSuffix = '', $disabledTrans = false)
     {
         $autoSuffix = trim($autoSuffix);
-        $this->startTrans();
+        $this->startTrans($disabledTrans);
         try {
             $this->checkData($data);
             $ids   = [];
@@ -94,11 +120,11 @@ class SystemMenu extends Model
                 }
             }
             
-            $this->commit();
+            $this->commit($disabledTrans);
             
             return $ids;
         } catch (Exception $e) {
-            $this->rollback();
+            $this->rollback($disabledTrans);
             
             throw $e;
         }
