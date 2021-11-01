@@ -1,6 +1,89 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div>开发中</div>
+    <div class="page-header">
+        <h4 class="page-header-title">
+            {$system.page_title}
+            <small>在线管理通过 <code>composer</code> 安装后的插件，更多插件请前往：<a href="https://packagist.org/?query=busyphp%2F" target="_blank">https://packagist.org/</a> 进行搜索关键词： <kbd>busyphp/</kbd></small>
+        </h4>
+    </div>
+    <table class="table table-bordered table-striped table-hover"
+           data-toggle="busy-table"
+           data-state="{$url.controller}{$url.action}"
+           data-search="true"
+           data-search-align="left"
+           data-show-columns="true"
+           data-url="{$url.self}"
+           data-pagination="false"
+           data-fixed-columns="true"
+           data-fixed-right-number="1">
+        <thead>
+            <tr>
+                <th class="text-center" data-field="name" data-formatter="@" data-valign="top">名称</th>
+                <th class="text-center" width="100" data-field="description" data-valign="top" data-formatter="@">说明</th>
+                <th class="text-center" width="100" data-field="authors"  data-valign="top" data-formatter="@">开发方</th>
+                <th class="text-center" width="100" data-field="package" data-valign="top" data-formatter="@">包名</th>
+                <th class="text-center" width="100" data-field="version" data-valign="top" data-formatter="@">版本号</th>
+                <th class="text-center" width="60" data-field="operate" data-valign="top" data-formatter="@">操作</th>
+            </tr>
+        </thead>
+    </table>
+
+    <script type="text/html" id="name">
+        <div class="text-left">
+            {{if item.homepage}}
+            <a href="{{item.homepage}}" title="点击查看教程" target="_blank">{{value}}</a>
+            {{else}}
+            {{value}}
+            {{/if}}
+        </div>
+    </script>
+
+    <script type="text/html" id="description">
+        <div class="text-left text-gray min-width-240 text-wrap">{{@ value || '<div class="text-center">暂无</div>'}}</div>
+    </script>
+
+    <script type="text/html" id="authors">
+        {{each value vo}}
+            <a class="btn btn-outline-primary btn-xs" href="mailto:{{vo.email}}" data-toggle="tooltip" title="{{vo.email}}">{{vo.name}}</a>
+        {{/each}}
+    </script>
+
+    <script type="text/html" id="package">
+        <code>{{value}}</code>
+    </script>
+
+
+    <script type="text/html" id="version">
+        <span class="badge badge-secondary">{{value}}</span>
+    </script>
+
+    <script type="text/html" id="operate">
+        {{if item.can_install}}
+        <a class="btn btn-success btn-xs"
+           data-toggle="busy-modal"
+           data-form-on-success="@table.reload"
+           data-url="{:url('install?package=')}{{item.package}}">安装</a>
+        {{/if}}
+
+        {{if item.can_setting}}
+        <a class="btn btn-default btn-xs"
+           data-toggle="busy-modal"
+           data-form-on-success="@table.reload"
+           data-url="{:url('setting?package=')}{{item.package}}"><i class="fa fa-cog"></i> 设置</a>
+        {{/if}}
+        
+        {{if item.can_uninstall}}
+        <a class="btn btn-danger btn-xs"
+           data-toggle="busy-request"
+           data-confirm="确认要卸载 <code>{{item.package}}</code> 吗？<div class=text-danger>卸载后将影响相关功能使用，请谨慎操作</div>"
+           data-url="{:url('uninstall?package=')}{{item.package}}"
+           data-on-success="@table.reload">卸载</a>
+        {{/if}}
+        
+        {{if !item.can_setting && !item.can_install && !item.can_uninstall}}
+        -
+        {{/if}}
+    </script>
 </block>
 <block name="foot">
 </block>
