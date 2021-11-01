@@ -2,6 +2,7 @@
 	"name"        : "busyphp/busyphp",
 	"type"        : "library",
 	"description" : "基于ThinkPHP研发的一款可以高效开发B/S应用的框架",
+	"homepage"    : "http://www.harter.cn/?form=BusyPHP",
 	"keywords"    : [
 		"BusyPHP",
 		"框架",
