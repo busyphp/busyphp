@@ -1,8 +1,8 @@
 @font-face {
   font-family: "bicon"; /* Project id 2783607 */
-  src: url('iconfont.woff2?t=1633278168980') format('woff2'),
-       url('iconfont.woff?t=1633278168980') format('woff'),
-       url('iconfont.ttf?t=1633278168980') format('truetype');
+  src: url('iconfont.woff2?t=1635751768607') format('woff2'),
+       url('iconfont.woff?t=1635751768607') format('woff'),
+       url('iconfont.ttf?t=1635751768607') format('truetype');
 }
 
 .bicon {
@@ -11,6 +11,258 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.bicon-copyright:before {
+  content: "\e98b";
+}
+
+.bicon-privacy:before {
+  content: "\e98c";
+}
+
+.bicon-chart-cake:before {
+  content: "\e98d";
+}
+
+.bicon-prescript:before {
+  content: "\e98e";
+}
+
+.bicon-check-b:before {
+  content: "\e98f";
+}
+
+.bicon-invoice:before {
+  content: "\e990";
+}
+
+.bicon-dcs:before {
+  content: "\e991";
+}
+
+.bicon-branch:before {
+  content: "\e992";
+}
+
+.bicon-rich:before {
+  content: "\e993";
+}
+
+.bicon-factory:before {
+  content: "\e994";
+}
+
+.bicon-contract:before {
+  content: "\e995";
+}
+
+.bicon-customhouse:before {
+  content: "\e996";
+}
+
+.bicon-hash:before {
+  content: "\e997";
+}
+
+.bicon-code-service:before {
+  content: "\e998";
+}
+
+.bicon-code-text:before {
+  content: "\e999";
+}
+
+.bicon-check-risk:before {
+  content: "\e99a";
+}
+
+.bicon-accurate:before {
+  content: "\e99b";
+}
+
+.bicon-fast:before {
+  content: "\e99c";
+}
+
+.bicon-ecology:before {
+  content: "\e99d";
+}
+
+.bicon-nimble-extend:before {
+  content: "\e99f";
+}
+
+.bicon-shop-car:before {
+  content: "\e9a0";
+}
+
+.bicon-wander-about:before {
+  content: "\e9a1";
+}
+
+.bicon-union-link:before {
+  content: "\e9a2";
+}
+
+.bicon-store:before {
+  content: "\e9a3";
+}
+
+.bicon-block:before {
+  content: "\e9a4";
+}
+
+.bicon-platform:before {
+  content: "\e9a5";
+}
+
+.bicon-ticket-bill:before {
+  content: "\e9a6";
+}
+
+.bicon-all-module:before {
+  content: "\e9a7";
+}
+
+.bicon-euro-o:before {
+  content: "\e9a8";
+}
+
+.bicon-dollar-o:before {
+  content: "\e9a9";
+}
+
+.bicon-rbm-o:before {
+  content: "\e9aa";
+}
+
+.bicon-copper:before {
+  content: "\e9ab";
+}
+
+.bicon-global-embrace:before {
+  content: "\e9ac";
+}
+
+.bicon-cloud-up:before {
+  content: "\e9ad";
+}
+
+.bicon-global:before {
+  content: "\e9ae";
+}
+
+.bicon-id-card:before {
+  content: "\e9af";
+}
+
+.bicon-hourglass:before {
+  content: "\e9b0";
+}
+
+.bicon-chart-cake-space:before {
+  content: "\e9b1";
+}
+
+.bicon-bar-code:before {
+  content: "\e9b2";
+}
+
+.bicon-chart-column:before {
+  content: "\e9b3";
+}
+
+.bicon-trace-source:before {
+  content: "\e9b4";
+}
+
+.bicon-database:before {
+  content: "\e9b5";
+}
+
+.bicon-stable:before {
+  content: "\e9b6";
+}
+
+.bicon-network:before {
+  content: "\e9b7";
+}
+
+.bicon-credit-card:before {
+  content: "\e9b8";
+}
+
+.bicon-medkit:before {
+  content: "\e9b9";
+}
+
+.bicon-hospital:before {
+  content: "\e9ba";
+}
+
+.bicon-bank-home:before {
+  content: "\e9bb";
+}
+
+.bicon-id-check:before {
+  content: "\e9bd";
+}
+
+.bicon-cpu:before {
+  content: "\e9be";
+}
+
+.bicon-protect:before {
+  content: "\e9bf";
+}
+
+.bicon-data-monitor:before {
+  content: "\e9c0";
+}
+
+.bicon-sincerity:before {
+  content: "\e9c1";
+}
+
+.bicon-seal:before {
+  content: "\e9c2";
+}
+
+.bicon-penetrate:before {
+  content: "\e9c3";
+}
+
+.bicon-license:before {
+  content: "\e9c4";
+}
+
+.bicon-contract-ai:before {
+  content: "\e9c5";
+}
+
+.bicon-government:before {
+  content: "\e9c6";
+}
+
+.bicon-trade:before {
+  content: "\e605";
+}
+
+.bicon-deposit:before {
+  content: "\e688";
+}
+
+.bicon-refund:before {
+  content: "\e604";
+}
+
+.bicon-operate:before {
+  content: "\e739";
+}
+
+.bicon-pay:before {
+  content: "\e8fb";
 }
 
 .bicon-theme:before {
