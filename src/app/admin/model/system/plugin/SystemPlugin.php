@@ -204,6 +204,8 @@ class SystemPlugin extends Model
             $manager["keywords"]    = $item['keywords'] ?? [];
             $manager["homepage"]    = $item['homepage'] ?? '';
             $manager['class']       = $manager['class'] ?? '';
+            $manager['install']     = $manager['install'] ?? false;
+            $manager['setting']     = $manager['setting'] ?? false;
             $list[]                 = PackageInfo::parse($manager);
         }
         
