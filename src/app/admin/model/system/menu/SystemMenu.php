@@ -228,6 +228,20 @@ class SystemMenu extends Model
     
     
     /**
+     * 通过路径删除菜单
+     * @param string $path
+     * @return int
+     * @throws Exception
+     */
+    public function deleteByPath(string $path)
+    {
+        $info = $this->whereEntity(SystemFileField::path($path))->failException(true)->findInfo();
+        
+        return $this->deleteInfo($info->id);
+    }
+    
+    
+    /**
      * 设置排序
      * @param array $data
      * @throws DbException
