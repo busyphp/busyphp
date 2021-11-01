@@ -56,6 +56,13 @@ abstract class PluginManager extends AdminController
     }
     
     
+    protected function initView() : void
+    {
+        $this->assign('manager_url', $this->managerUrl);
+        parent::initView();
+    }
+    
+    
     /**
      * 设置信息
      * @param AdminUserInfo $userInfo
@@ -71,10 +78,30 @@ abstract class PluginManager extends AdminController
     }
     
     
-    protected function initView() : void
+    /**
+     * 记录安装插件日志
+     */
+    protected function logInstall()
     {
-        $this->assign('manager_url', $this->managerUrl);
-        parent::initView();
+        $this->log()->record(self::LOG_DEFAULT, '安装插件: ' . $this->packageInfo->package);
+    }
+    
+    
+    /**
+     * 记录卸载插件日志
+     */
+    protected function logUninstall()
+    {
+        $this->log()->record(self::LOG_DEFAULT, '卸载插件: ' . $this->packageInfo->package);
+    }
+    
+    
+    /**
+     * 记录配置插件日志
+     */
+    protected function logSetting()
+    {
+        $this->log()->record(self::LOG_DEFAULT, '配置插件: ' . $this->packageInfo->package);
     }
     
     
