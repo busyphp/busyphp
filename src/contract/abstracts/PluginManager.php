@@ -101,7 +101,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logSetting()
     {
-        $this->log()->record(self::LOG_DEFAULT, '配置插件: ' . $this->packageInfo->package);
+        $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->packageInfo->package);
     }
     
     
