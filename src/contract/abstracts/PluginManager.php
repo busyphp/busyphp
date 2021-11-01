@@ -5,8 +5,10 @@ namespace BusyPHP\contract\abstracts;
 
 use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
 use BusyPHP\contract\structs\items\PackageInfo;
 use Exception;
+use think\db\exception\DbException;
 use think\facade\Route;
 use think\Response;
 
@@ -102,6 +104,36 @@ abstract class PluginManager extends AdminController
     protected function logSetting()
     {
         $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->packageInfo->package);
+    }
+    
+    
+    /**
+     * 执行SQL语句
+     * @param string $sql SQL语句
+     * @return int
+     * @throws DbException
+     */
+    protected function executeSQL(string $sql) : int
+    {
+        $model = SystemPlugin::init();
+        $sql   = str_replace('#__table_prefix__#', $model->getConnection()->getConfig('prefix'), $sql);
+        
+        return $model->execute($sql);
+    }
+    
+    
+    /**
+     * 检测表是否存在
+     * @param string $name 表名称，不含前缀
+     * @return bool
+     * @throws DbException
+     */
+    protected function hasTable(string $name) : bool
+    {
+        $model = SystemPlugin::init();
+        
+        return !empty(SystemPlugin::init()
+            ->query("SHOW TABLES LIKE '{$model->getConnection()->getConfig('prefix')}{$name}'"));
     }
     
     
