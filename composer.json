@@ -1,7 +1,12 @@
 {
 	"name"        : "busyphp/busyphp",
 	"type"        : "library",
-	"description" : "",
+	"description" : "基于ThinkPHP研发的一款可以高效开发B/S应用的框架",
+	"keywords"    : [
+		"BusyPHP",
+		"框架",
+		"后台管理系统"
+	],
 	"authors"     : [
 		{
 			"name"  : "busy^life",
@@ -40,6 +45,9 @@
 	},
 	"extra"       : {
 		"busyphp" : {
+			"manager"     : {
+				"name" : "BusyPHP"
+			},
 			"services"    : [
 			],
 			"initializes" : [
