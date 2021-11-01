@@ -6,6 +6,8 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
 use BusyPHP\contract\abstracts\PluginManager;
 use BusyPHP\contract\structs\items\PackageInfo;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\FilterHelper;
 use Exception;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
@@ -40,7 +42,8 @@ class SystemPluginController extends InsideController
             $list = Collection::make(SystemPlugin::getPackageList());
             
             if ($this->pluginTable->word) {
-                $list = $list->where(PackageInfo::name(), 'like', $this->pluginTable->word);
+                $list = $list->whereLike(PackageInfo::name(), $this->pluginTable->word);
+                $list = array_values($list->toArray());
             }
             
             return $this->success($this->pluginTable->result($list, count($list)));
