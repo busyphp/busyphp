@@ -54,11 +54,12 @@ class SystemMenu extends Model
      * @param string $parentPath 上级路径
      * @param string $icon 图标
      * @param bool   $hide 是否隐藏
+     * @param int    $sort 排序
      * @param string $params GET参数
      * @return array
      * @throws Exception
      */
-    public function addMenu(string $path, string $name, string $parentPath = '', string $icon = '', bool $hide = false, string $params = '')
+    public function addMenu(string $path, string $name, string $parentPath = '', string $icon = '', bool $hide = false, int $sort = 50, string $params = '')
     {
         $data = SystemMenuField::init();
         $data->setParentPath($parentPath);
@@ -67,6 +68,7 @@ class SystemMenu extends Model
         $data->setPath($path);
         $data->setParams($params);
         $data->setHide($hide);
+        $data->sort = $sort;
         
         return $this->createMenu($data, [], '', true);
     }
