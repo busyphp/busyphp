@@ -80,7 +80,7 @@
         <a class="btn btn-default btn-xs"
            data-toggle="busy-modal"
            data-type="{{item.setting_config.type || 'form'}}"
-           data-form-on-success="{{item.setting_config.success || ''}}"
+           data-form-on-success="{{item.setting_config.success || '@modal.close'}}"
            data-size="{{item.setting_config.size || ''}}"
            data-footer="{{item.setting_config.footer ? 'true' : 'false'}}"
            data-url="{:url('setting?package=')}{{item.package}}"><i class="fa fa-cog"></i> 设置</a>
