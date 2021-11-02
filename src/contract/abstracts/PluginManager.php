@@ -24,7 +24,7 @@ abstract class PluginManager extends AdminController
      * 包信息
      * @var PluginInfo
      */
-    protected $pluginInfo;
+    protected $info;
     
     /**
      * 当前URL
@@ -75,8 +75,8 @@ abstract class PluginManager extends AdminController
         $this->adminUser     = $userInfo;
         $this->adminUserId   = $this->adminUser->id;
         $this->adminUsername = $this->adminUser->username;
-        $this->pluginInfo    = $packageInfo;
-        $this->managerUrl    = Route::buildUrl('?package=' . $this->pluginInfo->package)->build();
+        $this->info          = $packageInfo;
+        $this->managerUrl    = Route::buildUrl('?package=' . $this->info->package)->build();
     }
     
     
@@ -85,7 +85,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logInstall()
     {
-        $this->log()->record(self::LOG_DEFAULT, '安装插件: ' . $this->pluginInfo->package);
+        $this->log()->record(self::LOG_DEFAULT, '安装插件: ' . $this->info->package);
     }
     
     
@@ -94,7 +94,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logUninstall()
     {
-        $this->log()->record(self::LOG_DEFAULT, '卸载插件: ' . $this->pluginInfo->package);
+        $this->log()->record(self::LOG_DEFAULT, '卸载插件: ' . $this->info->package);
     }
     
     
@@ -103,7 +103,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logSetting()
     {
-        $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->pluginInfo->package);
+        $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->info->package);
     }
     
     
