@@ -22,7 +22,7 @@ abstract class BaseHandler
      * @param string $sourceWord 未处理过的关键词
      * @return string 处理后的字段名称
      */
-    public function field($model, string $field, string $word, string $op, string $sourceWord) : string
+    public function field(Model $model, string $field, string $word, string $op, string $sourceWord) : string
     {
         return $field;
     }
