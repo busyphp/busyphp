@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\model;
 
+use ArrayAccess;
 use ArrayObject;
 use Countable;
 use Exception;
@@ -18,7 +19,7 @@ use Traversable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/27 下午下午9:47 ObjectOption.php $
  */
-class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, IteratorAggregate
+class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, IteratorAggregate, ArrayAccess
 {
     public function toArray() : array
     {
@@ -77,4 +78,65 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
         return $this->toJson();
     }
     
+    
+    /**
+     * Whether a offset exists
+     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return bool true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->{$offset});
+    }
+    
+    
+    /**
+     * Offset to retrieve
+     * @link https://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     */
+    public function offsetGet($offset)
+    {
+        return $this->{$offset};
+    }
+    
+    
+    /**
+     * Offset to set
+     * @link https://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->{$offset} = $value;
+    }
+    
+    
+    /**
+     * Offset to unset
+     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     */
+    public function offsetUnset($offset)
+    {
+        $this->{$offset} = null;
+    }
 }
