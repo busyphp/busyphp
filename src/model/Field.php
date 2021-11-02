@@ -46,7 +46,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * @param array $array 数据
      * @return $this
      */
-    public static function parse($array)
+    public static function parse(array $array) : self
     {
         $obj = static::init();
         foreach ($array as $key => $value) {
