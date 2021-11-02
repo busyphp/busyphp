@@ -4,7 +4,6 @@ namespace BusyPHP\contract\structs\items;
 
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
 use BusyPHP\app\admin\model\system\plugin\SystemPluginInfo;
-use BusyPHP\contract\abstracts\PluginManager;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\db\exception\DataNotFoundException;
@@ -29,7 +28,7 @@ use think\db\exception\DbException;
  * @method static Entity canUninstall() 是否允许卸载
  * @method static Entity canSetting() 是否允许设置
  */
-class PackageInfo extends Field
+class PluginInfo extends Field
 {
     /**
      * 名称
@@ -57,13 +56,13 @@ class PackageInfo extends Field
     
     /**
      * 作者信息
-     * @var array
+     * @var PluginAuthorInfo[]
      */
     public $authors;
     
     /**
      * 关键词
-     * @var array
+     * @var string[]
      */
     public $keywords;
     
@@ -80,16 +79,28 @@ class PackageInfo extends Field
     public $class;
     
     /**
-     * 是否可以安装
+     * 是否可以安装/卸载
      * @var bool
      */
     public $install;
+    
+    /**
+     * 安装/卸载配置
+     * @var PluginInstallConfig
+     */
+    public $installConfig;
     
     /**
      * 是否可以设置
      * @var bool
      */
     public $setting;
+    
+    /**
+     * 设置配置
+     * @var PluginSettingConfig
+     */
+    public $settingConfig;
     
     /**
      * 是否允许安装
@@ -123,6 +134,31 @@ class PackageInfo extends Field
     {
         if (!isset(self::$_pluginList)) {
             self::$_pluginList = SystemPlugin::init()->getList();
+        }
+        
+        if ($this->installConfig->uninstallOperate->requestConfirm) {
+            $this->installConfig->uninstallOperate->requestConfirm = str_replace([
+                '__package__',
+                '__name__',
+                '__version__'
+            ], [
+                $this->package,
+                $this->name,
+                $this->version
+            ], $this->installConfig->uninstallOperate->requestConfirm);
+        }
+        
+        
+        if ($this->installConfig->installOperate->requestConfirm) {
+            $this->installConfig->installOperate->requestConfirm = str_replace([
+                '__package__',
+                '__name__',
+                '__version__'
+            ], [
+                $this->package,
+                $this->name,
+                $this->version
+            ], $this->installConfig->installOperate->requestConfirm);
         }
         
         // 查询配置

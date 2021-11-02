@@ -6,7 +6,11 @@ use BusyPHP\App;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\command\InstallCommand;
 use BusyPHP\contract\abstracts\PluginManager;
-use BusyPHP\contract\structs\items\PackageInfo;
+use BusyPHP\contract\structs\items\PluginAuthorInfo;
+use BusyPHP\contract\structs\items\PluginInfo;
+use BusyPHP\contract\structs\items\PluginInstallConfig;
+use BusyPHP\contract\structs\items\PluginOperateConfig;
+use BusyPHP\contract\structs\items\PluginSettingConfig;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\ClassNotFoundException;
 use BusyPHP\helper\ArrayHelper;
@@ -38,7 +42,7 @@ class SystemPlugin extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    protected function getPackage(string $package)
+    protected function get(string $package)
     {
         $info = $this->whereEntity(SystemPluginField::id(self::createId($package)))->findInfo();
         if ($info) {
@@ -65,8 +69,7 @@ class SystemPlugin extends Model
      */
     public function setInstall(string $package)
     {
-        $this->whereEntity(SystemPluginField::id($this->getPackage($package)->id))
-            ->setField(SystemPluginField::install(), 1);
+        $this->whereEntity(SystemPluginField::id($this->get($package)->id))->setField(SystemPluginField::install(), 1);
     }
     
     
@@ -78,8 +81,7 @@ class SystemPlugin extends Model
      */
     public function setUninstall(string $package)
     {
-        $this->whereEntity(SystemPluginField::id($this->getPackage($package)->id))
-            ->setField(SystemPluginField::install(), 0);
+        $this->whereEntity(SystemPluginField::id($this->get($package)->id))->setField(SystemPluginField::install(), 0);
     }
     
     
@@ -92,7 +94,7 @@ class SystemPlugin extends Model
      */
     public function setSetting(string $package, array $setting = [])
     {
-        $this->whereEntity(SystemPluginField::id($this->getPackage($package)->id))
+        $this->whereEntity(SystemPluginField::id($this->get($package)->id))
             ->setField(SystemPluginField::setting(), json_encode($setting, JSON_UNESCAPED_UNICODE));
     }
     
@@ -162,8 +164,8 @@ class SystemPlugin extends Model
      */
     public static function manager(string $package, AdminUserInfo $userInfo) : PluginManager
     {
-        $list = static::getPackageList();
-        $list = ArrayHelper::listByKey($list, PackageInfo::package());
+        $list = static::getPluginList();
+        $list = ArrayHelper::listByKey($list, PluginInfo::package());
         $info = $list[$package] ?? null;
         if (!$info) {
             throw new DataNotFoundException("插件 {$package} 不存在");
@@ -185,9 +187,9 @@ class SystemPlugin extends Model
     
     /**
      * 获取Composer插件集合
-     * @return PackageInfo[]
+     * @return PluginInfo[]
      */
-    public static function getPackageList() : array
+    public static function getPluginList() : array
     {
         $list = [];
         foreach (InstallCommand::packages(App::init()->debug() ? './composer.json' : '') as $item) {
@@ -200,13 +202,30 @@ class SystemPlugin extends Model
             $manager['description'] = $item['description'] ?? '';
             $manager['package']     = $item['name'];
             $manager['version']     = InstalledVersions::getVersion($item['name']);
-            $manager["authors"]     = $item['authors'] ?? [];
             $manager["keywords"]    = $item['keywords'] ?? [];
             $manager["homepage"]    = $item['homepage'] ?? '';
             $manager['class']       = $manager['class'] ?? '';
-            $manager['install']     = $manager['install'] ?? false;
-            $manager['setting']     = $manager['setting'] ?? false;
-            $list[]                 = PackageInfo::parse($manager);
+            
+            // 作者
+            $manager['authors'] = [];
+            foreach ($item['authors'] ?? [] as $value) {
+                $manager['authors'][] = PluginAuthorInfo::parse($value);
+            }
+            
+            // 安装配置
+            $install                     = $manager['install'] ?? false;
+            $manager['install']          = $install ? true : false;
+            $config                      = is_bool($install) ? [] : (array) $install;
+            $config['install_operate']   = PluginOperateConfig::parse((array) ($config['install_operate'] ?? []));
+            $config['uninstall_operate'] = PluginOperateConfig::parse((array) ($config['uninstall_operate'] ?? []));
+            $manager['install_config']   = PluginInstallConfig::parse($config);
+            
+            // 设置配置
+            $setting                   = $manager['setting'] ?? false;
+            $manager['setting']        = $setting ? true : false;
+            $manager['setting_config'] = PluginSettingConfig::parse(is_bool($setting) ? [] : (array) $setting);
+            
+            $list[] = PluginInfo::parse($manager);
         }
         
         return $list;
@@ -216,13 +235,13 @@ class SystemPlugin extends Model
     /**
      * 获取包信息
      * @param string $package
-     * @return PackageInfo
+     * @return PluginInfo
      * @throws DataNotFoundException
      */
-    public static function getPackageInfo(string $package) : PackageInfo
+    public static function getPluginInfo(string $package) : PluginInfo
     {
-        $list = self::getPackageList();
-        $list = ArrayHelper::listByKey($list, PackageInfo::package());
+        $list = self::getPluginList();
+        $list = ArrayHelper::listByKey($list, PluginInfo::package());
         if (!isset($list[$package])) {
             throw new DataNotFoundException("包 {$package} 信息不存在");
         }

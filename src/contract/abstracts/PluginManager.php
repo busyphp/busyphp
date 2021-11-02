@@ -6,7 +6,7 @@ namespace BusyPHP\contract\abstracts;
 use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
-use BusyPHP\contract\structs\items\PackageInfo;
+use BusyPHP\contract\structs\items\PluginInfo;
 use Exception;
 use think\db\exception\DbException;
 use think\facade\Route;
@@ -22,9 +22,9 @@ abstract class PluginManager extends AdminController
 {
     /**
      * 包信息
-     * @var PackageInfo
+     * @var PluginInfo
      */
-    protected $packageInfo;
+    protected $pluginInfo;
     
     /**
      * 当前URL
@@ -68,15 +68,15 @@ abstract class PluginManager extends AdminController
     /**
      * 设置信息
      * @param AdminUserInfo $userInfo
-     * @param PackageInfo   $packageInfo
+     * @param PluginInfo    $packageInfo
      */
-    public function setParams(AdminUserInfo $userInfo, PackageInfo $packageInfo) : void
+    public function setParams(AdminUserInfo $userInfo, PluginInfo $packageInfo) : void
     {
         $this->adminUser     = $userInfo;
         $this->adminUserId   = $this->adminUser->id;
         $this->adminUsername = $this->adminUser->username;
-        $this->packageInfo   = $packageInfo;
-        $this->managerUrl    = Route::buildUrl('?package=' . $this->packageInfo->package)->build();
+        $this->pluginInfo    = $packageInfo;
+        $this->managerUrl    = Route::buildUrl('?package=' . $this->pluginInfo->package)->build();
     }
     
     
@@ -85,7 +85,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logInstall()
     {
-        $this->log()->record(self::LOG_DEFAULT, '安装插件: ' . $this->packageInfo->package);
+        $this->log()->record(self::LOG_DEFAULT, '安装插件: ' . $this->pluginInfo->package);
     }
     
     
@@ -94,7 +94,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logUninstall()
     {
-        $this->log()->record(self::LOG_DEFAULT, '卸载插件: ' . $this->packageInfo->package);
+        $this->log()->record(self::LOG_DEFAULT, '卸载插件: ' . $this->pluginInfo->package);
     }
     
     
@@ -103,7 +103,7 @@ abstract class PluginManager extends AdminController
      */
     protected function logSetting()
     {
-        $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->packageInfo->package);
+        $this->log()->record(self::LOG_UPDATE, '配置插件: ' . $this->pluginInfo->package);
     }
     
     

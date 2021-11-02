@@ -59,24 +59,45 @@
 
     <script type="text/html" id="operate">
         {{if item.can_install}}
-        <a class="btn btn-success btn-xs"
-           data-toggle="busy-modal"
-           data-form-on-success="@table.reload"
-           data-url="{:url('install?package=')}{{item.package}}">安装</a>
+            {{if item.install_config.install_operate.type !== 'modal'}}
+                 <a class="btn btn-success btn-xs"
+                    data-toggle="busy-request"
+                    data-confirm="{{item.install_config.install_operate.request_confirm || ('确认要安装 <code>'+ item.package +'</code> 插件吗？')}}"
+                    data-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
+                    data-url="{:url('install?package=')}{{item.package}}">安装</a>
+                {{else}}
+                 <a class="btn btn-success btn-xs"
+                    data-toggle="busy-modal"
+                    data-size="{{item.install_config.install_operate.modal_size || ''}}"
+                    data-form-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
+                    data-url="{:url('install?package=')}{{item.package}}">安装</a>
+            {{/if}}
         {{/if}}
 
         {{if item.can_setting}}
         <a class="btn btn-default btn-xs"
            data-toggle="busy-modal"
-           data-form-on-success="@table.reload"
+           data-type="{{item.setting_config.type || 'form'}}"
+           data-form-on-success="{{item.setting_config.success || ''}}"
+           data-size="{{item.setting_config.size || ''}}"
+           data-footer="{{item.setting_config.footer ? 'true' : 'false'}}"
            data-url="{:url('setting?package=')}{{item.package}}"><i class="fa fa-cog"></i> 设置</a>
         {{/if}}
         
         {{if item.can_uninstall}}
-        <a class="btn btn-danger btn-xs"
-           data-toggle="busy-modal"
-           data-form-on-success="@table.reload"
-           data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
+            {{if item.install_config.uninstall_operate.type !== 'modal'}}
+                <a class="btn btn-danger btn-xs"
+                   data-toggle="busy-request"
+                   data-confirm="{{item.install_config.uninstall_operate.request_confirm || ('确认要卸载 <code>'+ item.package +'</code> 插件吗？<div class=text-danger>卸载后可能会影响系统正常使用，请谨慎操作！</div>')}}"
+                   data-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
+                   data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
+                {{else}}
+                <a class="btn btn-danger btn-xs"
+                   data-toggle="busy-modal"
+                   data-size="{{item.install_config.uninstall_operate.modal_size || ''}}"
+                   data-form-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
+                   data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
+            {{/if}}
         {{/if}}
         
         {{if !item.can_setting && !item.can_install && !item.can_uninstall}}

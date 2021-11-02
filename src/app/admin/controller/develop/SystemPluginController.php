@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\controller\develop;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
 use BusyPHP\contract\abstracts\PluginManager;
-use BusyPHP\contract\structs\items\PackageInfo;
+use BusyPHP\contract\structs\items\PluginInfo;
 use Exception;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
@@ -37,10 +37,10 @@ class SystemPluginController extends InsideController
     public function index()
     {
         if ($this->pluginTable) {
-            $list = Collection::make(SystemPlugin::getPackageList());
+            $list = Collection::make(SystemPlugin::getPluginList());
             
             if ($this->pluginTable->word) {
-                $list = $list->whereLike(PackageInfo::name(), $this->pluginTable->word);
+                $list = $list->whereLike(PluginInfo::name(), $this->pluginTable->word);
                 $list = array_values($list->toArray());
             }
             
