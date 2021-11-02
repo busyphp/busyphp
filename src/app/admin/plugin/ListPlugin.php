@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\plugin\lists\ListHandler;
 use BusyPHP\app\admin\plugin\lists\ListSelectResult;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FilterHelper;
@@ -44,6 +45,18 @@ class ListPlugin
      * @var Closure
      */
     private $queryHandler;
+    
+    /**
+     * 字段查询处理回调
+     * @var Closure
+     */
+    private $fieldHandler;
+    
+    /**
+     * 处理回调
+     * @var ListHandler
+     */
+    private $handler;
     
     /**
      * 搜索的字段
@@ -142,15 +155,39 @@ class ListPlugin
     {
         // 搜索
         if ($this->word !== '' && $this->field) {
-            if ($this->accurate) {
-                $this->model->where($this->field, $this->word);
-            } else {
-                $this->model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
+            // 处理回调
+            if ($this->handler || is_callable($this->fieldHandler)) {
+                $sourceWord = $this->word;
+                $word       = $this->accurate ? $this->word : '%' . FilterHelper::searchWord($this->word) . '%';
+                $op         = $this->accurate ? '=' : 'like';
+                
+                if ($this->handler) {
+                    $this->field = $this->handler->field($this->model, $this->field, $word, $op, $sourceWord);
+                } elseif (is_callable($this->queryHandler)) {
+                    $this->field = call_user_func_array($this->fieldHandler, [
+                        $this->model,
+                        $this->field,
+                        $word,
+                        $op,
+                        $sourceWord
+                    ]);
+                }
+            }
+            
+            // 返回字段才查询
+            if ($this->field) {
+                if ($this->accurate) {
+                    $this->model->where($this->field, $this->word);
+                } else {
+                    $this->model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
+                }
             }
         }
         
         // 执行查询处理程序
-        if (is_callable($this->queryHandler)) {
+        if ($this->handler) {
+            $this->handler->query($this, $this->model, $this->data);
+        } elseif (is_callable($this->queryHandler)) {
             call_user_func_array($this->queryHandler, [$this->model, $this->data]);
         }
         
@@ -186,7 +223,12 @@ class ListPlugin
         $list = $this->isExtend ? $this->model->selectExtendList() : $this->model->selectList();
         
         // 执行数据处理程序
-        if (is_callable($this->listHandler)) {
+        if ($this->handler) {
+            $resultList = $this->handler->list($list);
+            if (is_array($resultList)) {
+                $list = $resultList;
+            }
+        } elseif (is_callable($this->listHandler)) {
             $resultList = call_user_func_array($this->listHandler, [&$list]);
             if (is_array($resultList)) {
                 $list = $resultList;
@@ -310,6 +352,43 @@ class ListPlugin
     public function setListHandler(Closure $listHandler) : self
     {
         $this->listHandler = $listHandler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置处理回调
+     * @param ListHandler $handler
+     * @return $this
+     */
+    public function setHandler(ListHandler $handler) : self
+    {
+        $this->handler = $handler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置字段查询处理回调
+     * @param Closure $fieldHandler <p>
+     * 匿名函数包涵5个参数<br />
+     * <b>{@see Model} $model 查询模型</b><br />
+     * <b>string $field 查询字段</b><br />
+     * <b>string $word 关键词</b><br />
+     * <b>string $op 条件</b><br />
+     * <b>string $sourceWord 原关键词</b><br />
+     * 示例：<br />
+     * <pre>$this->setFieldHandler(function({@see Model} $model, string $field, string $word, string $op, string $sourceWord) {
+     *      return $field;
+     * });</pre>
+     * </p>
+     * @return $this
+     */
+    public function setFieldHandler(Closure $fieldHandler) : self
+    {
+        $this->fieldHandler = $fieldHandler;
         
         return $this;
     }

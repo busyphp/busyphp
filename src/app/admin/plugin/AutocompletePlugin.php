@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\plugin\autocomplete\AutocompleteHandler;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
@@ -36,6 +37,12 @@ class AutocompletePlugin
      * @var Closure
      */
     private $queryHandler;
+    
+    /**
+     * 处理回调
+     * @var AutocompleteHandler
+     */
+    private $handler;
     
     /**
      * text字段
@@ -102,7 +109,9 @@ class AutocompletePlugin
             }
             
             // 自定义查询条件
-            if (is_callable($this->queryHandler)) {
+            if ($this->handler) {
+                $this->handler->query($this, $model);
+            } elseif (is_callable($this->queryHandler)) {
                 call_user_func_array($this->queryHandler, [$model]);
             }
             
@@ -132,13 +141,15 @@ class AutocompletePlugin
      */
     public function result(array $data, string $textField = 'name') : array
     {
-        $hasTextCallback = is_callable($this->textHandler);
+        $hasTextCallback = is_callable($this->textHandler) || $this->handler;
         foreach ($data as $i => $item) {
-            $item['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
-                $item,
-                false
-            ]) : ($item[$textField] ?? '');
-            
+            if ($this->handler) {
+                $item['text'] = $this->handler->text($item, false);
+            } elseif ($hasTextCallback) {
+                $item['text'] = call_user_func_array($this->textHandler, [$item, false]);
+            } else {
+                $item['text'] = $item[$textField] ?? '';
+            }
             $data[$i] = $item;
         }
         
@@ -183,6 +194,19 @@ class AutocompletePlugin
     public function setQueryHandler(Closure $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置处理回调
+     * @param AutocompleteHandler $handler
+     * @return $this
+     */
+    public function setHandler(AutocompleteHandler $handler) : self
+    {
+        $this->handler = $handler;
         
         return $this;
     }

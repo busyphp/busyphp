@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
+use BusyPHP\app\admin\plugin\tree\TreeHandler;
 use BusyPHP\Model;
 use BusyPHP\Request;
 use Closure;
@@ -42,6 +43,12 @@ class TreePlugin
      */
     protected $nodeHandler;
     
+    /**
+     * 处理回调
+     * @var TreeHandler
+     */
+    protected $handler;
+    
     
     public function __construct()
     {
@@ -67,7 +74,9 @@ class TreePlugin
         
         if ($model instanceof Model) {
             // 执行查询处理程序
-            if (is_callable($this->queryHandler)) {
+            if ($this->handler) {
+                $this->handler->query($this, $model);
+            } elseif (is_callable($this->queryHandler)) {
                 call_user_func_array($this->queryHandler, [$model]);
             }
             
@@ -75,7 +84,11 @@ class TreePlugin
             $data = [];
             foreach ($list as $item) {
                 $node = TreeFlatItemStruct::init();
-                if (is_callable($this->nodeHandler)) {
+                
+                // 执行节点处理回调
+                if ($this->handler) {
+                    $this->handler->node($item, $node);
+                } elseif (is_callable($this->nodeHandler)) {
                     call_user_func_array($this->nodeHandler, [$item, $node]);
                 }
                 
@@ -142,6 +155,19 @@ class TreePlugin
     public function setNodeHandler(Closure $nodeHandler) : self
     {
         $this->nodeHandler = $nodeHandler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置处理回调
+     * @param TreeHandler $handler
+     * @return $this
+     */
+    public function setHandler(TreeHandler $handler) : self
+    {
+        $this->handler = $handler;
         
         return $this;
     }

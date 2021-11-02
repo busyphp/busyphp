@@ -3,10 +3,13 @@
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\Model;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -48,13 +51,16 @@ class SystemFileClassController extends InsideController
     public function index()
     {
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemFileClass $model, Map $data) {
-                if (!$data->get('type')) {
-                    $data->remove('type');
+            $this->pluginTable->setHandler(new class extends TableHandler {
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    if (!$data->get('type')) {
+                        $data->remove('type');
+                    }
+                    
+                    $model->order(SystemFileClassField::sort(), 'asc');
+                    $model->order(SystemFileClassField::id(), 'desc');
                 }
-                
-                $model->order(SystemFileClassField::sort(), 'asc');
-                $model->order(SystemFileClassField::id(), 'desc');
             });
             
             return $this->success($this->pluginTable->build($this->model));

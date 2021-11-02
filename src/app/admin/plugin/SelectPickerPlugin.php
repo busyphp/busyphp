@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\plugin\selectPicker\SelectPickerHandler;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Field;
@@ -42,6 +43,12 @@ class SelectPickerPlugin
      * @var Closure
      */
     private $queryHandler;
+    
+    /**
+     * 处理回调
+     * @var SelectPickerHandler
+     */
+    private $handler;
     
     /**
      * 请求类型
@@ -153,7 +160,9 @@ class SelectPickerPlugin
             }
             
             // 自定义查询条件
-            if (is_callable($this->queryHandler)) {
+            if ($this->handler) {
+                $this->handler->query($this, $model);
+            } elseif (is_callable($this->queryHandler)) {
                 call_user_func_array($this->queryHandler, [$model]);
             }
             
@@ -197,31 +206,46 @@ class SelectPickerPlugin
                 $child     = $child === true ? 'child' : $child;
                 $childList = $item[$child] ?? [];
                 foreach ($childList as $j => $vo) {
-                    $vo['id']   = $hasIdCallback ? call_user_func_array($this->idHandler, [
-                        $item,
-                        false
-                    ]) : ($vo[$idField] ?? '');
-                    $vo['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
-                        $vo,
-                        false
-                    ]) : ($vo[$textField] ?? '');
+                    if ($this->handler) {
+                        $vo['id']   = $this->handler->id($vo, false);
+                        $vo['text'] = $this->handler->text($vo, false);
+                    } else {
+                        if ($hasTextCallback) {
+                            $vo['text'] = call_user_func_array($this->textHandler, [$vo, false]);
+                        }
+                        
+                        if ($hasIdCallback) {
+                            $vo['id'] = call_user_func_array($this->idHandler, [$vo, false]);
+                        }
+                    }
                     
+                    $vo['id']      = $vo['id'] ?? ($vo[$idField] ?? '');
+                    $vo['text']    = $vo['text'] ?? ($vo[$textField] ?? '');
                     $childList[$j] = $vo;
                 }
+                
                 $item['children'] = $childList;
-                $item['text']     = $hasTextCallback ? call_user_func_array($this->textHandler, [
-                    $item,
-                    true
-                ]) : ($item[$groupTextField] ?? '');
+                if ($this->handler) {
+                    $item['text'] = $this->handler->text($item, true);
+                } elseif ($hasTextCallback) {
+                    $item['text'] = call_user_func_array($this->textHandler, [$item, true]);
+                }
+                $item['text'] = $item['text'] ?? ($item[$groupTextField] ?? '');
             } else {
-                $item['id']   = $hasIdCallback ? call_user_func_array($this->idHandler, [
-                    $item,
-                    false
-                ]) : ($item[$idField] ?? '');
-                $item['text'] = $hasTextCallback ? call_user_func_array($this->textHandler, [
-                    $item,
-                    false
-                ]) : ($item[$textField] ?? '');
+                if ($this->handler) {
+                    $item['id']   = $this->handler->id($item, false);
+                    $item['text'] = $this->handler->text($item, false);
+                } else {
+                    if ($hasTextCallback) {
+                        $item['text'] = call_user_func_array($this->textHandler, [$item, false]);
+                    }
+                    
+                    if ($hasIdCallback) {
+                        $item['id'] = call_user_func_array($this->idHandler, [$item, false]);
+                    }
+                }
+                $item['id']   = $item['id'] ?? ($item[$idField] ?? '');
+                $item['text'] = $item['text'] ?? ($item[$textField] ?? '');
             }
             
             $data[$i] = $item;
@@ -247,10 +271,13 @@ class SelectPickerPlugin
      *      return $item['id'] . '_' . $item['param1'];
      * });</pre>
      * </p>
+     * @return $this
      */
-    public function setIdHandler(Closure $idHandler) : void
+    public function setIdHandler(Closure $idHandler) : self
     {
         $this->idHandler = $idHandler;
+        
+        return $this;
     }
     
     
@@ -265,7 +292,7 @@ class SelectPickerPlugin
      *      return $item['name'] . '-' . $item['param1']
      * });</pre>
      * </p>
-     * @return SelectPickerPlugin
+     * @return $this
      */
     public function setTextHandler(Closure $textHandler) : self
     {
@@ -285,11 +312,24 @@ class SelectPickerPlugin
      *      $model->where('id', 1)
      * });</pre>
      * </p>
-     * @return SelectPickerPlugin
+     * @return $this
      */
     public function setQueryHandler(Closure $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置处理回调
+     * @param SelectPickerHandler $handler
+     * @return $this
+     */
+    public function setHandler(SelectPickerHandler $handler) : self
+    {
+        $this->handler = $handler;
         
         return $this;
     }

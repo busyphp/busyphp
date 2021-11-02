@@ -7,6 +7,8 @@ use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\CaptchaSetting;
 use BusyPHP\app\admin\setting\QrcodeSetting;
@@ -17,6 +19,7 @@ use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\file\QRCode;
 use BusyPHP\helper\TransHelper;
+use BusyPHP\Model;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -200,9 +203,12 @@ class SystemManagerController extends InsideController
         
         // 分类列表数据
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemFileClass $model, Map $data) {
-                $model->order(SystemFileClassField::sort(), 'asc');
-                $model->order(SystemFileClassField::id(), 'desc');
+            $this->pluginTable->setHandler(new class extends TableHandler {
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    $model->order(SystemFileClassField::sort(), 'asc');
+                    $model->order(SystemFileClassField::id(), 'desc');
+                }
             });
             
             return $this->success($this->pluginTable->build(SystemFileClass::init()));

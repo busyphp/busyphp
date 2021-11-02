@@ -5,9 +5,12 @@ namespace BusyPHP\app\admin\controller\system;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\logs\SystemLogsField;
 use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\contract\structs\items\AppListItem;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
+use BusyPHP\Model;
 use BusyPHP\model\Map;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -32,22 +35,34 @@ class SystemLogsController extends InsideController
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemLogs $model, Map $data) use ($timeRange) {
-                if ($data->get('type', -1) < 0) {
-                    $data->remove('type');
+            $this->pluginTable->setHandler(new class($timeRange) extends TableHandler {
+                private $timeRange;
+                
+                
+                public function __construct($timeRange)
+                {
+                    $this->timeRange = $timeRange;
                 }
                 
-                if (!$data->get('client', '')) {
-                    $data->remove('client');
-                }
                 
-                if ($time = $data->get('time', $timeRange)) {
-                    $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
-                }
-                $data->remove('time');
-                
-                if ($this->pluginTable->sortField === (string) SystemLogsInfo::formatCreateTime()) {
-                    $this->pluginTable->sortField = SystemLogsInfo::createTime();
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    if ($data->get('type', -1) < 0) {
+                        $data->remove('type');
+                    }
+                    
+                    if (!$data->get('client', '')) {
+                        $data->remove('client');
+                    }
+                    
+                    if ($time = $data->get('time', $this->timeRange)) {
+                        $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
+                    }
+                    $data->remove('time');
+                    
+                    if ($plugin->sortField === (string) SystemLogsInfo::formatCreateTime()) {
+                        $plugin->sortField = SystemLogsInfo::createTime();
+                    }
                 }
             });
             

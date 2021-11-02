@@ -4,9 +4,9 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
-use BusyPHP\model\Field;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
 use Closure;
@@ -38,6 +38,18 @@ class TablePlugin
      * @var Closure
      */
     private $queryHandler;
+    
+    /**
+     * 字段查询处理回调
+     * @var Closure
+     */
+    private $fieldHandler;
+    
+    /**
+     * 处理回调
+     * @var TableHandler
+     */
+    private $handler;
     
     /**
      * 排序字段
@@ -147,10 +159,31 @@ class TablePlugin
         if ($model instanceof Model) {
             // 搜索
             if ($this->word !== '' && $this->field) {
-                if ($this->accurate) {
-                    $model->where($this->field, $this->word);
-                } else {
-                    $model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
+                // 处理回调
+                if ($this->handler || is_callable($this->fieldHandler)) {
+                    $sourceWord = $this->word;
+                    $word       = $this->accurate ? $this->word : '%' . FilterHelper::searchWord($this->word) . '%';
+                    $op         = $this->accurate ? '=' : 'like';
+                    if ($this->handler) {
+                        $this->field = $this->handler->field($model, $this->field, $word, $op, $sourceWord);
+                    } else {
+                        $this->field = call_user_func_array($this->fieldHandler, [
+                            $model,
+                            $this->field,
+                            $word,
+                            $op,
+                            $sourceWord
+                        ]);
+                    }
+                }
+                
+                // 返回字段才查询
+                if ($this->field) {
+                    if ($this->accurate) {
+                        $model->where($this->field, $this->word);
+                    } else {
+                        $model->whereLike($this->field, '%' . FilterHelper::searchWord($this->word) . '%');
+                    }
                 }
             } elseif ($this->word !== '' && $this->searchable) {
                 foreach ($this->searchable as $field) {
@@ -159,9 +192,12 @@ class TablePlugin
             }
             
             // 执行查询处理程序
-            if (is_callable($this->queryHandler)) {
+            if ($this->handler) {
+                $this->handler->query($this, $model, $this->data);
+            } elseif (is_callable($this->queryHandler)) {
                 call_user_func_array($this->queryHandler, [$model, $this->data]);
             }
+            
             $where = $this->data->getWhere();
             foreach ($where as $key => $value) {
                 $model->where($key, $value);
@@ -190,7 +226,12 @@ class TablePlugin
             }
             
             // 执行数据处理程序
-            if (is_callable($this->listHandler)) {
+            if ($this->handler) {
+                $resultList = $this->handler->list($list);
+                if (is_array($resultList)) {
+                    $list = $resultList;
+                }
+            } elseif (is_callable($this->listHandler)) {
                 $resultList = call_user_func_array($this->listHandler, [&$list]);
                 if (is_array($resultList)) {
                     $list = $resultList;
@@ -234,6 +275,7 @@ class TablePlugin
      *      $data->get('id', 0);
      * });</pre>
      * </p>
+     * @return $this
      */
     public function setQueryHandler(Closure $queryHandler) : self
     {
@@ -256,10 +298,48 @@ class TablePlugin
      *      return $list;
      * });</pre>
      * </p>
+     * @return $this
      */
     public function setListHandler(Closure $listHandler) : self
     {
         $this->listHandler = $listHandler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置处理回调
+     * @param TableHandler $handler
+     * @return $this
+     */
+    public function setHandler(TableHandler $handler) : self
+    {
+        $this->handler = $handler;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置字段查询处理回调
+     * @param Closure $fieldHandler <p>
+     * 匿名函数包涵5个参数<br />
+     * <b>{@see Model} $model 查询模型</b><br />
+     * <b>string $field 查询字段</b><br />
+     * <b>string $word 关键词</b><br />
+     * <b>string $op 条件</b><br />
+     * <b>string $sourceWord 原关键词</b><br />
+     * 示例：<br />
+     * <pre>$this->setFieldHandler(function({@see Model} $model, string $field, string $word, string $op, string $sourceWord) {
+     *      return $field;
+     * });</pre>
+     * </p>
+     * @return $this
+     */
+    public function setFieldHandler(Closure $fieldHandler) : self
+    {
+        $this->fieldHandler = $fieldHandler;
         
         return $this;
     }

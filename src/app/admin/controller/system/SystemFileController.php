@@ -4,9 +4,12 @@ namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\Model;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -45,30 +48,42 @@ class SystemFileController extends InsideController
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(SystemFile $model, Map $data) use ($timeRange) {
-                if (!$type = $data->get('type', '')) {
-                    $data->remove('type');
-                }
-                if (0 === strpos($type, 'type:')) {
-                    $data->set('type', substr($type, 5));
-                } elseif ($type) {
-                    $data->set('class_type', $type);
-                    $data->remove('type');
+            $this->pluginTable->setHandler(new class($timeRange) extends TableHandler {
+                private $timeRange;
+                
+                
+                public function __construct($timeRange)
+                {
+                    $this->timeRange = $timeRange;
                 }
                 
-                if (!$data->get('client', '')) {
-                    $data->remove('client');
-                }
                 
-                if ($time = $data->get('time', $timeRange)) {
-                    $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
-                }
-                $data->remove('time');
-                
-                if ($this->pluginTable->sortField === 'format_size') {
-                    $this->pluginTable->sortField = 'size';
-                } elseif ($this->pluginTable->sortField === 'format_create_time') {
-                    $this->pluginTable->sortField = 'create_time';
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    if (!$type = $data->get('type', '')) {
+                        $data->remove('type');
+                    }
+                    if (0 === strpos($type, 'type:')) {
+                        $data->set('type', substr($type, 5));
+                    } elseif ($type) {
+                        $data->set('class_type', $type);
+                        $data->remove('type');
+                    }
+                    
+                    if (!$data->get('client', '')) {
+                        $data->remove('client');
+                    }
+                    
+                    if ($time = $data->get('time', $this->timeRange)) {
+                        $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
+                    }
+                    $data->remove('time');
+                    
+                    if ($plugin->sortField === 'format_size') {
+                        $plugin->sortField = 'size';
+                    } elseif ($plugin->sortField === 'format_create_time') {
+                        $plugin->sortField = 'create_time';
+                    }
                 }
             });
             

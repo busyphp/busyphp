@@ -4,9 +4,13 @@ namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+use BusyPHP\Model;
+use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -49,12 +53,15 @@ class SystemMenuController extends InsideController
         if ($this->pluginTable) {
             $this->pluginTable->sortField = '';
             $this->pluginTable->sortOrder = '';
-            $this->pluginTable->setQueryHandler(function(SystemMenu $model) {
-                $model->order(SystemMenuField::sort(), 'asc');
-                $model->order(SystemMenuField::id(), 'desc');
-                
-                if (!SystemMenu::DEBUG) {
-                    $model->whereEntity(SystemMenuField::system(0));
+            $this->pluginTable->setHandler(new class extends TableHandler {
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    $model->order(SystemMenuField::sort(), 'asc');
+                    $model->order(SystemMenuField::id(), 'desc');
+                    
+                    if (!SystemMenu::DEBUG) {
+                        $model->whereEntity(SystemMenuField::system(0));
+                    }
                 }
             });
             

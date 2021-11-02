@@ -3,14 +3,18 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\plugin\table\TableHandler;
+use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\plugin\tree\TreeHandler;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
+use BusyPHP\Model;
 use BusyPHP\model\Map;
 use Exception;
 use think\db\exception\DataNotFoundException;
@@ -49,32 +53,35 @@ class SystemUserController extends InsideController
     {
         // 管理员列表数据
         if ($this->pluginTable) {
-            $this->pluginTable->setQueryHandler(function(AdminUser $model, Map $data) {
-                switch ($data->get('status', 0)) {
-                    // 正常
-                    case 1:
-                        $model->whereEntity(AdminUserField::checked(1));
-                    break;
-                    // 禁用
-                    case 2:
-                        $model->whereEntity(AdminUserField::checked(0));
-                    break;
-                    // 零时锁定
-                    case 3:
-                        $model->whereEntity(AdminUserField::errorRelease('>', time()));
-                    break;
-                }
-                $data->remove('status');
-                
-                if ($groupId = $data->get('group_id', 0)) {
-                    $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
-                }
-                $data->remove('group_id');
-                
-                if ($this->pluginTable->sortField == AdminUserInfo::formatCreateTime()) {
-                    $this->pluginTable->sortField = AdminUserInfo::createTime();
-                } elseif ($this->pluginTable->sortField == AdminUserInfo::formatLastTime()) {
-                    $this->pluginTable->sortField = AdminUserInfo::lastTime();
+            $this->pluginTable->setHandler(new class extends TableHandler {
+                public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                {
+                    switch ($data->get('status', 0)) {
+                        // 正常
+                        case 1:
+                            $model->whereEntity(AdminUserField::checked(1));
+                        break;
+                        // 禁用
+                        case 2:
+                            $model->whereEntity(AdminUserField::checked(0));
+                        break;
+                        // 零时锁定
+                        case 3:
+                            $model->whereEntity(AdminUserField::errorRelease('>', time()));
+                        break;
+                    }
+                    $data->remove('status');
+                    
+                    if ($groupId = $data->get('group_id', 0)) {
+                        $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
+                    }
+                    $data->remove('group_id');
+                    
+                    if ($plugin->sortField == AdminUserInfo::formatCreateTime()) {
+                        $plugin->sortField = AdminUserInfo::createTime();
+                    } elseif ($plugin->sortField == AdminUserInfo::formatLastTime()) {
+                        $plugin->sortField = AdminUserInfo::lastTime();
+                    }
                 }
             });
             
@@ -177,14 +184,33 @@ class SystemUserController extends InsideController
      */
     private function groupTree(?AdminUserInfo $info = null) : Response
     {
-        $this->pluginTree->setNodeHandler(function(AdminGroupInfo $item, TreeFlatItemStruct $node) use ($info) {
-            $node->setText($item->name);
-            $node->setParent($item->parentId);
-            $node->setId($item->id);
-            $node->state->setOpened(true);
+        $this->pluginTree->setHandler(new class($info) extends TreeHandler {
+            /**
+             * @var AdminUserInfo|null
+             */
+            private $info;
             
-            if ($info && in_array($item->id, $info->groupIds)) {
-                $node->state->setSelected(true);
+            
+            public function __construct(?AdminUserInfo $info)
+            {
+                $this->info = $info;
+            }
+            
+            
+            /**
+             * @param AdminGroupInfo     $item
+             * @param TreeFlatItemStruct $node
+             */
+            public function node($item, TreeFlatItemStruct $node) : void
+            {
+                $node->setText($item->name);
+                $node->setParent($item->parentId);
+                $node->setId($item->id);
+                $node->state->setOpened(true);
+                
+                if ($this->info && in_array($item->id, $this->info->groupIds)) {
+                    $node->state->setSelected(true);
+                }
             }
         });
         
