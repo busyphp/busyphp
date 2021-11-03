@@ -51,7 +51,7 @@ class SystemLogsInfo extends SystemLogsField
         
         $this->formatCreateTime = TransHelper::date($this->createTime);
         $this->typeName         = SystemLogs::getTypes($this->type);
-        $this->clientName       = $this->client === SystemLogs::CLI_CLIENT_KEY ? SystemLogs::CLI_CLIENT_NAME : (static::$_appList[$this->client]->name ?? '') ?: $this->client;
+        $this->clientName       = $this->client === SystemLogs::CLI_CLIENT_KEY ? SystemLogs::CLI_CLIENT_NAME : ((static::$_appList[$this->client]->name ?? '') ?: $this->client);
         $this->params           = json_decode($this->params, true) ?: [];
         $this->headers          = json_decode($this->headers, true) ?: [];
     }
