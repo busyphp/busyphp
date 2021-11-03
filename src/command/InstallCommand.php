@@ -273,7 +273,7 @@ class InstallCommand extends Command
         $app      = App::init();
         $packages = [];
         if (is_file($path = $app->getRootPath() . 'vendor/composer/installed.json')) {
-            $packages = json_decode(@file_get_contents($path), true) ?: [];
+            $packages = json_decode(@file_get_contents($path) ?: '', true) ?: [];
         }
         
         // Compatibility with Composer 2.0
@@ -286,7 +286,7 @@ class InstallCommand extends Command
                 $devComposerFile = $app->getRootPath() . $devComposerFile;
             }
             
-            $packages[] = json_decode(@file_get_contents($devComposerFile), true) ?: [];
+            $packages[] = json_decode(@file_get_contents($devComposerFile) ?: '', true) ?: [];
         }
         
         $list = [];
