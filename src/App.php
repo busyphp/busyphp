@@ -50,7 +50,7 @@ class App extends \think\App
     public function __construct(string $rootPath = '')
     {
         $this->bind([
-            \think\App::class              => static::class,
+            \think\App::class              => self::class,
             \think\Request::class          => Request::class,
             \think\exception\Handle::class => Handle::class,
             \think\Db::class               => Db::class
