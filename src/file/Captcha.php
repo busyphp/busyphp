@@ -146,7 +146,7 @@ class Captcha
     public function __construct(string $app = '')
     {
         $this->setting = CaptchaSetting::init();
-        $this->setting->setClient($app ?: App::init()->getDirName());
+        $this->setting->setClient($app ?: App::getInstance()->getDirName());
         $this->curve($this->setting->isCurve());
         $this->noise($this->setting->isNoise());
         $this->bgImage($this->setting->isBgImage());

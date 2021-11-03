@@ -327,7 +327,7 @@ class Request extends \think\Request
      */
     public function getAssetsUrl(bool $domain = false) : string
     {
-        if ($domainAssets = App::init()->config->get('route.domain_assets')) {
+        if ($domainAssets = App::getInstance()->config->get('route.domain_assets')) {
             return rtrim($domainAssets, '/') . '/';
         } else {
             return $this->getWebUrl($domain) . 'assets/';

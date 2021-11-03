@@ -15,6 +15,7 @@ use think\initializer\Error;
  * @version $Id: 2020/6/16 下午11:29 上午 App.php $
  * @property Request $request
  * @property Db      $db
+ * @method static static getInstance() 获取单例
  */
 class App extends \think\App
 {
@@ -42,16 +43,6 @@ class App extends \think\App
     
     
     /**
-     * 单例
-     * @return static
-     */
-    public static function init() : self
-    {
-        return static::getInstance();
-    }
-    
-    
-    /**
      * 构造
      * App constructor.
      * @param string $rootPath
@@ -59,7 +50,7 @@ class App extends \think\App
     public function __construct(string $rootPath = '')
     {
         $this->bind([
-            \think\App::class              => App::class,
+            \think\App::class              => static::class,
             \think\Request::class          => Request::class,
             \think\exception\Handle::class => Handle::class,
             \think\Db::class               => Db::class
@@ -245,7 +236,7 @@ class App extends \think\App
             return '';
         }
         
-        return App::init()->getPublicPath($url);
+        return App::getInstance()->getPublicPath($url);
     }
     
     

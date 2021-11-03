@@ -112,7 +112,7 @@ abstract class Upload
     public function __construct(?Upload $target = null)
     {
         set_time_limit(0);
-        $this->app              = App::init();
+        $this->app              = App::getInstance();
         $this->setting          = UploadSetting::init();
         $this->watermarkSetting = WatermarkSetting::init();
         $this->disk             = $this->setting->getDisk();

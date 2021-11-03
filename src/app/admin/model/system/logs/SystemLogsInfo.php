@@ -46,7 +46,7 @@ class SystemLogsInfo extends SystemLogsField
     public function onParseAfter()
     {
         if (!is_array(static::$_appList)) {
-            static::$_appList = ArrayHelper::listByKey(App::init()->getList(), AppListItem::dir());
+            static::$_appList = ArrayHelper::listByKey(App::getInstance()->getList(), AppListItem::dir());
         }
         
         $this->formatCreateTime = TransHelper::date($this->createTime);

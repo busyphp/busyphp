@@ -115,7 +115,7 @@ class UploadSetting extends Setting
      */
     public function getClientInfo(string $client = '') : ?array
     {
-        $client  = $client ?: App::init()->getDirName();
+        $client  = $client ?: App::getInstance()->getDirName();
         $clients = $this->get('clients', []);
         
         return $clients[$client] ?? null;

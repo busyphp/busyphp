@@ -106,7 +106,7 @@ class CaptchaUrl
      */
     public function build() : string
     {
-        $params = ['app' => App::init()->getDirName()];
+        $params = ['app' => App::getInstance()->getDirName()];
         if ($this->width) {
             $params['width'] = $this->width;
         }

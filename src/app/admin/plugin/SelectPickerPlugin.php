@@ -101,7 +101,7 @@ class SelectPickerPlugin
     
     public function __construct()
     {
-        $this->request   = App::init()->request;
+        $this->request   = App::getInstance()->request;
         $this->isValue   = $this->request->get('action/s', '', 'trim') === 'value';
         $this->page      = $this->request->get('page/d', 1);
         $this->length    = $this->request->get('length/d', 0);

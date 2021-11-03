@@ -270,7 +270,7 @@ class InstallCommand extends Command
      */
     public static function packages(?string $devComposerFile = null) : array
     {
-        $app      = App::init();
+        $app      = App::getInstance();
         $packages = [];
         if (is_file($path = $app->getRootPath() . 'vendor/composer/installed.json')) {
             $packages = json_decode(@file_get_contents($path) ?: '', true) ?: [];

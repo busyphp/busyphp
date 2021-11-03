@@ -48,7 +48,7 @@ class Ba extends TagLib
                 $values = explode('/', $item) ?: [];
                 // 需要获取控制器补全
                 if (count($values) == 1) {
-                    $controller = App::init()->request->controller();
+                    $controller = App::getInstance()->request->controller();
                     $item       = "'{$controller}/{$value[0]}'";
                 } else {
                     $item = "'{$item}'";

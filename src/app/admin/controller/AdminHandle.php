@@ -78,7 +78,7 @@ class AdminHandle extends Handle
      */
     public static function isSinglePage() : bool
     {
-        return App::init()->request->header('Busy-Admin-Plugin', '') === 'SinglePage';
+        return App::getInstance()->request->header('Busy-Admin-Plugin', '') === 'SinglePage';
     }
     
     
@@ -92,7 +92,7 @@ class AdminHandle extends Handle
      */
     public static function templateBaseData($pageTitle = '', ?AdminUserInfo $adminUser = null) : array
     {
-        $app     = App::init();
+        $app     = App::getInstance();
         $request = $app->request;
         $data    = [];
         
@@ -211,7 +211,7 @@ class AdminHandle extends Handle
      */
     public static function restResponse(int $code = 1, string $message = '', array $result = [], $url = '')
     {
-        $app = App::init();
+        $app = App::getInstance();
         $url = (string) $url;
         
         if ($code === 1) {

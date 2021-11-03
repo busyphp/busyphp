@@ -207,7 +207,7 @@ class SystemConfig extends Model
         
         // 生成系统配置
         $string = var_export($config, true);
-        FileHelper::write(App::init()
+        FileHelper::write(App::getInstance()
             ->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
     }
 }

@@ -126,7 +126,7 @@ class ListPlugin
     public function __construct(Model $model)
     {
         $this->model    = $model;
-        $this->request  = App::init()->request;
+        $this->request  = App::getInstance()->request;
         $this->word     = $this->request->get('word/s', '', 'trim');
         $this->field    = $this->request->get('field/s', '', 'trim');
         $this->accurate = $this->request->get('accurate/b', false);

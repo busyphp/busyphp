@@ -52,7 +52,7 @@ class TreePlugin
     
     public function __construct()
     {
-        $this->request  = App::init()->request;
+        $this->request  = App::getInstance()->request;
         $this->isExtend = $this->request->get('extend/b', false);
     }
     

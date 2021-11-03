@@ -61,7 +61,7 @@ class Cache
         switch (strtolower(config('cache.default'))) {
             // 文件缓存方式
             case 'file':
-                self::rmdir(App::init()->getRuntimeCachePath(self::name($dir, '')));
+                self::rmdir(App::getInstance()->getRuntimeCachePath(self::name($dir, '')));
             break;
             
             // Redis缓存方式

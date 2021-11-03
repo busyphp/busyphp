@@ -327,7 +327,7 @@ class AdminGroup extends Model
             return true;
         }
         
-        $request    = App::init()->request;
+        $request    = App::getInstance()->request;
         $controller = $request->controller();
         if (!$paths) {
             $paths[] = $request->getRoutePath(true);

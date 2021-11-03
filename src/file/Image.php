@@ -192,7 +192,7 @@ class Image
         $this->phpThumb->config_cache_directory_depth = 3;
         $this->phpThumb->config_temp_directory        = $cacheDir;
         $this->phpThumb->config_cache_directory       = $cacheDir;
-        $this->phpThumb->config_document_root         = App::init()->getRootPath();
+        $this->phpThumb->config_document_root         = App::getInstance()->getRootPath();
         $this->src($src);
     }
     

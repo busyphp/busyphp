@@ -168,7 +168,7 @@ class QRCodeUrl
         $path .= '/' . substr($hash, 12, 1);
         
         // 绑定域名
-        $request = App::init()->request;
+        $request = App::getInstance()->request;
         $domain  = $request->getWebUrl(false);
         if ($this->domain) {
             $domain = $this->domain === true ? $request->getWebUrl(true) : $this->domain;

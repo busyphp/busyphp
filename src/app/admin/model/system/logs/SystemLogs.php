@@ -94,7 +94,7 @@ class SystemLogs extends Model
     public function record(int $type, string $name, string $result = '')
     {
         try {
-            $app        = App::init();
+            $app        = App::getInstance();
             $request    = $app->request;
             $isCli      = $app->runningInConsole();
             $filterKeys = array_merge($this->getOptions('logs_params_keys') ?: [], [

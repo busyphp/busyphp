@@ -77,7 +77,7 @@ class AutocompletePlugin
     
     public function __construct()
     {
-        $this->request   = App::init()->request;
+        $this->request   = App::getInstance()->request;
         $this->textField = $this->request->post('text_field/s', '', 'trim');
         $this->order     = $this->request->post('order/s', '', 'trim');
         $this->isExtend  = $this->request->post('extend/b', false);

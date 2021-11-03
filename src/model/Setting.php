@@ -34,7 +34,7 @@ abstract class Setting
     
     public function __construct()
     {
-        $this->app = App::init();
+        $this->app = App::getInstance();
         
         if (!$this->key) {
             $this->getKey();

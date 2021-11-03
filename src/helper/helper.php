@@ -17,7 +17,7 @@ if (!function_exists('is_mobile')) {
      */
     function is_mobile() : bool
     {
-        return App::init()->request->isMobile();
+        return App::getInstance()->request->isMobile();
     }
 }
 
@@ -29,7 +29,7 @@ if (!function_exists('is_android')) {
      */
     function is_android($ua = '') : bool
     {
-        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::getInstance()->request->server('HTTP_USER_AGENT');
         
         return stripos($ua, 'android') !== false;
     }
@@ -44,7 +44,7 @@ if (!function_exists('is_ios')) {
      */
     function is_ios($ua = '') : bool
     {
-        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::getInstance()->request->server('HTTP_USER_AGENT');
         
         return stripos($ua, 'iphone') !== false || stripos($ua, 'ipad');
     }
@@ -59,7 +59,7 @@ if (!function_exists('is_wechat_client')) {
      */
     function is_wechat_client($ua = '') : bool
     {
-        $ua = $ua ?: App::init()->request->server('HTTP_USER_AGENT');
+        $ua = $ua ?: App::getInstance()->request->server('HTTP_USER_AGENT');
         
         return strpos($ua, 'MicroMessenger') !== false;
     }
@@ -169,7 +169,7 @@ if (!function_exists('captcha_check')) {
      */
     function captcha_check($code, string $key)
     {
-        (new Captcha(App::init()->getDirName()))->check($code, $key);
+        (new Captcha(App::getInstance()->getDirName()))->check($code, $key);
     }
 }
 
@@ -180,6 +180,6 @@ if (!function_exists('captcha_clear')) {
      */
     function captcha_clear(string $key)
     {
-        (new Captcha(App::init()->getDirName()))->clear($key);
+        (new Captcha(App::getInstance()->getDirName()))->clear($key);
     }
 }

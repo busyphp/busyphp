@@ -162,7 +162,7 @@ class LogHelper
             
             
             $msg = "{$tag}{$message} #throw [{$code}:{$class}] #file [{$file}:{$line}]{$method}";
-            $app = App::init();
+            $app = App::getInstance();
             
             // 扩展数据
             if ($app->config->get('log.record_data', true)) {
@@ -221,7 +221,7 @@ class LogHelper
     public static function getMessage(Throwable $exception) : string
     {
         $message = $exception->getMessage();
-        $app     = App::init();
+        $app     = App::getInstance();
         
         if ($app->runningInConsole()) {
             return $message;
@@ -272,7 +272,7 @@ class LogHelper
             return static::$instances[$name];
         }
         
-        $app    = App::init();
+        $app    = App::getInstance();
         $config = $app->config->get('log', []);
         $type   = "bp:use_{$name}";
         if (empty($config['channels'][$type])) {

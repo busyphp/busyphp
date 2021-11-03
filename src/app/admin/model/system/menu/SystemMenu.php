@@ -518,7 +518,7 @@ class SystemMenu extends Model
             // 系统管理员
             if ($adminUserInfo->groupHasSystem) {
                 // 系统菜单在非开发模式下不输出
-                if ($info->system && !App::init()->isDebug()) {
+                if ($info->system && !App::getInstance()->isDebug()) {
                     return false;
                 }
             } else {

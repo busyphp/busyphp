@@ -175,7 +175,7 @@ class SystemPlugin extends Model
             throw new ClassNotFoundException($info->class, "插件 {$package} 管理类");
         }
         
-        $manager = new $info->class(App::init());
+        $manager = new $info->class(App::getInstance());
         if (!$manager instanceof PluginManager) {
             throw new ClassNotExtendsException($manager, PluginManager::class, "插件 {$package} 管理类");
         }
@@ -192,7 +192,7 @@ class SystemPlugin extends Model
     public static function getPluginList() : array
     {
         $list = [];
-        foreach (InstallCommand::packages(App::init()->debug() ? './composer.json' : '') as $item) {
+        foreach (InstallCommand::packages(App::getInstance()->debug() ? './composer.json' : '') as $item) {
             $manager = $item['manager'] ?? [];
             if (!$manager) {
                 continue;

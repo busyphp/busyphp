@@ -133,7 +133,7 @@ class ThumbUrl
         }
         
         // 域名
-        $request = App::init()->request;
+        $request = App::getInstance()->request;
         $domain  = $request->getWebUrl(false);
         if ($this->domain) {
             $domain = $this->domain === true ? $request->getWebUrl(true) : $this->domain;
