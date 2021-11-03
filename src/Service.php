@@ -93,6 +93,12 @@ class Service extends ThinkService
                 // 设置时间戳格式
                 $model->setDateFormat($config->get('database.datetime_format', 'Y-m-d H:i:s'));
             }
+    
+            $timeField = $config->get('database.datetime_field');
+            if (!empty($timeField)) {
+                [$createTime, $updateTime] = explode(',', $timeField);
+                $model->setTimeField($createTime, $updateTime);
+            }
         });
         
         
