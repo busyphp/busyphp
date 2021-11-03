@@ -126,11 +126,10 @@ class IndexController extends InsideController
                 $model            = new AdminUser();
                 $mysqlVersionInfo = $model->query("select VERSION()");
                 $mysqlVersion     = $mysqlVersionInfo[0]['VERSION()'];
-                $softNames        = explode(' ', $_SERVER['SERVER_SOFTWARE']);
                 $this->assign('mysql_version', $mysqlVersion);
                 $this->assign('max_upload_size', ini_get('upload_max_filesize'));
                 $this->assign('system_name', php_uname('s'));
-                $this->assign('soft_name', $softNames[0]);
+                $this->assign('soft_name', $_SERVER['SERVER_SOFTWARE'] ?? '');
                 $this->assign('framework_name', $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion());
                 $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
                 $this->setPageTitle('首页');
