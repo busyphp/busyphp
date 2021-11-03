@@ -43,11 +43,11 @@ class App extends \think\App
     
     /**
      * 单例
-     * @return App
+     * @return static
      */
-    public static function init()
+    public static function init() : self
     {
-        return App::getInstance()->make(App::class);
+        return static::getInstance();
     }
     
     
