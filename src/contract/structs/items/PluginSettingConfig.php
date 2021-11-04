@@ -35,4 +35,28 @@ class PluginSettingConfig extends Field
      * @var string
      */
     public $type = 'form';
+    
+    /**
+     * 是否显示上边框
+     * @var bool
+     */
+    public $borderTop = true;
+    
+    /**
+     * 是否显示下边框
+     * @var bool
+     */
+    public $borderBottom = true;
+    
+    /**
+     * 对话框高度
+     * @var string
+     */
+    public $height = '';
+    
+    /**
+     * 填充
+     * @var string
+     */
+    public $padding = '';
 }
