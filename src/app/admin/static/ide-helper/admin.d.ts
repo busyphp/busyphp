@@ -1049,6 +1049,11 @@ declare namespace busyAdmin {
          * 重新加载应用信息
          */
         loadInfo(): void;
+
+        /**
+         * 触发窗口刷新
+         */
+        triggerResize(): void;
     }
 
 
