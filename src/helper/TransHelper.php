@@ -2,6 +2,7 @@
 
 namespace BusyPHP\helper;
 
+use Closure;
 use JsonSerializable;
 use think\Collection;
 use think\contract\Arrayable;
@@ -138,6 +139,12 @@ class TransHelper
             $attrString = '';
             if (is_array($attrs) && $attrs) {
                 foreach ($attrs as $attrName => $attrValue) {
+                    if ($attrValue instanceof Closure) {
+                        $attrValue = $attrValue($item);
+                    } else {
+                        $attrValue = $item[$attrValue] ?? null;
+                    }
+                    
                     if (is_bool($attrValue)) {
                         $attrValue = $attrValue ? 'true' : 'false';
                     } elseif (is_array($attrValue)) {
