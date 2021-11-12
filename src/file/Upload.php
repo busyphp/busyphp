@@ -143,7 +143,7 @@ abstract class Upload
      * @param string $value
      * @return $this
      */
-    public function setClassType(string $type, $value = '') : self
+    public function setClassType(string $type, string $value = '') : self
     {
         $type             = trim($type);
         $value            = trim($value);
