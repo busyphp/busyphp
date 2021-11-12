@@ -126,7 +126,7 @@ class App extends \think\App
         $list     = [];
         $maps     = ['admin' => '后台管理', 'home' => '前端网站'];
         foreach (scandir($basePath) as $value) {
-            if (!is_dir($path = $basePath . $value . DIRECTORY_SEPARATOR) || $value === '.' || $value === '..') {
+            if (!is_dir($path = $basePath . $value) || $value === '.' || $value === '..') {
                 continue;
             }
             
