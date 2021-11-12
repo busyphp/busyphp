@@ -561,7 +561,8 @@ abstract class Upload
             return;
         }
         
-        foreach ($allow as $item) {
+        // TODO 获取到的mime不准确，后期处理
+        /*foreach ($allow as $item) {
             if (false !== strpos($item, '*')) {
                 $pattern = str_replace('/', '\/', $item);
                 $pattern = str_replace('*', '.*', $pattern);
@@ -575,7 +576,7 @@ abstract class Upload
             }
         }
         
-        throw new FileException('上传的文件Mime类型不正确');
+        throw new FileException('上传的文件Mime类型不正确');*/
     }
     
     
