@@ -591,7 +591,8 @@ abstract class Upload
             throw new FileException('禁止上传空文件');
         }
         
-        if ($fileSize > $this->setting->getMaxSize($this->classType)) {
+        $maxSize = $this->setting->getMaxSize($this->classType);
+        if ($maxSize > 0 && $fileSize > $maxSize) {
             throw new FileException('上传的文件大小超过了系统限制');
         }
     }
