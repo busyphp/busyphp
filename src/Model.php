@@ -1604,12 +1604,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array         $values in查询的值
      * @param string|Entity $key 查询的字段，默认id
      * @param string|Entity $field 构建的字段，默认id
-     * @param bool          $isExtend 是否查询扩展数据
      * @return array
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function buildListWithField($values, $key = null, $field = null, $isExtend = false)
+    public function buildListWithField(array $values, $key = null, $field = null) : array
     {
         $key    = Entity::parse($key ?: 'id');
         $field  = Entity::parse($field ?: 'id');
@@ -1617,8 +1616,31 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         $values = FilterHelper::trimArray($values);
         if ($values) {
             $this->where($key, 'in', $values);
-            $list = $isExtend ? $this->selectExtendList() : $this->selectList();
-            $list = ArrayHelper::listByKey($list, $field);
+            $list = ArrayHelper::listByKey($this->selectList(), $field);
+        }
+        
+        return $list;
+    }
+    
+    
+    /**
+     * 查询扩展列表并用字段构建键
+     * @param array         $values in查询的值
+     * @param string|Entity $key 查询的字段，默认id
+     * @param string|Entity $field 构建的字段，默认id
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function buildExtendListWithField(array $values, $key = null, $field = null) : array
+    {
+        $key    = Entity::parse($key ?: 'id');
+        $field  = Entity::parse($field ?: 'id');
+        $list   = [];
+        $values = FilterHelper::trimArray($values);
+        if ($values) {
+            $this->where($key, 'in', $values);
+            $list = ArrayHelper::listByKey($this->selectExtendList(), $field);
         }
         
         return $list;
