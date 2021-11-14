@@ -971,10 +971,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function select($data = null) : Collection
     {
-        $result = parent::select($data);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::select($data);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -987,10 +988,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function find($data = null)
     {
-        $result = parent::find($data);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::find($data);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1004,9 +1006,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $this->triggerEvent('BeforeUpdate');
         
-        $result  = parent::update($data);
-        $options = $this->options;
-        $this->removeOption();
+        try {
+            $result  = parent::update($data);
+            $options = $this->options;
+        } finally {
+            $this->removeOption();
+        }
+        
         $this->parseOnChanged(self::CHANGED_UPDATE, $options);
         
         return $result;
@@ -1024,9 +1030,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $this->triggerEvent('BeforeInsert');
         
-        $result  = parent::insert($data, $getLastInsID);
-        $options = $this->options;
-        $this->removeOption();
+        try {
+            $result  = parent::insert($data, $getLastInsID);
+            $options = $this->options;
+        } finally {
+            $this->removeOption();
+        }
+        
         $this->parseOnChanged(self::CHANGED_INSERT, $options);
         
         return $result;
@@ -1042,10 +1052,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function insertAll(array $dataSet = [], int $limit = 0) : int
     {
-        $result = parent::insertAll($dataSet, $limit);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::insertAll($dataSet, $limit);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1062,9 +1073,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $this->triggerEvent('BeforeDelete');
         
-        $result  = parent::delete($data);
-        $options = $this->options;
-        $this->removeOption();
+        try {
+            $result  = parent::delete($data);
+            $options = $this->options;
+        } finally {
+            $this->removeOption();
+        }
+        
         $this->parseOnChanged(self::CHANGED_DELETE, $options);
         
         return $result;
@@ -1080,10 +1095,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function selectInsert(array $fields, string $table) : int
     {
-        $result = parent::selectInsert(Entity::parse($fields), $table);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::selectInsert(Entity::parse($fields), $table);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1094,10 +1110,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function buildSql(bool $sub = true) : string
     {
-        $result = parent::buildSql($sub);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::buildSql($sub);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1110,10 +1127,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function value(string $field, $default = null)
     {
-        $result = parent::value(Entity::parse($field), $default);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::value(Entity::parse($field), $default);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1139,10 +1157,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function column($field, string $key = '') : array
     {
-        $result = parent::column(Entity::parse($field), $key);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::column(Entity::parse($field), $key);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
@@ -1156,10 +1175,11 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     protected function aggregate(string $aggregate, $field, bool $force = false)
     {
-        $result = parent::aggregate($aggregate, Entity::parse($field), $force);
-        $this->removeOption();
-        
-        return $result;
+        try {
+            return parent::aggregate($aggregate, Entity::parse($field), $force);
+        } finally {
+            $this->removeOption();
+        }
     }
     
     
