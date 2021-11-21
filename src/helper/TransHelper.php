@@ -2,6 +2,7 @@
 
 namespace BusyPHP\helper;
 
+use BusyPHP\model\Entity;
 use Closure;
 use JsonSerializable;
 use think\Collection;
@@ -111,18 +112,18 @@ class TransHelper
     
     /**
      * 将数组转换成option标签
-     * @param array        $list 要转换的数组
-     * @param string|array $selected 选中项值
-     * @param string       $nameKey 选项文本键名称
-     * @param string       $valueKey 选项值键名称
-     * @param array        $attrs 自定属性键值对
+     * @param array         $list 要转换的数组
+     * @param string|array  $selected 选中项值
+     * @param string|Entity $nameKey 选项文本键名称
+     * @param string|Entity $valueKey 选项值键名称
+     * @param array         $attrs 自定属性键值对
      * @return string
      */
-    public static function toOptionHtml(array $list, $selected = null, ?string $nameKey = '', ?string $valueKey = '', ?array $attrs = []) : string
+    public static function toOptionHtml(array $list, $selected = null, $nameKey = '', $valueKey = '', ?array $attrs = []) : string
     {
         $selected = !is_array($selected) ? [$selected] : $selected;
-        $nameKey  = $nameKey ?: '';
-        $valueKey = $valueKey ?: '';
+        $nameKey  = (string) ($nameKey ?: '');
+        $valueKey = (string) ($valueKey ?: '');
         $attrs    = $attrs ?: [];
         
         $options = '';
