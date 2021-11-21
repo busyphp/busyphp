@@ -19,6 +19,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\Model;
 use BusyPHP\Url;
 use Exception;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
@@ -350,6 +351,12 @@ abstract class AdminController extends Controller
         
         // 生成系统配置文件
         SystemConfig::init()->updateCache();
+        
+        // 自定义生产缓存
+        $createCache = $this->app->config->get('app.create_cache', '');
+        if (is_callable($createCache)) {
+            Container::getInstance()->invokeFunction($createCache);
+        }
     }
     
     
@@ -376,6 +383,12 @@ abstract class AdminController extends Controller
         FileHelper::deleteDir($this->app->getRuntimeConfigPath());
         // 清理基本缓存
         Cache::clear();
+    
+        // 自定义清理缓存
+        $clearCache = $this->app->config->get('app.clear_cache', '');
+        if (is_callable($clearCache)) {
+            Container::getInstance()->invokeFunction($clearCache);
+        }
         
         // 生成配置
         $this->updateCache();
