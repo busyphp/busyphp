@@ -640,10 +640,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             return $list;
         }
         
-        if (method_exists($this, 'onParseBindList')) {
-            $this->onParseBindList($list);
-        }
-        
         if ($this->bindParseClass) {
             if (is_subclass_of($this->bindParseClass, Field::class)) {
                 foreach ($list as $i => $r) {
@@ -651,6 +647,8 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
                 }
             }
         }
+        
+        $this->onParseBindList($list);
         
         return $list;
     }
@@ -678,15 +676,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $list = $list->toArray();
         }
         
-        if (method_exists($this, 'onParseBindExtendList')) {
-            $this->onParseBindExtendList($list);
-        }
-        
         if ($this->bindParseExtendClass && is_subclass_of($this->bindParseExtendClass, $this->bindParseClass) && is_subclass_of($this->bindParseExtendClass, Field::class)) {
             foreach ($list as $i => $r) {
                 $list[$i] = $this->bindParseExtendClass::parse($r);
             }
         }
+        
+        $this->onParseBindExtendList($list);
         
         return $list;
     }
