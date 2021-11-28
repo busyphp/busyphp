@@ -151,12 +151,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected static $macro = [];
     
     /**
-     * 单例模式容器
-     * @var Model[]
-     */
-    protected static $instances = [];
-    
-    /**
      * 回调方法
      * @var Closure[]
      */
@@ -248,7 +242,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $suffix 切换的表后缀
      * @return Model
      */
-    public static function suffix(string $suffix)
+    public static function suffix(string $suffix) : self
     {
         $model = new static();
         $model->setSuffix($suffix);
@@ -262,7 +256,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $name 数据库连接标识
      * @return Model
      */
-    public static function connect(string $name)
+    public static function connect(string $name) : self
     {
         $model = new static();
         $model->setConfigName($name);
@@ -272,23 +266,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 快速实例化，默认实例化单例
-     * @param bool $isInstance 是否取单例模式
+     * 快速实例化
      * @return $this
      */
-    public static function init(bool $isInstance = true)
+    public static function init() : self
     {
-        if (!$isInstance) {
-            return new static();
-        }
-        
-        if (isset(static::$instances[static::class])) {
-            return static::$instances[static::class];
-        }
-        
-        static::$instances[static::class] = new static();
-        
-        return static::$instances[static::class];
+        return new static();
     }
     
     
