@@ -12,7 +12,6 @@ use BusyPHP\Handle;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Request;
 use BusyPHP\Url;
-use Exception;
 use stdClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -66,7 +65,7 @@ class AdminHandle extends Handle
             }
             
             return $view;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return parent::render($request, $e);
         }
     }
