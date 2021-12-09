@@ -49,7 +49,7 @@ class Ba extends TagLib
                 // 需要获取控制器补全
                 if (count($values) == 1) {
                     $controller = App::getInstance()->request->controller();
-                    $item       = "'{$controller}/{$value[0]}'";
+                    $item       = "'{$controller}/{$values[0]}'";
                 } else {
                     $item = "'{$item}'";
                 }
@@ -60,6 +60,7 @@ class Ba extends TagLib
         
         $groupClass = AdminGroup::class;
         
+        /** @see AdminGroup::checkPermission() */
         return <<<HTML
 <?php if ({$groupClass}::checkPermission(\$system['user'] ?? null, {$path})): ?>{$content}<?php endif; ?>
 HTML;
