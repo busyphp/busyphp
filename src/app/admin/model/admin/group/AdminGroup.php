@@ -315,6 +315,8 @@ class AdminGroup extends Model
      * @param AdminUserInfo $adminUserInfo 用户数据
      * @param string        ...$paths 检测的路由路径
      * @return bool
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public static function checkPermission(?AdminUserInfo $adminUserInfo, ?string ...$paths) : bool
     {
