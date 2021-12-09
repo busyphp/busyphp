@@ -318,6 +318,8 @@ class AdminGroup extends Model
      */
     public static function checkPermission(?AdminUserInfo $adminUserInfo, ?string ...$paths) : bool
     {
+        static $allPaths;
+        
         if (!$adminUserInfo) {
             return false;
         }
@@ -333,6 +335,11 @@ class AdminGroup extends Model
             $paths[] = $request->getRoutePath(true);
         }
         
+        if (!isset($allPaths)) {
+            $allPaths = SystemMenu::init()->getPathList();
+            $allPaths = array_map([StringHelper::class, 'snake'], array_keys($allPaths));
+        }
+        
         foreach ($paths as $path) {
             // 需要获取控制器补全
             $values = explode('/', $path) ?: [];
@@ -346,6 +353,11 @@ class AdminGroup extends Model
                 if (0 === strpos($currentPath, $item)) {
                     return true;
                 }
+            }
+            
+            // 不在全部规则内，则可以访问
+            if (!in_array($currentPath, $allPaths)) {
+                return true;
             }
             
             // 是否在规则内
