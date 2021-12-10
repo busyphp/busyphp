@@ -6,7 +6,6 @@ namespace BusyPHP\file\upload;
 use BusyPHP\file\Upload;
 use Closure;
 use Exception;
-use League\Flysystem\Util\MimeType;
 use think\exception\FileException;
 use think\helper\Str;
 
@@ -22,13 +21,13 @@ class Base64Upload extends Upload
      * 文件MimeType
      * @var string
      */
-    protected $mimeType = 'text/plain';
+    protected $mimeType = '';
     
     /**
      * 文件扩展名
      * @var string
      */
-    protected $extension = 'txt';
+    protected $extension = '';
     
     /**
      * 文件名
@@ -42,10 +41,9 @@ class Base64Upload extends Upload
      * @param string $mimeType
      * @return $this
      */
-    public function setDefaultMimeType(string $mimeType) : self
+    public function setMimeType(string $mimeType) : self
     {
-        $mimeType       = trim($mimeType);
-        $this->mimeType = $mimeType ?: $this->mimeType;
+        $this->mimeType = $mimeType;
         
         return $this;
     }
@@ -56,10 +54,9 @@ class Base64Upload extends Upload
      * @param string $extension
      * @return $this
      */
-    public function setDefaultExtension(string $extension) : self
+    public function setExtension(string $extension) : self
     {
-        $extension       = trim($extension);
-        $this->extension = $extension ?: $this->extension;
+        $this->extension = $extension;
         
         return $this;
     }
@@ -98,15 +95,8 @@ class Base64Upload extends Upload
         }
         
         // 获取文件类型
-        $extension = '';
         $mimeType  = strtolower($mimeType);
-        foreach (MimeType::getExtensionToMimeTypeMap() as $key => $value) {
-            if ($mimeType === strtolower($value)) {
-                $extension = $key;
-                break;
-            }
-        }
-        
+        $extension = self::IMAGE_MIME_TYPES[$mimeType] ?? '';
         $mimeType  = $mimeType ?: $this->mimeType;
         $extension = strtolower($extension ?: $this->extension);
         
@@ -115,10 +105,6 @@ class Base64Upload extends Upload
             $name = call_user_func_array($this->name, []);
         } else {
             $name = $this->name ?: 'BASE64_' . date('YmdHis') . '_' . Str::random(6) . '.' . $extension;
-        }
-        
-        if (!$extension) {
-            throw new FileException('无法获取文件扩展名');
         }
         
         // 解密数据

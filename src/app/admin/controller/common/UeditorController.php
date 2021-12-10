@@ -220,8 +220,8 @@ JS;
                 $upload = new Base64Upload();
                 $upload->setUserId($this->adminUserId);
                 $upload->setClassType($classType, $classValue);
-                $upload->setDefaultMimeType('image/jpg');
-                $upload->setDefaultExtension('jpg');
+                $upload->setMimeType('image/jpg');
+                $upload->setExtension('jpg');
                 $result = $upload->upload($this->post('upload/s', 'trim'));
             } else {
                 $upload = new LocalUpload();
@@ -282,8 +282,8 @@ JS;
                     $upload = new RemoteUpload();
                     $upload->setUserId($this->adminUserId);
                     $upload->setClassType($classType, $classValue);
-                    $upload->setDefaultExtension('jpg');
-                    $upload->setDefaultMimeType('image/jpg');
+                    $upload->setExtension('jpg');
+                    $upload->setMimeType('image/jpg');
                     $result = $upload->upload($url);
                     
                     $list[$i]  = [

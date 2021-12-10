@@ -7,7 +7,6 @@ use BusyPHP\App;
 use BusyPHP\file\Upload;
 use BusyPHP\helper\HttpHelper;
 use Exception;
-use League\Flysystem\Util\MimeType;
 use think\exception\FileException;
 
 /**
@@ -26,15 +25,21 @@ class RemoteUpload extends Upload
     
     /**
      * 文件扩展名
-     * @var string
+     * @var string|callable
      */
     protected $extension = '';
     
     /**
      * 文件Mime
-     * @var string
+     * @var string|callable
      */
     protected $mimeType = '';
+    
+    /**
+     * 设置文件名
+     * @var string|callable
+     */
+    protected $name = '';
     
     /**
      * 忽略的域名
@@ -76,26 +81,45 @@ class RemoteUpload extends Upload
     
     
     /**
-     * 设置文件扩展名，当系统无法获取到扩展名的时候使用该扩展名
-     * @param string $extension
+     * 设置文件扩展名，
+     * - 字符串: 无法获取到扩展名的时候使用该扩展名
+     * - 回调: 通过回调获取，系统不解析
+     * @param string|callable $extension
      * @return $this
      */
-    public function setDefaultExtension(string $extension) : self
+    public function setExtension($extension) : self
     {
-        $this->extension = trim($extension);
+        $this->extension = $extension;
         
         return $this;
     }
     
     
     /**
-     * 设置文件Mime类型，系统无法获取到Mime的时候使用该Mime
-     * @param string $mimeType
+     * 设置文件Mime类型
+     * - 字符串: 无法获取到Mime的时候使用该Mime
+     * - 回调: 通过回调获取，系统不解析
+     * @param string|callable $mimeType
      * @return $this
      */
-    public function setDefaultMimeType(string $mimeType) : self
+    public function setMimeType($mimeType) : self
     {
-        $this->mimeType = trim($mimeType);
+        $this->mimeType = $mimeType;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置文件名
+     * - 字符串: 无法获取到文件名的时候使用该文件名
+     * - 回调: 通过回调获取，系统不解析
+     * @param string|callable $name
+     * @return $this
+     */
+    public function setName($name) : self
+    {
+        $this->name = $name;
         
         return $this;
     }
@@ -143,12 +167,10 @@ class RemoteUpload extends Upload
         $headerHttp->setOpt(CURLOPT_POST, false);
         $headerHttp->request();
         $headers       = HttpHelper::parseResponseHeaders($headerHttp->getResponseHeaders());
-        $contentType   = trim($headers['content-type'] ?? '');
+        $mimeType      = strtolower(trim($headers['content-type'] ?? ''));
         $contentLength = intval($headers['content-length'] ?? 0);
-        
-        // 获取文件名以及扩展名
-        $name      = '';
-        $extension = '';
+        $name          = '';
+        $extension     = '';
         
         // 从响应中获取文件名
         if (preg_match('/.*filename=(.+)/is', trim($headers['content-disposition'] ?? ''), $match)) {
@@ -157,28 +179,61 @@ class RemoteUpload extends Upload
         }
         
         // 通过mimeType解析文件扩展名
-        if (!$extension && $contentType) {
-            $mimeType = strtolower($contentType);
-            foreach (MimeType::getExtensionToMimeTypeMap() as $key => $value) {
-                if ($mimeType === strtolower($value)) {
-                    $extension = $key;
-                    break;
-                }
-            }
+        if (!$extension && $mimeType) {
+            $extension = self::IMAGE_MIME_TYPES[$mimeType] ?? '';
         }
         
         // 从url中取文件扩展名
         $urlPathInfo = pathinfo($parse['path']);
-        $extension   = $extension ?: (($urlPathInfo['extension'] ?? '') ?: $this->extension);
+        $extension   = $extension ?: ($urlPathInfo['extension'] ?? '');
         $name        = $name ?: ($urlPathInfo['basename'] ?? '');
-        if (!$extension) {
-            throw new FileException('必须指定文件扩展名');
+        
+        // 自定义Mime
+        if ($this->mimeType) {
+            if (is_callable($this->mimeType)) {
+                $mimeType = call_user_func_array($this->mimeType, [
+                    $mimeType,
+                    $headers,
+                    $urlPathInfo
+                ]);
+            } else {
+                $mimeType = $mimeType ?: $this->mimeType;
+            }
+        }
+        
+        // 自定义扩展名
+        if ($this->extension) {
+            if (is_callable($this->extension)) {
+                $extension = call_user_func_array($this->extension, [
+                    $extension,
+                    $mimeType,
+                    $headers,
+                    $urlPathInfo
+                ]);
+            } else {
+                $extension = $extension ?: $this->extension;
+            }
+        }
+        
+        // 自定义名称
+        if ($this->name) {
+            if (is_callable($this->name)) {
+                $name = call_user_func_array($this->name, [
+                    $name,
+                    $extension,
+                    $mimeType,
+                    $headers,
+                    $urlPathInfo
+                ]);
+            } else {
+                $name = $name ?: $this->name;
+            }
         }
         
         // 校验文件
         $this->checkExtension($extension);
         $this->checkFileSize($contentLength);
-        $this->checkMimeType($contentType ?: $this->mimeType);
+        $this->checkMimeType($mimeType);
         
         
         // 创建空文件

@@ -18,6 +18,26 @@ use think\file\UploadedFile;
 class MoveUpload extends Upload
 {
     /**
+     * 文件名处理
+     * @var callable
+     */
+    protected $name = null;
+    
+    
+    /**
+     * 设置文件名回调
+     * @param callable $name
+     * @return $this
+     */
+    public function setName(callable $name) : self
+    {
+        $this->name = $name;
+        
+        return $this;
+    }
+    
+    
+    /**
      * 上传处理
      * @param File|string $file 移动的文件对象或文件路径
      * @return array [文件名称,文件对象,图像信息]
@@ -42,6 +62,10 @@ class MoveUpload extends Upload
             $extension = $file->getExtension();
             $mimeType  = $file->getMime();
             $name      = $file->getBasename();
+        }
+        
+        if (is_callable($this->name)) {
+            $name = call_user_func_array($this->name, [$file]);
         }
         
         $this->checkExtension($extension);

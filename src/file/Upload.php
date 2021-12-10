@@ -28,6 +28,19 @@ use think\filesystem\Driver;
  */
 abstract class Upload
 {
+    /** @var string[] 图片MIME */
+    const IMAGE_MIME_TYPES = [
+        'image/apng'   => 'apng',
+        'image/bmp'    => 'bmp',
+        'image/gif'    => 'gif',
+        'image/x-icon' => 'ico',
+        'image/jpeg'   => 'jpeg',
+        'image/png'    => 'png',
+        'image/tiff'   => 'tiff',
+        'image/webp'   => 'webp',
+        'image/wmf'    => 'wmf'
+    ];
+    
     /**
      * 用户ID
      * @var int
@@ -497,7 +510,7 @@ abstract class Upload
         
         $allow = array_map('strtolower', $this->setting->getAllowExtensions($this->classType));
         if (!in_array($extension, $allow)) {
-            throw new FileException('上传的文件格式不正确');
+            throw new FileException("上传的文件格式不正确: {$extension}");
         }
         
         // 非法文件
