@@ -174,8 +174,9 @@ class RemoteUpload extends Upload
         
         // 从响应中获取文件名
         if (preg_match('/.*filename=(.+)/is', trim($headers['content-disposition'] ?? ''), $match)) {
-            $name      = $match[1];
-            $extension = pathinfo($match[1], PATHINFO_EXTENSION);
+            $name      = trim($match[1], "'");
+            $name      = trim($name, '"');
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
         }
         
         // 通过mimeType解析文件扩展名
