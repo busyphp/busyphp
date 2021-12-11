@@ -104,7 +104,7 @@ class Base64Upload extends Upload
         if (is_callable($this->name) || $this->name instanceof Closure) {
             $name = call_user_func_array($this->name, []);
         } else {
-            $name = $this->name ?: 'BASE64_' . date('YmdHis') . '_' . Str::random(6) . '.' . $extension;
+            $name = $this->name ?: 'BASE64_' . date('YmdHis') . '.' . $extension;
         }
         
         // 解密数据
