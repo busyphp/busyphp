@@ -4,6 +4,12 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\event\model\group\CreateAdminGroupAfterEvent;
+use BusyPHP\app\admin\event\model\group\CreateAdminGroupBeforeEvent;
+use BusyPHP\app\admin\event\model\group\DeleteAdminGroupAfterEvent;
+use BusyPHP\app\admin\event\model\group\DeleteAdminGroupBeforeEvent;
+use BusyPHP\app\admin\event\model\group\UpdateAdminGroupAfterEvent;
+use BusyPHP\app\admin\event\model\group\UpdateAdminGroupBeforeEvent;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\StringHelper;
@@ -14,6 +20,8 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\facade\Event;
+use Throwable;
 
 /**
  * 用户组模型
@@ -23,6 +31,7 @@ use think\db\exception\DbException;
  * @method AdminGroupInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminGroupInfo getInfo($data, $notFoundMessage = null)
  * @method AdminGroupInfo[] selectList()
+ * @method AdminGroupInfo[] buildListWithField(array $values, $key = null, $field = null) : array()
  */
 class AdminGroup extends Model
 {
@@ -76,38 +85,79 @@ class AdminGroup extends Model
      * 添加管理角色
      * @param AdminGroupField $insert
      * @return int
-     * @throws DbException
-     * @throws ParamInvalidException
-     * @throws VerifyException
+     * @throws Throwable
      */
     public function insertData(AdminGroupField $insert)
     {
-        $this->checkData($insert);
-        
-        return $this->addData($insert);
+        $this->startTrans();
+        try {
+            $this->checkData($insert);
+            
+            // 触发创建前事件
+            $event       = new CreateAdminGroupBeforeEvent();
+            $event->data = $insert;
+            Event::trigger($event);
+            
+            $id = $this->addData($insert);
+            
+            // 触发创建后事件
+            $event       = new CreateAdminGroupAfterEvent();
+            $event->data = $insert;
+            $event->info = $this->getInfo($id);
+            Event::trigger($event);
+            
+            $this->commit();
+            
+            return $id;
+        } catch (Throwable $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
     }
     
     
     /**
      * 修改管理角色
      * @param AdminGroupField $update $id
-     * @throws ParamInvalidException
-     * @throws DbException
-     * @throws VerifyException
+     * @throws Throwable
      */
     public function updateData(AdminGroupField $update)
     {
         if ($update->id < 1) {
-            throw new ParamInvalidException('id');
+            throw new ParamInvalidException('$update->id');
         }
         
-        $this->checkData($update);
-        $info = $this->getInfo($update->id);
-        if ($info->system && !$update->status) {
-            throw new VerifyException('无法禁用系统权限');
+        $this->startTrans();
+        try {
+            $this->checkData($update);
+            $info = $this->lock(true)->getInfo($update->id);
+            if ($info->system && !$update->status) {
+                throw new VerifyException('无法禁用系统权限');
+            }
+            
+            // 触发更新前事件
+            $event          = new UpdateAdminGroupBeforeEvent();
+            $event->data    = $update;
+            $event->info    = $info;
+            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
+            Event::trigger($event);
+            
+            $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
+            
+            // 触发更新后事件
+            $event          = new UpdateAdminGroupAfterEvent();
+            $event->data    = $update;
+            $event->info    = $this->getInfo($info->id);
+            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
+            Event::trigger($event);
+            
+            $this->commit();
+        } catch (Throwable $e) {
+            $this->rollback();
+            
+            throw $e;
         }
-        
-        $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
     }
     
     
@@ -153,6 +203,11 @@ class AdminGroup extends Model
                 throw new VerifyException('系统管理权限组禁止删除');
             }
             
+            // 触发删除前事件
+            $event       = new DeleteAdminGroupBeforeEvent();
+            $event->info = $info;
+            Event::trigger($event);
+            
             // 删除子角色
             $childIds = array_keys(ArrayHelper::listByKey($this->getChildList($info->id), AdminGroupField::id()));
             if ($childIds) {
@@ -160,6 +215,12 @@ class AdminGroup extends Model
             }
             
             $res = parent::deleteInfo($data);
+            
+            // 触发删除后事件
+            $event       = new DeleteAdminGroupAfterEvent();
+            $event->info = $info;
+            Event::trigger($event);
+            
             $this->commit();
             
             return $res;
@@ -272,18 +333,44 @@ class AdminGroup extends Model
     
     /**
      * 设置启用/禁用
-     * @param $id
-     * @param $status
-     * @throws DbException
+     * @param int  $id
+     * @param bool $status
+     * @throws Throwable
      */
     public function changeStatus($id, bool $status)
     {
-        $info = $this->getInfo($id);
-        if ($info->system) {
-            throw new VerifyException('无法禁用系统权限');
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo($id);
+            if ($info->system) {
+                throw new VerifyException('无法禁用系统权限');
+            }
+            
+            $data         = AdminGroupField::init();
+            $data->status = $status;
+            
+            // 触发更新前事件
+            $event          = new UpdateAdminGroupBeforeEvent();
+            $event->data    = $data;
+            $event->info    = $info;
+            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
+            Event::trigger($event);
+            
+            $this->whereEntity(AdminGroupField::id($id))->saveData($data);
+            
+            // 触发更新后事件
+            $event          = new UpdateAdminGroupAfterEvent();
+            $event->data    = $data;
+            $event->info    = $this->getInfo($info->id);
+            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
+            Event::trigger($event);
+            
+            $this->commit();
+        } catch (Throwable $e) {
+            $this->rollback();
+            
+            throw $e;
         }
-        
-        $this->whereEntity(AdminGroupField::id($id))->setField(AdminGroupField::status(), $status ? 1 : 0);
     }
     
     

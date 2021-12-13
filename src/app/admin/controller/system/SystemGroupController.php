@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\controller\system;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\plugin\table\TableHandler;
@@ -25,6 +24,7 @@ use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 后台用户组权限管理
@@ -78,9 +78,9 @@ class SystemGroupController extends InsideController
     /**
      * 增加管理角色
      * @return Response
-     * @throws VerifyException
+     * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
+     * @throws Throwable
      */
     public function add()
     {
@@ -119,8 +119,7 @@ class SystemGroupController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
-     * @throws VerifyException
+     * @throws Throwable
      */
     public function edit()
     {
@@ -288,7 +287,8 @@ class SystemGroupController extends InsideController
     
     /**
      * 启用/禁用角色
-     * @throws DbException
+     * @return Response
+     * @throws Throwable
      */
     public function change_status()
     {
