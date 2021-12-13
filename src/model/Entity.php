@@ -79,6 +79,25 @@ class Entity
     
     
     /**
+     * 构建距离查询字段，计算出来距离单位为米
+     * @param string|Entity $latField 纬度字段
+     * @param string|Entity $lngField 经度字段
+     * @param float         $lat 纬度值
+     * @param float         $lng 经度值
+     * @param string|Entity $alias 别名
+     * @return string
+     */
+    public static function buildDistance($latField, $lngField, float $lat, float $lng, $alias = 'distance') : string
+    {
+        $latField = (string) $latField;
+        $lngField = (string) $lngField;
+        $alias    = (string) $alias;
+        
+        return "round( 6378.138 * 2 * ASIN( SQRT( POW( SIN( ( {$lat} * PI() / 180 - {$latField} * PI() / 180 ) / 2 ), 2 ) + COS({$lat} * PI() / 180) * COS({$latField} * PI() / 180) * POW( SIN( ( {$lng} * PI() / 180 - {$lngField} * PI() / 180 ) / 2 ), 2 ) ) ) * 1000) as {$alias}";
+    }
+    
+    
+    /**
      * 快速实例化
      * @param string $field
      * @return Entity
