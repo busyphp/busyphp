@@ -33,6 +33,7 @@ use Throwable;
  * @method AdminUserInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminUserInfo getInfo($data, $notFoundMessage = null)
  * @method AdminUserInfo[] selectList()
+ * @method AdminUserInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class AdminUser extends Model
 {

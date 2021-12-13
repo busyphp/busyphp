@@ -20,6 +20,7 @@ use think\db\exception\DbException;
  * @method SystemFileClassInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemFileClassInfo getInfo($data, $notFoundMessage = null)
  * @method SystemFileClassInfo[] selectList()
+ * @method SystemFileClassInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class SystemFileClass extends Model
 {

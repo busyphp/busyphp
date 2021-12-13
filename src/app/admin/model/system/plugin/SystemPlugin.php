@@ -27,6 +27,7 @@ use think\db\exception\DbException;
  * @method SystemPluginInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemPluginInfo getInfo($data, $notFoundMessage = null)
  * @method SystemPluginInfo[] selectList()
+ * @method SystemPluginInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class SystemPlugin extends Model
 {

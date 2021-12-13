@@ -22,6 +22,7 @@ use think\db\exception\DbException;
  * @method SystemMenuInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemMenuInfo getInfo($data, $notFoundMessage = null)
  * @method SystemMenuInfo[] selectList()
+ * @method SystemMenuInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class SystemMenu extends Model
 {

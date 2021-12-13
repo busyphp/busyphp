@@ -15,6 +15,7 @@ use think\route\Url;
  * @method AdminMessageInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminMessageInfo getInfo($data, $notFoundMessage = null)
  * @method AdminMessageInfo[] selectList()
+ * @method AdminMessageInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class AdminMessage extends Model
 {

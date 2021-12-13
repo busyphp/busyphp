@@ -17,6 +17,7 @@ use think\db\exception\DbException;
  * @method SystemLogsInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemLogsInfo getInfo($data, $notFoundMessage = null)
  * @method SystemLogsInfo[] selectList()
+ * @method SystemLogsInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class SystemLogs extends Model
 {

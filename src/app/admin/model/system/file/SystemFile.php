@@ -24,6 +24,7 @@ use think\facade\Filesystem;
  * @method SystemFileInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemFileInfo getInfo($data, $notFoundMessage = null)
  * @method SystemFileInfo[] selectList()
+ * @method SystemFileInfo[] buildListWithField(array $values, $key = null, $field = null) : array
  */
 class SystemFile extends Model
 {
