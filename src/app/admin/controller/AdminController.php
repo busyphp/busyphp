@@ -3,6 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
+use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
+use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
 use BusyPHP\app\admin\plugin\AutocompletePlugin;
 use BusyPHP\app\admin\plugin\ListPlugin;
 use BusyPHP\app\admin\plugin\SelectPickerPlugin;
@@ -19,11 +21,11 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\Model;
 use BusyPHP\Url;
 use Exception;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
 use think\facade\Cache;
+use think\facade\Event;
 use think\Response;
 use Throwable;
 
@@ -352,11 +354,8 @@ abstract class AdminController extends Controller
         // 生成系统配置文件
         SystemConfig::init()->updateCache();
         
-        // 自定义生产缓存
-        $createCache = $this->app->config->get('app.create_cache', '');
-        if (is_callable($createCache)) {
-            Container::getInstance()->invokeFunction($createCache);
-        }
+        // 触发更新缓存事件
+        Event::trigger(new AdminPanelUpdateCacheEvent());
     }
     
     
@@ -383,12 +382,9 @@ abstract class AdminController extends Controller
         FileHelper::deleteDir($this->app->getRuntimeConfigPath());
         // 清理基本缓存
         Cache::clear();
-    
-        // 自定义清理缓存
-        $clearCache = $this->app->config->get('app.clear_cache', '');
-        if (is_callable($clearCache)) {
-            Container::getInstance()->invokeFunction($clearCache);
-        }
+        
+        // 触发清理缓存事件
+        Event::trigger(new AdminPanelClearCacheEvent());
         
         // 生成配置
         $this->updateCache();
