@@ -35,7 +35,7 @@ class ArrayHelper extends Arr
      * @param callable      $filter 数据过滤方法，接受一个$item
      * @return array
      */
-    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', int $root = 0, ?callable $filter = null)
+    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null)
     {
         $pkKey     = (string) $pkKey;
         $parentKey = (string) $parentKey;
@@ -234,7 +234,7 @@ class ArrayHelper extends Arr
      * @param int           $level 层级
      * @return array
      */
-    public static function sortTree($tree, $sortKey = 'sort', string $order = self::ORDER_BY_ASC, $childKey = 'child', int $level = 1)
+    public static function sortTree($tree, $sortKey = 'sort', string $order = self::ORDER_BY_ASC, $childKey = 'child', $level = 1)
     {
         $sortKey  = is_string($sortKey) ? $sortKey : (string) $sortKey;
         $childKey = is_string($childKey) ? $childKey : (string) $childKey;
