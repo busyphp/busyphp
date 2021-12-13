@@ -91,9 +91,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 静态方法名称存在属性中，则返回属性名称
         if (in_array(StringHelper::camel($name), $fields[$key])) {
-            $info  = new Entity();
-            $field = StringHelper::snake($name);
-            $info->setField($field);
+            $info = new Entity($name);
             
             if (self::$_fieldJoinAliasList[static::class] ?? false) {
                 if (self::$_fieldJoinAliasList[static::class] === true) {
@@ -101,17 +99,17 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 } else {
                     $alias = self::$_fieldJoinAliasList[static::class];
                 }
-                $info->setAlias($alias);
+                $info->table($alias);
             }
             
             switch (count($arguments)) {
                 case 1:
-                    $info->setOp('=');
-                    $info->setValue($arguments[0]);
+                    $info->op('=');
+                    $info->value($arguments[0]);
                 break;
                 case 2:
-                    $info->setOp($arguments[0]);
-                    $info->setValue($arguments[1]);
+                    $info->op($arguments[0]);
+                    $info->value($arguments[1]);
                 break;
             }
             
