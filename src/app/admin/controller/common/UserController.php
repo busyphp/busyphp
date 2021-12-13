@@ -10,6 +10,7 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use Exception;
 use think\Response;
+use Throwable;
 
 /**
  * 用户通用
@@ -80,7 +81,7 @@ class UserController extends InsideController
     /**
      * 主题设置
      * @return Response
-     * @throws Exception
+     * @throws Throwable
      */
     public function theme()
     {

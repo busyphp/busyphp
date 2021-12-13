@@ -16,10 +16,10 @@ use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
-use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 后台管理员管理
@@ -99,7 +99,7 @@ class SystemUserController extends InsideController
      * @return Response
      * @throws DbException
      * @throws VerifyException
-     * @throws Exception
+     * @throws Throwable
      */
     public function add()
     {
@@ -113,7 +113,7 @@ class SystemUserController extends InsideController
             $insert->setEmail($this->post('email/s', 'trim'));
             $insert->setQq($this->post('qq/s', 'trim'));
             $insert->setChecked($this->post('checked/b'));
-            $this->model->insertData($insert);
+            $this->model->createAdmin($insert);
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
             
             return $this->success('添加成功');
@@ -137,7 +137,7 @@ class SystemUserController extends InsideController
      * @throws DbException
      * @throws ParamInvalidException
      * @throws VerifyException
-     * @throws Exception
+     * @throws Throwable
      */
     public function edit()
     {
@@ -225,7 +225,7 @@ class SystemUserController extends InsideController
      * @throws DbException
      * @throws VerifyException
      * @throws ParamInvalidException
-     * @throws Exception
+     * @throws Throwable
      */
     public function password()
     {
@@ -245,7 +245,7 @@ class SystemUserController extends InsideController
     
     /**
      * 启用/禁用管理员
-     * @throws Exception
+     * @throws Throwable
      */
     public function change_checked()
     {
@@ -264,7 +264,7 @@ class SystemUserController extends InsideController
     
     /**
      * 解锁管理员
-     * @throws Exception
+     * @throws Throwable
      */
     public function unlock()
     {
@@ -277,7 +277,7 @@ class SystemUserController extends InsideController
     
     /**
      * 删除
-     * @throws Exception
+     * @throws Throwable
      */
     public function delete()
     {

@@ -4,6 +4,12 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\event\admin\user\CreateAdminUserAfterEvent;
+use BusyPHP\app\admin\event\admin\user\CreateAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\admin\user\DeleteAdminUserAfterEvent;
+use BusyPHP\app\admin\event\admin\user\DeleteAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\admin\user\UpdateAdminUserAfterEvent;
+use BusyPHP\app\admin\event\admin\user\UpdateAdminUserBeforeEvent;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\RegexHelper;
 use BusyPHP\helper\TripleDesHelper;
@@ -14,8 +20,10 @@ use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Cookie;
+use think\facade\Event;
 use think\facade\Session;
 use think\helper\Str;
+use Throwable;
 
 /**
  * 管理员模型
@@ -91,9 +99,9 @@ class AdminUser extends Model
      * 添加管理员
      * @param AdminUserField $insert
      * @return int
-     * @throws Exception
+     * @throws Throwable
      */
-    public function insertData(AdminUserField $insert)
+    public function createAdmin(AdminUserField $insert)
     {
         if (!$insert->username || !$insert->password || !$insert->groupIds) {
             throw new ParamInvalidException('username,password,group_ids');
@@ -102,6 +110,12 @@ class AdminUser extends Model
         $this->startTrans();
         try {
             $this->checkRepeat($insert);
+            
+            // 出发创建前事件
+            $event       = new CreateAdminUserBeforeEvent();
+            $event->data = $insert;
+            Event::trigger($event);
+            
             $insert->createTime = time();
             $insert->updateTime = time();
             $insert->password   = password_hash($insert->password, PASSWORD_DEFAULT);
@@ -109,10 +123,16 @@ class AdminUser extends Model
             
             $id = $this->addData($insert);
             
+            // 触发创建后事件
+            $event       = new CreateAdminUserAfterEvent();
+            $event->data = $insert;
+            $event->info = $this->getInfo($id);
+            Event::trigger($event);
+            
             $this->commit();
             
             return $id;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->rollback();
             
             throw $e;
@@ -123,10 +143,10 @@ class AdminUser extends Model
     /**
      * 修改管理员
      * @param AdminUserField $update
-     * @throws ParamInvalidException
-     * @throws Exception
+     * @param int            $operateType 操作类型
+     * @throws Throwable
      */
-    public function updateData($update)
+    public function updateData(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('id');
@@ -134,8 +154,15 @@ class AdminUser extends Model
         
         $this->startTrans();
         try {
-            $this->lock(true)->getInfo($update->id);
+            $info = $this->lock(true)->getInfo($update->id);
             $this->checkRepeat($update, $update->id);
+            
+            // 触发更新前事件
+            $event          = new UpdateAdminUserBeforeEvent();
+            $event->info    = $info;
+            $event->data    = $update;
+            $event->operate = $operateType;
+            Event::trigger($event);
             
             // 密码
             if ($update->password) {
@@ -145,8 +172,15 @@ class AdminUser extends Model
             $update->updateTime = time();
             $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
             
+            // 触发更新后事件
+            $event          = new UpdateAdminUserAfterEvent();
+            $event->info    = $this->getInfo($info->id);
+            $event->data    = $update;
+            $event->operate = $operateType;
+            Event::trigger($event);
+            
             $this->commit();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->rollback();
             
             throw $e;
@@ -201,14 +235,14 @@ class AdminUser extends Model
      * @param string $confirmPassword
      * @throws ParamInvalidException
      * @throws VerifyException
-     * @throws Exception
+     * @throws Throwable
      */
     public function updatePassword($id, $password, $confirmPassword)
     {
         $saveData           = AdminUserField::init();
         $saveData->id       = floatval($id);
         $saveData->password = self::checkPassword($password, $confirmPassword);
-        $this->updateData($saveData);
+        $this->updateData($saveData, UpdateAdminUserBeforeEvent::OPERATE_PASSWORD);
     }
     
     
@@ -216,18 +250,37 @@ class AdminUser extends Model
      * 删除管理员
      * @param int $data
      * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws VerifyException
+     * @throws Throwable
      */
     public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($data);
-        if ($info->system) {
-            throw new VerifyException('系统管理员禁止删除');
+        $this->startTrans();
+        try {
+            $info = $this->lock(true)->getInfo($data);
+            if ($info->system) {
+                throw new VerifyException('系统管理员禁止删除');
+            }
+            
+            // 触发删除前事件
+            $event       = new DeleteAdminUserBeforeEvent();
+            $event->info = $info;
+            Event::trigger($event);
+            
+            $result = parent::deleteInfo($info->id);
+            
+            // 触发删除后
+            $event       = new DeleteAdminUserAfterEvent();
+            $event->info = $info;
+            Event::trigger($event);
+            
+            $this->commit();
+            
+            return $result;
+        } catch (Throwable $e) {
+            $this->rollback();
+            
+            throw $e;
         }
-        
-        return parent::deleteInfo($info->id);
     }
     
     
@@ -380,7 +433,7 @@ class AdminUser extends Model
      * @param AdminUserInfo $userInfo
      * @param bool          $saveLogin 是否记住登录
      * @return AdminUserInfo
-     * @throws DbException
+     * @throws Throwable
      */
     public function setLoginSuccess(AdminUserInfo $userInfo, bool $saveLogin = false) : AdminUserInfo
     {
@@ -399,7 +452,7 @@ class AdminUser extends Model
         $save->errorRelease = 0;
         $save->errorTotal   = 0;
         $save->errorTime    = 0;
-        $this->saveData($save);
+        $this->updateData($save, UpdateAdminUserBeforeEvent::OPERATE_LOGIN);
         
         // 加密数据
         $cookieAuthKey = TripleDesHelper::encrypt(self::createAuthKey($userInfo, $token), $token);
@@ -436,14 +489,14 @@ class AdminUser extends Model
      * 设置启用/禁用
      * @param int  $id
      * @param bool $checked
-     * @throws Exception
+     * @throws Throwable
      */
     public function changeChecked($id, bool $checked)
     {
         $update = AdminUserField::init();
         $update->setId($id);
         $update->checked = $checked;
-        $this->updateData($update);
+        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_CHECKED);
     }
     
     
@@ -451,14 +504,14 @@ class AdminUser extends Model
      * 设置主题
      * @param int   $id
      * @param array $theme
-     * @throws Exception
+     * @throws Throwable
      */
     public function setTheme($id, array $theme)
     {
         $update = AdminUserField::init();
         $update->setId($id);
         $update->theme = json_encode($theme, JSON_UNESCAPED_UNICODE);
-        $this->updateData($update);
+        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_THEME);
         $this->saveThemeToCookie($id, $update->theme);
     }
     
@@ -502,7 +555,7 @@ class AdminUser extends Model
     /**
      * 解锁
      * @param $id
-     * @throws Exception
+     * @throws Throwable
      */
     public function unlock($id)
     {
@@ -511,7 +564,7 @@ class AdminUser extends Model
         $update->errorRelease = 0;
         $update->errorTime    = 0;
         $update->errorTotal   = 0;
-        $this->updateData($update);
+        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_UNLOCK);
     }
     
     
