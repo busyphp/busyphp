@@ -13,6 +13,7 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Request;
 use BusyPHP\Url;
 use stdClass;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
@@ -162,6 +163,7 @@ class AdminHandle extends Handle
         $adminSetting    = AdminSetting::init();
         $publicSetting   = PublicSetting::init();
         $pageTitleSuffix = ' - ' . $adminSetting->getTitle();
+        $frameRuntime    = $app->config->get('app.frame_runtime', '');
         $data['system']  = [
             'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
@@ -193,7 +195,11 @@ class AdminHandle extends Handle
                         'url' => (string) url('Common.Message/index'),
                     ]
                 ]
-            ], JSON_UNESCAPED_UNICODE)
+            ], JSON_UNESCAPED_UNICODE),
+            
+            // 注入全局运行时JS
+            'frame_runtime'     => is_callable($frameRuntime) ? Container::getInstance()
+                ->invokeFunction($frameRuntime) : $frameRuntime
         ];
         
         return $data;

@@ -829,7 +829,11 @@ declare namespace busyAdmin {
             /**
              * 滚动记录长度
              */
-            scrollCacheLength: number
+            scrollCacheLength: number,
+            /**
+             * 自定义运行时
+             */
+            runtime: (() => void),
         }
     }) => void;
 
