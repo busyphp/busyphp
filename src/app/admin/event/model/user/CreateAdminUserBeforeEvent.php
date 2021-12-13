@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\app\admin\event\admin\user;
+namespace BusyPHP\app\admin\event\model\user;
 
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\model\ObjectOption;

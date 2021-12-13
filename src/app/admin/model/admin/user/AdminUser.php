@@ -4,12 +4,12 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\event\admin\user\CreateAdminUserAfterEvent;
-use BusyPHP\app\admin\event\admin\user\CreateAdminUserBeforeEvent;
-use BusyPHP\app\admin\event\admin\user\DeleteAdminUserAfterEvent;
-use BusyPHP\app\admin\event\admin\user\DeleteAdminUserBeforeEvent;
-use BusyPHP\app\admin\event\admin\user\UpdateAdminUserAfterEvent;
-use BusyPHP\app\admin\event\admin\user\UpdateAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\CreateAdminUserAfterEvent;
+use BusyPHP\app\admin\event\model\user\CreateAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\DeleteAdminUserAfterEvent;
+use BusyPHP\app\admin\event\model\user\DeleteAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\UpdateAdminUserAfterEvent;
+use BusyPHP\app\admin\event\model\user\UpdateAdminUserBeforeEvent;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\RegexHelper;
 use BusyPHP\helper\TripleDesHelper;
