@@ -2,7 +2,9 @@
 
 namespace BusyPHP\helper;
 
+use BusyPHP\model\Entity;
 use think\Collection;
+use think\Event;
 use think\helper\Arr;
 
 /**
@@ -25,15 +27,15 @@ class ArrayHelper extends Arr
     
     /**
      * 把返回的数据集转换成Tree
-     * @param array    $list 要转换的数据集
-     * @param string   $pkKey 主键字段
-     * @param string   $parentKey parent标记字段
-     * @param string   $childKey 子节点字段
-     * @param int      $root parent字段依据，默认为0则代表是跟节点
-     * @param callable $filter 数据过滤方法，接受一个$item
+     * @param array         $list 要转换的数据集
+     * @param string|Entity $pkKey 主键字段
+     * @param string|Entity $parentKey parent标记字段
+     * @param string|Entity $childKey 子节点字段
+     * @param int           $root parent字段依据，默认为0则代表是跟节点
+     * @param callable      $filter 数据过滤方法，接受一个$item
      * @return array
      */
-    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null)
+    public static function listToTree($list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', int $root = 0, ?callable $filter = null)
     {
         $pkKey     = (string) $pkKey;
         $parentKey = (string) $parentKey;
@@ -87,14 +89,15 @@ class ArrayHelper extends Arr
     
     /**
      * 把树状数据转为数据集
-     * @param array  $tree 树状数据
-     * @param string $childKey 子节点字段
-     * @param bool   $clearChild 是否清理子节点
-     * @param array  $list 内部用
+     * @param array        $tree 树状数据
+     * @param string|Event $childKey 子节点字段
+     * @param bool         $clearChild 是否清理子节点
+     * @param array        $list 内部用
      * @return array
      */
     public static function treeToList($tree, $childKey = 'child', bool $clearChild = true, &$list = [])
     {
+        $childKey = is_string($childKey) ? $clearChild : (string) $childKey;
         if (!is_array($tree)) {
             return $tree;
         }
@@ -125,17 +128,18 @@ class ArrayHelper extends Arr
     
     /**
      * 对二维数组进行排序
-     * @param array  $list 要排序的二维数据
-     * @param string $field 排序依据的字段
-     * @param string $orderBy 排序方式，默认位升序
+     * @param array         $list 要排序的二维数据
+     * @param string|Entity $field 排序依据的字段
+     * @param string        $orderBy 排序方式，默认位升序
      * @return array
      */
-    public static function listSortBy($list, $field, $orderBy = 'asc')
+    public static function listSortBy($list, $field, $orderBy = self::ORDER_BY_ASC)
     {
+        $field = (string) $field;
         if (is_array($list)) {
             $refer = $resultSet = [];
             foreach ($list as $i => $data) {
-                $refer[$i] = &$data[$field];
+                $refer[$i] = $data[$field];
             }
             switch ($orderBy) {
                 // 正向排序
@@ -200,7 +204,7 @@ class ArrayHelper extends Arr
     /**
      * 将列表数据通过某字段值作为主键重新整理
      * @param array|Collection $list 列表
-     * @param string           $key 字段名称
+     * @param string|Entity    $key 字段名称
      * @return array|Collection
      */
     public static function listByKey($list, $key)
@@ -223,15 +227,18 @@ class ArrayHelper extends Arr
     
     /**
      * 对树状结构数据进行排序
-     * @param array  $tree 树状结构数据
-     * @param string $sortKey 排序依据字段
-     * @param string $order 排序方式
-     * @param string $childKey 子节点字段
-     * @param int    $level 层级
+     * @param array         $tree 树状结构数据
+     * @param string|Entity $sortKey 排序依据字段
+     * @param string        $order 排序方式
+     * @param string        $childKey 子节点字段
+     * @param int           $level 层级
      * @return array
      */
-    public static function sortTree($tree, $sortKey = 'sort', $order = self::ORDER_BY_ASC, $childKey = 'child', $level = 1)
+    public static function sortTree($tree, $sortKey = 'sort', string $order = self::ORDER_BY_ASC, $childKey = 'child', int $level = 1)
     {
+        $sortKey  = is_string($sortKey) ? $sortKey : (string) $sortKey;
+        $childKey = is_string($childKey) ? $childKey : (string) $childKey;
+        
         foreach ($tree as $i => $r) {
             $r['level'] = $level;
             if (isset($r[$childKey]) && count($r[$childKey]) > 0) {
