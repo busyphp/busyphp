@@ -13,7 +13,7 @@
                 <table class="table table-bordered">
                     <tr>
                         <td colspan="2">
-                            您好，<a class="label label-primary" href="{:url('System.User/personal_info')}">{$system.user.username}</a>
+                            您好，<a class="label label-primary" data-toggle="busy-modal" data-url="{:url('Common.User/profile')}">{$system.user.username}</a>
                             &nbsp;&nbsp;&nbsp;用户组：
                             <foreach name="system.user.group_names" item="vo">
                                 <label class="label label-warning">{$vo}</label>
