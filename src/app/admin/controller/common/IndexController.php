@@ -114,7 +114,7 @@ class IndexController extends InsideController
                 $data = $this->app->config->get('app.admin.data', []);
                 if ($data) {
                     $data = is_callable($data) ? Container::getInstance()
-                        ->invokeFunction($data) : (is_array($data) ? $data : []);
+                        ->invokeFunction($data, [$this->adminUser]) : (is_array($data) ? $data : []);
                 } else {
                     $data = [];
                 }
