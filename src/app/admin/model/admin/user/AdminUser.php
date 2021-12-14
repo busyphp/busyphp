@@ -17,6 +17,7 @@ use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\setting\AdminSetting;
 use Exception;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Cookie;
@@ -291,7 +292,7 @@ class AdminUser extends Model
      * @param string $password 密码
      * @param bool   $saveLogin 是否记住登录
      * @return AdminUserInfo
-     * @throws VerifyException
+     * @throws Throwable
      */
     public function login(string $username, string $password, bool $saveLogin = false) : AdminUserInfo
     {
@@ -313,7 +314,7 @@ class AdminUser extends Model
             // 查询账户
             if (RegexHelper::email($username)) {
                 $this->whereEntity(AdminUserField::email($username));
-            } elseif (RegexHelper::phone($username)) {
+            } elseif (self::checkPhone($username)) {
                 $this->whereEntity(AdminUserField::phone($username));
             } else {
                 $this->whereEntity(AdminUserField::username($username));
@@ -658,5 +659,26 @@ class AdminUser extends Model
     {
         $this->whereEntity(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
         $this->clearCache();
+    }
+    
+    
+    /**
+     * 校验手机号
+     * @param string $phone
+     * @return bool
+     */
+    public static function checkPhone(string $phone) : bool
+    {
+        $class = self::class;
+        $regex = App::getInstance()->config->get("app.model.{$class}.check_phone_match", '');
+        if ($regex) {
+            if (is_callable($regex)) {
+                return Container::getInstance()->invokeFunction($regex, [$phone]);
+            } else {
+                return preg_match($regex, $phone) === 1;
+            }
+        }
+        
+        return RegexHelper::phone($phone);
     }
 }

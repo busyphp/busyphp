@@ -251,7 +251,7 @@ class AdminUserField extends Field
     {
         $this->phone = trim((string) $phone);
         if ($this->phone) {
-            if (!RegexHelper::phone($phone)) {
+            if (!AdminUser::checkPhone($phone)) {
                 throw new VerifyException('请输入有效的手机号', 'phone');
             }
         }
