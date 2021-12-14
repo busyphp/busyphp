@@ -134,6 +134,14 @@ declare namespace busyAdmin {
          */
         appPluginReady: string,
         /**
+         * 退出登录成功
+         */
+        appLoginOuted: string,
+        /**
+         * 登录成功
+         */
+        appLoginSucceed: string,
+        /**
          * 单页前进后退触发
          */
         routePopState: string,
@@ -829,11 +837,7 @@ declare namespace busyAdmin {
             /**
              * 滚动记录长度
              */
-            scrollCacheLength: number,
-            /**
-             * 自定义运行时
-             */
-            runtime: (() => void),
+            scrollCacheLength: number
         }
     }) => void;
 
@@ -1089,6 +1093,113 @@ declare namespace busyAdmin {
          * 触发窗口刷新
          */
         triggerResize(): void;
+
+        /**
+         * 获取用户ID
+         */
+        getUserId(): number;
+
+        /**
+         * 获取用户名
+         */
+        getUsername(): string;
+
+        /**
+         * 获取用户信息
+         */
+        getUserInfo(): BusyAdminUserInfo;
+
+        /**
+         * 获取APP全局信息
+         */
+        getData(): BusyAdminAppData;
+
+        /**
+         * 获取APP自定义数据
+         */
+        getUseData(): {};
+
+        /**
+         * 触发全局事件
+         * @param event 事件名称
+         * @param args 参数
+         */
+        trigger(event: string, args?: any): BusyAdminApp;
+
+        /**
+         * 监听全局事件
+         * @param event
+         * @param callback
+         */
+        on(event: string, callback: (() => void)): BusyAdminApp;
+
+        /**
+         * 监听一次全局事件
+         * @param event
+         * @param callback
+         */
+        once(event: string, callback: (() => void)): BusyAdminApp;
+
+        /**
+         * 卸载监听全局事件
+         * @param event
+         */
+        off(event: string): BusyAdminApp;
+    }
+
+    interface BusyAdminAppData {
+        user_id: number,
+        username: string,
+        menu_default: string,
+        menu_list: [BusyAdminMenuItem],
+        message_agency: boolean,
+        message_notice: boolean,
+        user: BusyAdminUserInfo,
+        user_dropdowns: [{
+            attr: [object],
+            icon: string,
+            text: string,
+        }],
+        data: {}
+    }
+
+    interface BusyAdminUserInfo {
+        id: number,
+        username: string,
+        phone: string,
+        email: string,
+        qq: string,
+        group_names: [string],
+        group_rule_ids: [number],
+        group_rule_paths: [string],
+        system: boolean,
+        theme: {
+            nav_mode: number,
+            nav_single_hold: number,
+            skin: string,
+        },
+    }
+
+    interface BusyAdminMenuItem {
+        disabled: boolean,
+        hash: string,
+        hide: boolean,
+        hides: [string],
+        icon: string,
+        id: number,
+        name: string,
+        param_list: [string],
+        params: string,
+        parent_hash: string,
+        parent_path: string,
+        path: string,
+        sort: number,
+        system: boolean,
+        target: string,
+        top_path: string,
+        top_url: string,
+        url: string,
+        child: [BusyAdminMenuItem]
     }
 
 

@@ -10,6 +10,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
 use Exception;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -105,9 +106,17 @@ class IndexController extends InsideController
                         'data-toggle'     => 'busy-request',
                         'data-url'        => (string) url('admin_out'),
                         'data-confirm'    => '确认要退出登录吗？',
-                        'data-on-success' => '@route.redirect',
+                        'data-on-success' => 'busyAdmin.app._outLogin',
                     ]
                 ];
+                
+                // 自定义全局数据
+                $data = $this->app->config->get('app.admin.data', []);
+                if ($data) {
+                    $data = is_callable($data) ? Container::getInstance()->invokeFunction($data) : (is_array($data) ? $data : []);
+                } else {
+                    $data = [];
+                }
                 
                 return $this->success([
                     'menu_default'   => $this->adminUser->defaultMenu,
@@ -115,6 +124,19 @@ class IndexController extends InsideController
                     'user_id'        => $this->adminUserId,
                     'username'       => $this->adminUsername,
                     'user_dropdowns' => $dropList,
+                    'user'           => [
+                        'id'               => $this->adminUser->id,
+                        'username'         => $this->adminUser->username,
+                        'phone'            => $this->adminUser->phone,
+                        'qq'               => $this->adminUser->qq,
+                        'email'            => $this->adminUser->email,
+                        'group_names'      => $this->adminUser->groupNames,
+                        'group_rule_ids'   => $this->adminUser->groupRuleIds,
+                        'group_rule_paths' => $this->adminUser->groupRulePaths,
+                        'system'           => $this->adminUser->system,
+                        'theme'            => $this->adminUser->theme,
+                    ],
+                    'data'           => $data,
                     
                     // 消息启用状态
                     'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
