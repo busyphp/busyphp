@@ -148,7 +148,7 @@ class AdminHandle extends Handle
         // 样式路径配置
         $theme        = AdminUser::init()->getTheme($adminUser);
         $skinRoot     = $request->getAssetsUrl() . 'admin/';
-        $version      = $app->config->get('admin.version', '');
+        $version      = $app->config->get('app.admin.version', '');
         $version      = $version ? ".{$version}" : '';
         $data['skin'] = [
             'root'    => $skinRoot,
