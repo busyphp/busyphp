@@ -63,6 +63,10 @@ class InsideController extends AdminController
      */
     protected function parseTemplate($template = '')
     {
+        if (0 === strpos($template, '@')) {
+            return substr($template, 1);
+        }
+        
         if (!$template) {
             return $this->getTemplatePath() . $this->request->action() . '.html';
         } else {

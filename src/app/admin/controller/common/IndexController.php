@@ -113,7 +113,8 @@ class IndexController extends InsideController
                 // 自定义全局数据
                 $data = $this->app->config->get('app.admin.data', []);
                 if ($data) {
-                    $data = is_callable($data) ? Container::getInstance()->invokeFunction($data) : (is_array($data) ? $data : []);
+                    $data = is_callable($data) ? Container::getInstance()
+                        ->invokeFunction($data) : (is_array($data) ? $data : []);
                 } else {
                     $data = [];
                 }
@@ -156,7 +157,13 @@ class IndexController extends InsideController
                 $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
                 $this->setPageTitle('首页');
                 
-                return $this->display();
+                // 自定义模板
+                $template = $this->app->config->get('app.admin.template.index', '');
+                if ($template && !is_file($template)) {
+                    $template = "@{$template}";
+                }
+                
+                return $this->display($template);
         }
     }
 }
