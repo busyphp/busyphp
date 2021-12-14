@@ -148,6 +148,8 @@ class AdminHandle extends Handle
         // 样式路径配置
         $theme        = AdminUser::init()->getTheme($adminUser);
         $skinRoot     = $request->getAssetsUrl() . 'admin/';
+        $version      = $app->config->get('admin.version', '');
+        $version      = $version ? ".{$version}" : '';
         $data['skin'] = [
             'root'    => $skinRoot,
             'css'     => $skinRoot . 'css/',
@@ -156,14 +158,15 @@ class AdminHandle extends Handle
             'lib'     => $skinRoot . 'lib/',
             'themes'  => $skinRoot . 'themes/',
             'theme'   => $skinRoot . "themes/{$theme['skin']}.css",
-            'version' => $app->isDebug() && $app->config->get('app.debug', false) ? time() : $app->getFrameworkVersion(),
+            'version' => ($app->isDebug() && $app->config->get('app.admin.debug', false)) ? time() : ($app->getFrameworkVersion() . $version),
         ];
         
         // 系统信息
         $adminSetting    = AdminSetting::init();
         $publicSetting   = PublicSetting::init();
         $pageTitleSuffix = ' - ' . $adminSetting->getTitle();
-        $frameRuntime    = $app->config->get('app.frame_runtime', '');
+        $requires        = $app->config->get('app.admin.requires', '');
+        $requires        = is_callable($requires) ? Container::getInstance()->invokeFunction($requires) : $requires;
         $data['system']  = [
             'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
@@ -176,7 +179,12 @@ class AdminHandle extends Handle
             'frame_config'      => json_encode([
                 'root'       => $data['url']['app'],
                 'moduleRoot' => $data['skin']['lib'],
+                'skinRoot'   => $data['skin']['root'],
+                'jsRoot'     => $data['skin']['js'],
+                'cssRoot'    => $data['skin']['css'],
+                'imagesRoot' => $data['skin']['images'],
                 'version'    => $data['skin']['version'],
+                'requires'   => $requires,
                 'configs'    => [
                     'app'    => [
                         'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder(false) . "?v={$data['skin']['version']}",
@@ -195,11 +203,7 @@ class AdminHandle extends Handle
                         'url' => (string) url('Common.Message/index'),
                     ]
                 ]
-            ], JSON_UNESCAPED_UNICODE),
-            
-            // 注入全局运行时JS
-            'frame_runtime'     => is_callable($frameRuntime) ? Container::getInstance()
-                ->invokeFunction($frameRuntime) : $frameRuntime
+            ], JSON_UNESCAPED_UNICODE)
         ];
         
         return $data;

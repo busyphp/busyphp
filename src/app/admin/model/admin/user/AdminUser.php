@@ -545,9 +545,9 @@ class AdminUser extends Model
         
         $config                   = App::getInstance()->config;
         $theme['skin']            = trim($theme['skin'] ?? '');
-        $theme['skin']            = $theme['skin'] ?: $config->get('app.theme_skin', 'default');
-        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : $config->get('app.theme_nav_mode', false);
-        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : $config->get('app.theme_nav_single_hold', false);
+        $theme['skin']            = $theme['skin'] ?: $config->get('app.admin.theme_skin', 'default');
+        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : $config->get('app.admin.theme_nav_mode', false);
+        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : $config->get('app.admin.theme_nav_single_hold', false);
         
         return $theme;
     }
