@@ -846,10 +846,31 @@ declare namespace busyAdmin {
      * 获取项目跟地址
      */
     var root: () => string;
+
     /**
-     * 获取模块跟地址
+     * 获取模块根目录
      */
     var moduleRoot: () => string;
+
+    /**
+     * 获取Skin根目录
+     */
+    var skinRoot: () => string;
+
+    /**
+     * 获取CSS根目录
+     */
+    var cssRoot: () => string;
+
+    /**
+     * 获取JS根目录
+     */
+    var jsRoot: () => string;
+
+    /**
+     * 获取images根目录
+     */
+    var imagesRoot: () => string;
 
     /**
      * 获取配置
