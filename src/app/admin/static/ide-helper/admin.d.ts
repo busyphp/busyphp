@@ -1145,6 +1145,11 @@ declare namespace busyAdmin {
          * @param event
          */
         off(event: string): BusyAdminApp;
+
+        /**
+         * 是否登录
+         */
+        isLogin(): boolean;
     }
 
     interface BusyAdminAppData {
