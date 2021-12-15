@@ -15,12 +15,10 @@ use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
 use BusyPHP\app\admin\plugin\tree\TreeHandler;
 use BusyPHP\app\admin\plugin\TreePlugin;
-use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
-use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -271,7 +269,7 @@ class SystemGroupController extends InsideController
     
     /**
      * 删除管理角色
-     * @throws Exception
+     * @throws Throwable
      */
     public function delete()
     {
