@@ -9,6 +9,7 @@ use Countable;
 use Exception;
 use IteratorAggregate;
 use JsonSerializable;
+use think\contract\Arrayable;
 use think\contract\Jsonable;
 use Traversable;
 
@@ -18,7 +19,7 @@ use Traversable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/19 下午上午11:17 ArrayOption.php $
  */
-class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable, IteratorAggregate
+class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable, IteratorAggregate, Arrayable
 {
     /**
      * @var array
@@ -31,7 +32,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * @param array $options
      * @return static
      */
-    public static function init(array $options) : ArrayOption
+    public static function init(array $options) : self
     {
         return new static($options);
     }
@@ -200,5 +201,11 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     public function __toString()
     {
         return $this->toJson();
+    }
+    
+    
+    public function toArray() : array
+    {
+        return $this->options;
     }
 }
