@@ -92,7 +92,7 @@ class SystemGroupController extends InsideController
             $insert->setDefaultMenuId($this->post('default_menu_id/d'));
             $insert->setRule($this->hashToId($this->post('rule/a')));
             $insert->setStatus($this->post('status/b'));
-            $this->model->insertData($insert);
+            $this->model->createGroup($insert);
             $this->log()->record(self::LOG_INSERT, '添加管理角色');
             
             return $this->success('添加成功');
@@ -132,7 +132,7 @@ class SystemGroupController extends InsideController
             $update->setDefaultMenuId($this->post('default_menu_id/d'));
             $update->setRule($this->hashToId($this->post('rule/a', [])));
             $update->setStatus($this->post('status/b'));
-            $this->model->updateData($update);
+            $this->model->updateGroup($update);
             $this->log()->record(self::LOG_UPDATE, '修改管理角色');
             
             return $this->success('修改成功');

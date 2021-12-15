@@ -84,10 +84,11 @@ class AdminGroup extends Model
     /**
      * 添加管理角色
      * @param AdminGroupField $insert
+     * @param bool            $triggerEvent 是否触发事件，否则触发回调
      * @return int
      * @throws Throwable
      */
-    public function insertData(AdminGroupField $insert)
+    public function createGroup(AdminGroupField $insert, bool $triggerEvent = true)
     {
         $this->startTrans();
         try {
@@ -96,7 +97,7 @@ class AdminGroup extends Model
             // 触发创建前事件
             $event       = new CreateAdminGroupBeforeEvent();
             $event->data = $insert;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $id = $this->addData($insert);
             
@@ -104,7 +105,7 @@ class AdminGroup extends Model
             $event       = new CreateAdminGroupAfterEvent();
             $event->data = $insert;
             $event->info = $this->getInfo($id);
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
             
@@ -120,9 +121,10 @@ class AdminGroup extends Model
     /**
      * 修改管理角色
      * @param AdminGroupField $update $id
+     * @param bool            $triggerEvent 是否触发事件，否则触发回调
      * @throws Throwable
      */
-    public function updateData(AdminGroupField $update)
+    public function updateGroup(AdminGroupField $update, bool $triggerEvent = true)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('$update->id');
@@ -141,7 +143,7 @@ class AdminGroup extends Model
             $event->data    = $update;
             $event->info    = $info;
             $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
             
@@ -150,7 +152,7 @@ class AdminGroup extends Model
             $event->data    = $update;
             $event->info    = $this->getInfo($info->id);
             $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
         } catch (Throwable $e) {
@@ -189,12 +191,12 @@ class AdminGroup extends Model
     
     /**
      * 删除用户组
-     * @param int $data
+     * @param int  $data
+     * @param bool $triggerEvent 是否触发事件，否则触发回调
      * @return int
-     * @throws VerifyException
-     * @throws \Exception
+     * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function deleteInfo($data, bool $triggerEvent = true) : int
     {
         $this->startTrans();
         try {
@@ -206,7 +208,7 @@ class AdminGroup extends Model
             // 触发删除前事件
             $event       = new DeleteAdminGroupBeforeEvent();
             $event->info = $info;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             // 删除子角色
             $childIds = array_keys(ArrayHelper::listByKey($this->getChildList($info->id), AdminGroupField::id()));
@@ -219,12 +221,12 @@ class AdminGroup extends Model
             // 触发删除后事件
             $event       = new DeleteAdminGroupAfterEvent();
             $event->info = $info;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
             
             return $res;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->rollback();
             
             throw $e;
@@ -335,9 +337,10 @@ class AdminGroup extends Model
      * 设置启用/禁用
      * @param int  $id
      * @param bool $status
+     * @param bool $triggerEvent 是否触发事件，否则触发回调
      * @throws Throwable
      */
-    public function changeStatus($id, bool $status)
+    public function changeStatus($id, bool $status, bool $triggerEvent = true)
     {
         $this->startTrans();
         try {
@@ -354,7 +357,7 @@ class AdminGroup extends Model
             $event->data    = $data;
             $event->info    = $info;
             $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $this->whereEntity(AdminGroupField::id($id))->saveData($data);
             
@@ -363,7 +366,7 @@ class AdminGroup extends Model
             $event->data    = $data;
             $event->info    = $this->getInfo($info->id);
             $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
         } catch (Throwable $e) {
