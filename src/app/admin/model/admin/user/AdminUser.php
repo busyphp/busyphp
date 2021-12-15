@@ -100,10 +100,11 @@ class AdminUser extends Model
     /**
      * 添加管理员
      * @param AdminUserField $insert
+     * @param bool           $triggerEvent 是否触发事件，否则触发回调
      * @return int
      * @throws Throwable
      */
-    public function createAdmin(AdminUserField $insert)
+    public function createAdmin(AdminUserField $insert, bool $triggerEvent = true)
     {
         if (!$insert->username || !$insert->password || !$insert->groupIds) {
             throw new ParamInvalidException('username,password,group_ids');
@@ -113,10 +114,10 @@ class AdminUser extends Model
         try {
             $this->checkRepeat($insert);
             
-            // 出发创建前事件
+            // 触发创建前事件
             $event       = new CreateAdminUserBeforeEvent();
             $event->data = $insert;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $insert->createTime = time();
             $insert->updateTime = time();
@@ -129,7 +130,7 @@ class AdminUser extends Model
             $event       = new CreateAdminUserAfterEvent();
             $event->data = $insert;
             $event->info = $this->getInfo($id);
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
             
@@ -146,9 +147,10 @@ class AdminUser extends Model
      * 修改管理员
      * @param AdminUserField $update
      * @param int            $operateType 操作类型
+     * @param bool           $triggerEvent 是否触发事件，否则触发回调
      * @throws Throwable
      */
-    public function updateData(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT)
+    public function updateData(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT, bool $triggerEvent = true)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('id');
@@ -164,7 +166,7 @@ class AdminUser extends Model
             $event->info    = $info;
             $event->data    = $update;
             $event->operate = $operateType;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             // 密码
             if ($update->password) {
@@ -179,7 +181,7 @@ class AdminUser extends Model
             $event->info    = $this->getInfo($info->id);
             $event->data    = $update;
             $event->operate = $operateType;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
         } catch (Throwable $e) {
@@ -250,11 +252,12 @@ class AdminUser extends Model
     
     /**
      * 删除管理员
-     * @param int $data
+     * @param int  $data
+     * @param bool $triggerEvent 是否触发事件，否则触发回调
      * @return int
      * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function deleteInfo($data, bool $triggerEvent = true) : int
     {
         $this->startTrans();
         try {
@@ -266,14 +269,14 @@ class AdminUser extends Model
             // 触发删除前事件
             $event       = new DeleteAdminUserBeforeEvent();
             $event->info = $info;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $result = parent::deleteInfo($info->id);
             
             // 触发删除后
             $event       = new DeleteAdminUserAfterEvent();
             $event->info = $info;
-            Event::trigger($event);
+            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
             

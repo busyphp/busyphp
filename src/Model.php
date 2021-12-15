@@ -16,6 +16,7 @@ use JsonSerializable;
 use ReflectionClass;
 use ReflectionException;
 use think\Collection;
+use think\Container;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\db\exception\DataNotFoundException;
@@ -159,20 +160,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     //+--------------------------------------
     //| 回调常量
     //+--------------------------------------
-    /** 操作前回调 */
-    const CALLBACK_BEFORE = 0;
+    /** 操作前回调，一般用于创建/更新/删除前 */
+    const CALLBACK_BEFORE = 'before';
     
-    /** 操作成功回调 */
-    const CALLBACK_SUCCESS = 1;
+    /** 操作后回调，一般用于创建/更新/删除后 */
+    const CALLBACK_AFTER = 'after';
     
-    /** 操作失败回调 */
-    const CALLBACK_ERROR = 2;
+    /** 操作失败回调，一般用于失败的情况下 */
+    const CALLBACK_ERROR = 'error';
     
-    /** 操作完成回调 */
-    const CALLBACK_COMPLETE = 3;
+    /** 操作完成回调，一般用于成功/失败的情况下 */
+    const CALLBACK_COMPLETE = 'complete';
     
-    /** 操作过程中回调 */
-    const CALLBACK_PROCESS = 4;
+    /** 处理过程中回调，一般用于业务逻辑中 */
+    const CALLBACK_PROCESS = 'process';
     
     //+--------------------------------------
     //| 数据库回调常量
@@ -401,13 +402,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 触发回调方法
      * @param mixed $callType 回调类型
-     * @param array $args 回调方法参数
+     * @param mixed ...$args 回调方法参数
      * @return mixed
      */
-    protected function triggerCallback($callType, $args = [])
+    protected function triggerCallback($callType, ...$args)
     {
         if (isset($this->callback[$callType])) {
-            return call_user_func_array($this->callback[$callType], $args);
+            return Container::getInstance()->invokeFunction($this->callback[$callType], $args);
         }
         
         return null;
