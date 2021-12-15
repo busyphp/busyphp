@@ -21,6 +21,16 @@ use Traversable;
  */
 class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, IteratorAggregate, ArrayAccess
 {
+    /**
+     * 快速实例化
+     * @return static
+     */
+    public static function init() : self
+    {
+        return new static();
+    }
+    
+    
     public function toArray() : array
     {
         return get_object_vars($this);
