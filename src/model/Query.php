@@ -7,7 +7,7 @@ use BusyPHP\Model;
 use PDOStatement;
 
 /**
- * 扩展查询方法，主要用于兼容TP3.1语法
+ * 扩展查询方法
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/27 下午5:56 下午 Query.php $
