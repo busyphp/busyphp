@@ -34,7 +34,7 @@ class UserController extends InsideController
             $update->setPhone($this->post('phone/s', 'trim'));
             $update->setEmail($this->post('email/s', 'trim'));
             $update->setQq($this->post('qq/s', 'trim'));
-            AdminUser::init()->whereEntity(AdminUserField::id($this->adminUserId))->updateData($update);
+            AdminUser::init()->whereEntity(AdminUserField::id($this->adminUserId))->updateAdmin($update);
             $this->log()->record(self::LOG_UPDATE, '修改个人资料');
             
             return $this->success('修改成功');

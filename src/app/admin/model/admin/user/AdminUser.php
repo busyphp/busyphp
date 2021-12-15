@@ -150,7 +150,7 @@ class AdminUser extends Model
      * @param bool           $triggerEvent 是否触发事件，否则触发回调
      * @throws Throwable
      */
-    public function updateData(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT, bool $triggerEvent = true)
+    public function updateAdmin(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT, bool $triggerEvent = true)
     {
         if ($update->id < 1) {
             throw new ParamInvalidException('id');
@@ -246,7 +246,7 @@ class AdminUser extends Model
         $saveData           = AdminUserField::init();
         $saveData->id       = floatval($id);
         $saveData->password = self::checkPassword($password, $confirmPassword);
-        $this->updateData($saveData, UpdateAdminUserBeforeEvent::OPERATE_PASSWORD);
+        $this->updateAdmin($saveData, UpdateAdminUserBeforeEvent::OPERATE_PASSWORD);
     }
     
     
@@ -457,7 +457,7 @@ class AdminUser extends Model
         $save->errorRelease = 0;
         $save->errorTotal   = 0;
         $save->errorTime    = 0;
-        $this->updateData($save, UpdateAdminUserBeforeEvent::OPERATE_LOGIN);
+        $this->updateAdmin($save, UpdateAdminUserBeforeEvent::OPERATE_LOGIN);
         
         // 加密数据
         $cookieAuthKey = TripleDesHelper::encrypt(self::createAuthKey($userInfo, $token), $token);
@@ -501,7 +501,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->checked = $checked;
-        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_CHECKED);
+        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_CHECKED);
     }
     
     
@@ -516,7 +516,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->theme = json_encode($theme, JSON_UNESCAPED_UNICODE);
-        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_THEME);
+        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_THEME);
         $this->saveThemeToCookie($id, $update->theme);
     }
     
@@ -569,7 +569,7 @@ class AdminUser extends Model
         $update->errorRelease = 0;
         $update->errorTime    = 0;
         $update->errorTotal   = 0;
-        $this->updateData($update, UpdateAdminUserBeforeEvent::OPERATE_UNLOCK);
+        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_UNLOCK);
     }
     
     

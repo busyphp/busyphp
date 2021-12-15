@@ -157,7 +157,7 @@ class SystemUserController extends InsideController
             $update->setEmail($this->post('email/s', 'trim'));
             $update->setQq($this->post('qq/s', 'trim'));
             $update->setChecked($checked);
-            $this->model->updateData($update);
+            $this->model->updateAdmin($update);
             $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
             return $this->success('修改成功');
