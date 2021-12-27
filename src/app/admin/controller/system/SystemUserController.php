@@ -230,7 +230,7 @@ class SystemUserController extends InsideController
     public function password()
     {
         if ($this->isPost()) {
-            $this->model->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $this->model->updatePassword($this->post('id/d'), $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
             
             return $this->success('修改成功');
