@@ -113,7 +113,7 @@ class SystemPlugin extends Model
     {
         $config = [];
         $info   = $this->getList()[self::createId($package)] ?? null;
-        if ($info) {
+        if ($info && $info->install) {
             $config = $info->setting ?: [];
         }
         
