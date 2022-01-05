@@ -32,13 +32,17 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * @param array $options
      * @return static
      */
-    public static function init(array $options) : self
+    public static function init(array $options = []) : self
     {
         return new static($options);
     }
     
     
-    public function __construct(array $options)
+    /**
+     * ArrayOption constructor.
+     * @param array $options
+     */
+    public function __construct(array $options = [])
     {
         $this->options = $options;
     }
