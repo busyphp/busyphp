@@ -91,7 +91,7 @@ class SystemFileController extends InsideController
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
-        $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, 'dir', 'name'));
+        $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, 'name', 'dir'));
         $this->assign('time', $timeRange);
         
         return $this->display();
