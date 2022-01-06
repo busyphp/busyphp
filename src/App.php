@@ -132,7 +132,7 @@ class App extends \think\App
             
             $name   = '';
             $config = [];
-            if (is_file($configFile = $path . 'config' . DIRECTORY_SEPARATOR . 'app.php')) {
+            if (is_file($configFile = $path . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php')) {
                 $config = include $configFile;
                 $config = is_array($config) ? $config : [];
                 $name   = $config['app_name'] ?? '';
