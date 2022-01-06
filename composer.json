@@ -1,21 +1,21 @@
 {
-	"name"        : "busyphp/busyphp",
-	"type"        : "library",
-	"description" : "基于ThinkPHP研发的一款可以高效开发B/S应用的框架",
-	"homepage"    : "http://www.harter.cn/?form=BusyPHP",
-	"keywords"    : [
+	"name"         : "busyphp/busyphp",
+	"type"         : "library",
+	"description"  : "基于ThinkPHP研发的一款可以高效开发B/S应用的框架",
+	"homepage"     : "http://www.harter.cn/?form=BusyPHP",
+	"keywords"     : [
 		"BusyPHP",
 		"框架",
 		"后台管理系统"
 	],
-	"authors"     : [
+	"authors"      : [
 		{
 			"name"  : "busy^life",
 			"email" : "busy.life@qq.com"
 		}
 	],
-	"license"     : "CC-BY-NC-4.0",
-	"require"     : {
+	"license"      : "CC-BY-NC-4.0",
+	"require"      : {
 		"php"                      : ">=7.1.0",
 		"topthink/framework"       : "6.0.9",
 		"topthink/think-orm"       : "2.0.44",
@@ -33,18 +33,24 @@
 		"ext-fileinfo"             : "*",
 		"ext-openssl"              : "*"
 	},
-	"require-dev" : {
-		"symfony/var-dumper" : "^4.2"
+	"require-dev"  : {
+		"symfony/var-dumper" : "^4.2",
+		"phpunit/phpunit"    : "^7.0"
 	},
-	"autoload"    : {
+	"autoload"     : {
 		"psr-4" : {
 			"BusyPHP\\" : "src"
 		}
 	},
-	"config"      : {
+	"autoload-dev" : {
+		"psr-4" : {
+			"BusyPHP\\tests\\" : "tests"
+		}
+	},
+	"config"       : {
 		"preferred-install" : "dist"
 	},
-	"extra"       : {
+	"extra"        : {
 		"busyphp" : {
 			"manager"     : {
 				"name" : "BusyPHP"
