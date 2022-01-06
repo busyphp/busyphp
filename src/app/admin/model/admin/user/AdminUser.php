@@ -676,7 +676,7 @@ class AdminUser extends Model
         $regex = App::getInstance()->config->get("app.model.{$class}.check_phone_match", '');
         if ($regex) {
             if (is_callable($regex)) {
-                return Container::getInstance()->invokeFunction($regex, [$phone]);
+                return Container::getInstance()->invokeFunction($regex, [$phone]) ? true : false;
             } else {
                 return preg_match($regex, $phone) === 1;
             }
