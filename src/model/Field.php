@@ -10,6 +10,7 @@ use Countable;
 use Exception;
 use IteratorAggregate;
 use JsonSerializable;
+use think\Container;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\db\Raw;
@@ -35,9 +36,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * 快速实例化
      * @return $this
      */
-    public static function init()
+    public static function init() : self
     {
-        return new static();
+        return Container::getInstance()->make(static::class, [], true);
     }
     
     
