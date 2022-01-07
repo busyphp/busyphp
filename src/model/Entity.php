@@ -4,6 +4,7 @@ namespace BusyPHP\model;
 
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\StringHelper;
+use Closure;
 use think\db\Raw;
 
 /**
@@ -14,6 +15,12 @@ use think\db\Raw;
  */
 class Entity
 {
+    /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
+    
     /**
      * 字段名
      * @var string
@@ -55,6 +62,17 @@ class Entity
      * @var string
      */
     private $as = '';
+    
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     * @return void
+     */
+    public static function maker(Closure $maker)
+    {
+        static::$maker[] = $maker;
+    }
     
     
     /**
@@ -120,6 +138,12 @@ class Entity
         }
         
         $this->field($field);
+        
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
     }
     
     
