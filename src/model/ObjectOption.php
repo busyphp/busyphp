@@ -5,6 +5,7 @@ namespace BusyPHP\model;
 
 use ArrayAccess;
 use ArrayObject;
+use Closure;
 use Countable;
 use Exception;
 use IteratorAggregate;
@@ -22,12 +23,40 @@ use Traversable;
 class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, IteratorAggregate, ArrayAccess
 {
     /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
+    
+    
+    /**
      * 快速实例化
      * @return static
      */
     public static function init() : self
     {
         return new static();
+    }
+    
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     * @return void
+     */
+    public static function maker(Closure $maker)
+    {
+        static::$maker[] = $maker;
+    }
+    
+    
+    public function __construct()
+    {
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
     }
     
     
