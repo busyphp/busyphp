@@ -51,6 +51,8 @@ abstract class TreeItemStruct extends Map
     
     public function __construct()
     {
+        parent::__construct();
+        
         $this->state  = new TreeStateStruct();
         $this->liAttr = new stdClass();
         $this->aAttr  = new stdClass();

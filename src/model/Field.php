@@ -6,11 +6,11 @@ namespace BusyPHP\model;
 use ArrayAccess;
 use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\StringHelper;
+use Closure;
 use Countable;
 use Exception;
 use IteratorAggregate;
 use JsonSerializable;
-use think\Container;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\db\Raw;
@@ -26,6 +26,12 @@ use Traversable;
 class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
     /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
+    
+    /**
      * Join别名
      * @var array
      */
@@ -38,7 +44,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     public static function init() : self
     {
-        return Container::getInstance()->make(static::class, [], true);
+        return new static();
+    }
+    
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     * @return void
+     */
+    public static function maker(Closure $maker)
+    {
+        static::$maker[] = $maker;
     }
     
     
@@ -63,6 +80,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     }
     
     
+    public function __construct()
+    {
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
+    }
+    
+    
     public function __get($name)
     {
         return $this->{StringHelper::camel($name)};
@@ -78,7 +105,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /**
      * @param $name
      * @param $arguments
-     * @return array|string
+     * @return Entity
      * @throws MethodNotFoundException
      */
     public static function __callStatic($name, $arguments)
@@ -184,7 +211,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * 获取数据库插入的数据
      * @return array
      */
-    public function getDBData()
+    public function getDBData() : array
     {
         $vars   = get_object_vars($this);
         $params = [];
@@ -230,7 +257,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * 获取查询条件
      * @return array
      */
-    public function getWhere()
+    public function getWhere() : array
     {
         $vars   = get_object_vars($this);
         $params = [];

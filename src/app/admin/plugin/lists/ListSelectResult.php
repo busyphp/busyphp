@@ -49,15 +49,17 @@ class ListSelectResult extends Map
     
     /**
      * ListSelectResult constructor.
-     * @param array  $list 数据
-     * @param int    $listRows 每页显示条数
-     * @param int    $currentPage 当前第几页
-     * @param int    $total 总条数
-     * @param bool   $simple 是否简洁模式
-     * @param string $drive 分页驱动
+     * @param array       $list 数据
+     * @param int         $listRows 每页显示条数
+     * @param int         $currentPage 当前第几页
+     * @param int         $total 总条数
+     * @param bool        $simple 是否简洁模式
+     * @param string|null $drive 分页驱动
      */
     public function __construct(array $list = [], int $listRows = 30, int $currentPage = 1, int $total = 0, bool $simple = false, ?string $drive = null)
     {
+        parent::__construct();
+        
         App::getInstance()->bind(Paginator::class, $drive ?: ListSelectPaginator::class);
         
         // 全部数据
