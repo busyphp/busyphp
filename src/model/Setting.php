@@ -6,6 +6,7 @@ use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\StringHelper;
+use Closure;
 use think\db\exception\DbException;
 
 /**
@@ -31,14 +32,21 @@ abstract class Setting
      */
     protected $app;
     
+    /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
     
-    public function __construct()
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     * @return void
+     */
+    public static function maker(Closure $maker)
     {
-        $this->app = App::getInstance();
-        
-        if (!$this->key) {
-            $this->getKey();
-        }
+        static::$maker[] = $maker;
     }
     
     
@@ -46,7 +54,7 @@ abstract class Setting
      * 快速实例化
      * @return $this
      */
-    public static function init()
+    public static function init() : Setting
     {
         if (!isset(self::$inits[static::class])) {
             self::$inits[static::class] = new static();
@@ -56,11 +64,27 @@ abstract class Setting
     }
     
     
+    public function __construct()
+    {
+        $this->app = App::getInstance();
+        
+        if (!$this->key) {
+            $this->getKey();
+        }
+        
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
+    }
+    
+    
     /**
      * 获取键名
      * @return string
      */
-    protected function getKey()
+    protected function getKey() : string
     {
         if (!$this->key) {
             $name = basename(str_replace('\\', '/', static::class));
@@ -92,7 +116,7 @@ abstract class Setting
      * @param mixed  $default 默认值
      * @return mixed
      */
-    final public function get($name = '', $default = null)
+    final public function get(string $name = '', $default = null)
     {
         $data = $this->parseGet(SystemConfig::init()->get($this->key));
         
