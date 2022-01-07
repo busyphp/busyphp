@@ -11,6 +11,7 @@ use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\contract\structs\results\UploadResult;
 use BusyPHP\exception\PartUploadSuccessException;
 use BusyPHP\helper\StringHelper;
+use Closure;
 use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -117,6 +118,23 @@ abstract class Upload
      */
     protected $watermarkSetting;
     
+    /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
+    
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     * @return void
+     */
+    public static function maker(Closure $maker)
+    {
+        static::$maker[] = $maker;
+    }
+    
     
     /**
      * Upload constructor.
@@ -133,6 +151,12 @@ abstract class Upload
         if ($target) {
             $this->setUserId($target->userId);
             $this->setClassType($target->classType, $target->classValue);
+        }
+        
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
         }
     }
     
@@ -422,13 +446,15 @@ abstract class Upload
             throw new FileException('必须指定文件扩展名');
         }
         
-        return $this->classType . $dir . DIRECTORY_SEPARATOR . md5(implode(',', [
-                microtime(true),
-                StringHelper::random(32),
-                $this->classType,
-                $this->classValue,
-                $this->userId
-            ])) . '.' . $extension;
+        return $this->classType . $dir . DIRECTORY_SEPARATOR . md5(
+                implode(',', [
+                    microtime(true),
+                    StringHelper::random(32),
+                    $this->classType,
+                    $this->classValue,
+                    $this->userId
+                ])
+            ) . '.' . $extension;
     }
     
     
