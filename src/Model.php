@@ -47,6 +47,7 @@ use Throwable;
  * @method void onAfterUpdate($id, array $options) 更新完成后回调
  * @method void onAfterDelete($id, array $options) 删除完成后回调
  * @method $this lockShare(boolean $isLock) 是否加共享锁，允许其它对象读不允许写
+ * @template T
  */
 abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
 {
@@ -69,19 +70,19 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 绑定通用信息解析类
-     * @var string
+     * @var class-string<Field>
      */
     protected $bindParseClass;
     
     /**
      * 绑定包含扩展信息的解析类
-     * @var string
+     * @var class-string<Field>
      */
     protected $bindParseExtendClass;
     
     /**
      * 自定义绑定信息解析类
-     * @var string
+     * @var class-string<Field>
      */
     private $useBindParseClass;
     
@@ -241,7 +242,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 切换后缀进行查询
      * @param string $suffix 切换的表后缀
-     * @return Model
+     * @return $this
      */
     public static function suffix(string $suffix)
     {
@@ -255,7 +256,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 切换数据库连接进行查询
      * @param string $name 数据库连接标识
-     * @return Model
+     * @return $this
      */
     public static function connect(string $name)
     {
@@ -339,7 +340,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 设置当前模型数据表的后缀
-     * @access public
      * @param string $suffix 数据表后缀
      * @return $this
      */
@@ -353,7 +353,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 获取当前模型的数据表后缀
-     * @access public
      * @return string
      */
     public function getSuffix() : string
@@ -446,7 +445,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param int    $expire 缓存时长, 单位秒，0为不过期, 默认过期时间10分钟
      * @return bool
      */
-    public function setCache($name, $value, $expire = 600)
+    public function setCache(string $name, $value, int $expire = 600)
     {
         return Cache::set(static::class, $name, $value, $expire);
     }
@@ -457,7 +456,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $name 缓存名称
      * @return bool
      */
-    public function deleteCache($name = '')
+    public function deleteCache(string $name = '')
     {
         return Cache::delete(static::class, $name);
     }
@@ -796,7 +795,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         if (empty($id)) {
             $where = $options['where'] ?? [];
             $where = is_array($where) ? $where : [];
-            $where = isset($where['AND']) ? $where['AND'] : [];
+            $where = $where['AND'] ?? [];
             foreach ($where as $item) {
                 // 不是数组
                 if (!is_array($item)) {
@@ -860,7 +859,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string  $type 记录类型
      * @return mixed
      */
-    protected function catchException(Closure $closure, $errorReturn = false, $errorPrefix = '', $type = 'sql')
+    protected function catchException(Closure $closure, $errorReturn = false, string $errorPrefix = '', string $type = 'sql')
     {
         try {
             return call_user_func($closure);
@@ -885,7 +884,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $alias 事物别名，用于记录SQL日志
      * @return void
      */
-    public function startTrans($disabled = false, $alias = '') : void
+    public function startTrans(bool $disabled = false, string $alias = '') : void
     {
         if ($disabled) {
             return;
@@ -906,7 +905,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $alias 事物别名，用于记录SQL日志
      * @return void
      */
-    public function commit($disabled = false, $alias = '') : void
+    public function commit(bool $disabled = false, string $alias = '') : void
     {
         if ($disabled) {
             return;
@@ -926,7 +925,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param bool   $disabled 是否禁用事物
      * @param string $alias 事物别名，用于记录SQL日志
      */
-    public function rollback($disabled = false, $alias = '') : void
+    public function rollback(bool $disabled = false, string $alias = '') : void
     {
         if ($disabled) {
             return;
@@ -1436,9 +1435,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 查询自定义解析类解析后的数据
-     * @param string $parse 解析器
-     * @param string $notFoundMessage 数据为空提示
-     * @return array|Field
+     * @param class-string<T> $parse 解析器
+     * @param string          $notFoundMessage 数据为空提示
+     * @return array<T>
      * @throws DataNotFoundException
      * @throws DbException
      */
