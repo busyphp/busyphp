@@ -202,7 +202,7 @@ class SystemMenu extends Model
      * @return int
      * @throws Exception
      */
-    public function deleteInfo($data, $disabledTrans = false) : int
+    public function deleteInfo($data, bool $disabledTrans = false) : int
     {
         $this->startTrans($disabledTrans);
         try {
@@ -244,7 +244,7 @@ class SystemMenu extends Model
      * @return int
      * @throws Exception
      */
-    public function deleteByPath(string $path, $disabledTrans = false)
+    public function deleteByPath(string $path, bool $disabledTrans = false) : int
     {
         $info = $this->whereEntity(SystemFileField::path($path))->findInfo();
         if (!$info) {
@@ -278,17 +278,16 @@ class SystemMenu extends Model
     
     /**
      * 获取某菜单的所有子菜单
-     * @param int $path 菜单连接
+     * @param string $path 菜单连接
      * @return SystemMenuInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getChildList($path) : array
+    public function getChildList(string $path) : array
     {
         $list = ArrayHelper::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
-        $list = ArrayHelper::treeToList($list, SystemMenuInfo::child());
         
-        return $list;
+        return ArrayHelper::treeToList($list, SystemMenuInfo::child());
     }
     
     
@@ -570,9 +569,11 @@ class SystemMenu extends Model
      */
     public static function getTargets($var = null)
     {
-        return self::parseVars(self::parseConst(self::class, 'TARGET_', [], function($item) {
-            return $item['name'];
-        }), $var);
+        return self::parseVars(
+            self::parseConst(self::class, 'TARGET_', [], function($item) {
+                return $item['name'];
+            }), $var
+        );
     }
     
     
