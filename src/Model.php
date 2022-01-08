@@ -243,7 +243,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $suffix 切换的表后缀
      * @return Model
      */
-    public static function suffix(string $suffix) : self
+    public static function suffix(string $suffix)
     {
         $model = new static();
         $model->setSuffix($suffix);
@@ -257,7 +257,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $name 数据库连接标识
      * @return Model
      */
-    public static function connect(string $name) : self
+    public static function connect(string $name)
     {
         $model = new static();
         $model->setConfigName($name);
@@ -270,7 +270,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 快速实例化
      * @return $this
      */
-    public static function init() : self
+    public static function init()
     {
         return new static();
     }
