@@ -16,7 +16,7 @@
 	],
 	"license"      : "CC-BY-NC-4.0",
 	"require"      : {
-		"php"                      : ">=7.1.0",
+		"php"                      : ">=7.2.5",
 		"topthink/framework"       : "6.0.9",
 		"topthink/think-orm"       : "2.0.44",
 		"topthink/think-multi-app" : "1.0.14",
