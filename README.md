@@ -11,6 +11,9 @@ BusyPHP使用说明
 
 <?php
 
+use BusyPHP\app\admin\controller\common\IndexController;
+use BusyPHP\app\admin\controller\system\SystemGroupController;
+use BusyPHP\app\admin\controller\system\SystemUserController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 
 return [
@@ -40,7 +43,57 @@ return [
         // 自定义模板配置
         'template'              => [
             // 首页模板
-            'index' => ''
+            IndexController::TEMPLATE_INDEX           => [
+                'path'   => '', // 默认路径，支持绝对路径，相对view下的文件夹路径
+                'assign' => '', // 模板赋值闭包，返回array
+            ],
+            // 管理员列表模板
+            SystemUserController::TEMPLATE_INDEX      => [
+                'path'         => '',
+                'assign'       => '',
+                'plugin_table' => '' // 列表table插件搜索处理闭包
+            ],
+            // 添加管理员模板
+            SystemUserController::TEMPLATE_ADD        => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 修改管理员模板
+            SystemUserController::TEMPLATE_EDIT       => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 修改管理员密码模板
+            SystemUserController::TEMPLATE_PWD        => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 修改管理员个人资料
+            SystemUserController::TEMPLATE_MY_PROFILE => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 修改管理员个人密码
+            SystemUserController::TEMPLATE_MY_PWD     => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 角色组列表模板
+            SystemGroupController::TEMPLATE_INDEX     => [
+                'path'         => '',
+                'assign'       => '',
+                'plugin_table' => ''
+            ],
+            // 添加角色组模板
+            SystemUserController::TEMPLATE_ADD        => [
+                'path'   => '',
+                'assign' => '',
+            ],
+            // 修改角色组模板
+            SystemUserController::TEMPLATE_EDIT       => [
+                'path'   => '',
+                'assign' => '',
+            ],
         ]
     ],
     

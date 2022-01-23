@@ -23,6 +23,10 @@ use think\Response;
  */
 class IndexController extends InsideController
 {
+    /** @var string 后台首页魔板 */
+    const TEMPLATE_INDEX = self::class . 'index';
+    
+    
     /**
      * 后台首页
      * @return Response
@@ -149,21 +153,16 @@ class IndexController extends InsideController
                 $model            = new AdminUser();
                 $mysqlVersionInfo = $model->query("select VERSION()");
                 $mysqlVersion     = $mysqlVersionInfo[0]['VERSION()'];
-                $this->assign('mysql_version', $mysqlVersion);
-                $this->assign('max_upload_size', ini_get('upload_max_filesize'));
-                $this->assign('system_name', php_uname('s'));
-                $this->assign('soft_name', $_SERVER['SERVER_SOFTWARE'] ?? '');
-                $this->assign('framework_name', $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion());
-                $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('Common.Index/index'));
                 $this->setPageTitle('首页');
                 
-                // 自定义模板
-                $template = $this->app->config->get('app.admin.template.index', '');
-                if ($template && !is_file($template)) {
-                    $template = "@{$template}";
-                }
-                
-                return $this->display($template);
+                return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX, '', [
+                    'mysql_version'   => $mysqlVersion,
+                    'max_upload_size' => ini_get('upload_max_filesize'),
+                    'system_name'     => php_uname('s'),
+                    'soft_name'       => $_SERVER['SERVER_SOFTWARE'] ?? '',
+                    'framework_name'  => $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion(),
+                    'extend_template' => AdminPanelDisplayEvent::triggerEvent('Common.Index/index'),
+                ]));
         }
     }
 }

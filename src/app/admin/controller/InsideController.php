@@ -4,6 +4,7 @@ namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\helper\StringHelper;
 use BusyPHP\Service;
+use think\Container;
 
 /**
  * admin内部基本控制器
@@ -82,5 +83,52 @@ class InsideController extends AdminController
                 return $template;
             }
         }
+    }
+    
+    
+    /**
+     * 获取自定义模板属性
+     * @param string $key 自定义模板键
+     * @param string $attr 属性名称
+     * @param mixed  $default 默认值
+     * @return mixed
+     */
+    protected function getUseTemplateAttr(string $key, string $attr, $default = null)
+    {
+        return $this->app->config->get("app.admin.template.{$key}.{$attr}", $default);
+    }
+    
+    
+    /**
+     * 获取自定义模板
+     * @param string $name 自定义模板键
+     * @param string $defaultTemplate 默认魔板名称
+     * @param array  $assignVars 给模板赋值的变量
+     * @return string
+     */
+    protected function getUseTemplate(string $name, string $defaultTemplate = '', array $assignVars = []) : string
+    {
+        $template = $this->app->config->get("app.admin.template.{$name}", '');
+        $template = $template ?: $defaultTemplate;
+        if (is_array($template)) {
+            $assign   = $template['assign'] ?? '';
+            $template = $template['path'] ?? '';
+            if ($assign) {
+                $assigns = Container::getInstance()->invokeFunction($assign, [$assignVars]);
+                foreach ($assigns as $key => $item) {
+                    $this->assign($key, $item);
+                }
+            }
+        }
+        
+        foreach ($assignVars as $key => $item) {
+            $this->assign($key, $item);
+        }
+        
+        if ($template && !is_file($template)) {
+            $template = "@{$template}";
+        }
+        
+        return $template;
     }
 }

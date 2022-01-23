@@ -2,9 +2,6 @@
 
 namespace BusyPHP\app\admin\event\model\user;
 
-use BusyPHP\app\admin\model\admin\user\AdminUserField;
-use BusyPHP\model\ObjectOption;
-
 /**
  * 创建管理员前事件
  * @author busy^life <busy.life@qq.com>

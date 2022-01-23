@@ -19,6 +19,7 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -32,6 +33,15 @@ use Throwable;
  */
 class SystemGroupController extends InsideController
 {
+    /** @var string 列表模板 */
+    const TEMPLATE_INDEX = self::class . 'index';
+    
+    /** @var string 添加模板 */
+    const TEMPLATE_ADD = self::class . 'add';
+    
+    /** @var string 修改模板 */
+    const TEMPLATE_EDIT = self::class . 'edit';
+    
     /**
      * @var AdminGroup
      */
@@ -56,20 +66,25 @@ class SystemGroupController extends InsideController
     {
         // 角色列表数据
         if ($this->pluginTable) {
-            $this->pluginTable->sortField = '';
-            $this->pluginTable->sortOrder = '';
-            $this->pluginTable->setHandler(new class extends TableHandler {
-                public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                {
-                    $model->order(AdminGroupField::sort(), 'asc');
-                    $model->order(AdminGroupField::id(), 'desc');
-                }
-            });
+            $callback = $this->getUseTemplateAttr(self::TEMPLATE_INDEX, 'plugin_table', '');
+            if ($callback) {
+                Container::getInstance()->invokeFunction($callback, [$this->pluginTable]);
+            } else {
+                $this->pluginTable->sortField = '';
+                $this->pluginTable->sortOrder = '';
+                $this->pluginTable->setHandler(new class extends TableHandler {
+                    public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                    {
+                        $model->order(AdminGroupField::sort(), 'asc');
+                        $model->order(AdminGroupField::id(), 'desc');
+                    }
+                });
+            }
             
             return $this->success($this->pluginTable->build($this->model));
         }
         
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX));
     }
     
     
@@ -102,13 +117,12 @@ class SystemGroupController extends InsideController
             return $this->ruleList();
         }
         
-        // 显示修改
-        $this->assign('info', ['status' => true, 'system' => false]);
-        $this->assign('menu_options', TransHelper::toOptionHtml(SystemMenu::init()
-            ->getSafeTree(), null, SystemMenuField::id(), SystemMenuField::name()));
-        $this->assign('group_options', $this->model->getTreeOptions($this->get('id/s')));
-        
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_ADD, '', [
+            'info'          => ['status' => true, 'system' => false],
+            'menu_options'  => TransHelper::toOptionHtml(SystemMenu::init()
+                ->getSafeTree(), null, SystemMenuField::id(), SystemMenuField::name()),
+            'group_options' => $this->model->getTreeOptions($this->get('id/s')),
+        ]));
     }
     
     
@@ -143,13 +157,12 @@ class SystemGroupController extends InsideController
             return $this->ruleList($info);
         }
         
-        // 修改显示
-        $this->assign('info', $info);
-        $this->assign('menu_options', TransHelper::toOptionHtml(SystemMenu::init()
-            ->getSafeTree(), $info->defaultMenuId, SystemMenuField::id(), SystemMenuField::name()));
-        $this->assign('group_options', $this->model->getTreeOptions($info->parentId, $info->id));
-        
-        return $this->display('add');
+        return $this->display($this->getUseTemplate(self::TEMPLATE_EDIT, 'add', [
+            'info'          => $info,
+            'menu_options'  => TransHelper::toOptionHtml(SystemMenu::init()
+                ->getSafeTree(), $info->defaultMenuId, SystemMenuField::id(), SystemMenuField::name()),
+            'group_options' => $this->model->getTreeOptions($info->parentId, $info->id)
+        ]));
     }
     
     

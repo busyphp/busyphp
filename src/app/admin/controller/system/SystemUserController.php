@@ -16,6 +16,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -29,6 +30,24 @@ use Throwable;
  */
 class SystemUserController extends InsideController
 {
+    /** @var string 列表模板 */
+    const TEMPLATE_INDEX = self::class . 'index';
+    
+    /** @var string 添加模板 */
+    const TEMPLATE_ADD = self::class . 'add';
+    
+    /** @var string 修改模板 */
+    const TEMPLATE_EDIT = self::class . 'edit';
+    
+    /** @var string 修改密码魔板 */
+    const TEMPLATE_PWD = self::class . 'password';
+    
+    /** @var string 修改个人资料模板 */
+    const TEMPLATE_MY_PROFILE = self::class . 'my_profile';
+    
+    /** @var string 修改个人密码模板 */
+    const TEMPLATE_MY_PWD = self::class . 'my_pwd';
+    
     /**
      * @var AdminUser
      */
@@ -53,44 +72,49 @@ class SystemUserController extends InsideController
     {
         // 管理员列表数据
         if ($this->pluginTable) {
-            $this->pluginTable->setHandler(new class extends TableHandler {
-                public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                {
-                    switch ($data->get('status', 0)) {
-                        // 正常
-                        case 1:
-                            $model->whereEntity(AdminUserField::checked(1));
-                        break;
-                        // 禁用
-                        case 2:
-                            $model->whereEntity(AdminUserField::checked(0));
-                        break;
-                        // 零时锁定
-                        case 3:
-                            $model->whereEntity(AdminUserField::errorRelease('>', time()));
-                        break;
+            $callback = $this->getUseTemplateAttr(self::TEMPLATE_INDEX, 'plugin_table', '');
+            if ($callback) {
+                Container::getInstance()->invokeFunction($callback, [$this->pluginTable]);
+            } else {
+                $this->pluginTable->setHandler(new class extends TableHandler {
+                    public function query(TablePlugin $plugin, Model $model, Map $data) : void
+                    {
+                        switch ($data->get('status', 0)) {
+                            // 正常
+                            case 1:
+                                $model->whereEntity(AdminUserField::checked(1));
+                            break;
+                            // 禁用
+                            case 2:
+                                $model->whereEntity(AdminUserField::checked(0));
+                            break;
+                            // 零时锁定
+                            case 3:
+                                $model->whereEntity(AdminUserField::errorRelease('>', time()));
+                            break;
+                        }
+                        $data->remove('status');
+                        
+                        if ($groupId = $data->get('group_id', 0)) {
+                            $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
+                        }
+                        $data->remove('group_id');
+                        
+                        if ($plugin->sortField == AdminUserInfo::formatCreateTime()) {
+                            $plugin->sortField = AdminUserInfo::createTime();
+                        } elseif ($plugin->sortField == AdminUserInfo::formatLastTime()) {
+                            $plugin->sortField = AdminUserInfo::lastTime();
+                        }
                     }
-                    $data->remove('status');
-                    
-                    if ($groupId = $data->get('group_id', 0)) {
-                        $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
-                    }
-                    $data->remove('group_id');
-                    
-                    if ($plugin->sortField == AdminUserInfo::formatCreateTime()) {
-                        $plugin->sortField = AdminUserInfo::createTime();
-                    } elseif ($plugin->sortField == AdminUserInfo::formatLastTime()) {
-                        $plugin->sortField = AdminUserInfo::lastTime();
-                    }
-                }
-            });
+                });
+            }
             
             return $this->success($this->pluginTable->build($this->model));
         }
         
-        $this->assign('group_options', AdminGroup::init()->getTreeOptions());
-        
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX, '', [
+            'group_options' => AdminGroup::init()->getTreeOptions()
+        ]));
     }
     
     
@@ -124,9 +148,9 @@ class SystemUserController extends InsideController
             return $this->groupTree();
         }
         
-        $this->assign('info', ['checked' => 1]);
-        
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_ADD, '', [
+            'info' => ['checked' => 1]
+        ]));
     }
     
     
@@ -169,15 +193,15 @@ class SystemUserController extends InsideController
             return $this->groupTree($info);
         }
         
-        $this->assign('info', $info);
-        
-        return $this->display('add');
+        return $this->display($this->getUseTemplate(self::TEMPLATE_EDIT, 'add', [
+            'info' => $info
+        ]));
     }
     
     
     /**
      * 角色数据
-     * @param AdminUserInfo $info
+     * @param AdminUserInfo|null $info
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
@@ -236,10 +260,9 @@ class SystemUserController extends InsideController
             return $this->success('修改成功');
         }
         
-        $info = $this->model->getInfo($this->get('id/d'));
-        $this->assign('info', $info);
-        
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_PWD, '', [
+            'info' => $this->model->getInfo($this->get('id/d'))
+        ]));
     }
     
     

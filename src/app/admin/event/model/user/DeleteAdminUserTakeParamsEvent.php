@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\event\model\user;
 
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\model\ObjectOption;
 
 /**

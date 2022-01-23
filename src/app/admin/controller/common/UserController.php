@@ -4,11 +4,11 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\controller\system\SystemUserController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
-use Exception;
 use think\Response;
 use Throwable;
 
@@ -23,7 +23,7 @@ class UserController extends InsideController
     /**
      * 修改个人资料
      * @return Response
-     * @throws Exception
+     * @throws Throwable
      */
     public function profile()
     {
@@ -40,17 +40,18 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
-        $this->assign('info', $this->adminUser);
         $this->setPageTitle('修改个人资料');
         
-        return $this->display();
+        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PROFILE, '', [
+            'info' => $this->adminUser
+        ]));
     }
     
     
     /**
      * 修改个人密码
      * @return Response
-     * @throws Exception
+     * @throws Throwable
      */
     public function password()
     {
@@ -74,7 +75,9 @@ class UserController extends InsideController
         }
         $this->setPageTitle('修改个人密码');
         
-        return $this->display();
+        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PWD, '', [
+            'info' => $this->adminUser
+        ]));
     }
     
     
