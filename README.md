@@ -85,12 +85,12 @@ return [
                 'plugin_table' => ''
             ],
             // 添加角色组模板
-            SystemUserController::TEMPLATE_ADD        => [
+            SystemGroupController::TEMPLATE_ADD        => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改角色组模板
-            SystemUserController::TEMPLATE_EDIT       => [
+            SystemGroupController::TEMPLATE_EDIT       => [
                 'path'   => '',
                 'assign' => '',
             ],
