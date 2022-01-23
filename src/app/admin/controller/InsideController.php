@@ -109,7 +109,6 @@ class InsideController extends AdminController
     protected function getUseTemplate(string $name, string $defaultTemplate = '', array $assignVars = []) : string
     {
         $template = $this->app->config->get("app.admin.template.{$name}", '');
-        $template = $template ?: $defaultTemplate;
         if (is_array($template)) {
             $assign   = $template['assign'] ?? '';
             $template = $template['path'] ?? '';
@@ -129,6 +128,6 @@ class InsideController extends AdminController
             $template = "@{$template}";
         }
         
-        return $template;
+        return $template ?: $defaultTemplate;
     }
 }
