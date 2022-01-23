@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\event\model\group;
 
-use BusyPHP\app\admin\model\admin\group\AdminGroupField;
 use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 
 /**
@@ -10,8 +9,7 @@ use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/12/13 下午2:32 UpdateAdminGroupAfterEvent.php $
- * @property AdminGroupField $data 更新的数据
- * @property AdminGroupInfo  $info 更新后的角色组信息
+ * @property AdminGroupInfo $info 更新后的角色组信息
  */
 class UpdateAdminGroupAfterEvent extends UpdateAdminGroupBeforeEvent
 {

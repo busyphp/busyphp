@@ -2,7 +2,6 @@
 
 namespace BusyPHP\app\admin\event\model\user;
 
-use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 
 /**
@@ -10,8 +9,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/12/13 下午2:32 UpdateAdminUserAfterEvent.php $
- * @property AdminUserField $data 更新的数据
- * @property AdminUserInfo  $info 更新后的用户信息
+ * @property AdminUserInfo $info 更新后的用户信息
  */
 class UpdateAdminUserAfterEvent extends UpdateAdminUserBeforeEvent
 {

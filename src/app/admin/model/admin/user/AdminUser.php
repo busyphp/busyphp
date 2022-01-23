@@ -6,10 +6,13 @@ namespace BusyPHP\app\admin\model\admin\user;
 use BusyPHP\App;
 use BusyPHP\app\admin\event\model\user\CreateAdminUserAfterEvent;
 use BusyPHP\app\admin\event\model\user\CreateAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\CreateAdminUserTakeParamsEvent;
 use BusyPHP\app\admin\event\model\user\DeleteAdminUserAfterEvent;
 use BusyPHP\app\admin\event\model\user\DeleteAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\DeleteAdminUserTakeParamsEvent;
 use BusyPHP\app\admin\event\model\user\UpdateAdminUserAfterEvent;
 use BusyPHP\app\admin\event\model\user\UpdateAdminUserBeforeEvent;
+use BusyPHP\app\admin\event\model\user\UpdateAdminUserTakeParamsEvent;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\RegexHelper;
 use BusyPHP\helper\TripleDesHelper;
@@ -110,13 +113,22 @@ class AdminUser extends Model
             throw new ParamInvalidException('username,password,group_ids');
         }
         
+        // 触发参数处理事件
+        $event      = new CreateAdminUserTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->data = $insert;
+            $takeParams  = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $this->checkRepeat($insert);
             
             // 触发创建前事件
-            $event       = new CreateAdminUserBeforeEvent();
-            $event->data = $insert;
+            $event             = new CreateAdminUserBeforeEvent();
+            $event->data       = $insert;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $insert->createTime = time();
@@ -127,9 +139,10 @@ class AdminUser extends Model
             $id = $this->addData($insert);
             
             // 触发创建后事件
-            $event       = new CreateAdminUserAfterEvent();
-            $event->data = $insert;
-            $event->info = $this->getInfo($id);
+            $event             = new CreateAdminUserAfterEvent();
+            $event->data       = $insert;
+            $event->takeParams = $takeParams;
+            $event->info       = $this->getInfo($id);
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -156,16 +169,26 @@ class AdminUser extends Model
             throw new ParamInvalidException('id');
         }
         
+        // 触发参数处理事件
+        $event      = new UpdateAdminUserTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->data    = $update;
+            $event->operate = $operateType;
+            $takeParams     = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($update->id);
             $this->checkRepeat($update, $update->id);
             
             // 触发更新前事件
-            $event          = new UpdateAdminUserBeforeEvent();
-            $event->info    = $info;
-            $event->data    = $update;
-            $event->operate = $operateType;
+            $event             = new UpdateAdminUserBeforeEvent();
+            $event->info       = $info;
+            $event->data       = $update;
+            $event->operate    = $operateType;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             // 密码
@@ -177,10 +200,11 @@ class AdminUser extends Model
             $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
             
             // 触发更新后事件
-            $event          = new UpdateAdminUserAfterEvent();
-            $event->info    = $this->getInfo($info->id);
-            $event->data    = $update;
-            $event->operate = $operateType;
+            $event             = new UpdateAdminUserAfterEvent();
+            $event->info       = $this->getInfo($info->id);
+            $event->data       = $update;
+            $event->operate    = $operateType;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -259,6 +283,14 @@ class AdminUser extends Model
      */
     public function deleteInfo($data, bool $triggerEvent = true) : int
     {
+        // 触发参数处理事件
+        $event      = new DeleteAdminUserTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->id  = $data;
+            $takeParams = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($data);
@@ -267,15 +299,17 @@ class AdminUser extends Model
             }
             
             // 触发删除前事件
-            $event       = new DeleteAdminUserBeforeEvent();
-            $event->info = $info;
+            $event             = new DeleteAdminUserBeforeEvent();
+            $event->info       = $info;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $result = parent::deleteInfo($info->id);
             
             // 触发删除后
-            $event       = new DeleteAdminUserAfterEvent();
-            $event->info = $info;
+            $event             = new DeleteAdminUserAfterEvent();
+            $event->info       = $info;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();

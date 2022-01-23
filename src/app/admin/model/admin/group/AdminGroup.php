@@ -6,10 +6,13 @@ namespace BusyPHP\app\admin\model\admin\group;
 use BusyPHP\App;
 use BusyPHP\app\admin\event\model\group\CreateAdminGroupAfterEvent;
 use BusyPHP\app\admin\event\model\group\CreateAdminGroupBeforeEvent;
+use BusyPHP\app\admin\event\model\group\CreateAdminGroupTakeParamsEvent;
 use BusyPHP\app\admin\event\model\group\DeleteAdminGroupAfterEvent;
 use BusyPHP\app\admin\event\model\group\DeleteAdminGroupBeforeEvent;
+use BusyPHP\app\admin\event\model\group\DeleteAdminGroupTakeParamsEvent;
 use BusyPHP\app\admin\event\model\group\UpdateAdminGroupAfterEvent;
 use BusyPHP\app\admin\event\model\group\UpdateAdminGroupBeforeEvent;
+use BusyPHP\app\admin\event\model\group\UpdateAdminGroupTakeParamsEvent;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\StringHelper;
@@ -90,21 +93,31 @@ class AdminGroup extends Model
      */
     public function createGroup(AdminGroupField $insert, bool $triggerEvent = true)
     {
+        // 触发参数处理事件
+        $event      = new CreateAdminGroupTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->data = $insert;
+            $takeParams  = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $this->checkData($insert);
             
             // 触发创建前事件
-            $event       = new CreateAdminGroupBeforeEvent();
-            $event->data = $insert;
+            $event             = new CreateAdminGroupBeforeEvent();
+            $event->data       = $insert;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $id = $this->addData($insert);
             
             // 触发创建后事件
-            $event       = new CreateAdminGroupAfterEvent();
-            $event->data = $insert;
-            $event->info = $this->getInfo($id);
+            $event             = new CreateAdminGroupAfterEvent();
+            $event->data       = $insert;
+            $event->takeParams = $takeParams;
+            $event->info       = $this->getInfo($id);
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -130,6 +143,15 @@ class AdminGroup extends Model
             throw new ParamInvalidException('$update->id');
         }
         
+        // 触发参数处理事件
+        $event      = new UpdateAdminGroupTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->data    = $update;
+            $event->operate = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
+            $takeParams     = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $this->checkData($update);
@@ -139,19 +161,21 @@ class AdminGroup extends Model
             }
             
             // 触发更新前事件
-            $event          = new UpdateAdminGroupBeforeEvent();
-            $event->data    = $update;
-            $event->info    = $info;
-            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
+            $event             = new UpdateAdminGroupBeforeEvent();
+            $event->data       = $update;
+            $event->info       = $info;
+            $event->takeParams = $takeParams;
+            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
             
             // 触发更新后事件
-            $event          = new UpdateAdminGroupAfterEvent();
-            $event->data    = $update;
-            $event->info    = $this->getInfo($info->id);
-            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_DEFAULT;
+            $event             = new UpdateAdminGroupAfterEvent();
+            $event->data       = $update;
+            $event->info       = $this->getInfo($info->id);
+            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -198,6 +222,14 @@ class AdminGroup extends Model
      */
     public function deleteInfo($data, bool $triggerEvent = true) : int
     {
+        // 触发参数处理事件
+        $event      = new DeleteAdminGroupTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->id  = $data;
+            $takeParams = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $info = $this->getInfo($data);
@@ -206,8 +238,9 @@ class AdminGroup extends Model
             }
             
             // 触发删除前事件
-            $event       = new DeleteAdminGroupBeforeEvent();
-            $event->info = $info;
+            $event             = new DeleteAdminGroupBeforeEvent();
+            $event->info       = $info;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             // 删除子角色
@@ -219,8 +252,9 @@ class AdminGroup extends Model
             $res = parent::deleteInfo($data);
             
             // 触发删除后事件
-            $event       = new DeleteAdminGroupAfterEvent();
-            $event->info = $info;
+            $event             = new DeleteAdminGroupAfterEvent();
+            $event->info       = $info;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -293,7 +327,7 @@ class AdminGroup extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getTreeOptions($selectedId = '', $disabledId = '', $list = [], $space = '')
+    public function getTreeOptions($selectedId = '', $disabledId = '', $list = [], $space = '') : string
     {
         $push = '├';
         if (!$list) {
@@ -342,6 +376,19 @@ class AdminGroup extends Model
      */
     public function changeStatus($id, bool $status, bool $triggerEvent = true)
     {
+        $update = AdminGroupField::init();
+        $update->setId($id);
+        $update->setStatus($status);
+        
+        // 触发参数处理事件
+        $event      = new UpdateAdminGroupTakeParamsEvent();
+        $takeParams = null;
+        if ($triggerEvent) {
+            $event->data    = $update;
+            $event->operate = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
+            $takeParams     = Event::trigger($event, [], true);
+        }
+        
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($id);
@@ -349,23 +396,22 @@ class AdminGroup extends Model
                 throw new VerifyException('无法禁用系统权限');
             }
             
-            $data         = AdminGroupField::init();
-            $data->status = $status;
-            
             // 触发更新前事件
-            $event          = new UpdateAdminGroupBeforeEvent();
-            $event->data    = $data;
-            $event->info    = $info;
-            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
+            $event             = new UpdateAdminGroupBeforeEvent();
+            $event->data       = $update;
+            $event->info       = $info;
+            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
-            $this->whereEntity(AdminGroupField::id($id))->saveData($data);
+            $this->whereEntity(AdminGroupField::id($id))->saveData($update);
             
             // 触发更新后事件
-            $event          = new UpdateAdminGroupAfterEvent();
-            $event->data    = $data;
-            $event->info    = $this->getInfo($info->id);
-            $event->operate = UpdateAdminGroupBeforeEvent::OPERATE_STATUS;
+            $event             = new UpdateAdminGroupAfterEvent();
+            $event->data       = $update;
+            $event->info       = $this->getInfo($info->id);
+            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
+            $event->takeParams = $takeParams;
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
             
             $this->commit();
@@ -402,8 +448,8 @@ class AdminGroup extends Model
     
     /**
      * 检测权限
-     * @param AdminUserInfo $adminUserInfo 用户数据
-     * @param string        ...$paths 检测的路由路径
+     * @param AdminUserInfo|null $adminUserInfo 用户数据
+     * @param string             ...$paths 检测的路由路径
      * @return bool
      * @throws DataNotFoundException
      * @throws DbException
