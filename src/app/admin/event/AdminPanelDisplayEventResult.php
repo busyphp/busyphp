@@ -7,6 +7,7 @@ namespace BusyPHP\app\admin\event;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/10/13 下午1:21 下午 AdminPanelDisplayEventResult.php $
+ * @deprecated 不建议使用，后期某个版本会删除，请使用自定义模板
  */
 class AdminPanelDisplayEventResult implements \ArrayAccess
 {
