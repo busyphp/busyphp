@@ -40,9 +40,7 @@
 	},
 	"autoload"     : {
 		"psr-4" : {
-			"app\\"     : "app",
-			"core\\"    : "core",
-			"BusyPHP\\" : "src"
+			"app\\" : "app"
 		}
 	},
 	"autoload-dev" : {
@@ -53,17 +51,11 @@
 	"config"       : {
 		"preferred-install" : "dist"
 	},
-	"scripts"      : {
-		"post-autoload-dump" : [
-			"@php think service:discover",
-			"@php think vendor:publish"
-		]
-	},
 	"extra"        : {
-		"branch-alias": {
-			"dev-busyphp6": "6.0.x-dev"
+		"branch-alias" : {
+			"dev-busyphp6" : "6.0.x-dev"
 		},
-		"busyphp" : {
+		"busyphp"      : {
 			"manager"     : {
 				"name" : "BusyPHP"
 			},
