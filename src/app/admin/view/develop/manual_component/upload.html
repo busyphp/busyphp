@@ -23,7 +23,7 @@
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
 | 基本属性:title |  |  |  |  |
-| data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传` |
+| data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传`,`use:自定义上传` |
 | data-name | string | `否` | - | 设置表单参数名称, 如果为 `input`标签，则可以直接设置`name`值 |
 | data-class-type | string | `否` | `file` | 上传的文件类型 |
 | data-class-value | string | `否` | - | 上传的文件标识 |
@@ -42,12 +42,12 @@
 | data-auto | boolean | `否` | `true` | 是否自动上传 |
 | data-object-fit | string | `否` | - | 设置图片或视频预览填充方式`css属性object-fit`的值，默认为`cover` |
 | 系统文件库:title |  |  |  |  |
-| data-select | boolean | `否` | `true` | 是否允许选择系统库文件 |
+| data-select | boolean | `否` | `true` | 是否允许选择系统库文件，`data-type="use"无效` |
 | data-select-name | string | `否` | `图库选择` | 设置选择按钮的名称 |
 | data-select-icon | string | `否` | - | 设置选择按钮的图标css类名 |
 | data-select-class | string | `否` | - | 设置选择按钮的样式css类名 |
 | 上传本地文件:title |  |  |  |  |
-| data-upload | boolean | `否` | `true` | 是否允许上传本地文件 |
+| data-upload | boolean | `否` | `true` | 是否允许上传本地文件，`data-type="use"无效` |
 | data-upload-name | string | `否` | `上传图片` | 设置上传按钮的名称 |
 | data-upload-icon | string | `否` | - | 设置上传按钮选图标css类名 |
 | data-upload-class | string | `否` | - | 设置上传按钮的样式css类名 |
@@ -70,7 +70,11 @@
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-ratio | string | `否` | - | 设置容器显示比例，格式：`宽,高` |
 | data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形`，设置该类型后，将不显示上传和选择文件按钮 |
-
+| 自定义上传 `type="use"`:title |  |  |  |  |
+| data-use-select | string | `否` | - | 设置自定义系统文件库选择按钮的jQuery选择器，如`#selectBtn` |
+| data-use-dnd | string | `否` | - | 设置接收文件拖拽的容器jQuery选择器，如`#dndBox` |
+| data-use-progress | boolean | `否` | `false` | 是否自定义进度UI |
+| data-use-error | boolean | `否` | `false` | 是否自定义错误提示UI |
 
 ### 使用示例
             
@@ -92,11 +96,18 @@
 ```demo:实例
 #demo3
 ```
+
+#### 自定义上传
+
+```demo:实例
+#demo4
+```
+     
             </script>
         </div>
     </div>
 
-    <textarea class="hide" id="demo1">
+    <template class="hide" id="demo1">
 <h5>图片上传</h5>
 <input type="text" class="form-control" name="test"
        data-toggle="busy-upload"
@@ -125,9 +136,9 @@
      data-class-type="file"
      data-placeholder="请上传文件"
      id="demo1_file"></div>
-    </textarea>
+    </template>
 
-    <textarea class="hide" id="demo2">
+    <template class="hide" id="demo2">
 <h5>图片上传</h5>
 <div id="demo2_banner"
      data-toggle="busy-upload"
@@ -145,9 +156,9 @@
      data-auto="false"
      data-name="demo2_file"
      data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
-    </textarea>
+    </template>
 
-    <textarea class="hide" id="demo3">
+    <template class="hide" id="demo3">
 <h5>图片上传</h5>
 <div style="width: 200px;" id="demo3_image" data-toggle="busy-upload"
      data-type="card"
@@ -175,5 +186,31 @@
      data-card-icon="fa fa-image"
      data-auto="false"
      data-placeholder="请上传头像"></div>
-    </textarea>
+    </template>
+    
+    <template id="demo4">
+        <div class="btn-group" id="demo4DndBox">
+            <a class="btn btn-success"
+               data-toggle="busy-upload"
+               data-use-select="#demo4SelectBtn"
+               data-use-dnd="#demo4DndBox"
+               id="demo4UploadBtn"
+               data-type="use">
+                <i class="fa fa-file"></i> 上传文件
+            </a>
+            <a class="btn btn-primary" id="demo4SelectBtn">
+                选择文件
+            </a>
+        </div>
+        
+        <script>
+            $('#demo4UploadBtn').on(busyAdmin.e.uploadResult, function (e, file) {
+                busyAdmin.dialog.toast(file.url);
+            });
+        </script>
+        
+        <hr />
+        
+        <a data-toggle="busy-upload" data-type="use"><i class="fa fa-image"></i></a>
+    </template>
 </block>
