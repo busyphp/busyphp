@@ -52,6 +52,9 @@
 		"preferred-install" : "dist"
 	},
 	"extra"        : {
+		"branch-alias": {
+			"dev-busyphp6": "6.0.x-dev"
+		},
 		"busyphp" : {
 			"manager"     : {
 				"name" : "BusyPHP"
