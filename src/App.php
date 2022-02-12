@@ -161,8 +161,8 @@ class App extends \think\App
      */
     public function getPublicPath(string $path = '') : string
     {
-        $root = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
-        $root = rtrim(dirname($root), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $dir  = str_replace('/', DIRECTORY_SEPARATOR, $this->config->get('app.public_dir', '') ?: 'public');
+        $root = $this->getRootPath() . trim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $path = $this->parsePath($path);
         
         return $path ? $root . $path : $root;
@@ -176,7 +176,7 @@ class App extends \think\App
      */
     public function getCorePath(string $path = '') : string
     {
-        $root = $this->getRootPath();
+        $root = $this->getRootPath() . 'core' . DIRECTORY_SEPARATOR;
         $path = $this->parsePath($path);
         
         return $path ? $root . $path : $root;
