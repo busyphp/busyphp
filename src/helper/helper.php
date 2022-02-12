@@ -9,6 +9,8 @@ use BusyPHP\file\Captcha;
 use BusyPHP\file\captcha\CaptchaUrl;
 use BusyPHP\file\qrcode\QRCodeUrl;
 use BusyPHP\file\image\ThumbUrl;
+use BusyPHP\Request;
+use think\Container;
 
 if (!function_exists('is_mobile')) {
     /**
@@ -181,5 +183,42 @@ if (!function_exists('captcha_clear')) {
     function captcha_clear(string $key)
     {
         (new Captcha(App::getInstance()->getDirName()))->clear($key);
+    }
+}
+
+if (!function_exists('app')) {
+    /**
+     * 快速获取容器中的实例 支持依赖注入
+     * @param string $name 类名或标识 默认获取当前应用实例
+     * @param array  $args 参数
+     * @param bool   $newInstance 是否每次创建新的实例
+     * @return mixed|App
+     */
+    function app(string $name = '', array $args = [], bool $newInstance = false)
+    {
+        return Container::getInstance()->make($name ?: App::class, $args, $newInstance);
+    }
+}
+
+if (!function_exists('request')) {
+    /**
+     * 获取当前Request对象实例
+     * @return Request
+     */
+    function request() : Request
+    {
+        return app('request');
+    }
+}
+
+if (!function_exists('public_path')) {
+    /**
+     * 获取web根目录
+     * @param string $path
+     * @return string
+     */
+    function public_path($path = '')
+    {
+        return app()->getRootPath() . 'public' . DIRECTORY_SEPARATOR . ($path ? ltrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : $path);
     }
 }
