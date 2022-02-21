@@ -93,7 +93,7 @@ class Service extends ThinkService
                 // 设置时间戳格式
                 $model->setDateFormat($config->get('database.datetime_format', 'Y-m-d H:i:s'));
             }
-    
+            
             $timeField = $config->get('database.datetime_field');
             if (!empty($timeField)) {
                 [$createTime, $updateTime] = explode(',', $timeField);
@@ -343,16 +343,16 @@ class Service extends ThinkService
         }
         
         // 注册后台资源路由
-        $route->rule('assets/admin/<path>', function($path) {
-            $parse = parse_url($path);
+        $route->rule('assets/admin/<path>', function(Request $request) {
+            $parse = parse_url(ltrim(substr($request->pathinfo(), 12), '/'));
             $path  = $parse['path'] ?? '';
             
             return FileHelper::responseAssets(__DIR__ . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . ltrim($path, '/'));
         })->pattern(['path' => '.*']);
         
         // 注册通用静态资源路由
-        $route->rule('assets/static/<path>', function($path) {
-            $parse = parse_url($path);
+        $route->rule('assets/static/<path>', function(Request $request) {
+            $parse = parse_url(ltrim(substr($request->pathinfo(), 13), '/'));
             $path  = $parse['path'] ?? '';
             
             return FileHelper::responseAssets(__DIR__ . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . ltrim($path, '/'));
