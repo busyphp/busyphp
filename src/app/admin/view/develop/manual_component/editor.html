@@ -80,6 +80,12 @@
 ```demo:实例
 #demo3
 ```
+
+#### Modal中打开
+
+```demo:实例
+#demo4
+```
             </script>
         </div>
     </div>
@@ -150,6 +156,14 @@
     <template id="demo3">
         <textarea class="form-control"
                   data-toggle="busy-editor"
+                  data-auto-height="true"
                   data-ue-toolbar="bold,italic,underline" placeholder="请输入内容"></textarea>
+    </template>
+
+    <template id="demo4">
+        <script type="text/html" id="demo4_template">
+            <textarea class="form-control" data-toggle="busy-editor" placeholder="请输入内容"></textarea>
+        </script>
+        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#demo4_template">打开</a>
     </template>
 </block>
