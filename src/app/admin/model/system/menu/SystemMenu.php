@@ -317,7 +317,7 @@ class SystemMenu extends Model
         $cacheName = 'list';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list = $this->order(SystemMenuField::sort(), 'asc')->order(SystemMenuField::id(), 'desc')->selectList();
+            $list = $this->order(SystemMenuField::sort(), 'asc')->order(SystemMenuField::id(), 'asc')->selectList();
             $this->setCache($cacheName, $list);
         }
         

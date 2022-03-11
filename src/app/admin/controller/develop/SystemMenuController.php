@@ -57,7 +57,7 @@ class SystemMenuController extends InsideController
                 public function query(TablePlugin $plugin, Model $model, Map $data) : void
                 {
                     $model->order(SystemMenuField::sort(), 'asc');
-                    $model->order(SystemMenuField::id(), 'desc');
+                    $model->order(SystemMenuField::id(), 'asc');
                     
                     if (!SystemMenu::DEBUG) {
                         $model->whereEntity(SystemMenuField::system(0));
