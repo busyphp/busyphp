@@ -1,0 +1,43 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="icon-picker"` 来触发
+
+```html
+<a class="btn btn-primary" data-toggle="random">随机</a>
+```
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-target | string | 是 | - | 设置图标写入的选择器 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <div class="input-group">
+            <input type="text" class="form-control" id="demo1input"/>
+            <div class="input-group-addon"><i id="demo1icon" class="icon-placeholder"></i></div>
+            <div class="input-group-btn"><a class="btn btn-secondary" data-toggle="busy-icon-picker" data-target="#demo1input,#demo1icon">选择图标</a></div>
+        </div>
+    </template>
+</block>

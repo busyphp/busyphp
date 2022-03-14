@@ -369,6 +369,15 @@ class ManualComponentController extends InsideController
     
     
     /**
+     * 图标选择器
+     */
+    public function icon_picker()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
      * 联动选择器
      */
     public function linkage_picker()
