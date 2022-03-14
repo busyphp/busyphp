@@ -18,14 +18,6 @@
 <form data-toggle="busy-verify">...</form>
 ```
 
-### 标签属性
-
-| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
-| - | :-: | :--: | :-: | - |
-| data-error-popup | boolean | 否 | `false` | 错误信息是否浮动显示 |
-| data-error-dir | string | 否 | `right` | 错误信息浮动位置，支持`left`,`top`,`bottom`,`right` |
-| data-error-offset | number | 否 | 8 | 错误信息浮动偏移 |
-
 ### 表单元素属性
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
@@ -73,11 +65,6 @@
 #### 基本示例
 ```demo:实例
 #demo1
-```
-
-#### 错误提示风格
-```demo:实例
-#demo2
 ```
             </script>
         </div>
@@ -140,7 +127,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好</label>
+                <label class="col-sm-2 control-label">普通垂直Checkbox</label>
                 <div class="col-sm-6">
                     <div class="checkbox-inline">
                         <label>
@@ -163,7 +150,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好1</label>
+                <label class="col-sm-2 control-label">普通水平Checkbox</label>
                 <div class="col-sm-6">
                     <div class="checkbox">
                         <label>
@@ -186,7 +173,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好2</label>
+                <label class="col-sm-2 control-label">美化Checkbox</label>
                 <div class="col-sm-6">
                     <div class="checkbox">
                         <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" required title="足球" data-msg="请选择爱好"/>
@@ -196,7 +183,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择性别</label>
+                <label class="col-sm-2 control-label">普通Radio</label>
                 <div class="col-sm-6">
                     <div class="radio-inline">
                         <label>
@@ -219,7 +206,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择性别</label>
+                <label class="col-sm-2 control-label">美化Radio</label>
                 <div class="col-sm-6">
                     <div class="radio">
                         <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="男"/>
@@ -229,7 +216,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择地区</label>
+                <label class="col-sm-2 control-label">普通Select</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="city" required>
                         <option value="">请选择</option>
@@ -241,136 +228,58 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">请选择地区1</label>
+                <label class="col-sm-2 control-label">SelectPicker</label>
                 <div class="col-sm-6">
-                    <select class="form-control" name="city1" data-toggle="busy-select-picker" data-placeholder="请选择" data-verify-msg-target="#city1Helper" required>
+                    <select class="form-control" name="city1" data-toggle="busy-select-picker" data-placeholder="请选择" required>
                         <option value=""></option>
                         <option value="1">北京</option>
                         <option value="2">河北</option>
                         <option value="3">山西</option>
                         <option value="4">河南</option>
                     </select>
-                    <div id="city1Helper"></div>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">个人简介</label>
+                <label class="col-sm-2 control-label">LinkagePicker</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="menu1" value="" data-toggle="busy-linkage-picker" data-clear="true" data-url="{:url('linkage_picker')}" required placeholder="请选择菜单"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">树形组件</label>
                 <div class="col-sm-10">
-                    <textarea class="form-control"></textarea>
+                    <div data-verify-required="true"
+                         data-verify-minlength="3"
+                         data-verify-maxlength="3"
+                         data-verify-msg="请选择该项"
+                         data-verify-msg-minlength="至少需要选择{0}项"
+                         data-verify-msg-maxlength="最多能选择{0}项"
+                         data-toggle="busy-tree"
+                         data-name="tree_id"
+                         data-checkbox="true"
+                         data-list='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
                 </div>
             </div>
             <div class="form-group">
-                <div class="col-sm-6 col-sm-offset-2">
-                    <button type="submit" class="btn btn-primary">提交</button>
-                    <button type="reset" class="btn btn-default">重置</button>
-                </div>
-            </div>
-        </form>
-    </template>
-    
-    <template id="demo2">
-        <form data-toggle="busy-verify" data-error-popup="true" class="form-horizontal">
-            <div class="form-group">
-                <label class="col-sm-2 control-label">账号</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="username" required placeholder="请输入账号"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label">手机号</label>
-                <div class="col-sm-6">
-                    <div class="input-group">
-                        <input type="number" class="form-control" name="phone" data-rule-phone="true" required placeholder="请输入手机号"/>
-                        <div class="input-group-addon"><i class="fa fa-mobile"></i></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好</label>
-                <div class="col-sm-6">
-                    <div class="checkbox-inline">
-                        <label>
-                            <input type="checkbox" name="like[]" required data-msg="请选择爱好"/>
-                            足球
-                        </label>
-                    </div>
-                    <div class="checkbox-inline">
-                        <label>
-                            <input type="checkbox" name="like[]"/>
-                            篮球
-                        </label>
-                    </div>
-                    <div class="checkbox-inline">
-                        <label>
-                            <input type="checkbox" name="like[]"/>
-                            乒乓球
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好1</label>
-                <div class="col-sm-6">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="like1[]" required data-msg="请选择爱好"/>
-                            足球
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="like1[]"/>
-                            篮球
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="like1[]"/>
-                            乒乓球
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label">请选择爱好2</label>
-                <div class="col-sm-6">
-                    <div class="checkbox">
-                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" required title="足球" data-msg="请选择爱好"/>
-                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" title="篮球" data-msg="请选择爱好"/>
-                        <input type="checkbox" name="like2[]" data-toggle="busy-checkbox" title="乒乓球" data-msg="请选择爱好"/>
-                    </div>
-                </div>
-            </div>
-           
-            <div class="form-group">
-                <label class="col-sm-2 control-label">请选择性别</label>
-                <div class="col-sm-6">
-                    <div class="radio">
-                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="男"/>
-                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="女"/>
-                        <input type="radio" name="sex1" data-toggle="busy-radio" required data-msg="请选择性别" title="人妖"/>
-                    </div>
-                </div>
-            </div>
-   
-            <div class="form-group">
-                <label class="col-sm-2 control-label">请选择地区</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="city1" data-toggle="busy-select-picker" data-placeholder="请选择" data-verify-msg-target="#city1Helper" required>
-                        <option value=""></option>
-                        <option value="1">北京</option>
-                        <option value="2">河北</option>
-                        <option value="3">山西</option>
-                        <option value="4">河南</option>
+                <label class="col-sm-2 control-label">穿梭框</label>
+                <div class="col-sm-10">
+                    <select data-toggle="busy-shuttle" multiple data-search="true" required>
+                        <option value="1">腾讯</option>
+                        <option value="2">阿里</option>
+                        <option value="3">百度</option>
+                        <option value="4">58同城</option>
+                        <option value="5">赶集网</option>
+                        <option value="6">网易</option>
+                        <option value="7">百度新闻</option>
+                        <option value="8">百度百科</option>
+                        <option value="9">今日头条</option>
                     </select>
-                    <div id="city1Helper"></div>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">个人简介</label>
+                <label class="col-sm-2 control-label">富文本</label>
                 <div class="col-sm-10">
-                    <textarea class="form-control"></textarea>
+                    <textarea class="form-control" name="content" data-toggle="busy-editor" required></textarea>
                 </div>
             </div>
             <div class="form-group">

@@ -48,11 +48,13 @@
 | data-checkbox-relation-hidden | boolean | 否 | `true` | 设置复选框关联是否影响隐藏的复选框 |
 | data-checkbox-keep-selected-style | boolean | 否 | `false` | 是否保留选中样式 |
 | data-checkbox-tie-selection | boolean | 否 | `true` | 设置复选框事件绑定到核心事件触发，还是单独触发 |
-| data-name | string | 否 | `tree_id[]` | 表单参数名称，如果该组件在`form`标签内，选中项将自动填充到表单中，带有`[]`则提交数组，否则提交按逗号分割的节点ID |
-| data-uncertain-name | string | 否 | - | 不确定选中项参数名称，如果该组件在`form`标签内，半选(未确定)项将自动填充到表单中，带有`[]`则提交数组，否则提交按逗号分割的节点ID |
+| data-name | string | 否 | `tree_id[]` | 表单参数名称，如果该组件在`form`标签内，选中项将自动填充到表单中 |
+| data-uncertain-name | string | 否 | - | 不确定选中项参数名称，如果该组件在`form`标签内，半选(未确定)项将自动填充到表单中 |
 | 右键菜单:title |  |  |  |  |
 | data-contextmenu | boolean | 否 | `false` | 是否显示右键菜单 |
 | data-contextmenu-items | **Function(node:Object) : Object** <br /> 自定义右键菜单回调，参考：https://www.jstree.com/api/#/?f=$.jstree.defaults.contextmenu.items<br /><br />**String**<br />`window全局方法名`，参数同自定义回调一致 | 否 | `false` | 是否显示右键菜单 |
+| 表单验证:title |  |  |  |  |
+| `data-verify-*` | string | 否 | - | 表单验证属性，参考[表单验证]({:url('form_verify')}) |
 
 ### JSON数据格式
 

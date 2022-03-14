@@ -2290,6 +2290,15 @@ declare namespace busyAdmin {
          * @param chars 自定义字符
          */
         random(length: number, chars?: string): string;
+
+        /**
+         * 数据转树结构
+         * @param list 数组
+         * @param idField id字段名称
+         * @param childField 子节点字段名
+         * @param parentField 上级节点字段名
+         */
+        listToTree(list: [object], idField: string, childField: string, parentField: string): [object];
     }
 
     /**
