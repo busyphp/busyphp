@@ -3,6 +3,10 @@
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
+use BusyPHP\app\admin\plugin\linkagePicker\LinkageFlatItem;
+use BusyPHP\app\admin\plugin\linkagePicker\LinkageHandler;
 
 /**
  * 组件开发手册
@@ -360,6 +364,35 @@ class ManualComponentController extends InsideController
      */
     public function random()
     {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 联动选择器
+     */
+    public function linkage_picker()
+    {
+        if ($this->pluginLinkagePicker) {
+            $this->pluginLinkagePicker->setHandler(new class extends LinkageHandler {
+                /**
+                 * @param SystemMenuInfo  $item
+                 * @param LinkageFlatItem $node
+                 * @return void
+                 */
+                public function node($item, LinkageFlatItem $node) : void
+                {
+                    $node->setId($item->hash);
+                    $node->setName($item->name);
+                    $node->setParent($item->parentHash);
+                }
+            });
+            
+            return $this->success($this->pluginLinkagePicker->build(SystemMenu::init()));
+        }
+        
+        $this->assign('tree', json_encode(SystemMenu::init()->getTreeList(), JSON_UNESCAPED_UNICODE));
+        
         return $this->display();
     }
 }

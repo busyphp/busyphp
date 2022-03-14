@@ -1,0 +1,114 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-linkage-picker"` 来触发
+
+```html
+<input data-toggle="busy-linkage-picker"/>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title | | | | |
+| data-list | [object] | `否` | null | 设置数据，参考`list数据结构` |
+| data-id-field | string | `否` | `id` | 数据ID字段名 |
+| data-name-field | string | `否` | `id` | 数据名称字段名 |
+| data-child-field | string | `否` | `child` | 数据下级数据字段名 |
+| data-parent-field | string | `否` | `parent` | 数据上级关系字段名 |
+| data-strict | boolean | `否` | `true` | 是否严格检测节点路径，false则不检测，允许单选任意节点 |
+| data-clear | boolean | `否` | `false` | 是否显示清空按钮 |
+| data-name-space | string | `否` | `/` | 名称分隔符 |
+| data-id-space | string | `否` | `,` | ID分隔符 |
+| data-name-path | boolean | `否` | `true` | 名称是否显示全路径 |
+
+### 使用示例
+
+#### 基本示例
+
+```demo:实例
+#demo1
+```
+
+#### 可选择任意节点
+
+```demo:实例
+#demo2
+```
+
+#### 远程加载
+
+```demo:实例
+#demo3
+```
+
+#### 模态框中显示
+
+```demo:实例
+#demo4
+```
+            </script>
+        </div>
+    </div>
+
+    <script id="demo1" type="text/html">
+<input type="text"
+       value="90241e2a6c3191abf4423848a5812435,a8d7b251e7f17de06302c95ac99d6cde,ab8c6a3bc023dfd4b7b1a34ea9eeba6d"
+       class="form-control"
+       placeholder="请选择"
+       data-toggle="busy-linkage-picker"
+       data-clear="true"
+       data-id-field="hash"
+       data-name-field="name"
+       data-child-field="child"
+       data-list='{$tree}'/>
+    </script>
+    
+    <script id="demo2" type="text/html">
+<input type="text"
+       value="0efec22100364a634ea2019a3327a051"
+       class="form-control"
+       data-toggle="busy-linkage-picker"
+       data-strict="false"
+       data-id-field="hash"
+       data-name-field="name"
+       data-child-field="child"
+       data-list='{$tree}'/>
+    </script>
+
+    <script id="demo3" type="text/html">
+        <input type="text"
+               class="form-control"
+               value=""
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="__SELF__"
+               data-clear="true"/>
+    </script>
+
+    <script id="demo4" type="text/html">
+        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
+        <template id="modalContent">
+            <div style="height: 1000px;">
+                <input type="text"
+                       class="form-control"
+                       placeholder="请选择"
+                       data-toggle="busy-linkage-picker"
+                       data-url="__SELF__"
+                       data-clear="true"/>
+            </div>
+        </template>
+    </script>
+</block>

@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\controller;
 use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
 use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
 use BusyPHP\app\admin\plugin\AutocompletePlugin;
+use BusyPHP\app\admin\plugin\LinkagePickerPlugin;
 use BusyPHP\app\admin\plugin\ListPlugin;
 use BusyPHP\app\admin\plugin\SelectPickerPlugin;
 use BusyPHP\app\admin\plugin\TablePlugin;
@@ -103,6 +104,12 @@ abstract class AdminController extends Controller
      */
     protected $pluginTree;
     
+    /**
+     * Js LinkagePicker 插件
+     * @var LinkagePickerPlugin
+     */
+    protected $pluginLinkagePicker;
+    
     //+--------------------------------------
     //| 私有
     //+--------------------------------------
@@ -162,6 +169,12 @@ abstract class AdminController extends Controller
             case 'Tree':
                 $this->pluginTree = new TreePlugin();
                 $result           = $this->pluginTree->build();
+            break;
+            
+            // 联级选择器
+            case 'LinkagePicker':
+                $this->pluginLinkagePicker = new LinkagePickerPlugin();
+                $result                    = $this->pluginLinkagePicker->build();
             break;
             default:
                 $result = null;
