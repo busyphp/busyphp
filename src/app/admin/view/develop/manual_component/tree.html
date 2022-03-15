@@ -28,6 +28,7 @@
 | data-stripes | boolean | 否 | `false` | 是否显示隔行换色 |
 | data-block | boolean | 否 | `false` | 设置每个节点显示为块级别 |
 | data-leaf-tile | boolean | 否 | `false` | 设置叶节点是否平铺 |
+| data-empty-text | string | 否 | `无选项` | 空内容提示文案 |
 | data-operate | **Array**<br />设置允许的操作，支持：create_node,rename_node,delete_node,move_node,copy_node,edit <br /><br />**Boolean**<br />`true` 允许所有操作，`false` 拒绝所有操作 <br /><br />**Function(operation:String, node:Object, nodeParent:String, nodePosition:Number, more:?) : Boolean** <br />设置自定义回调，返回`true`允许对应操作，否则阻止对应操作<br /><br />**String**<br />`window全局方法名`，参数同自定义回调一致 | 否 | `false` | 设置是否允许操作 |
 | data-animation | false,number | 否 | `200` | 设置动画延时，设为`false`则关闭动画 |
 | data-multiple | boolean | 否 | `true` | 设置是否允许多选 |
@@ -304,9 +305,9 @@
         <div data-toggle="busy-tree" data-checkbox="true" data-url="?action=data" data-sync="false" data-method="post"></div>
     </template>
 
-    <template class="hide" id="demo3">
-        <div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-list='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
-    </template>
+    <script type="text/html" class="hide" id="demo3">
+        <div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-list='[{"id":1, "text": "节点1", "state":{"selected":true}},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
+    </script>
 
     <template class="hide" id="demo4">
         <form id="demo4_form">
