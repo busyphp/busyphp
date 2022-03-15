@@ -6,7 +6,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label required">角色组</label>
             <div class="col-sm-9">
-                <div id="treeGroupIds" data-toggle="busy-tree" data-url="{:url('?id=' . ($info['id'] ?? 0))}" data-checkbox="true" data-checkbox-relation="false" data-icons="false" data-name="group_ids[]"></div>
+                <div id="treeGroupIds" data-verify-required="true" data-verify-msg="请选择角色组" data-toggle="busy-tree" data-url="{:url('?id=' . ($info['id'] ?? 0))}" data-checkbox="true" data-checkbox-relation="false" data-icons="false" data-name="group_ids[]"></div>
                 <span class="help-block">为该用户指定一个合适的角色，支持多选</span>
             </div>
         </div>
