@@ -23,7 +23,7 @@ class App extends \think\App
      * 框架版本号
      * @var string
      */
-    private $frameworkVersion = '6.0.5';
+    private $frameworkVersion = '6.0.6';
     
     /**
      * 框架名称
