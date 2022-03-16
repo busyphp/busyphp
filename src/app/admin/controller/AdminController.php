@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\controller;
 use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
 use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
 use BusyPHP\app\admin\plugin\AutocompletePlugin;
+use BusyPHP\app\admin\plugin\FormVerifyRemotePlugin;
 use BusyPHP\app\admin\plugin\LinkagePickerPlugin;
 use BusyPHP\app\admin\plugin\ListPlugin;
 use BusyPHP\app\admin\plugin\SelectPickerPlugin;
@@ -110,6 +111,12 @@ abstract class AdminController extends Controller
      */
     protected $pluginLinkagePicker;
     
+    /**
+     * Js FormVerify 远程验证插件
+     * @var FormVerifyRemotePlugin
+     */
+    protected $pluginFormVerifyRemote;
+    
     //+--------------------------------------
     //| 私有
     //+--------------------------------------
@@ -176,11 +183,17 @@ abstract class AdminController extends Controller
                 $this->pluginLinkagePicker = new LinkagePickerPlugin();
                 $result                    = $this->pluginLinkagePicker->build();
             break;
+            
+            // 远程验证插件
+            case 'FormVerifyRemote':
+                $this->pluginFormVerifyRemote = new FormVerifyRemotePlugin();
+                $result                       = $this->pluginFormVerifyRemote->build();
+            break;
             default:
                 $result = null;
         }
         
-        if ($result) {
+        if (!is_null($result)) {
             throw new HttpResponseException($this->success($result));
         }
     }

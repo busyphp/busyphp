@@ -66,7 +66,8 @@
 | data-single-preview | boolean | `否` | `true` | 是否显示文件预览，针对`图片，视频，音频`有效 |
 | data-single-preview-size | string | `否` | `100px,100px` | 设置预览尺寸，留空则默认大小，格式：`宽,高`，针对`音频`无效，`图片`可以设置另外另外一项为0则自动适配 |
 | 多文件上传 `type="files"`:title |  |  |  |  |
-| data-files-result | boolean | `否` | `true` | 是否显示文已上传的文件列表 |
+| data-files-ui | string | `否` | `true` | UI模式，`all:全部`,`result:只显示结果区域`,`queue:只显示上传队列区域` |
+| data-files-edit-filename | boolean | `否` | `true` | 是否允许修改文件名 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-ratio | string | `否` | - | 设置容器显示比例，格式：`宽,高` |
 | data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形`，设置该类型后，将不显示上传和选择文件按钮 |
@@ -144,6 +145,7 @@
      data-toggle="busy-upload"
      data-type="files"
      data-class-type="banner"
+     data-files-ui="result"
      data-auto="false"
      data-name="demo2_banner"
      data-value="{$skin.images}login/1.jpg,{$skin.images}login/2.jpg,{$skin.images}login/3.jpg"></div>
@@ -153,6 +155,7 @@
      data-toggle="busy-upload"
      data-type="files"
      data-class-type="file"
+     data-files-ui="result"
      data-auto="false"
      data-name="demo2_file"
      data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
@@ -193,7 +196,6 @@
             <a class="btn btn-success"
                data-toggle="busy-upload"
                data-use-select="#demo4SelectBtn"
-               data-use-dnd="#demo4DndBox"
                id="demo4UploadBtn"
                data-type="use">
                 <i class="fa fa-file"></i> 上传文件
@@ -211,6 +213,6 @@
         
         <hr />
         
-        <a data-toggle="busy-upload" data-type="use"><i class="fa fa-image"></i></a>
+        <a data-toggle="busy-upload" style="width: 20px; height: 20px; display: block;" data-type="use"><i class="fa fa-image"></i></a>
     </template>
 </block>

@@ -765,6 +765,43 @@ declare namespace busyAdmin {
          * 解析触发
          */
         copyDecode: string,
+
+        //+======================================================================
+        //+ FormVerify
+        //+======================================================================
+        /**
+         * 自定创建错误标签事件，返回false阻止系统创建标签
+         */
+        verifyErrorPlacement: string,
+
+
+        //+======================================================================
+        //+ LinkagePicker
+        //+======================================================================
+        /**
+         * 刚显示触发
+         */
+        linkagePickerShow: string,
+        /**
+         * 完全显示出来触发
+         */
+        linkagePickerShown: string,
+        /**
+         * 隐藏触发
+         */
+        linkagePickerHide: string,
+        /**
+         * 完全隐藏触发
+         */
+        linkagePickerHided: string,
+        /**
+         * 选择内容发生改变触发
+         */
+        linkagePickerChanged: string,
+        /**
+         * 内容被清空触发
+         */
+        linkagePickerClear: string
     }
 
     /**
@@ -930,6 +967,7 @@ declare namespace busyAdmin {
         Verify: object,
         VideoViewer: object,
         Random: object,
+        LinkagePicker: object,
     };
 
     /**
@@ -2205,8 +2243,9 @@ declare namespace busyAdmin {
         /**
          * 驼峰转下划线
          * @param str
+         * @param line
          */
-        snake(str: string): string;
+        snake(str: string, line?: string): string;
 
         /**
          * 替换%s

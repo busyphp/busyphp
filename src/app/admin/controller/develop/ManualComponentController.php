@@ -271,10 +271,6 @@ class ManualComponentController extends InsideController
      */
     public function form_verify()
     {
-        if ($this->requestPluginName === 'VerifyRemote') {
-            return $this->error('该账号已存在');
-        }
-        
         return $this->display();
     }
     
