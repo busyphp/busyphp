@@ -63,6 +63,7 @@
                 classValue : classValue,
                 multiple   : true,
                 count      : 0,
+                zindex     : editor.options.zIndex + 20, // 修复层级遮挡BUG
                 extensions : fileConfig[classType].suffix
             });
         });

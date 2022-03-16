@@ -46,7 +46,8 @@
                 classValue : classValue,
                 multiple   : true,
                 count      : 0,
-                extensions : fileConfig[classType].suffix
+                extensions : fileConfig[classType].suffix,
+                zindex     : editor.options.zIndex + 20, // 修复层级遮挡BUG
             });
         });
 
