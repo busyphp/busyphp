@@ -1611,14 +1611,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $key    = Entity::parse($key ?: 'id');
         $field  = Entity::parse($field ?: 'id');
-        $list   = [];
         $values = FilterHelper::trimArray($values);
-        if ($values) {
-            $this->where($key, 'in', $values);
-            $list = ArrayHelper::listByKey($this->selectList(), $field);
-        }
         
-        return $list;
+        return ArrayHelper::listByKey($this->where($key, 'in', $values)->selectList(), $field);
     }
     
     
@@ -1635,14 +1630,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $key    = Entity::parse($key ?: 'id');
         $field  = Entity::parse($field ?: 'id');
-        $list   = [];
         $values = FilterHelper::trimArray($values);
-        if ($values) {
-            $this->where($key, 'in', $values);
-            $list = ArrayHelper::listByKey($this->selectExtendList(), $field);
-        }
         
-        return $list;
+        return ArrayHelper::listByKey($this->where($key, 'in', $values)->selectExtendList(), $field);
     }
     
     
@@ -1654,9 +1644,8 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         $alias = $this->options['alias'] ?? '';
         $alias = $alias ?: $this->joinAlias;
-        $alias = $alias ?: $this->getTableWithoutPrefix();
         
-        return $alias;
+        return $alias ?: $this->getTableWithoutPrefix();
     }
     
     
@@ -1760,10 +1749,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             $string .= " */{$br}";
             
             $string .= "public function set" . ucfirst($r['name']) . "(\${$r['name']}) {{$br}";
-            if ($r['type'] == 'string') {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = trim(\${$r['name']});{$br}";
-            } else {
+            if ($r['type'] == 'int') {
+                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = intval(\${$r['name']});{$br}";
+            } elseif ($r['type'] == 'float') {
                 $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = floatval(\${$r['name']});{$br}";
+            } else {
+                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = trim(\${$r['name']});{$br}";
             }
             $string .= "&nbsp;&nbsp;&nbsp;&nbsp;return \$this;{$br}";
             $string .= "}<br />";
