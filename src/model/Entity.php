@@ -215,7 +215,7 @@ class Entity
      * </p>
      * @return Entity|bool
      */
-    public function raw($raw = true) : self
+    public function raw($raw = true)
     {
         if (is_null($raw)) {
             return $this->raw;
