@@ -23,7 +23,12 @@ class Query extends \think\db\Query
     {
         foreach ($entity as $item) {
             if ($item instanceof Entity) {
-                $this->where($item->field(), $item->op(), $item->value());
+                $value = $item->value();
+                if ($value instanceof Entity) {
+                    $this->whereRaw(sprintf('`%s` %s `%s`', $item->field(), $item->op(), $value->field()));
+                } else {
+                    $this->where($item->field(), $item->op(), $item->value());
+                }
             }
         }
         
