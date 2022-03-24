@@ -201,6 +201,9 @@ class AdminHandle extends Handle
                     ],
                     'topBar' => [
                         'url' => (string) url('Common.Message/index'),
+                    ],
+                    'adminDetail' => [
+                        'url' => (string) url('Common.User/detail')
                     ]
                 ]
             ], JSON_UNESCAPED_UNICODE)

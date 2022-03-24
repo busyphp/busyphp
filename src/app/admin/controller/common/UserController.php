@@ -9,7 +9,10 @@ use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 use think\Response;
+use think\response\View;
 use Throwable;
 
 /**
@@ -148,5 +151,22 @@ class UserController extends InsideController
         $config['sort']  = $config['sort'] ?? (1000 + $index);
         
         return $config;
+    }
+    
+    
+    /**
+     * 用户详情
+     * @return View
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function detail()
+    {
+        $title = $this->param('title/s', 'trim');
+        $this->setPageTitle($title ?: '管理员详情');
+        
+        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_DETAIL, '', [
+            'info' => AdminUser::init()->getInfo($this->param('id/d'))
+        ]));
     }
 }

@@ -48,6 +48,9 @@ class SystemUserController extends InsideController
     /** @var string 修改个人密码模板 */
     const TEMPLATE_MY_PWD = self::class . 'my_pwd';
     
+    /** @var string 用户详情模板 */
+    const TEMPLATE_DETAIL = self::class . 'detail';
+    
     /**
      * @var AdminUser
      */

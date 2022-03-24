@@ -1,0 +1,53 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="table-responsive no-margin-bottom">
+        <table class="table table-bordered table-striped table-hover">
+            <tr>
+                <th width="100">用户ID</th>
+                <td>{$info.id|default='-'}</td>
+                <th width="110">用户名</th>
+                <td>{$info.username|default='-'}</td>
+            </tr>
+            <tr>
+                <th>状态</th>
+                <td>
+                    <eq name="info.checked" value="1">
+                        <span class="badge badge-success">正常</span>
+                        <else />
+                        <span class="badge badge-danger">禁用</span>
+                    </eq>
+                </td>
+                <th>角色组</th>
+                <td>
+                    <foreach name="info.group_names" item="vo">
+                        <span class="badge badge-primary">{$vo}</span>
+                    </foreach>
+                </td>
+            </tr>
+            <tr>
+                <th>手机号</th>
+                <td>{$info.phone|default='-'}</td>
+                <th>邮箱</th>
+                <td>{$info.email|default='-'}</td>
+            </tr>
+            <tr>
+                <th>QQ号码</th>
+                <td>{$info.qq|default='-'}</td>
+                <th>累计登录次数</th>
+                <td>{$info.login_total|default='0'}次</td>
+            </tr>
+            <tr>
+                <th>创建时间</th>
+                <td>{$info.format_create_time|default='-'}</td>
+                <th>最后登录</th>
+                <td>{$info.format_last_time|default='-'}</td>
+            </tr>
+            <tr>
+                <th>登录IP</th>
+                <td>{$info.login_ip|default='-'}</td>
+                <th>上次登录IP</th>
+                <td>{$info.last_ip|default='-'}</td>
+            </tr>
+        </table>
+    </div>
+</block>

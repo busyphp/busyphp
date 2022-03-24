@@ -112,6 +112,11 @@ class InsideController extends AdminController
         if (is_array($template)) {
             $assign   = $template['assign'] ?? '';
             $template = $template['path'] ?? '';
+            $title    = $template['title'] ?? '';
+            if ($title) {
+                $this->setPageTitle($title);
+            }
+            
             if ($assign) {
                 $assigns = Container::getInstance()->invokeFunction($assign, [$assignVars]);
                 foreach ($assigns as $key => $item) {
