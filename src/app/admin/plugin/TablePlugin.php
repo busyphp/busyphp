@@ -186,11 +186,11 @@ class TablePlugin
                     }
                 }
             } elseif ($this->word !== '' && $this->searchable) {
-                foreach ($this->searchable as $field) {
-                    $model->where(function() use ($model, $field) {
+                $model->where(function() use ($model) {
+                    foreach ($this->searchable as $field) {
                         $model->whereLike($field, '%' . FilterHelper::searchWord($this->word) . '%', 'or');
-                    });
-                }
+                    }
+                });
             }
             
             // 执行查询处理程序
