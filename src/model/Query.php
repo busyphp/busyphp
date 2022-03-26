@@ -19,7 +19,7 @@ class Query extends \think\db\Query
      * @param mixed ...$entity
      * @return $this
      */
-    public function whereEntity(...$entity) : self
+    public function whereEntity(...$entity)
     {
         foreach ($entity as $item) {
             if ($item instanceof Entity) {
@@ -48,7 +48,7 @@ class Query extends \think\db\Query
     /**
      * @inheritDoc
      */
-    public function join($join, string $condition = null, string $type = 'INNER', array $bind = []) : self
+    public function join($join, string $condition = null, string $type = 'INNER', array $bind = [])
     {
         if ($join instanceof Model) {
             $model = $join;
@@ -66,10 +66,7 @@ class Query extends \think\db\Query
     
     
     /**
-     * 指定排序 order('id','desc') 或者 order(['id'=>'desc','create_time'=>'desc'])
-     * @param mixed  $field 排序字段
-     * @param string $order 排序
-     * @return $this
+     * @inheritDoc
      */
     public function order($field, string $order = '')
     {
@@ -78,13 +75,20 @@ class Query extends \think\db\Query
     
     
     /**
-     * 指定查询字段
-     * @param mixed $field 字段信息
-     * @return $this
+     * @inheritDoc
      */
     public function field($field)
     {
         return parent::field(Entity::parse($field));
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function group($group)
+    {
+        return parent::group(Entity::parse($group));
     }
     
     
@@ -118,7 +122,7 @@ class Query extends \think\db\Query
      * @param bool          $split 是否分割传入的时间范围
      * @return $this
      */
-    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, $split = false) : self
+    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, $split = false)
     {
         $field = (string) $field;
         if ($split && $endOrSpace) {
