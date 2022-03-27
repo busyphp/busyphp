@@ -278,6 +278,35 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     }
     
     
+    /**
+     * 获取所有字段
+     * @param Entity|string ...$excludes
+     * @return array
+     */
+    public function toFields(...$excludes) : array
+    {
+        $excludes = array_map(function($item) {
+            return StringHelper::snake((string) $item);
+        }, $excludes);
+        $fields   = [];
+        foreach (get_object_vars($this) as $key => $val) {
+            // 下划线开头的被认为是私有变量，过滤
+            if (substr($key, 0, 1) == '_') {
+                continue;
+            }
+            
+            $key = StringHelper::snake($key);
+            if (in_array($key, $excludes)) {
+                continue;
+            }
+            
+            $fields[] = $key;
+        }
+        
+        return $fields;
+    }
+    
+    
     public function toArray() : array
     {
         $vars   = get_object_vars($this);
