@@ -186,25 +186,26 @@ class AdminHandle extends Handle
                 'version'    => $data['skin']['version'],
                 'requires'   => $requires,
                 'configs'    => [
-                    'app'    => [
+                    'app'         => [
                         'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder(false) . "?v={$data['skin']['version']}",
                         'url'             => $data['url']['app'],
                         'navSingleHold'   => $theme['nav_single_hold'],
                         'navMode'         => $theme['nav_mode'],
                         'pageTitleSuffix' => $pageTitleSuffix
                     ],
-                    'upload' => [
+                    'upload'      => [
                         'configUrl' => (string) url('Common.File/config?noext'),
                     ],
-                    'editor' => [
+                    'editor'      => [
                         'ueConfigUrl' => (string) url('Common.Ueditor/runtime?js=1&noext'),
                     ],
-                    'topBar' => [
+                    'topBar'      => [
                         'url' => (string) url('Common.Message/index'),
                     ],
                     'adminDetail' => [
                         'url' => (string) url('Common.User/detail')
-                    ]
+                    ],
+                    'watermark'   => $adminSetting->getWatermark()
                 ]
             ], JSON_UNESCAPED_UNICODE)
         ];

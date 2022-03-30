@@ -79,7 +79,9 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $this->assign('info', AdminSetting::init()->get());
+        $info                     = AdminSetting::init()->get();
+        $info['watermark']['txt'] = ($info['watermark']['txt'] ?? '') ?: "登录人：{username}\r\n内部系统，严禁拍照，截图\r\n{time}";
+        $this->assign('info', $info);
         
         return $this->display();
     }

@@ -73,6 +73,7 @@ declare namespace busyAdmin {
         validate: "validate"
         video: "video"
         vue: "vue"
+        gwm: "gwm"
         webUploader: "webUploader"
         zeroClipboard: "zeroClipboard"
     };

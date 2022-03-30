@@ -3,8 +3,8 @@
     <div class="page-header">
         <h4>{$system.page_title} <small>设置本管理系统的安全配置及界面配置</small></h4>
     </div>
-    
-    <form action="__SELF__" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
+
+    <form action="__SELF__" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload" id="adminManagerSetting">
 
         <fieldset class="fieldset white">
             <legend>安全设置</legend>
@@ -121,9 +121,194 @@
             </div>
         </fieldset>
 
+        <fieldset class="fieldset white">
+            <legend>水印设置</legend>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">启用界面水印</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="radio">
+                        <input name="data[watermark][status]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['watermark']['status'] ?? 0) > 0)?> title="开启"/>
+                        <input name="data[watermark][status]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['watermark']['status'] ?? 0) < 1)?> title="关闭"/>
+                    </div>
+                    <span class="help-block">开启后管理界面上将呈现数水印，设为关闭后刷新网页才能生效。</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">样式设置</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">宽度</div>
+                                <input type="number" class="form-control" name="data[watermark][width]" value="{$info.watermark.width|default='300'}" placeholder="水印宽度" data-preview-watermark="width"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">高度</div>
+                                <input type="number" class="form-control" name="data[watermark][height]" value="{$info.watermark.height|default='150'}" placeholder="水印高度" data-preview-watermark="height"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">透明度</div>
+                                <input type="number" step="0.01" min="0.01" max="1" class="form-control" name="data[watermark][alpha]" value="{$info.watermark.alpha|default='0.1'}" placeholder="透明度" data-preview-watermark="alpha"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">倾斜角度</div>
+                                <input type="number" min="-180" max="180" class="form-control" name="data[watermark][angle]" value="{$info.watermark.angle|default='-15'}" placeholder="倾斜角度" data-preview-watermark="angle"/>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="help-block">设置水印区域大小、透明度、倾斜角度，区域越小水印密度越高</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">文字内容</label>
+                <div class="col-sm-10 col-md-8">
+                    <textarea class="form-control" name="data[watermark][txt]" placeholder="请输入管理系统名称" data-preview-watermark="txt">{$info.watermark.txt|default=''}</textarea>
+                    <span class="help-block">设置水印文字内容，支持变量：<code>当前登录用户名: {username}</code>、<code>当前时间：{time}</code></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">时间格式</label>
+                <div class="col-sm-10 col-md-8">
+                    <select class="form-control" name="data[watermark][timeFormat]" data-preview-watermark="timeFormat">
+                        <option value="YYYY-MM-DD HH:ii:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY-MM-DD HH:ii:ss')?>><?=date('Y-m-d H:i:s')?></option>
+                        <option value="YYYY年MM月DD日 HH:ii:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY年MM月DD日 HH:ii:ss')?>><?=date('Y年m月d日 H:i:s')?></option>
+                    </select>
+                    <span class="help-block">选择时间展示格式</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">文字设置</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="input-group" data-toggle="busy-color-picker">
+                                <div class="input-group-addon">颜色</div>
+                                <input type="text" readonly class="form-control" name="data[watermark][color]" value="{$info.watermark.color|default='#000000'}" placeholder="文字颜色" data-preview-watermark="color"/>
+                                <div class="input-group-addon"><i><span class="caret"></span></i></div>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <div class="input-group-addon">文字大小</div>
+                                <input type="number" class="form-control" name="data[watermark][fontSize]" value="{$info.watermark.fontSize|default='16'}" placeholder="文字大小" data-preview-watermark="fontSize"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <div class="input-group-addon">字体</div>
+                                <input type="text" class="form-control" name="data[watermark][font]" value="{$info.watermark.font|default=''}" placeholder="css字体" data-preview-watermark="font"/>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="help-block">设置水印文字的颜色、大小、字体</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">文字偏移</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="input-group">
+                                <div class="input-group-addon">X轴</div>
+                                <input type="number" class="form-control" name="data[watermark][x]" value="{$info.watermark.x|default='0'}" placeholder="X轴" data-preview-watermark="x"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-group">
+                                <div class="input-group-addon">Y轴</div>
+                                <input type="number" class="form-control" name="data[watermark][y]" value="{$info.watermark.y|default='60'}" placeholder="Y轴" data-preview-watermark="y"/>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="help-block">设置水印文字的偏移</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">水印图片</label>
+                <div class="col-sm-10 col-md-8">
+                    <input type="text" class="form-control" name="data[watermark][image]" data-toggle="busy-upload" placeholder="上传水印图片" value="{$info.watermark.image|default=''}" data-class-type="image" data-class-value="system_admin_watermark" data-preview-watermark="image"/>
+                    <span class="help-block">设置水印图片，建议尺寸：<code>100×33像素</code> 设置后将同时显示该图片水印。</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-md-2 control-label">图片样式</label>
+                <div class="col-sm-10 col-md-8">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">宽度</div>
+                                <input type="number" class="form-control" name="data[watermark][imageWidth]" value="{$info.watermark.imageWidth|default='60'}" placeholder="图片宽度" data-preview-watermark="imageWidth"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">高度</div>
+                                <input type="number" class="form-control" name="data[watermark][imageHeight]" value="{$info.watermark.imageHeight|default='20'}" placeholder="图片高度" data-preview-watermark="imageHeight"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">X轴</div>
+                                <input type="number" class="form-control" name="data[watermark][imageX]" value="{$info.watermark.imageX|default='100'}" placeholder="X轴" data-preview-watermark="imageX"/>
+                            </div>
+                            <div class="space-5 visible-xs"></div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">Y轴</div>
+                                <input type="number" class="form-control" name="data[watermark][imageY]" value="{$info.watermark.imageY|default='5'}" placeholder="Y轴" data-preview-watermark="imageY"/>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="help-block">设置水印的图片大小，偏移</span>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="text-center">
+            <button class="btn btn-outline-secondary" type="button" id="previewWatermark">预览水印</button>
             <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
             <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
         </div>
     </form>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.app.ready(function () {
+            $('#previewWatermark').on('click', function () {
+                var options = {};
+                $('#adminManagerSetting').find('[data-preview-watermark]').each(function () {
+                    var key   = $(this).attr('data-preview-watermark');
+                    var value = $(this).val();
+                    if (key == 'txt') {
+                        value = value.replace(/\r\n/g, '<br />');
+                        value = value.replace(/\n/g, '<br />');
+                    }
+                    options[key] = value;
+                });
+
+                busyAdmin.app.watermark.create(options);
+            });
+
+            $('#adminManagerSetting').find(':submit').on('click', function () {
+                if (busyAdmin.helper.int($('[name="data[watermark][status]"]:checked').val())) {
+                    $('#previewWatermark').trigger('click');
+                }
+            });
+        });
+    </script>
 </block>

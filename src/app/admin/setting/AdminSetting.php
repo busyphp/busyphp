@@ -162,4 +162,18 @@ class AdminSetting extends Setting
     {
         return intval($this->get('often', 0));
     }
+    
+    
+    /**
+     * 获取水印配置
+     * @return array
+     */
+    public function getWatermark() : array
+    {
+        $watermark           = $this->get('watermark') ?: [];
+        $watermark['status'] = (bool) ($watermark['status'] ?? 0);
+        $watermark['txt']    = nl2br($watermark['txt'] ?? '');
+        
+        return $watermark;
+    }
 }
