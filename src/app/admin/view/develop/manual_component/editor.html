@@ -23,33 +23,30 @@
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
 | 基本属性:title |  |  |  |  |
-| data-type | string | `否` | `ue` | 编辑器类型，`ue:百度富文本编辑器` |
+| data-type | string | `否` | `ue` | 编辑器类型<br />`ue:百度富文本编辑器`<br />`ck5:CkEditor5富文本编辑器` |
+| data-mode | string | `否` | `small` | 模式<br />`default:全功能`<br />`small:简洁版`<br />`text:文字版` |
 | data-class-image | string | `否` | `image` | 编辑器图片附件类型 |
-| data-class-video | string | `否` | `video` | 编辑器视频附件类型 |
-| data-class-audio | string | `否` | `audio` | 编辑器音频附件类型 |
-| data-class-file | string | `否` | `file` | 编辑器附件类 |
+| data-class-video | string | `否` | `video` | 编辑器视频附件类型 `ck5不支持` |
+| data-class-audio | string | `否` | `audio` | 编辑器音频附件类型 `ck5不支持`|
+| data-class-file | string | `否` | `file` | 编辑器附件类 `ck5不支持` |
 | data-class-value | string | `否` | - | 附件标识 |
-| data-show-count | boolean | `否` | `false` | 是否显示字数统计 |
-| data-auto-save | boolean | `否` | `false` | 是否自动保存到本地 |
+| data-show-count | boolean | `否` | `false` | 是否显示字数统计 `ck5不支持` |
+| data-auto-save | boolean,string | `否` | `false` | 是否自动保存到本地，支持设置字符串固定本地保存标识 |
 | data-zindex | number | `否` | 1 | 编辑器层级 |
-| data-catch-remote-image | boolean | `否` | `true` | 是否允许抓取远程图片到本地 |
-| data-catch-remote-image | boolean | `否` | `true` | 是否允许抓取远程图片到本地 |
-| data-auto-height | boolean | `否` | `true` | 是否允许编辑器更随内容自动长高 |
-| data-element-path | boolean | `否` | `false` | 是否显示元素路径 |
-| data-sticky-toolbar | boolean | `否` | `false` | 是否固定工具栏 |
-| data-video-upload | boolean | `否` | `false` | 是否允许上传视频 |
-| data-video-manager | boolean | `否` | `false` | 是否显示在线视频 |
-| data-image-manager | boolean | `否` | `false` | 是否显示在线图片 |
-| data-file-manager | boolean | `否` | `false` | 是否显示在线附件 |
+| data-catch-remote-image | boolean | `否` | `true` | 是否允许抓取远程图片到本地 `ck5不支持且`|
+| data-auto-height | boolean | `否` | `true` | 是否允许编辑器更随内容自动长高 `ck5不支持`|
+| data-element-path | boolean | `否` | `false` | 是否显示元素路径 `ck5不支持`|
+| data-sticky-toolbar | boolean | `否` | `false` | 是否固定工具栏 `ck5不支持`|
+| data-video-upload | boolean | `否` | `false` | 是否允许上传视频 `ck5不支持` |
+| data-video-manager | boolean | `否` | `false` | 是否显示在线视频 `ck5不支持` |
+| data-image-manager | boolean | `否` | `false` | 是否显示在线图片 `ck5不支持` |
+| data-file-manager | boolean | `否` | `false` | 是否显示在线附件 `ck5不支持` |
 | data-locale | string | `否` | `zh-cn` | 编辑器语言 |
 | data-placeholder | string | `否` | - | 输入提示 |
 | data-name | string | `否` | `content` | 表单域名称，需要放到`form`标签内有效 |
-| UEditor配置:title |  |  |  |  |
-| data-ue-type | string | `否` | `small` | Ueditor编辑器预定义配置，支持：<br />`default`：默认版<br />`small`：简洁版<br />`text`：只允许输入文字 |
-| data-ue-toolbar | string | `否` | - | Ueditor编辑器工具栏配置，多个用逗号隔开 |
-| data-ue-options | object | `否` | - | Ueditor编辑器配置选项，参考：[Ueditor](http://fex.baidu.com/ueditor/) |
+| data-toolbar | string,object,array | `否` | - | 定制工具栏 |
 
-### 使用示例
+### UEditor
 
 #### 简洁版
 
@@ -77,8 +74,38 @@
 
 #### 定制工具栏
 
+访问 `busyAdmin.plugins.Editor.UEDITOR_TYPES.default.toolbars[0]` 查看支持的工具栏选项
+
 ```demo:实例
 #demo3
+```
+
+### CKEditor5
+
+> 前端样式还原请使用 `ckeditor5_css_link()` PHP函数引入CSS文件，并将内容放置到`.ck-content`容器下
+
+#### 简洁版
+
+```demo:实例
+#demo5
+```
+
+#### 全功能
+
+```demo:实例
+#demo6
+```
+#### 文字版
+
+```demo:实例
+#demo7
+```
+#### 定制工具栏
+
+访问 `busyAdmin.plugins.Editor.CKEDITOR_TYPES.default.toolbar` 查看支持的工具栏选项
+
+```demo:实例
+#demo8
 ```
 
 #### Modal中打开
@@ -99,7 +126,7 @@
         <button class="btn btn-primary" id="demo1_btn6">失去焦点</button>
         <button class="btn btn-primary" id="demo1_btn7">插入内容</button>
         <hr/>
-        <textarea id="demo1_text" class="form-control" data-toggle="busy-editor" placeholder="测试"></textarea>
+        <textarea id="demo1_text" class="form-control" data-toggle="busy-editor" data-auto-save="manual_component.demo1" placeholder="测试"></textarea>
         <script>
             $(function () {
                 $('#demo1_btn1').on('click', function () {
@@ -136,13 +163,13 @@
                   data-video-manager="true"
                   data-video-upload="true"
                   data-file-manager="true"
-                  data-ue-type="default"></textarea>
+                  data-mode="default"></textarea>
     </template>
     
     <template id="demo1_2">
         <textarea class="form-control"
                   data-toggle="busy-editor"
-                  data-ue-type="text"></textarea>
+                  data-mode="text"></textarea>
     </template>
     
     <template id="demo2">
@@ -157,13 +184,78 @@
         <textarea class="form-control"
                   data-toggle="busy-editor"
                   data-auto-height="true"
-                  data-ue-toolbar="bold,italic,underline" placeholder="请输入内容"></textarea>
+                  data-toolbar="bold,italic,underline" placeholder="请输入内容"></textarea>
     </template>
 
+    <template id="demo5">
+        <button class="btn btn-primary" id="demo5_btn1">获取内容</button>
+        <button class="btn btn-primary" id="demo5_btn2">设置内容</button>
+        <button class="btn btn-primary" id="demo5_btn3">禁用</button>
+        <button class="btn btn-primary" id="demo5_btn4">启用</button>
+        <button class="btn btn-primary" id="demo5_btn5">获得焦点</button>
+        <button class="btn btn-primary" id="demo5_btn6">失去焦点</button>
+        <button class="btn btn-primary" id="demo5_btn7">插入内容</button>
+        <hr/>
+        <textarea class="form-control"  id="demo5_text" data-toggle="busy-editor" data-type="ck5" data-auto-save="manual_component.demo5" data-show-count="true" placeholder="请输入内容"></textarea>
+        <script>
+            $(function () {
+                $('#demo5_btn1').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('ready', function () {
+                        busyAdmin.dialog.alert(this.getContent());
+                    });
+                });
+                $('#demo5_btn2').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('setContent', '<p>这是设置的自定义内容</p>');
+                });
+                $('#demo5_btn3').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('setDisabled', true);
+                });
+                $('#demo5_btn4').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('setDisabled', false);
+                });
+                $('#demo5_btn5').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('setFocus', true);
+                });
+                $('#demo5_btn6').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('setFocus', false);
+                });
+                $('#demo5_btn7').on('click', function () {
+                    $('#demo5_text').busyAdminEditor('append', '<p>这是插入的内容</p>');
+                });
+            })
+        </script>
+    </template>
+
+    <template id="demo6">
+         <textarea class="form-control"
+                   data-toggle="busy-editor"
+                   data-type="ck5"
+                   data-mode="default"></textarea>
+    </template>
+
+    <template id="demo7">
+         <textarea class="form-control"
+                   data-toggle="busy-editor"
+                   data-type="ck5"
+                   data-mode="text"></textarea>
+    </template>
+
+    <template id="demo8">
+         <textarea class="form-control"
+                   data-toggle="busy-editor"
+                   data-type="ck5"
+                   data-toolbar="bold,italic,underline"></textarea>
+    </template>
+
+
     <template id="demo4">
-        <script type="text/html" id="demo4_template">
+        <script type="text/html" id="demo4_ueditor">
             <textarea class="form-control" data-toggle="busy-editor" placeholder="请输入内容"></textarea>
         </script>
-        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#demo4_template">打开</a>
+        <script type="text/html" id="demo4_ck5">
+            <textarea class="form-control" data-toggle="busy-editor" data-type="ck5" data-auto-save="manual_component.demo4_ck5" placeholder="请输入内容"></textarea>
+        </script>
+        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#demo4_ueditor">打开UEditor</a>
+        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#demo4_ck5">打开CkEditor</a>
     </template>
 </block>

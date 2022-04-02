@@ -917,7 +917,7 @@ declare namespace busyAdmin {
     /**
      * 获取配置
      */
-    var getConfig: (key: string) => any;
+    var getConfig: (key: string, defaults: any) => any;
 
     /**
      * Require
@@ -1354,6 +1354,13 @@ declare namespace busyAdmin {
      */
     type BusyAdminRequestCallback = (response: BusyAdminResponseResult, type: number, xhr: object) => boolean | null;
 
+    /**
+     * 请求进度回调
+     * @param event 进度对象
+     * @return boolean 返回false阻止向上执行
+     */
+    type BusyAdminRequestProgressCallback = (event: ProgressEvent) => boolean | null;
+
 
     interface BusyAdminRequestTask {
         /**
@@ -1455,9 +1462,15 @@ declare namespace busyAdmin {
 
         /**
          * 失败回调
-         * @param callback 发挥false阻止执行 {@link BusyAdminRequest.success()} {@link BusyAdminRequest.error()}
+         * @param callback 返回false阻止执行 {@link BusyAdminRequest.success()} {@link BusyAdminRequest.error()}
          */
         complete(callback: BusyAdminRequestCallback): BusyAdminRequest;
+
+        /**
+         * 失败回调
+         * @param callback 发挥false阻止默认进度处理
+         */
+        progress(callback: BusyAdminRequestProgressCallback): BusyAdminRequest;
 
         /**
          * 执行请求
