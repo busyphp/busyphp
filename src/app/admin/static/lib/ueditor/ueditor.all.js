@@ -23970,9 +23970,13 @@ UE.plugin.register('autosave', function (){
                     key = ( me.container.parentNode.id || 'ue-common' ) + _suffix;
                 }
 
-                //页面地址+编辑器ID 保持唯一
-                saveKey = ( location.protocol + location.host + location.pathname ).replace( /[.:\/]/g, '_' ) + key;
-
+                // busyphp: 调整
+                if (me.options.autoSaveKey) {
+                    saveKey = me.options.autoSaveKey + _suffix;
+                } else {
+                    //页面地址+编辑器ID 保持唯一
+                    saveKey = ( location.protocol + location.host + location.pathname ).replace( /[.:\/]/g, '_' ) + key;
+                }
             },
 
             'contentchange': function () {
