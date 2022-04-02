@@ -130,7 +130,7 @@
                         <input name="data[watermark][status]" data-toggle="busy-radio" type="radio" value="1" <?=is_checked(($info['watermark']['status'] ?? 0) > 0)?> title="开启"/>
                         <input name="data[watermark][status]" data-toggle="busy-radio" type="radio" value="0" <?=is_checked(($info['watermark']['status'] ?? 0) < 1)?> title="关闭"/>
                     </div>
-                    <span class="help-block">开启后管理界面上将呈现数水印，设为关闭后刷新网页才能生效。</span>
+                    <span class="help-block">开启后管理界面上将呈现数水印</span>
                 </div>
             </div>
             <div class="form-group">
@@ -301,12 +301,17 @@
                     options[key] = value;
                 });
 
-                busyAdmin.app.watermark.create(options);
+                options.status = true;
+                busyAdmin.config.configs.watermark = options;
+                busyAdmin.plugins.Watermark.create(options);
             });
 
             $('#adminManagerSetting').find(':submit').on('click', function () {
                 if (busyAdmin.helper.int($('[name="data[watermark][status]"]:checked').val())) {
                     $('#previewWatermark').trigger('click');
+                } else {
+                    busyAdmin.config.configs.watermark.status = false;
+                    busyAdmin.plugins.Watermark.create({status : false});
                 }
             });
         });
