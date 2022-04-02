@@ -15,6 +15,7 @@ use Exception;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionException;
+use ReturnTypeWillChange;
 use think\Collection;
 use think\Container;
 use think\contract\Arrayable;
@@ -473,13 +474,26 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     public function __call(string $method, array $args)
     {
-        switch (strtolower($method)) {
-            case 'lockshare':
-                return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
-            break;
-            default:
-                return parent::__call($method, $args);
+        $lowerMethod = strtolower($method);
+        if ($lowerMethod == 'lockshare') {
+            return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
         }
+        
+        if (isset(static::$macro[static::class][$method])) {
+            return call_user_func_array(static::$macro[static::class][$method]->bindTo($this, static::class), $args);
+        }
+        
+        return parent::__call($method, $args);
+    }
+    
+    
+    public static function __callStatic(string $method, array $args)
+    {
+        if (isset(static::$macro[static::class][$method])) {
+            return call_user_func_array(static::$macro[static::class][$method]->bindTo(null, static::class), $args);
+        }
+        
+        throw new DbException('method not exist:' . static::class . '::' . $method);
     }
     
     
@@ -528,24 +542,28 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     }
     
     
+    #[ReturnTypeWillChange]
     public function offsetSet($name, $value)
     {
         $this->setAttr($name, $value);
     }
     
     
+    #[ReturnTypeWillChange]
     public function offsetExists($name) : bool
     {
         return $this->__isset($name);
     }
     
     
+    #[ReturnTypeWillChange]
     public function offsetUnset($name)
     {
         $this->__unset($name);
     }
     
     
+    #[ReturnTypeWillChange]
     public function offsetGet($name)
     {
         return $this->getAttr($name);
