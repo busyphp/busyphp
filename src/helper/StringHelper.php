@@ -60,7 +60,7 @@ class StringHelper extends Str
      * @param string $charset 字符集，默认位utf-8
      * @return string
      */
-    public static function cut($content, $length, $suffix = true, $start = 0, $charset = 'utf-8')
+    public static function cut($content, $length, $suffix = true, $start = 0, $charset = 'utf-8') : string
     {
         if (self::count($content) <= $length) {
             return $content;
@@ -92,7 +92,7 @@ class StringHelper extends Str
      * @param int    $length 截取的字符串长度，默认140个
      * @return string
      */
-    public static function cutDesc($string = '', $length = 140)
+    public static function cutDesc($string = '', $length = 140) : string
     {
         // 包含HTML则去除HTML
         if (false !== stripos($string, '<') && false !== stripos($string, '</')) {
@@ -115,13 +115,12 @@ class StringHelper extends Str
      * 生成UUID 单机使用
      * @return string
      */
-    public static function uuid()
+    public static function uuid() : string
     {
         $charId = md5(uniqid(mt_rand(), true));
         $hyphen = chr(45);
-        $uuid   = substr($charId, 0, 8) . $hyphen . substr($charId, 8, 4) . $hyphen . substr($charId, 12, 4) . $hyphen . substr($charId, 16, 4) . $hyphen . substr($charId, 20, 12);
-        
-        return $uuid;
+    
+        return substr($charId, 0, 8) . $hyphen . substr($charId, 8, 4) . $hyphen . substr($charId, 12, 4) . $hyphen . substr($charId, 16, 4) . $hyphen . substr($charId, 20, 12);
     }
     
     
@@ -133,7 +132,7 @@ class StringHelper extends Str
      * @param bool   $cut
      * @return string
      */
-    public static function wordwrap($str, $width = 75, $break = "\n", $cut = false)
+    public static function wordwrap($str, $width = 75, $break = "\n", $cut = false) : string
     {
         $lines = explode($break, $str);
         foreach ($lines as &$line) {

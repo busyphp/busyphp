@@ -12,25 +12,25 @@ class FilterHelper
 {
     /**
      * 保留最小值
-     * @param int $number
-     * @param int $default 默认最小值
-     * @return int
+     * @param int|float $number
+     * @param int|float $default 默认最小值
+     * @return int|float
      */
     public static function min($number, $default = 0)
     {
-        return $number < $default ? $default : $number;
+        return max($number, $default);
     }
     
     
     /**
      * 保留最大值
-     * @param int $number
-     * @param int $default 默认最大值
-     * @return int
+     * @param int|float $number
+     * @param int|float $default 默认最大值
+     * @return int|float
      */
     public static function max($number, $default = 0)
     {
-        return $number > $default ? $default : $number;
+        return min($number, $default);
     }
     
     
@@ -41,7 +41,7 @@ class FilterHelper
      * @param string|array $filterSymbol 移除的符号
      * @return string
      */
-    public static function formatString($string, $symbol = PHP_EOL, $filterSymbol = null)
+    public static function formatString($string, $symbol = PHP_EOL, $filterSymbol = null) : string
     {
         if (!is_null($filterSymbol)) {
             $string = str_replace($filterSymbol, '', $string);
@@ -63,7 +63,7 @@ class FilterHelper
      * @param bool  $isRest 是否重置键
      * @return array
      */
-    public static function trimArray($array, $isRest = false)
+    public static function trimArray($array, $isRest = false) : array
     {
         $array = is_array($array) ? $array : [];
         $array = array_map(function($str) {
@@ -106,7 +106,7 @@ class FilterHelper
      * @param string $string 要过滤的字符串
      * @return string
      */
-    public static function nowrap($string)
+    public static function nowrap($string) : string
     {
         return self::safeString(preg_replace("/(\015\012)|(\015)|(\012)/", '', $string));
     }
@@ -117,7 +117,7 @@ class FilterHelper
      * @param string $content
      * @return string
      */
-    public static function safeString($content = '')
+    public static function safeString($content = '') : string
     {
         return str_replace(['"', "'"], ['&quot;', '&#039;'], strip_tags($content));
     }
@@ -129,7 +129,7 @@ class FilterHelper
      * @param bool   $replaceSpace 遇到空格是否替换成%号，默认替换
      * @return string
      */
-    public static function searchWord($string, $replaceSpace = true)
+    public static function searchWord($string, $replaceSpace = true) : string
     {
         $string = trim((string) $string);
         if (!$string) {
@@ -171,7 +171,7 @@ class FilterHelper
             // @ @ search for the hex values
             $content = preg_replace('/(&#[xX]0{0,8}' . dechex(ord($search[$i])) . ';?)/i', $search[$i], $content); // with a ;
             // @ @ 0{0,7} matches '0' zero to seven times
-            $content = preg_replace('/(&#0{0,8}' . ord($search[$i]) . ';?)/', $search[$i], $content); // with a ;
+            $content = preg_replace('/(&#0{0,8}' . ord($search[$i]) . ';?)/', $search[$i], $content);              // with a ;
         }
         
         // now the only remaining whitespace attacks are \t, \n, and \r
@@ -194,7 +194,7 @@ class FilterHelper
                 }
                 $pattern     .= '/i';
                 $replacement = substr($ra[$i], 0, 2) . '<x>' . substr($ra[$i], 2); // add in <> to nerf the tag
-                $content     = preg_replace($pattern, $replacement, $content); // filter out the hex tags
+                $content     = preg_replace($pattern, $replacement, $content);     // filter out the hex tags
                 if ($val_before == $content) {
                     // no replacements were made, so exit the loop
                     $found = false;

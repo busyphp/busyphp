@@ -35,9 +35,9 @@ class TransHelper
      * 格式化时间
      * @param int    $time 时间戳
      * @param string $format 格式
-     * @return false|string
+     * @return string
      */
-    public static function date($time = 0, $format = 'Y-m-d H:i:s')
+    public static function date($time = 0, $format = 'Y-m-d H:i:s') : string
     {
         return date($format, $time);
     }
@@ -48,9 +48,9 @@ class TransHelper
      * @param int    $time 时间戳
      * @param string $format 格式
      * @param string $suffix 后缀
-     * @return false|string
+     * @return string
      */
-    public static function gmDate($time = 0, $format = 'D, d M Y H:i:s', $suffix = ' GMT')
+    public static function gmDate($time = 0, $format = 'D, d M Y H:i:s', $suffix = ' GMT') : string
     {
         return gmdate($format, $time) . $suffix;
     }
@@ -59,9 +59,9 @@ class TransHelper
     /**
      * 将UTF-8内容转换成GBK字符集
      * @param string $content 字符串
-     * @return string|false
+     * @return string
      */
-    public static function UTF8ToGB2312($content = '')
+    public static function UTF8ToGB2312($content = '') : string
     {
         return iconv("UTF-8", "GB2312", $content);
     }
@@ -70,9 +70,9 @@ class TransHelper
     /**
      * 将GBK内容转换成UTF-8字符集
      * @param string $content 字符串
-     * @return string|false
+     * @return string
      */
-    public static function GB2312ToUTF8($content = '')
+    public static function GB2312ToUTF8($content = '') : string
     {
         return iconv("GB2312", "UTF-8", $content);
     }
@@ -106,7 +106,7 @@ class TransHelper
             }
         }
         
-        return empty($content) ? false : true;
+        return !empty($content);
     }
     
     
@@ -119,7 +119,7 @@ class TransHelper
      * @param array         $attrs 自定属性键值对
      * @return string
      */
-    public static function toOptionHtml(array $list, $selected = null, $nameKey = '', $valueKey = '', ?array $attrs = []) : string
+    public static function toOptionHtml(array $list, $selected = null, $nameKey = '', $valueKey = '', array $attrs = []) : string
     {
         $selected = !is_array($selected) ? [$selected] : $selected;
         $nameKey  = (string) ($nameKey ?: '');
@@ -261,7 +261,7 @@ class TransHelper
      * @param string
      * @return string 大写
      */
-    public static function createHash()
+    public static function createHash() : string
     {
         $args = func_get_args();
         $str  = '';
@@ -338,9 +338,9 @@ class TransHelper
      * 将金额格式化成 0.00 格式
      * @param float $money 要格式化的金额
      * @param int   $length 保留小数长度，默认2个
-     * @return int
+     * @return string
      */
-    public static function formatMoney($money = 0.00, $length = 2)
+    public static function formatMoney($money = 0.00, $length = 2) : string
     {
         return number_format($money, $length, '.', '');
     }
@@ -353,7 +353,7 @@ class TransHelper
      * @param string $root 根节点名
      * @return string
      */
-    public static function xmlEncode($data, $encoding = 'utf-8', $root = 'think')
+    public static function xmlEncode($data, $encoding = 'utf-8', $root = 'root') : string
     {
         $xml = '<?xml version="1.0" encoding="' . $encoding . '"?>';
         $xml .= '<' . $root . '>';

@@ -70,16 +70,12 @@ class FileHelper
         switch ($options) {
             case PATHINFO_EXTENSION:
                 return $pathParts['extension'];
-            break;
             case PATHINFO_BASENAME:
                 return $pathParts['basename'];
-            break;
             case PATHINFO_DIRNAME:
                 return $pathParts['dirname'];
-            break;
             case PATHINFO_FILENAME:
                 return $pathParts['filename'];
-            break;
         }
         
         return $pathParts;
