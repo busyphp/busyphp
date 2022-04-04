@@ -154,6 +154,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected static $macro = [];
     
     /**
+     * 数据对象解析注入
+     * @var Closure[]
+     */
+    protected static $bindParseClassHandle = [];
+    
+    /**
      * 回调方法
      * @var Closure[]
      */
@@ -203,7 +209,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 设置方法注入
-     * @access public
      * @param string  $method
      * @param Closure $closure
      * @return void
@@ -214,6 +219,17 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             static::$macro[static::class] = [];
         }
         static::$macro[static::class][$method] = $closure;
+    }
+    
+    
+    /**
+     * 设置数据对象解析注入
+     * @param Closure $closure
+     * @return void
+     */
+    public static function bindParseClassHandle(Closure $closure)
+    {
+        static::$bindParseClassHandle[] = $closure;
     }
     
     
@@ -633,20 +649,22 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         // 自定义解析
         if ($this->useBindParseClass && is_subclass_of($this->useBindParseClass, Field::class)) {
             foreach ($list as $i => $r) {
-                $list[$i] = call_user_func_array([$this->useBindParseClass, 'parse'], [$r]);
+                $list[$i] = $this->useBindParseClass::parse($r);
             }
+            
+            $list = $this->execBindParseClassHandle($this->useBindParseClass, $list);
             
             $this->useBindParseClass = null;
             
             return $list;
         }
         
-        if ($this->bindParseClass) {
-            if (is_subclass_of($this->bindParseClass, Field::class)) {
-                foreach ($list as $i => $r) {
-                    $list[$i] = $this->bindParseClass::parse($r);
-                }
+        if ($this->bindParseClass && is_subclass_of($this->bindParseClass, Field::class)) {
+            foreach ($list as $i => $r) {
+                $list[$i] = $this->bindParseClass::parse($r);
             }
+            
+            $list = $this->execBindParseClassHandle($this->bindParseClass, $list);
         }
         
         $this->onParseBindList($list);
@@ -681,9 +699,29 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
             foreach ($list as $i => $r) {
                 $list[$i] = $this->bindParseExtendClass::parse($r);
             }
+            $list = $this->execBindParseClassHandle($this->bindParseExtendClass, $list);
         }
         
         $this->onParseBindExtendList($list);
+        
+        return $list;
+    }
+    
+    
+    /**
+     * 执行数据对象解析注入
+     * @param class-string<Field> $class
+     * @param array               $list
+     * @return array
+     */
+    private function execBindParseClassHandle(string $class, array $list) : array
+    {
+        // 执行服务注入
+        if (!empty(static::$bindParseClassHandle)) {
+            foreach (static::$bindParseClassHandle as $handle) {
+                $list = call_user_func($handle, $this, $class, $list);
+            }
+        }
         
         return $list;
     }
