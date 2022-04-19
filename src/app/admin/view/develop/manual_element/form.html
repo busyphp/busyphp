@@ -59,34 +59,17 @@
 #demo6
 ```
 
-#### 多选和单选框
-
-多选框（checkbox）用于选择列表中的一个或多个选项，而单选框（radio）用于从多个选项中只选择一个。
-
-支持禁用`checkbox`和`radio`，但要在父级 `<label>` 鼠标悬停时呈现`不允许`的光标，需要将 `.disabled` 类添加到父节点 `.radio`, `.radio-inline`, `.checkbox`, `.checkbox-inline`
+#### 多选框
 
 ```demo:实例
 #demo7
 ```
 
-
-##### 内联单选和多选框
-
-通过将 `.checkbox-inline` 或 `.radio-inline` 类应用到一系列的多选框（checkbox）或单选框（radio）控件上，可以使这些控件排列在一行。
+#### 单选框
 
 ```demo:实例
 #demo8
 ```
-
-
-##### 不带label文本
-
-目前只适用于非内联的 checkbox 和 radio
-
-```demo:实例
-#demo9
-```
-
 
 #### 下拉列表（select）
 
@@ -141,14 +124,6 @@
 #demo15
 ```
 
-#### 多选框和单选框
-
-可以将多选框或单选框作为额外元素添加到输入框组中。
-
-```demo:实例
-#demo16
-```
-
 #### 按钮
 
 为输入框组添加按钮需要额外添加一层嵌套，不是 `.input-group-addon`，而是添加 `.input-group-btn` 来包裹按钮元素。由于不同浏览器的默认样式无法被统一的重新赋值，所以才需要这样做。
@@ -179,274 +154,570 @@
         </div>
     </div>
 
-    <textarea class="hide" id="demo1">
-<form>
-    <div class="form-group">
-        <label for="exampleInputEmail1">邮箱</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" placeholder="邮箱">
-    </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">密码</label>
-        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
-    </div>
-    <div class="form-group">
-        <label for="exampleInputFile">文件</label>
-        <input type="file" id="exampleInputFile">
-        <p class="help-block">请上传文件，可以将辅助提示放到这里</p>
-    </div>
-    <div class="form-group">
-        <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
-    </div>
-    <button type="submit" class="btn btn-default">提交</button>
-</form>
-    </textarea>
+    <template class="hide" id="demo1">
+        <form>
+            <div class="form-group">
+                <label for="exampleInputEmail1">邮箱</label>
+                <input type="email" class="form-control" id="exampleInputEmail1" placeholder="邮箱">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">密码</label>
+                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputFile">文件</label>
+                <input type="file" id="exampleInputFile">
+                <p class="help-block">请上传文件，可以将辅助提示放到这里</p>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
+            </div>
+            <button type="submit" class="btn btn-default">提交</button>
+        </form>
+    </template>
 
-    <textarea class="hide" id="demo2">
-<form class="form-inline">
-    <div class="form-group">
-        <label for="exampleInputName2">姓名</label>
-        <input type="text" class="form-control" id="exampleInputName2" placeholder="姓名">
-    </div>
-    <div class="form-group">
-        <label for="exampleInputEmail2">邮箱</label>
-        <input type="email" class="form-control" id="exampleInputEmail2" placeholder="邮箱">
-    </div>
-    <button type="submit" class="btn btn-default">发送</button>
-</form>
-<hr/>
-<form class="form-inline">
-    <div class="form-group">
-        <input type="email" class="form-control" id="exampleInputEmail3" placeholder="邮箱">
-    </div>
-    <div class="form-group">
-        <input type="password" class="form-control" id="exampleInputPassword3" placeholder="密码">
-    </div>
-    <div class="form-group">
-        <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
-    </div>
-    <button type="submit" class="btn btn-default">登录</button>
-</form>
-<hr/>
-<form class="form-inline">
-    <div class="form-group">
-        <div class="input-group">
-            <div class="input-group-addon">￥</div>
-            <input type="text" class="form-control" id="exampleInputAmount" placeholder="余额">
-            <div class="input-group-addon">元</div>
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary">调整余额</button>
-</form>
-    </textarea>
-
-    <textarea class="hide" id="demo3">
-<form class="form-horizontal">
-    <div class="form-group">
-        <label for="inputEmail3" class="col-sm-2 control-label">邮箱</label>
-        <div class="col-sm-10">
-            <input type="email" class="form-control" id="inputEmail3" placeholder="邮箱">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
-        <div class="col-sm-10">
-            <input type="password" class="form-control" id="inputPassword3" placeholder="密码">
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-            <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
+    <template class="hide" id="demo2">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="exampleInputName2">姓名</label>
+                <input type="text" class="form-control" id="exampleInputName2" placeholder="姓名">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputEmail2">邮箱</label>
+                <input type="email" class="form-control" id="exampleInputEmail2" placeholder="邮箱">
+            </div>
+            <div class="form-group">
+                <label>性别</label>
+                <div class="radio-group">
+                    <input type="radio" data-toggle="busy-radio" title="男">
+                    <input type="radio" data-toggle="busy-radio" title="女">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>语言</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" data-toggle="busy-checkbox" title="PHP">
+                    <input type="checkbox" data-toggle="busy-checkbox" title="JAVA">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-default">发送</button>
+        </form>
+        <hr/>
+        <form class="form-inline">
+            <div class="form-group">
+                <input type="email" class="form-control" id="exampleInputEmail3" placeholder="邮箱">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="exampleInputPassword3" placeholder="密码">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" data-toggle="busy-checkbox" title="只读">
+                <input type="checkbox" data-toggle="busy-checkbox" title="禁用">
+            </div>
+            <div class="radio-group">
+                <input type="radio" data-toggle="busy-radio" title="男">
+                <input type="radio" data-toggle="busy-radio" title="女">
+            </div>
             <button type="submit" class="btn btn-default">登录</button>
-        </div>
-    </div>
-</form>
-    </textarea>
+        </form>
+        <hr/>
+        <form class="form-inline">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">￥</div>
+                    <input type="text" class="form-control" id="exampleInputAmount" placeholder="余额">
+                    <div class="input-group-addon">元</div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">调整余额</button>
+        </form>
+    </template>
 
-    <textarea class="hide" id="demo4">
-<div class="form-group-title">水平排列</div>
-<form class="form-horizontal">
-    <div class="form-group">
-        <label class="col-sm-2 control-label">邮箱</label>
-        <div class="col-sm-10">
-            <p class="form-control-static">email@example.com</p>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="inputPassword" class="col-sm-2 control-label">密码</label>
-        <div class="col-sm-10">
-            <input type="password" class="form-control" id="inputPassword" placeholder="密码">
-        </div>
-    </div>
-</form>
+    <template class="hide" id="demo3">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" id="inputEmail3" placeholder="邮箱">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="inputPassword3" placeholder="密码">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <input type="checkbox" data-toggle="busy-checkbox" title="记住登录">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">登录</button>
+                </div>
+            </div>
+        </form>
+    </template>
 
-<div class="form-group-title">内联表单</div>
-<form class="form-inline">
-    <div class="form-group">
-        <label class="sr-only">邮箱</label>
-        <p class="form-control-static">email@example.com</p>
-    </div>
-    <div class="form-group">
-        <label for="inputPassword2" class="sr-only">密码</label>
-        <input type="password" class="form-control" id="inputPassword2" placeholder="密码">
-    </div>
-    <button type="submit" class="btn btn-default">确认</button>
-</form>
-    </textarea>
+    <template  class="hide" id="demo4">
+        <div class="form-group-title">水平排列</div>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">email@example.com</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword" class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="inputPassword" placeholder="密码">
+                </div>
+            </div>
+        </form>
+        <hr />
+        <div class="form-group-title">内联表单</div>
+        <form class="form-inline">
+            <div class="form-group">
+                <label class="sr-only">邮箱</label>
+                <p class="form-control-static">email@example.com</p>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword2" class="sr-only">密码</label>
+                <input type="password" class="form-control" id="inputPassword2" placeholder="密码">
+            </div>
+            <button type="submit" class="btn btn-default">确认</button>
+        </form>
+    </template>
 
-    <textarea class="hide" id="demo5">
-<input type="text" class="form-control" placeholder="请输入内容"/>
-    </textarea>
+    <template class="hide" id="demo5">
+        <input type="text" class="form-control" placeholder="请输入内容"/>
+    </template>
 
     <template class="hide" id="demo6">
         <textarea class="form-control" placeholder="请输入内容" rows="4"></textarea>
     </template>
 
+
     <template class="hide" id="demo7">
-
-        <div class="checkbox">
-            <label>
-                <input type="checkbox" value="">
-                选项1
-            </label>
+        <div class="form-horizontal">
+            <div class="form-group-title">默认尺寸</div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox1" value="option1">
+                        </label>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">嵌入</label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <input type="checkbox" data-toggle="busy-checkbox">
+                        </span>
+                        <input type="text" class="form-control">
+                        <span class="input-group-addon">
+                            <input type="checkbox" data-toggle="busy-checkbox" title="选项1">
+                            <input type="checkbox" data-toggle="busy-checkbox" title="选项1">
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(水平)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group block">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="col-sm-3 control-label">胶囊(水平)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">胶囊(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group block">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">开关</label>
+                <div class="col-sm-9">
+                    <input type="checkbox" class="switch" data-toggle="busy-checkbox" value="" title="on,off">
+                </div>
+            </div>
+            <div class="form-group-title">小尺寸 <code>.form-group-sm</code></div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox1" value="option1">
+                        </label>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                    </label>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">嵌入</label>
+                <div class="col-sm-9">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">
+                            <input type="checkbox" data-toggle="busy-checkbox">
+                        </span>
+                        <input type="text" class="form-control">
+                        <span class="input-group-addon">
+                            <input type="checkbox" data-toggle="busy-checkbox" title="选项1">
+                            <input type="checkbox" data-toggle="busy-checkbox" title="选项1">
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(水平)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group block">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">胶囊(水平)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">胶囊(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group block">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项1">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项2">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">开关</label>
+                <div class="col-sm-9">
+                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" value="" title="on,off">
+                </div>
+            </div>
         </div>
-        <div class="checkbox disabled">
-            <label>
-                <input type="checkbox" value="" disabled>
-                选项2
-            </label>
-        </div>
-        <div class="checkbox">
-            <label>
-                <input type="checkbox" value="">
-                选项3
-            </label>
-        </div>
-
-        <hr/>
-        <div class="radio">
-            <label>
-                <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-                选项1
-            </label>
-        </div>
-        <div class="radio">
-            <label>
-                <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
-                选项2
-            </label>
-        </div>
-        <div class="radio disabled">
-            <label>
-                <input type="radio" name="optionsRadios" id="optionsRadios3" value="option3" disabled>
-                选项3
-            </label>
-        </div>
-
-        <hr/>
-        <div class="checkbox">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
-        </div>
-        <div class="checkbox">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
-        </div>
-        <div class="checkbox">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
-        </div>
-
-        <hr/>
-        <div class="radio">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项1">
-        </div>
-        <div class="radio">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项2">
-        </div>
-        <div class="radio">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项3">
-        </div>
-
-        <hr/>
-        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
-        <hr/>
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="on,off">
     </template>
 
     <template class="hide" id="demo8">
-        <label class="checkbox-inline">
-            <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
-        </label>
-        <label class="checkbox-inline">
-            <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
-        </label>
-        <label class="checkbox-inline">
-            <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
-        </label>
+        <div class="form-horizontal">
+            <div class="form-group-title">默认尺寸</div>
 
-        <hr/>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="blankRadio" id="blankRadio1" value="option1">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">无美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox1" value="option1"> 1
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox2" value="option2"> 2
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox3" value="option3"> 3
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group">
+                        <input type="radio" data-toggle="busy-radio" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">嵌入</label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <input type="radio" data-toggle="busy-radio">
+                        </span>
+                        <input type="text" class="form-control">
+                        <span class="input-group-addon">
+                            <input type="radio" data-toggle="busy-radio" title="选项1">
+                            <input type="radio" data-toggle="busy-radio" title="选项2">
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(水平)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项1">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项2">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group block">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项1">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项2">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
 
-        <div class="checkbox">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项2">
-            <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项3">
-        </div>
-        <hr/>
-
-        <div class="checkbox-group">
-            <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
-            <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项2">
-            <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项3">
-        </div>
-
-        <hr/>
-
-        <div class="checkbox-group">
-            <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="on,off">
-            <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="on,off">
-            <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="on,off">
-        </div>
-
-        <hr/>
-
-        <label class="radio-inline">
-            <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
-        </label>
-
-        <hr/>
-
-        <div class="radio">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项1">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项2">
-            <input type="radio" data-toggle="busy-radio" value="" title="选项3">
-        </div>
-    </template>
-
-    <template class="hide" id="demo9">
-        <div class="checkbox">
-            <label>
-                <input type="checkbox" id="blankCheckbox" value="option1">
-            </label>
-        </div>
-        <div class="checkbox">
-            <input type="checkbox" data-toggle="busy-checkbox" >
-        </div>
-        <hr/>
-        <div class="radio">
-            <label>
-                <input type="radio" name="blankRadio" id="blankRadio1" value="option1">
-            </label>
-        </div>
-        <hr/>
-        <div class="radio">
-            <input type="radio" data-toggle="busy-radio" value="">
+            <div class="form-group-title">小尺寸 <code>.form-group-sm</code></div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="blankRadio" id="blankRadio1" value="option1">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(水平)</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
+                    </label>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">无美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox1" value="option1"> 1
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox2" value="option2"> 2
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" id="inlineCheckbox3" value="option3"> 3
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(无label)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group">
+                        <input type="radio" data-toggle="busy-radio" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">嵌入</label>
+                <div class="col-sm-9">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">
+                            <input type="radio" data-toggle="busy-radio">
+                        </span>
+                        <input type="text" class="form-control">
+                        <span class="input-group-addon">
+                            <input type="radio" data-toggle="busy-radio" title="选项1">
+                            <input type="radio" data-toggle="busy-radio" title="选项2">
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(水平)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项1">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项2">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label class="col-sm-3 control-label">美化(垂直)</label>
+                <div class="col-sm-9">
+                    <div class="radio-group block">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项1">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项2">
+                        <input type="radio" data-toggle="busy-radio" value="" title="选项3">
+                    </div>
+                </div>
+            </div>
         </div>
     </template>
 
@@ -571,27 +842,6 @@
         <div class="input-group input-group-sm">
             <span class="input-group-addon" id="sizing-addon3">@</span>
             <input type="text" class="form-control" placeholder="Username">
-        </div>
-    </template>
-
-    <template class="hide" id="demo16">
-        <div class="row row-gutters-10">
-            <div class="col-lg-6">
-                <div class="input-group">
-                    <span class="input-group-addon">
-                        <input type="checkbox" data-toggle="busy-checkbox">
-                    </span>
-                    <input type="text" class="form-control">
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="input-group">
-                    <span class="input-group-addon">
-                        <input type="radio" data-toggle="busy-radio">
-                    </span>
-                    <input type="text" class="form-control">
-                </div>
-            </div>
         </div>
     </template>
 
