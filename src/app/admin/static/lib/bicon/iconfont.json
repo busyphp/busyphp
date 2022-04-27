@@ -6,6 +6,251 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "977581",
+      "name": "qq",
+      "font_class": "qq",
+      "unicode": "e64d",
+      "unicode_decimal": 58957
+    },
+    {
+      "icon_id": "695468",
+      "name": "QQ",
+      "font_class": "qq-o-s",
+      "unicode": "e631",
+      "unicode_decimal": 58929
+    },
+    {
+      "icon_id": "572617",
+      "name": "QQ",
+      "font_class": "qq-l",
+      "unicode": "e62c",
+      "unicode_decimal": 58924
+    },
+    {
+      "icon_id": "995969",
+      "name": "QQ1",
+      "font_class": "qq-o-l",
+      "unicode": "e65f",
+      "unicode_decimal": 58975
+    },
+    {
+      "icon_id": "4937004",
+      "name": "QQ-circle-fill",
+      "font_class": "qq-o",
+      "unicode": "e887",
+      "unicode_decimal": 59527
+    },
+    {
+      "icon_id": "834842",
+      "name": "支付宝",
+      "font_class": "alipay-o-l",
+      "unicode": "e64e",
+      "unicode_decimal": 58958
+    },
+    {
+      "icon_id": "1486848",
+      "name": "支付宝支付",
+      "font_class": "alipay",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    },
+    {
+      "icon_id": "8356569",
+      "name": "支付宝1",
+      "font_class": "alipay-l",
+      "unicode": "e652",
+      "unicode_decimal": 58962
+    },
+    {
+      "icon_id": "15933089",
+      "name": "支付宝",
+      "font_class": "alipay-o",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "925499",
+      "name": "微信",
+      "font_class": "wechat",
+      "unicode": "e659",
+      "unicode_decimal": 58969
+    },
+    {
+      "icon_id": "1126026",
+      "name": "微信",
+      "font_class": "wechat-l",
+      "unicode": "e650",
+      "unicode_decimal": 58960
+    },
+    {
+      "icon_id": "3373320",
+      "name": "微信",
+      "font_class": "wechat-o-s",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    },
+    {
+      "icon_id": "10910775",
+      "name": "微信",
+      "font_class": "wechat-o-l",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "15933094",
+      "name": "微信",
+      "font_class": "wechat-o",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "16852663",
+      "name": "评分",
+      "font_class": "give-mark",
+      "unicode": "e642",
+      "unicode_decimal": 58946
+    },
+    {
+      "icon_id": "6805260",
+      "name": "Switch-3",
+      "font_class": "switch",
+      "unicode": "e931",
+      "unicode_decimal": 59697
+    },
+    {
+      "icon_id": "26118509",
+      "name": "input-group",
+      "font_class": "input-group",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "77110",
+      "name": "时间",
+      "font_class": "time",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "11673278",
+      "name": "日历",
+      "font_class": "calendar-block",
+      "unicode": "e662",
+      "unicode_decimal": 58978
+    },
+    {
+      "icon_id": "11751261",
+      "name": "分组",
+      "font_class": "group",
+      "unicode": "e61e",
+      "unicode_decimal": 58910
+    },
+    {
+      "icon_id": "17412310",
+      "name": "Group List",
+      "font_class": "group-list",
+      "unicode": "e689",
+      "unicode_decimal": 59017
+    },
+    {
+      "icon_id": "1766470",
+      "name": "符号-按钮",
+      "font_class": "btn",
+      "unicode": "e690",
+      "unicode_decimal": 59024
+    },
+    {
+      "icon_id": "4906240",
+      "name": "按钮组",
+      "font_class": "btn-group",
+      "unicode": "e782",
+      "unicode_decimal": 59266
+    },
+    {
+      "icon_id": "8131491",
+      "name": "fieldset",
+      "font_class": "fieldset",
+      "unicode": "e643",
+      "unicode_decimal": 58947
+    },
+    {
+      "icon_id": "10353724",
+      "name": "选项卡",
+      "font_class": "tab",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "27463313",
+      "name": "行内布局",
+      "font_class": "inline",
+      "unicode": "e875",
+      "unicode_decimal": 59509
+    },
+    {
+      "icon_id": "5774412",
+      "name": "icon_grid",
+      "font_class": "grid",
+      "unicode": "e73a",
+      "unicode_decimal": 59194
+    },
+    {
+      "icon_id": "15196958",
+      "name": "28.富文本框",
+      "font_class": "editor",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "3179603",
+      "name": "button",
+      "font_class": "button",
+      "unicode": "ea21",
+      "unicode_decimal": 59937
+    },
+    {
+      "icon_id": "5774407",
+      "name": "icon_text",
+      "font_class": "text",
+      "unicode": "e736",
+      "unicode_decimal": 59190
+    },
+    {
+      "icon_id": "4003961",
+      "name": "单选题",
+      "font_class": "radio-group",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "4004910",
+      "name": "多选题",
+      "font_class": "checkbox-group",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
+      "icon_id": "1766474",
+      "name": "符号-单行输入框",
+      "font_class": "input",
+      "unicode": "e692",
+      "unicode_decimal": 59026
+    },
+    {
+      "icon_id": "1766478",
+      "name": "符号-多行输入框",
+      "font_class": "textarea",
+      "unicode": "e693",
+      "unicode_decimal": 59027
+    },
+    {
+      "icon_id": "18182564",
+      "name": "计数器",
+      "font_class": "counter",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
       "icon_id": "18267904",
       "name": "版权",
       "font_class": "copyright",

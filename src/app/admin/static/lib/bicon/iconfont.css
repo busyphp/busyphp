@@ -1,8 +1,8 @@
 @font-face {
   font-family: "bicon"; /* Project id 2783607 */
-  src: url('iconfont.woff2?t=1635751768607') format('woff2'),
-       url('iconfont.woff?t=1635751768607') format('woff'),
-       url('iconfont.ttf?t=1635751768607') format('truetype');
+  src: url('iconfont.woff2?t=1651053046624') format('woff2'),
+       url('iconfont.woff?t=1651053046624') format('woff'),
+       url('iconfont.ttf?t=1651053046624') format('truetype');
 }
 
 .bicon {
@@ -11,6 +11,146 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.bicon-qq:before {
+  content: "\e64d";
+}
+
+.bicon-qq-o-s:before {
+  content: "\e631";
+}
+
+.bicon-qq-l:before {
+  content: "\e62c";
+}
+
+.bicon-qq-o-l:before {
+  content: "\e65f";
+}
+
+.bicon-qq-o:before {
+  content: "\e887";
+}
+
+.bicon-alipay-o-l:before {
+  content: "\e64e";
+}
+
+.bicon-alipay:before {
+  content: "\e634";
+}
+
+.bicon-alipay-l:before {
+  content: "\e652";
+}
+
+.bicon-alipay-o:before {
+  content: "\e616";
+}
+
+.bicon-wechat:before {
+  content: "\e659";
+}
+
+.bicon-wechat-l:before {
+  content: "\e650";
+}
+
+.bicon-wechat-o-s:before {
+  content: "\e614";
+}
+
+.bicon-wechat-o-l:before {
+  content: "\e628";
+}
+
+.bicon-wechat-o:before {
+  content: "\e615";
+}
+
+.bicon-give-mark:before {
+  content: "\e642";
+}
+
+.bicon-switch:before {
+  content: "\e931";
+}
+
+.bicon-input-group:before {
+  content: "\e613";
+}
+
+.bicon-time:before {
+  content: "\e612";
+}
+
+.bicon-calendar-block:before {
+  content: "\e662";
+}
+
+.bicon-group:before {
+  content: "\e61e";
+}
+
+.bicon-group-list:before {
+  content: "\e689";
+}
+
+.bicon-btn:before {
+  content: "\e690";
+}
+
+.bicon-btn-group:before {
+  content: "\e782";
+}
+
+.bicon-fieldset:before {
+  content: "\e643";
+}
+
+.bicon-tab:before {
+  content: "\e611";
+}
+
+.bicon-inline:before {
+  content: "\e875";
+}
+
+.bicon-grid:before {
+  content: "\e73a";
+}
+
+.bicon-editor:before {
+  content: "\e627";
+}
+
+.bicon-button:before {
+  content: "\ea21";
+}
+
+.bicon-text:before {
+  content: "\e736";
+}
+
+.bicon-radio-group:before {
+  content: "\e60a";
+}
+
+.bicon-checkbox-group:before {
+  content: "\e60f";
+}
+
+.bicon-input:before {
+  content: "\e692";
+}
+
+.bicon-textarea:before {
+  content: "\e693";
+}
+
+.bicon-counter:before {
+  content: "\e606";
 }
 
 .bicon-copyright:before {
