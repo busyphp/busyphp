@@ -652,6 +652,10 @@ declare namespace busyAdmin {
          * 文件上传成功或文件库选择后触发
          */
         uploadResult: string,
+        /**
+         * 内容值发生改变的时候触发
+         */
+        uploadChange: string,
 
         //+======================================================================
         //+ SelectPicker
