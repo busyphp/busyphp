@@ -25,6 +25,7 @@
 | 基本属性:title |  |  |  |  |
 | data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传`,`use:自定义上传` |
 | data-name | string | `否` | - | 设置表单参数名称, 如果为 `input`标签，则可以直接设置`name`值 |
+| data-disabled | boolean | `否` | - | 是否禁用表单, 如果为 `input`标签，则可以直接设置`disabled`值 |
 | data-class-type | string | `否` | `file` | 上传的文件类型 |
 | data-class-value | string | `否` | - | 上传的文件标识 |
 | data-value | string | `否` | - | 默认值, 如果为 `input`标签，则可以直接设置`value`值 |
@@ -62,11 +63,13 @@
 | data-compress-larger | boolean | `否` | `false` | 如果发现压缩后文件大小比原来还大，则使用原来图片，此属性可能会影响图片自动纠正功能 |
 | data-compress-size | number | `否` | `0` | 单位字节，如果图片大小小于此值，不会采用压缩 |
 | 单文件上传 `type="single"`:title |  |  |  |  |
+| data-single-size | string | `否` | - | 尺寸，支持 `xs`, `lg`, `sm` |
 | data-single-input | boolean | `否` | `true` | 是否显示上传地址输入框 |
 | data-single-preview | boolean | `否` | `true` | 是否显示文件预览，针对`图片，视频，音频`有效 |
 | data-single-preview-size | string | `否` | `100px,100px` | 设置预览尺寸，留空则默认大小，格式：`宽,高`，针对`音频`无效，`图片`可以设置另外另外一项为0则自动适配 |
 | 多文件上传 `type="files"`:title |  |  |  |  |
 | data-files-ui | string | `否` | `true` | UI模式，`all:全部`,`result:只显示结果区域`,`queue:只显示上传队列区域` |
+| data-files-image-width | number | `否` | `null` | 图片宽度 |
 | data-files-edit-filename | boolean | `否` | `true` | 是否允许修改文件名 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-ratio | string | `否` | - | 设置容器显示比例，格式：`宽,高` |
@@ -78,7 +81,7 @@
 | data-use-error | boolean | `否` | `false` | 是否自定义错误提示UI |
 
 ### 使用示例
-            
+
 #### 单文件上传
 
 ```demo:实例
