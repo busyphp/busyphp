@@ -179,8 +179,8 @@
                 <label class="col-sm-2 col-md-2 control-label">时间格式</label>
                 <div class="col-sm-10 col-md-8">
                     <select class="form-control" name="data[watermark][timeFormat]" data-preview-watermark="timeFormat">
-                        <option value="YYYY-MM-DD HH:ii:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY-MM-DD HH:ii:ss')?>><?=date('Y-m-d H:i:s')?></option>
-                        <option value="YYYY年MM月DD日 HH:ii:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY年MM月DD日 HH:ii:ss')?>><?=date('Y年m月d日 H:i:s')?></option>
+                        <option value="YYYY-MM-DD HH:mm:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY-MM-DD HH:mm:ss')?>><?=date('Y-m-d H:i:s')?></option>
+                        <option value="YYYY年MM月DD日 HH:mm:ss" <?=is_selected(($info['watermark']['timeFormat'] ?? '') == 'YYYY年MM月DD日 HH:mm:ss')?>><?=date('Y年m月d日 H:i:s')?></option>
                     </select>
                     <span class="help-block">选择时间展示格式</span>
                 </div>
