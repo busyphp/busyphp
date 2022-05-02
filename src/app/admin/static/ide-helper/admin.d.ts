@@ -597,6 +597,10 @@ declare namespace busyAdmin {
         //+ Upload
         //+======================================================================
         /**
+         * 上传按钮初始完毕后触发
+         */
+        uploadReady: string,
+        /**
          * 文件校验不通过是出发
          */
         uploadFileError: string,

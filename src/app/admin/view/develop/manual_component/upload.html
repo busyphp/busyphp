@@ -72,8 +72,7 @@
 | data-files-image-width | number | `否` | `null` | 图片宽度 |
 | data-files-edit-filename | boolean | `否` | `true` | 是否允许修改文件名 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
-| data-card-ratio | string | `否` | - | 设置容器显示比例，格式：`宽,高` |
-| data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形`，设置该类型后，将不显示上传和选择文件按钮 |
+| data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形` |
 | 自定义上传 `type="use"`:title |  |  |  |  |
 | data-use-select | string | `否` | - | 设置自定义系统文件库选择按钮的jQuery选择器，如`#selectBtn` |
 | data-use-dnd | string | `否` | - | 设置接收文件拖拽的容器jQuery选择器，如`#dndBox` |
@@ -112,84 +111,84 @@
     </div>
 
     <template class="hide" id="demo1">
-<h5>图片上传</h5>
-<input type="text" class="form-control" name="test"
-       data-toggle="busy-upload"
-       data-class-type="image"
-       data-auto="false"
-       placeholder="可以将图片拖拽到这里上传，或使用粘贴功能"
-       id="demo1_image"/>
-<hr/>
-<h5>视频上传</h5>
-<div data-toggle="busy-upload"
-     data-name="test1"
-     data-class-type="video"
-     data-placeholder="请上传或选择mp4文件"
-     id="demo1_video"></div>
-<hr/>
-<h5>音频上传</h5>
-<div data-toggle="busy-upload"
-     data-name="test2"
-     data-class-type="audio"
-     data-placeholder="请上传或选择mp3文件"
-     id="demo1_audio"></div>
-<hr/>
-<h5>文件上传</h5>
-<div data-toggle="busy-upload"
-     data-name="test3"
-     data-class-type="file"
-     data-placeholder="请上传文件"
-     id="demo1_file"></div>
+        <h5>图片上传</h5>
+        <input type="text" class="form-control" name="test"
+               data-toggle="busy-upload"
+               data-class-type="image"
+               data-auto="false"
+               placeholder="可以将图片拖拽到这里上传，或使用粘贴功能"
+               id="demo1_image"/>
+        <hr/>
+        <h5>视频上传</h5>
+        <div data-toggle="busy-upload"
+             data-name="test1"
+             data-class-type="video"
+             data-placeholder="请上传或选择mp4文件"
+             id="demo1_video"></div>
+        <hr/>
+        <h5>音频上传</h5>
+        <div data-toggle="busy-upload"
+             data-name="test2"
+             data-class-type="audio"
+             data-placeholder="请上传或选择mp3文件"
+             id="demo1_audio"></div>
+        <hr/>
+        <h5>文件上传</h5>
+        <div data-toggle="busy-upload"
+             data-name="test3"
+             data-class-type="file"
+             data-placeholder="请上传文件"
+             id="demo1_file"></div>
     </template>
 
     <template class="hide" id="demo2">
-<h5>图片上传</h5>
-<div id="demo2_banner"
-     data-toggle="busy-upload"
-     data-type="files"
-     data-class-type="banner"
-     data-auto="false"
-     data-name="demo2_banner"
-     data-value="{$skin.images}login/1.jpg,{$skin.images}login/2.jpg,{$skin.images}login/3.jpg"></div>
-<hr/>
-<h5>文件上传</h5>
-<div id="demo2_file"
-     data-toggle="busy-upload"
-     data-type="files"
-     data-class-type="file"
-     data-auto="false"
-     data-name="demo2_file"
-     data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
+        <h5>图片上传</h5>
+        <div id="demo2_banner"
+             data-toggle="busy-upload"
+             data-type="files"
+             data-class-type="banner"
+             data-auto="false"
+             data-name="demo2_banner"
+             data-value="{$skin.images}login/1.jpg,{$skin.images}login/2.jpg,{$skin.images}login/3.jpg"></div>
+        <hr/>
+        <h5>文件上传</h5>
+        <div id="demo2_file"
+             data-toggle="busy-upload"
+             data-type="files"
+             data-class-type="file"
+             data-auto="false"
+             data-name="demo2_file"
+             data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
     </template>
 
     <template class="hide" id="demo3">
-<h5>图片上传</h5>
-<div style="width: 200px;" id="demo3_image" data-toggle="busy-upload"
-     data-type="card"
-     data-class-type="image"
-     data-auto="false"
-     data-name="demo3_image"></div>
-<hr/>
-
-<h5>视频上传</h5>
-
-<div style="width: 200px;" id="demo3_video" data-toggle="busy-upload"
-     data-type="card"
-     data-class-type="video"
-     data-card-icon="fa fa-file-video-o"
-     data-auto="false"
-     data-name="demo3_video"></div>
-
-<hr/>
-
-<h5>头像上传</h5>
-<div style="width: 200px;" id="demo3_avatar" data-toggle="busy-upload"
-     data-type="card"
-     data-class-type="avatar"
-     data-card-type="circle"
-     data-card-icon="fa fa-image"
-     data-auto="false"
-     data-placeholder="请上传头像"></div>
+        <h5>图片上传</h5>
+        <div style="width: 150px;" id="demo3_image" data-toggle="busy-upload"
+             data-type="card"
+             data-class-type="image"
+             data-auto="false"
+             data-name="demo3_image"></div>
+        <hr/>
+        
+        <h5>视频上传</h5>
+        
+        <div style="width: 150px;" id="demo3_video" data-toggle="busy-upload"
+             data-type="card"
+             data-class-type="video"
+             data-card-icon="fa fa-file-video-o"
+             data-auto="false"
+             data-name="demo3_video"></div>
+        
+        <hr/>
+        
+        <h5>头像上传</h5>
+        <div style="width: 150px;" id="demo3_avatar" data-toggle="busy-upload"
+             data-type="card"
+             data-class-type="avatar"
+             data-card-type="circle"
+             data-card-icon="fa fa-image"
+             data-auto="false"
+             data-placeholder="请上传头像"></div>
     </template>
     
     <template id="demo4">
