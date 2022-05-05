@@ -184,6 +184,7 @@ class AdminHandle extends Handle
                 'cssRoot'    => $data['skin']['css'],
                 'imagesRoot' => $data['skin']['images'],
                 'version'    => $data['skin']['version'],
+                'debug'      => $app->config->get('app.admin.debug', false),
                 'requires'   => $requires,
                 'configs'    => [
                     'app'         => [
