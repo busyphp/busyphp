@@ -199,6 +199,10 @@ declare namespace busyAdmin {
         //+ Modal
         //+======================================================================
         /**
+         * 模态框内容渲染前触发
+         */
+        modalRenderBefore: string,
+        /**
          * 模态框准备完成，显示前触发
          */
         modalReady: string,

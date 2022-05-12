@@ -144,7 +144,7 @@ class FileController extends InsideController
             $this->model->whereEntity(SystemFileField::name('like', '%' . FilterHelper::searchWord($word) . '%'));
         }
         
-        
+        $isImage = $fileType === SystemFile::FILE_TYPE_IMAGE;
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions($type));
         $this->assign('class_type', $classType);
         $this->assign('class_value', $classValue);
@@ -157,8 +157,8 @@ class FileController extends InsideController
             SystemFile::FILE_TYPE_VIDEO,
             SystemFile::FILE_TYPE_AUDIO
         ]));
-        $this->assign('is_image', $fileType === SystemFile::FILE_TYPE_IMAGE);
-        $this->assign('info', $this->list($this->model)->select());
+        $this->assign('is_image', $isImage);
+        $this->assign('info', $this->list($this->model, $isImage ? 20 : 30)->select());
         
         return $this->display();
     }
