@@ -1,0 +1,96 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-range-slider"` 来触发
+
+```html
+<input type="text" data-toggle="busy-range-slider" />
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-type | string | `否` | `single` | 设置操作类型，`single:单滑块`, `double:双滑块` |
+| data-min | number | `否` | 0 | 最小值 |
+| data-max | number | `否` | 100 | 最大值 |
+| data-from | number | `否` | 0 | 设置左手柄（或单滑块）的起始位置 |
+| data-to | number | `否` | 100 | 设置右手柄的起始位置 |
+| data-step | number | `否` | 1 | 设置滑块步骤。总是 > 0。可以是小数 |
+| data-min-interval | number | `否` | 0 | 设置双滑块之间的最小值 |
+| data-max-interval | number | `否` | 0 | 设置双滑块之间的最大值 |
+| data-drag-interval | boolean | `否` | `false` | 允许用户拖动双滑块之间的范围 |
+| data-values | array | `否` | [] | 自定义滑块值数组。可以是数字或字符串。如果设置了 values 数组，则不能再更改 min、max 和 step 参数 |
+| data-from-fixed | boolean | `否` | `false` | 固定左（或单）滑块的位置 |
+| data-from-min | number | `否` | 0 | 设置左（或单个）滑块的最小值 |
+| data-from-max | number | `否` | 100 | 设置左（或单个）滑块的最大值 |
+| data-from-shadow | boolean | `否` | `false` | 突出显示左滑块 |
+| data-to-fixed | boolean | `否` | `false` | 固定右滑块的位置 |
+| data-to-min | number | `否` | 0 | 设置右滑块的最小值 |
+| data-to-max | number | `否` | 100 | 设置右滑块的最大值 |
+| data-to-shadow | boolean | `否` | `false` | 突出显示右滑块 |
+| data-grid | boolean | `否` | `false` | 启用滑块上的标尺 |
+| data-grid-margin | boolean | `否` | `true` | 设置左右标尺间隙 |
+| data-grid-num | number | `否` | `4` | 标尺单元数 |
+| data-grid-snap | boolean | `否` | `false` | 将标尺捕捉到滑块步骤，如果true，则不会使用 `grid-num`。最大步数 = 50 |
+| data-hide-min-max | boolean | `否` | `false` | 隐藏最小和最大标签 |
+| data-hide-form-to | boolean | `否` | `false` | 隐藏滑块上的提示 |
+| data-prefix | string | `否` | - | 为值设置前缀 |
+| data-postfix | string | `否` | - | 为值设置后缀 |
+| data-max-postfix | string | `否` | - | 特殊后缀，仅用于最大值 |
+| data-disabled | boolean | `否` | `false` | 是否禁用 |
+| data-readonly | boolean | `否` | `false` | 是否只读 |
+
+### 使用示例
+
+#### 1. 基本示例
+
+```demo:实例
+#demo1
+```
+#### 2. 范围示例
+
+```demo:实例
+#demo2
+```
+#### 3. 显示标尺
+
+```demo:实例
+#demo3
+```
+#### 4. 自定义范围
+
+```demo:实例
+#demo4
+```
+            </script>
+        </div>
+    </div>
+    
+    <template id="demo1" class="hide">
+        <input type="text" id="demo1_input" class="form-control" data-toggle="busy-range-slider" value="50"/>
+    </template>
+    
+    <template id="demo2" class="hide">
+        <input type="text" id="demo2_input" class="form-control" data-toggle="busy-range-slider" data-type="double" value="40,60" data-prefix="$"/>
+    </template>
+    
+    <template id="demo3" class="hide">
+        <input type="text" id="demo3_input" class="form-control" data-toggle="busy-range-slider" data-type="double" data-grid="true" value="40,60" data-step="10" data-grid-num="10" data-prefix="$"/>
+    </template>
+    
+    <template id="demo4" class="hide">
+        <input type="text" id="demo4_input" class="form-control" data-toggle="busy-range-slider" data-type="double" data-values='["A","B","C","D"]' data-grid="true" value="B"/>
+    </template>
+</block>

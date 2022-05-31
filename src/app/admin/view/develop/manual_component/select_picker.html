@@ -42,6 +42,8 @@
 | data-text-field | string | `否` | `name` | 取模型数据的text值字段 |
 | data-length | string | `否` | `name` | 模型数据每页展示条数，0为不限，会缓存该结果 |
 | data-order | string | `否` | `id DESC` | 模型数据排序方式，多个用英文逗号隔开 |
+| data-selected-template | string,function | `否` | null | 自定义选中项模板 |
+| data-option-template | string,function | `否` | null | 自定义选项模板 |
 | Select2配置:title |  |  |  |  |
 | data-select2-tags | boolean | `否` | `false` | 是否为tags模式，该模式下，输入的tag不存则可以创建 |
 | data-select2-tags-space | [string] | `否` | `null` | 设置tag分割字符，默认为回车 |
@@ -201,67 +203,67 @@
         </script>
     </template>
 
-    <textarea id="demo2" class="hide">
-<select class="form-control"
-        id="demo2_array"
-        data-toggle="busy-select-picker"
-        data-list='[{"id":"1","text":"张三"},{"id":"2","text":"李四","disabled":true},{"id":"3","text":"王武","selected":true}]'
-        data-placeholder="请选择">
-</select>
-    </textarea>
+    <template id="demo2" class="hide">
+        <select class="form-control"
+                id="demo2_array"
+                data-toggle="busy-select-picker"
+                data-list='[{"id":"1","text":"张三"},{"id":"2","text":"李四","disabled":true},{"id":"3","text":"王武","selected":true}]'
+                data-placeholder="请选择">
+        </select>
+    </template>
 
-    <textarea id="demo3" class="hide">
-有缓存
-<div class="input-group">
-    <div class="input-group-addon">单选</div>
-    <select class="form-control"
-            data-toggle="busy-select-picker"
-            data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-            data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-            data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
-            data-length="0"
-            data-value='avatar'
-            data-placeholder="请选择">
-    </select>
-</div>
-<hr/>
-无缓存
-<div class="input-group">
-    <div class="input-group-addon">多选</div>
-    <select class="form-control"
-            data-toggle="busy-select-picker"
-            data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-            data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-            data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
-            data-order="id desc,var desc"
-            data-value='["avatar","banner"]'
-            data-placeholder="请选择"
-            multiple>
-    </select>
-</div>
-    </textarea>
+    <template id="demo3" class="hide">
+        有缓存
+        <div class="input-group">
+            <div class="input-group-addon">单选</div>
+            <select class="form-control"
+                    data-toggle="busy-select-picker"
+                    data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
+                    data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
+                    data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
+                    data-length="0"
+                    data-value='avatar'
+                    data-placeholder="请选择">
+            </select>
+        </div>
+        <hr/>
+        无缓存
+        <div class="input-group">
+            <div class="input-group-addon">多选</div>
+            <select class="form-control"
+                    data-toggle="busy-select-picker"
+                    data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
+                    data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
+                    data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
+                    data-order="id desc,var desc"
+                    data-value='["avatar","banner"]'
+                    data-placeholder="请选择"
+                    multiple>
+            </select>
+        </div>
+    </template>
 
-    <textarea id="demo4" class="hide">
-<select class="form-control"
-        data-toggle="busy-select-picker"
-        data-select2-tags="true"
-        data-clear="true"
-        data-placeholder="请选择">
-    <option value="1">百度</option>
-    <option value="2">腾讯</option>
-    <option value="3">阿里</option>
-</select>
-<hr/>
-请输入标签，用逗号或空格分割
-<select class="form-control"
-        data-toggle="busy-select-picker"
-        data-select2-tags="true"
-        data-select2-tags-space='[","," "]'
-        data-placeholder="请输入标签，用逗号或空格分割"
-        multiple>
-    <option value="1" selected>百度</option>
-    <option value="2" selected>腾讯</option>
-    <option value="3" selected>阿里</option>
-</select>
-    </textarea>
+    <template id="demo4" class="hide">
+        <select class="form-control"
+                data-toggle="busy-select-picker"
+                data-select2-tags="true"
+                data-clear="true"
+                data-placeholder="请选择">
+            <option value="1">百度</option>
+            <option value="2">腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+        <hr/>
+        请输入标签，用逗号或空格分割
+        <select class="form-control"
+                data-toggle="busy-select-picker"
+                data-select2-tags="true"
+                data-select2-tags-space='[","," "]'
+                data-placeholder="请输入标签，用逗号或空格分割"
+                multiple>
+            <option value="1" selected>百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3" selected>阿里</option>
+        </select>
+    </template>
 </block>

@@ -374,6 +374,33 @@ class ManualComponentController extends InsideController
     
     
     /**
+     * 滑块
+     */
+    public function range_slider()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 评分
+     */
+    public function rate()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
+     * 日历
+     */
+    public function calendar()
+    {
+        return $this->display();
+    }
+    
+    
+    /**
      * 联动选择器
      */
     public function linkage_picker()

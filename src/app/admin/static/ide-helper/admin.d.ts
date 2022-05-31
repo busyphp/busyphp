@@ -76,6 +76,8 @@ declare namespace busyAdmin {
         gwm: "gwm"
         webUploader: "webUploader"
         zeroClipboard: "zeroClipboard"
+        ionRangeSlider: "ionRangeSlider"
+        bootstrapStarRating: "bootstrapStarRating"
     };
 
 
@@ -825,7 +827,27 @@ declare namespace busyAdmin {
         /**
          * 内容被清空触发
          */
-        linkagePickerClear: string
+        linkagePickerClear: string,
+
+        //+======================================================================
+        //+ RangeSlider
+        //+======================================================================
+        /**
+         * 滑块初始化时触发
+         */
+        rangeSliderStart: string,
+        /**
+         * 值改变时触发
+         */
+        rangeSliderChange: string,
+        /**
+         * 滑块完成时触发
+         */
+        rangeSliderFinish: string,
+        /**
+         * 更新时触发
+         */
+        rangeSliderUpdate: string,
     }
 
     /**
