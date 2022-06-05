@@ -189,7 +189,7 @@ class RsaHelper
             $privateCert = (string) @file_get_contents($privateCert);
         }
         
-        $result = $rsa2 ? openssl_pkey_get_private(self::parseCert($name ?: 'RSA PRIVATE', $privateCert)) : openssl_get_privatekey(self::parseCert($name ?: 'RSA PRIVATE', $privateCert));
+        $result = $rsa2 ? openssl_pkey_get_private(self::parseCert($name ?: 'PRIVATE', $privateCert)) : openssl_get_privatekey(self::parseCert($name ?: 'PRIVATE', $privateCert));
         if (!$result) {
             throw new DomainException('私钥格式不正确');
         }
