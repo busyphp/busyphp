@@ -67,7 +67,7 @@ class SystemLogsField extends Field
     
     /**
      * 日志分类
-     * @var int
+     * @var string
      */
     public $classType;
     

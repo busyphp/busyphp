@@ -255,11 +255,11 @@ abstract class AdminController extends Controller
     
     /**
      * 记录操作记录
-     * @param int   $type 日志分类
-     * @param mixed $value 日志业务参数
+     * @param string|int $type 日志分类
+     * @param mixed      $value 日志业务参数
      * @return SystemLogs
      */
-    protected function log(int $type = 0, string $value = '') : SystemLogs
+    protected function log($type = '', string $value = '') : SystemLogs
     {
         return SystemLogs::init()->setUser($this->adminUserId, $this->adminUsername)->setClass($type, $value);
     }

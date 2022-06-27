@@ -59,11 +59,11 @@ class SystemLogs extends Model
     
     /**
      * 设置业务类型以及业务参数
-     * @param int    $type 业务类型
-     * @param string $value 业务参数
+     * @param string|int $type 业务类型
+     * @param string     $value 业务参数
      * @return $this
      */
-    public function setClass(int $type, $value = '') : self
+    public function setClass($type, $value = '') : self
     {
         $this->setOption('logs_class_type', $type);
         $this->setOption('logs_class_value', trim($value));
@@ -120,7 +120,7 @@ class SystemLogs extends Model
             $insert->type       = $type;
             $insert->username   = $this->getOptions('logs_username') ?: '';
             $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
-            $insert->classType  = $this->getOptions('logs_class_type') ?: 0;
+            $insert->classType  = $this->getOptions('logs_class_type') ?: '';
             $insert->classValue = $this->getOptions('logs_class_value') ?: '';
             $insert->client     = $isCli ? self::CLI_CLIENT_KEY : $app->getDirName();
             $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
@@ -146,6 +146,23 @@ class SystemLogs extends Model
         $time = strtotime('-6 month');
         
         return $this->whereEntity(SystemLogsField::createTime('<=', $time))->delete();
+    }
+    
+    
+    /**
+     * 查询日志分类
+     * @param string|int $type
+     * @param string     $value
+     * @return $this
+     */
+    public function whereClass($type, string $value = '') : self
+    {
+        $this->whereEntity(SystemLogsField::classType($type));
+        if ($value !== '') {
+            $this->whereEntity(SystemLogsField::classValue($value));
+        }
+        
+        return $this;
     }
     
     
