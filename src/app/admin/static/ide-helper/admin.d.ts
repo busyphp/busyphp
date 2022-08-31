@@ -1234,6 +1234,16 @@ declare namespace busyAdmin {
          * 是否登录
          */
         isLogin(): boolean;
+
+        /**
+         * 显示框架全屏加载器
+         */
+        showLoader(): void;
+
+        /**
+         * 隐藏框架全屏加载器
+         */
+        hideLoader(): void;
     }
 
     interface BusyAdminAppData {
