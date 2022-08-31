@@ -188,7 +188,7 @@ class SystemMenu extends Model
         }
         
         if ($data->topPath) {
-            if (!$this->whereEntity(SystemMenuField::topPath($data->topPath))->findInfo()) {
+            if (!$this->whereEntity(SystemMenuField::path($data->topPath))->findInfo()) {
                 throw new VerifyException('顶级菜单访问链接不存在', 'top_path');
             }
         }

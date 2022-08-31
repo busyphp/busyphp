@@ -90,7 +90,7 @@
         <div class="form-group no-margin-bottom" id="topPath">
             <label class="col-sm-2 control-label">访问链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="top_path" placeholder="请输入访问链接" value="{$info.top_path|default=''}"/>
+                <input class="form-control" name="top_path" placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class;?>" data-text-field="path" value="{$info.top_path|default=''}"/>
                 <span class="help-block">设置顶级菜单访问链接，设置后点击顶级菜单将默认访问到该链接中</span>
             </div>
         </div>
