@@ -80,6 +80,37 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     }
     
     
+    /**
+     * 复制Field为新的Field
+     * @param Field         $oldField
+     * @param Entity|string ...$excludes
+     * @return static
+     */
+    public static function newField(Field $oldField, ...$excludes) : self
+    {
+        $excludes = array_map(function($item) {
+            return StringHelper::snake((string) $item);
+        }, $excludes);
+        
+        $obj = static::init();
+        foreach (get_object_vars($obj) as $key => $value) {
+            // 下划线开头的被认为是私有变量，过滤
+            if (substr($key, 0, 1) == '_') {
+                continue;
+            }
+            
+            // 排除
+            if (in_array(StringHelper::snake($key), $excludes)) {
+                continue;
+            }
+            
+            $obj->{$key} = $oldField->{$key} ?? null;
+        }
+        
+        return $obj;
+    }
+    
+    
     public function __construct()
     {
         if (!empty(static::$maker)) {
