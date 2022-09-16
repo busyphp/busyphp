@@ -71,7 +71,7 @@ class SystemUserController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         // 管理员列表数据
         if ($this->pluginTable) {
@@ -128,7 +128,7 @@ class SystemUserController extends InsideController
      * @throws VerifyException
      * @throws Throwable
      */
-    public function add()
+    public function add() : Response
     {
         if ($this->isPost()) {
             $insert = AdminUserField::init();
@@ -166,7 +166,7 @@ class SystemUserController extends InsideController
      * @throws VerifyException
      * @throws Throwable
      */
-    public function edit()
+    public function edit() : Response
     {
         if ($this->isPost()) {
             $id      = $this->post('id/d');
@@ -254,7 +254,7 @@ class SystemUserController extends InsideController
      * @throws ParamInvalidException
      * @throws Throwable
      */
-    public function password()
+    public function password() : Response
     {
         if ($this->isPost()) {
             $this->model->updatePassword($this->post('id/d'), $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
@@ -273,7 +273,7 @@ class SystemUserController extends InsideController
      * 启用/禁用管理员
      * @throws Throwable
      */
-    public function change_checked()
+    public function change_checked() : Response
     {
         $id = $this->get('id/d');
         if ($id == $this->adminUserId) {
@@ -292,7 +292,7 @@ class SystemUserController extends InsideController
      * 解锁管理员
      * @throws Throwable
      */
-    public function unlock()
+    public function unlock() : Response
     {
         $this->model->unlock($this->get('id/d'));
         $this->log()->record(self::LOG_UPDATE, '解锁管理员');
@@ -305,7 +305,7 @@ class SystemUserController extends InsideController
      * 删除
      * @throws Throwable
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的用户') as $id) {
             $this->model->deleteInfo($id);
