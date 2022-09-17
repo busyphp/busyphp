@@ -285,9 +285,8 @@ class TransHelper
         $string = base64_encode(trim($string));
         $string = str_replace('+', '_', $string);
         $string = str_replace('/', '-', $string);
-        $string = str_replace('=', '', $string);
         
-        return $string;
+        return str_replace('=', '', $string);
     }
     
     
