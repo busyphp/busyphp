@@ -3,6 +3,7 @@
 namespace BusyPHP\helper;
 
 use BusyPHP\model\Entity;
+use BusyPHP\model\Map;
 use think\Collection;
 use think\helper\Arr;
 
@@ -285,5 +286,36 @@ class ArrayHelper extends Arr
         }
         
         return $arr;
+    }
+    
+    
+    /**
+     * 将一维数组转为二维数组
+     * @param array $array 一维数组
+     * @param int   $split 按每多少个数组分割
+     * @param bool  $resultMap 是否返回Map对象，键为数字会删除
+     * @return array|Map
+     */
+    public static function oneToTwo(array $array, int $split = 2, bool $resultMap = true)
+    {
+        $length = count($array);
+        $arr    = [];
+        for ($i = 0; $i < $length; $i += $split) {
+            $key = $array[$i];
+            if (!is_scalar($key) || ($resultMap && is_numeric($key)) || is_bool($key)) {
+                continue;
+            }
+            
+            if ($split <= 2) {
+                $arr[$key] = $array[$i + 1] ?? '';
+            } else {
+                $arr[$key] = $arr[$key] ?? [];
+                for ($n = 1; $n < $split; $n++) {
+                    $arr[$key][] = $array[$i + $n] ?? '';
+                }
+            }
+        }
+        
+        return $resultMap ? Map::parse($arr) : $arr;
     }
 }
