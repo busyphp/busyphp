@@ -41,7 +41,7 @@
 	"autoload"     : {
 		"psr-4" : {
 			"BusyPHP\\" : "src",
-			"think\\"   : "src/app",
+			"think\\"   : "src/app"
 		}
 	},
 	"autoload-dev" : {
