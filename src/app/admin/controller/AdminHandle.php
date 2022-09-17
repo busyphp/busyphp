@@ -223,7 +223,7 @@ class AdminHandle extends Handle
      * @param mixed  $url 跳转的URL
      * @return Response
      */
-    public static function restResponse(int $code = 1, string $message = '', array $result = [], $url = '')
+    public static function restResponse(int $code = 1, string $message = '', array $result = [], $url = '') : Response
     {
         $app = App::getInstance();
         $url = (string) $url;
@@ -257,7 +257,7 @@ class AdminHandle extends Handle
      * @param string|Url       $url 跳转的地址
      * @return Response
      */
-    public static function restResponseSuccess($message = '', $result = [], $url = '')
+    public static function restResponseSuccess($message = '', $result = [], $url = '') : Response
     {
         if (is_array($message)) {
             $url     = $result;
@@ -278,7 +278,7 @@ class AdminHandle extends Handle
      * @param int              $code 错误代码
      * @return Response
      */
-    public static function restResponseError($message = '', $url = '', int $code = 0)
+    public static function restResponseError($message = '', $url = '', int $code = 0) : Response
     {
         if ($message instanceof Throwable) {
             if ($message->getCode() !== 1) {
