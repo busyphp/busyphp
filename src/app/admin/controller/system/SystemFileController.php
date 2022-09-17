@@ -44,7 +44,7 @@ class SystemFileController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
@@ -87,7 +87,7 @@ class SystemFileController extends InsideController
                 }
             });
             
-            return $this->success($this->pluginTable->build($this->model));
+            return $this->success($this->pluginTable->build($this->model->whereComplete()));
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
@@ -103,7 +103,7 @@ class SystemFileController extends InsideController
      * @return Response
      * @throws Exception
      */
-    public function upload()
+    public function upload() : Response
     {
         return $this->display();
     }
@@ -114,7 +114,7 @@ class SystemFileController extends InsideController
      * @return Response
      * @throws Exception
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的文件', 'intval') as $id) {
             $this->model->deleteInfo($id);
