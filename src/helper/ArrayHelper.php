@@ -267,4 +267,23 @@ class ArrayHelper extends Arr
         
         return $array;
     }
+    
+    
+    /**
+     * 将字符串按规定分隔符拆分
+     * @param string $separator
+     * @param mixed  $string
+     * @param int    $minLength
+     * @return array
+     */
+    public static function split(string $separator, $string, int $minLength) : array
+    {
+        $arr    = explode($separator, (string) $string);
+        $length = count($arr);
+        for ($i = $length; $i < $minLength; $i++) {
+            $arr[$i] = '';
+        }
+        
+        return $arr;
+    }
 }
