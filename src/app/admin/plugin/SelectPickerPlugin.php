@@ -212,15 +212,17 @@ class SelectPickerPlugin
                     } else {
                         if ($hasTextCallback) {
                             $vo['text'] = call_user_func_array($this->textHandler, [$vo, false]);
+                        } else {
+                            $vo['text'] = $vo[$textField] ?? ($vo['text'] ?? '');
                         }
                         
                         if ($hasIdCallback) {
                             $vo['id'] = call_user_func_array($this->idHandler, [$vo, false]);
+                        } else {
+                            $vo['id'] = $vo[$idField] ?? ($vo['text'] ?? '');
                         }
                     }
                     
-                    $vo['id']      = $vo['id'] ?? ($vo[$idField] ?? '');
-                    $vo['text']    = $vo['text'] ?? ($vo[$textField] ?? '');
                     $childList[$j] = $vo;
                 }
                 
@@ -229,8 +231,9 @@ class SelectPickerPlugin
                     $item['text'] = $this->handler->text($item, true);
                 } elseif ($hasTextCallback) {
                     $item['text'] = call_user_func_array($this->textHandler, [$item, true]);
+                } else {
+                    $item['text'] = $item[$groupTextField] ?? ($item['text'] ?? '');
                 }
-                $item['text'] = $item['text'] ?? ($item[$groupTextField] ?? '');
             } else {
                 if ($this->handler) {
                     $item['id']   = $this->handler->id($item, false);
@@ -238,14 +241,16 @@ class SelectPickerPlugin
                 } else {
                     if ($hasTextCallback) {
                         $item['text'] = call_user_func_array($this->textHandler, [$item, false]);
+                    } else {
+                        $item['text'] = $item[$textField] ?? ($item['text'] ?? '');
                     }
                     
                     if ($hasIdCallback) {
                         $item['id'] = call_user_func_array($this->idHandler, [$item, false]);
+                    } else {
+                        $item['id'] = $item[$idField] ?? ($item['id'] ?? '');
                     }
                 }
-                $item['id']   = $item['id'] ?? ($item[$idField] ?? '');
-                $item['text'] = $item['text'] ?? ($item[$textField] ?? '');
             }
             
             $data[$i] = $item;
