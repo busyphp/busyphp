@@ -3252,6 +3252,10 @@
             getResponseAsJson: function() {
                 return this.exec('getResponseAsJson');
             },
+
+            getResponseHeaders : function () {
+                return this.exec('getResponseHeaders');
+            },
     
             getStatus: function() {
                 return this.exec('getStatus');
@@ -6751,6 +6755,7 @@
             init: function() {
                 this._status = 0;
                 this._response = null;
+                this._responseHeaders = null;
             },
     
             send: function() {
@@ -6822,6 +6827,10 @@
             getStatus: function() {
                 return this._status;
             },
+
+            getResponseHeaders : function () {
+                return this._responseHeaders;
+            },
     
             abort: function() {
                 var xhr = this._xhr;
@@ -6869,6 +6878,18 @@
                     xhr.onreadystatechange = noop;
                     me._xhr = null;
                     me._status = xhr.status;
+
+                    var headers = {};
+                    var rawHeaders = xhr.getAllResponseHeaders() || '';
+                    rawHeaders.split('\r\n').map(function (item) {
+                        item = item.trim();
+                        if (item != '') {
+                            var index = item.indexOf(':');
+                            var key = item.slice(0, index);
+                            headers[key] = item.slice(index + 1).trim();
+                        }
+                    });
+                    me._responseHeaders = headers;
     
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
