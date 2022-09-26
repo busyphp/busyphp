@@ -26,58 +26,65 @@ declare namespace busyAdmin {
     //+ 三方库名称
     //+======================================================================
     var lib: {
-        artTemplate: "artTemplate"
-        audio: "audio"
-        autocomplete: "autocomplete"
-        bootstrap: "bootstrap"
-        bootstrapTable: "bootstrapTable"
-        bootstrapTableExport: "bootstrapTableExport"
-        bootstrapTableFixedColumns: "bootstrapTableFixedColumns"
-        bootstrapTablePrint: "bootstrapTablePrint"
-        bootstrapTableReorderColumns: "bootstrapTableReorderColumns"
-        bootstrapTableReorderRows: "bootstrapTableReorderRows"
-        bootstrapTableResizable: "bootstrapTableResizable"
-        bootstrapTableStickyHeader: "bootstrapTableStickyHeader"
-        bootstrapTableTree: "bootstrapTableTree"
-        ckEditor5Classic: "ckEditor5Classic"
-        clipboard: "clipboard"
-        colorPicker: "colorPicker"
-        depend: "depend"
-        dragtable: "dragtable"
-        font: "font"
-        goog: "goog"
-        highlight: "highlight"
-        i18n: "i18n"
-        image: "image"
-        imageViewer: "imageViewer"
-        jqueryUi: "jqueryUi"
-        json: "json"
-        layer: "layer"
-        marked: "marked"
-        md5: "md5"
-        mdown: "mdown"
-        moment: "moment"
-        noext: "noext"
-        propertyParser: "propertyParser"
-        select2: "select2"
-        socketio: "socketio"
-        sortable: "sortable"
-        sticky: "sticky"
-        text: "text"
-        toastr: "toastr"
-        tree: "tree"
-        treeTable: "treeTable"
-        treegrid: "treegrid"
-        ueditor: "ueditor"
-        uploadConfig: "uploadConfig"
-        validate: "validate"
-        video: "video"
-        vue: "vue"
-        gwm: "gwm"
-        webUploader: "webUploader"
-        zeroClipboard: "zeroClipboard"
-        ionRangeSlider: "ionRangeSlider"
-        bootstrapStarRating: "bootstrapStarRating"
+        "bootstrap": "bootstrap",
+        "layer": "layer",
+        "moment": "moment",
+        "marked": "marked",
+        "vue": "vue",
+        "clipboard": "clipboard",
+        "md5": "md5",
+        "sticky": "sticky",
+        "jqueryUi": "jqueryUi",
+        "toastr": "toastr",
+        "highlight": "highlight",
+        "colorPicker": "colorPicker",
+        "tree": "tree",
+        "uploadConfig": "uploadConfig",
+        "webUploader": "webUploader",
+        "video": "video",
+        "audio": "audio",
+        "imageViewer": "imageViewer",
+        "sortable": "sortable",
+        "dragtable": "dragtable",
+        "treegrid": "treegrid",
+        "bootstrapTable": "bootstrapTable",
+        "bootstrapTableReorderColumns": "bootstrapTableReorderColumns",
+        "bootstrapTableResizable": "bootstrapTableResizable",
+        "bootstrapTableReorderRows": "bootstrapTableReorderRows",
+        "bootstrapTableStickyHeader": "bootstrapTableStickyHeader",
+        "bootstrapTableTree": "bootstrapTableTree",
+        "bootstrapTablePrint": "bootstrapTablePrint",
+        "bootstrapTableFixedColumns": "bootstrapTableFixedColumns",
+        "bootstrapTableExport": "bootstrapTableExport",
+        "ueditor": "ueditor",
+        "zeroClipboard": "zeroClipboard",
+        "ckEditor5Classic": "ckEditor5Classic",
+        "select2": "select2",
+        "autocomplete": "autocomplete",
+        "artTemplate": "artTemplate",
+        "treeTable": "treeTable",
+        "validate": "validate",
+        "socketio": "socketio",
+        "gwm": "gwm",
+        "sparkMd5": "sparkMd5",
+        "cryptoJs": "cryptoJs",
+        "fxParser": "fxParser",
+        "echarts": "echarts",
+        "echartsGl": "echartsGl",
+        "ionRangeSlider": "ionRangeSlider",
+        "bootstrapStarRatingCore": "bootstrapStarRatingCore",
+        "bootstrapStarRating": "bootstrapStarRating",
+        "fullcalendar": "fullcalendar",
+        "json": "json",
+        "depend": "depend",
+        "font": "font",
+        "goog": "goog",
+        "i18n": "i18n",
+        "image": "image",
+        "mdown": "mdown",
+        "noext": "noext",
+        "propertyParser": "propertyParser",
+        "text": "text"
     };
 
 
@@ -2283,7 +2290,7 @@ declare namespace busyAdmin {
          * @param preventResult 回调返回什么内容才阻止callback传递
          * @param preventResultIsType 返回的内容按照类型拦截
          */
-        execCallback(callback: string | (() => any), context?: any, args?: [any], $target?: any, event?: string, prevent?: Boolean, preventResult?: any, preventResultIsType?: boolean): any;
+        execCallback(callback: string | (() => any), context?: any, args?: [any], $target?: any, event?: string, prevent?: Boolean | null, preventResult?: any, preventResultIsType?: boolean): any;
 
         /**
          * 强制转为Int数值
@@ -2370,7 +2377,7 @@ declare namespace busyAdmin {
          * @param name
          * @param defaults
          */
-        scope(name: string, defaults?: any): any;
+        scope(name: any, defaults?: any): any;
 
 
         /**
@@ -2491,6 +2498,45 @@ declare namespace busyAdmin {
          * @param after
          */
         parseRespOperate(result: BusyAdminResponseResult, operate: any, after?: ((operate: string) => void));
+    }
+
+
+    //+======================================================================
+    //+ Upload 相关
+    //+======================================================================
+    interface UploadPrepareResult {
+        extension: string,
+        fast: boolean,
+        file_id: string,
+        file_url: string,
+        filename: string,
+        name: string,
+        path: string,
+        server_url: string,
+        upload_id: string
+    }
+
+    interface UploadTransport {
+        getResponse: () => string,
+        getResponseAsJson: () => {},
+        getResponseHeaders: () => string,
+        getStatus: () => number,
+        abort: () => void
+    }
+
+    interface UploadFile {
+        prepareResult: UploadPrepareResult,
+        name: string,
+        ext: string,
+        type: string,
+        doneParts: [{}]
+    }
+
+    interface UploadBlock {
+        chunk: Number,
+        chunks: Number,
+        file: UploadFile,
+        transport: UploadTransport | undefined
     }
 }
 
