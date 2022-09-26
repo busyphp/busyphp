@@ -3,16 +3,15 @@
     <title>{$info.name} - {$info.var}</title>
     <div class="form-horizontal">
         <input type="hidden" name="id" value="{$info.id|default='0'}"/>
-        <div class="form-group-title">限制设置</div>
         <div class="form-group">
-            <div class="col-sm-2 control-label">上传类型限制</div>
+            <label class="col-sm-2 control-label">上传类型限制</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="allow_extensions" value="{$info.allow_extensions|default=''}" placeholder="请输入允许的上传类型"/>
+                <input type="text" class="form-control" name="extensions" value="{$info.extensions|default=''}" placeholder="请输入允许的上传类型"/>
                 <span class="help-block">设置上传类型限制，多个用英文逗号隔开，如：jpg,png。留空则使用系统默认设置</span>
             </div>
         </div>
         <div class="form-group">
-            <div class="col-sm-2 control-label">上传大小限制</div>
+            <label class="col-sm-2 control-label">上传大小限制</label>
             <div class="col-sm-9">
                 <div class="input-group">
                     <input type="text" class="form-control" name="max_size" value="{$info.max_size|default=''}" placeholder="请输入允许的文件大小"/>
@@ -21,65 +20,37 @@
                 <span class="help-block">设置上传大小限制，留空则使用系统默认设置</span>
             </div>
         </div>
-        <div class="form-group {$info['is_image'] ? '' : 'no-margin-bottom'}">
-            <div class="col-sm-2 control-label">限制MimeType</div>
+        <div class="form-group {$info.is_image ? '' : 'no-margin-bottom'}">
+            <label class="col-sm-2 control-label">Mimetype限制</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="mime_type" value="{$info.mime_type|default=''}" placeholder="请输入允许的MimeType类型"/>
-                <span class="help-block">设置允许的MimeType类型，多个用英文逗号分割，支持泛匹配，如：<code>image/*</code>，代表匹配所有的<code>image/</code>开头的类型，不限请留空</span>
+                <input type="text" class="form-control" name="mimetype" value="{$info.mimetype|default=''}" placeholder="请输入允许的mimetype类型"/>
+                <span class="help-block">设置允许的mimetype类型，多个用英文逗号分割，支持泛匹配，如：<code>image/*</code>，代表匹配所有的<code>image/</code>开头的类型，不限请留空</span>
             </div>
         </div>
         <eq name="info.is_image" value="1">
-            <div class="form-group-title">图片相关设置</div>
             <div class="form-group">
-                <div class="col-sm-2 control-label">是否加水印</div>
+                <label class="col-sm-2 control-label">图片处理样式</label>
                 <div class="col-sm-9">
-                    <div class="radio">
-                        <input type="radio" value="1" name="watermark" data-toggle="busy-radio" title="是" <?=is_checked(($info['watermark'] ?? 0) == 1)?>/>
-                        <input type="radio" value="0" name="watermark" data-toggle="busy-radio" title="否" <?=is_checked(($info['watermark'] ?? 0) == 0)?>/>
+                    <div class="table-responsive no-margin-bottom">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="100">图片系统</th>
+                                    <th>样式选择</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <foreach name="disks" item="vo">
+                                    <tr>
+                                        <td class="text-vcenter">{$vo.name}</td>
+                                        <td>
+                                            <select class="form-control input-sm" name="style[{$vo.type}]" data-toggle="busy-select-picker" data-url="{:url('image_style_select?disk=' . $vo['type'])}" data-length="0" data-value="{$info['style'][$vo['type']]|default=''}" data-placeholder="不处理" data-clear="true"></select>
+                                        </td>
+                                    </tr>
+                                </foreach>
+                            </tbody>
+                        </table>
                     </div>
-                    <span class="help-block">设置后，将依据<code>图片水印设置</code>为图片添加水印</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="col-sm-2 control-label">裁图方式</div>
-                <div class="col-sm-9">
-                    <select class="form-control" name="thumb_type">
-                        <option value="0"<?=is_selected($info['thumb_type'] == 0);?>>
-                            不裁剪
-                        </option>
-                        <option value="1"<?=is_selected($info['thumb_type'] == 1);?>>
-                            按比例裁剪到指定大小
-                        </option>
-                        <option value="2"<?=is_selected($info['thumb_type'] == 2);?>>
-                            忽略图片比例缩放到指定大小
-                        </option>
-                        <option value="3"<?=is_selected($info['thumb_type'] == 3);?>>
-                            按比例缩放(小图不够不放大)
-                        </option>
-                        <option value="4"<?=is_selected($info['thumb_type'] == 4);?>>
-                            按比例缩放(小图不够会放大)
-                        </option>
-                    </select>
-                    <div class="help-block">
-                        设置图片裁剪方式：
-                        <div><span class="badge">按比例裁剪到指定大小</span> 系统将按照 <code>裁剪尺寸</code> 居中裁剪，裁剪后图片的某一边可能会被裁剪，比如：人像头部被裁剪。该模式下 <code>裁剪尺寸</code> 宽高必须设置</div>
-                        <div><span class="badge">忽略图片比例缩放到指定大小</span> 系统将按照 <code>裁剪尺寸</code> 缩放，可能会导致图片变形。该模式下 <code>裁剪尺寸</code> 宽高必须设置</div>
-                        <div><span class="badge">按比例缩放(小图不够不放大)</span> 裁剪后图片将被等比例缩放至 <code>裁剪尺寸</code> 规定的大小，某一边可能会被缩小</div>
-                        <div><span class="badge">按比例缩放(小图不够会放大)</span> 裁剪后图片将被等比例缩放至 <code>裁剪尺寸</code> 规定的大小，某一边可能会被缩小。如果图片尺寸小于 <code>裁剪尺寸</code> 规定的大小，将放大该图片，可能会导致图片质量降低</div>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group no-margin-bottom">
-                <div class="col-sm-2 control-label">裁剪尺寸</div>
-                <div class="col-sm-9">
-                    <div class="input-group">
-                        <div class="input-group-addon">宽高</div>
-                        <input type="text" class="form-control" name="thumb_width" value="{$info.thumb_width|default=''}" placeholder="宽"/>
-                        <div class="input-group-addon no-border-left">×</div>
-                        <input type="text" class="form-control no-border-left" name="thumb_height" value="{$info.thumb_height|default=''}" placeholder="高"/>
-                        <div class="input-group-addon">PX</div>
-                    </div>
-                    <span class="help-block">设置裁图大小，可以设置某一项尺寸为0像素，系统将自动计算该项的尺寸</span>
                 </div>
             </div>
         </eq>

@@ -1,38 +1,72 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <table class="table table-hover table-bordered table-striped"
-           id="fileClassTable"
-           data-toggle="busy-table"
-           data-state="{$url.controller}{$url.action}"
-           data-pagination="false"
-           data-url="{$url.self}">
-        <thead>
-            <tr>
-                <th data-field="id" data-align="center" width="50">ID</th>
-                <th data-field="name" data-halign="center" data-align="left">分类名称</th>
-                <th data-field="var" data-align="center" width="120">分类标识</th>
-                <th data-field="operate" data-align="center" data-formatter="@#fileClassOperate" width="60">操作</th>
-            </tr>
-        </thead>
-    </table>
+    <div class="panel panel-default">
+        <include file="@admin:system/system_manager/storage_nav" />
+        <div class="panel-body">
+            <table class="table table-hover table-bordered"
+                   data-toggle="busy-table"
+                   data-pagination="false"
+                   data-url="{:url('file_class')}">
+                <thead>
+                    <tr>
+                        <th data-field="name" data-align="center" width="100">名称</th>
+                        <th data-field="var" data-align="center" width="100" data-formatter="@#file_class_var">标识
+                        </th>
+                        <th data-field="extensions" data-halign="center" data-align="left" data-formatter="@#file_class_extensions">
+                            格式限制
+                        </th>
+                        <th data-field="mimetype" width="150" data-align="center" data-formatter="@#file_class_mimetype">
+                            Mime限制
+                        </th>
+                        <th data-field="max_size" data-align="center" width="100" data-formatter="@#file_class_max_size">
+                            大小限制
+                        </th>
+                        <th data-field="operate" data-align="center" data-formatter="@#file_class_operate" width="60">
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+            </table>
 
-    <script id="fileClassOperate" type="text/html">
-        <a class="btn btn-success btn-xs"
-           data-toggle="busy-modal"
-           data-ok="设置"
-           data-url="{:url('?action=edit&id=')}{{item.id}}"
-           data-size="lg"
-           data-form-on-success="@table.reload">
-            <i class="fa fa-pencil"></i>
-        </a>
-    </script>
-</block>
-<block name="foot">
-    <script>
-        busyAdmin.ready(function () {
-            $('#fileClassTable').on(busyAdmin.e.tableBodyReady, function () {
-                $(window).trigger('resize');
-            });
-        })
-    </script>
+            <script id="file_class_var" type="text/html">
+                <span class="badge badge-primary">{{value}}</span>
+            </script>
+
+            <script id="file_class_extensions" type="text/html">
+                {{if value}}
+                <div class="text-wrap">{{value}}</div>
+                {{else}}
+                <kbd>继承</kbd>
+                {{/if}}
+            </script>
+
+            <script id="file_class_mimetype" type="text/html">
+                <div class="text-wrap">{{value || '-'}}</div>
+            </script>
+
+            <script id="file_class_max_size" type="text/html">
+                {{if value > 0}}
+                {{value}}MB
+                {{else}}
+                <kbd>继承</kbd>
+                {{/if}}
+            </script>
+
+            <script id="file_class_operate" type="text/html">
+                <a class="btn btn-success btn-xs"
+                   data-toggle="busy-modal"
+                   data-ok="设置"
+                   data-url="{:url('file_class?action=edit&id=')}{{item.id}}"
+                   data-size="lg"
+                   data-form-on-success="@table.reload">
+                    <i class="fa fa-pencil"></i>
+                </a>
+            </script>
+
+            <div class="space-15"></div>
+            <div class="text-gray">
+                说明：文件分类请通过 <span class="badge">开发模式</span> 创建。
+            </div>
+        </div>
+    </div>
 </block>

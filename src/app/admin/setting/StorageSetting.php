@@ -11,15 +11,24 @@ use BusyPHP\helper\FilterHelper;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\facade\Filesystem;
+use think\filesystem\Driver;
 
 /**
- * 上传设置
+ * 存储设置
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/9/20 下午上午11:20 UploadSetting.php $
+ * @version $Id: 2021/9/20 下午上午11:20 StorageSetting.php $
  */
-class UploadSetting extends Setting
+class StorageSetting extends Setting
 {
+    /** @var string 本地系统文件磁盘标识 */
+    const STORAGE_LOCAL = 'public';
+    
+    /** @var string 本地临时文件磁盘标识 */
+    const STORAGE_TMP = 'local';
+    
+    
     /**
      * 解析文件扩展
      * @param string $extensions
@@ -133,7 +142,7 @@ class UploadSetting extends Setting
     public function getAllowExtensions(string $classType = '', string $client = '') : array
     {
         if ($config = $this->getClassConfig($classType)) {
-            if ($config->allowExtensions && $extensions = self::parseExtensions($config->allowExtensions, true)) {
+            if ($config->extensions && $extensions = self::parseExtensions($config->extensions, true)) {
                 return $extensions;
             }
         }
@@ -153,7 +162,7 @@ class UploadSetting extends Setting
     public function getMaxSize(string $classType = '', string $client = '') : int
     {
         if ($config = $this->getClassConfig($classType)) {
-            if ($config->allowExtensions && $config->maxSize > 0) {
+            if ($config->extensions && $config->maxSize > 0) {
                 return $config->maxSize * 1024 * 1024;
             }
         }
@@ -172,7 +181,7 @@ class UploadSetting extends Setting
     public function getMimeType(string $classType = '') : array
     {
         if ($config = $this->getClassConfig($classType)) {
-            return self::parseExtensions($config->mimeType, true);
+            return self::parseExtensions($config->mimetype, true);
         }
         
         return [];
@@ -180,70 +189,92 @@ class UploadSetting extends Setting
     
     
     /**
-     * 上传是否加水印
-     * @param string $classType
-     * @return bool
+     * 获取图片处理样式
+     * @param string $classType 文件分类
+     * @param string $disk 磁盘系统
+     * @return string
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function isWatermark(string $classType = '') : bool
+    public function getImageStyle(string $classType = '', string $disk = '') : string
     {
-        $watermark = false;
         if ($config = $this->getClassConfig($classType)) {
-            $watermark = $config->watermark;
+            return $config->style[$disk ?: $this->getDisk()] ?? '';
         }
         
-        return $watermark && WatermarkSetting::init()->hasFile();
+        return '';
     }
     
     
     /**
-     * 获取缩图方式
-     * @param string $classType
-     * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
+     * 获取磁盘文件操作系统
+     * @return Driver
      */
-    public function getThumbType(string $classType = '') : int
+    public function getDiskFileSystem() : Driver
     {
-        if ($config = $this->getClassConfig($classType)) {
-            return (int) $config->thumbType;
-        }
-        
-        return 0;
+        return Filesystem::disk($this->getDisk());
     }
     
     
     /**
-     * 获取缩图宽度
-     * @param string $classType
-     * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
+     * 获取本地文件操作系统
+     * @return Driver
      */
-    public function getThumbWidth(string $classType = '') : int
+    public function getLocalFileSystem() : Driver
     {
-        if ($config = $this->getClassConfig($classType)) {
-            return (int) $config->thumbWidth;
-        }
-        
-        return 0;
+        return Filesystem::disk(self::STORAGE_LOCAL);
     }
     
     
     /**
-     * 获取缩图高度
-     * @param string $classType
-     * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
+     * 获取Runtime文件操作系统
+     * @return Driver
      */
-    public function getThumbHeight(string $classType = '') : int
+    public function getRuntimeFileSystem() : Driver
     {
-        if ($config = $this->getClassConfig($classType)) {
-            return (int) $config->thumbHeight;
+        return Filesystem::disk(self::STORAGE_TMP);
+    }
+    
+    
+    /**
+     * 获取支持的磁盘
+     * @return array<int, array{name: string, desc: string, type: string, checked: bool}>
+     */
+    public function getDisks() : array
+    {
+        // 磁盘信息
+        $disks = [];
+        foreach (Filesystem::getConfig('disks') as $key => $disk) {
+            if (($disk['visibility'] ?? '') !== 'public') {
+                continue;
+            }
+            
+            // 默认名称
+            $name = $disk['name'] ?? '';
+            if (!$name) {
+                if (strtolower($disk['type'] ?? '') === 'local') {
+                    $name = '本地服务器';
+                } else {
+                    $name = $key;
+                }
+            }
+            
+            // 默认描述
+            $desc = $disk['description'] ?? '';
+            if (!$desc && strtolower($disk['type'] ?? '') === 'local') {
+                $root = $disk['root'] ?? '';
+                $root = substr($root, strlen($this->app->getRootPath()));
+                $desc = "文件直接上传到本地服务器的 <code>{$root}</code> 目录，占用服务器磁盘空间";
+            }
+            
+            $disks[] = [
+                'name'    => $name,
+                'desc'    => $desc,
+                'type'    => $key,
+                'checked' => $key == $this->getDisk()
+            ];
         }
         
-        return 0;
+        return $disks;
     }
 }

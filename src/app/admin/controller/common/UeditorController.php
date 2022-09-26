@@ -4,15 +4,19 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\setting\UploadSetting;
+use BusyPHP\app\admin\model\system\file\SystemFileUploadParameter;
+use BusyPHP\app\admin\model\system\file\SystemFile;
+use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\file\upload\Base64Upload;
-use BusyPHP\file\upload\LocalUpload;
-use BusyPHP\file\upload\RemoteUpload;
-use Exception;
+use BusyPHP\upload\parameter\Base64Parameter;
+use BusyPHP\upload\parameter\LocalParameter;
+use BusyPHP\upload\parameter\RemoteParameter;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use think\response\Json;
+use think\response\View;
+use Throwable;
 
 /**
  * 百度UEditor编辑器
@@ -31,7 +35,7 @@ class UeditorController extends InsideController
     /**
      * 基础服务入口
      */
-    public function server()
+    public function server() : Json
     {
         $action = $this->param('action/s', 'trim');
         $method = 'server' . ucfirst($action);
@@ -43,7 +47,7 @@ class UeditorController extends InsideController
     }
     
     
-    public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
+    public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : View
     {
         // 是否输出JS
         if ($this->get('js/b')) {
@@ -59,10 +63,9 @@ class UeditorController extends InsideController
     /**
      * 插入图片
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
-    public function insert_image()
+    public function insert_image() : Response
     {
         if ($this->isAjax()) {
             return $this->json($this->upload());
@@ -78,10 +81,9 @@ class UeditorController extends InsideController
     /**
      * 插入附件
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
-    public function insert_attachment()
+    public function insert_attachment() : Response
     {
         if ($this->isAjax()) {
             return $this->json($this->upload());
@@ -97,10 +99,9 @@ class UeditorController extends InsideController
     /**
      * 插入视频
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
-    public function insert_video()
+    public function insert_video() : Response
     {
         if ($this->isAjax()) {
             return $this->json($this->upload());
@@ -116,7 +117,7 @@ class UeditorController extends InsideController
     /**
      * 涂鸦
      */
-    public function scrawl()
+    public function scrawl() : Response
     {
         if ($this->isAjax()) {
             return $this->json($this->upload(true));
@@ -131,10 +132,9 @@ class UeditorController extends InsideController
     /**
      * word图片转存
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
-    public function word_image()
+    public function word_image() : Response
     {
         return $this->insert_image();
     }
@@ -146,7 +146,7 @@ class UeditorController extends InsideController
      * @throws DbException
      * @throws DataNotFoundException
      */
-    public function runtime()
+    public function runtime() : Response
     {
         $fileConfig          = json_encode($this->getFileConfig(), JSON_UNESCAPED_UNICODE);
         $pageBreakTag        = $this->app->config->get('app.VAR_CONTENT_PAGE', '');
@@ -204,7 +204,7 @@ JS;
      * @param bool $isBase64
      * @return array
      */
-    private function upload($isBase64 = false)
+    private function upload(bool $isBase64 = false) : array
     {
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
@@ -217,29 +217,28 @@ JS;
             $classType  = $this->param('class_type/s', 'trim');
             $classValue = $this->param('class_value/s', 'trim');
             if ($isBase64) {
-                $upload = new Base64Upload();
-                $upload->setUserId($this->adminUserId);
-                $upload->setClassType($classType, $classValue);
-                $upload->setMimeType('image/jpg');
-                $upload->setExtension('jpg');
-                $result = $upload->upload($this->post('upload/s', 'trim'));
+                // TODO mimetype 和 basename
+                $driverParameter = new Base64Parameter($this->post('upload/s', 'trim'));
             } else {
-                $upload = new LocalUpload();
-                $upload->setUserId($this->adminUserId);
-                $upload->setClassType($classType, $classValue);
-                $result = $upload->upload($this->request->file('upload'));
+                $driverParameter = new LocalParameter($this->request->file('upload'));
             }
+            
+            $parameter = new SystemFileUploadParameter($driverParameter);
+            $parameter->setUserId($this->adminUserId);
+            $parameter->setClassType($classType);
+            $parameter->setClassValue($classValue);
+            $result = SystemFile::init()->upload($parameter);
             
             $jsonData['url']      = $result->url;
             $jsonData['title']    = $result->name;
             $jsonData['original'] = $result->name;
-            $jsonData['type']     = $result->file->getExtension();
-            $jsonData['size']     = $result->file->getSize();
+            $jsonData['type']     = $result->extension;
+            $jsonData['size']     = $result->size;
             
             $this->log()
                 ->filterParams($isBase64 ? ['upload'] : [])
                 ->record(self::LOG_INSERT, 'UEditor上传文件', json_encode($jsonData, JSON_UNESCAPED_UNICODE));
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $jsonData['state'] = $e->getMessage();
         }
         
@@ -254,7 +253,7 @@ JS;
     /**
      * 配置
      */
-    private function serverConfig()
+    private function serverConfig() : Json
     {
         return $this->json([]);
     }
@@ -263,7 +262,7 @@ JS;
     /**
      * 上传远程图片
      */
-    private function serverRemote()
+    private function serverRemote() : Json
     {
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
@@ -279,13 +278,13 @@ JS;
             foreach ($this->post('upload') as $i => $url) {
                 $url = str_replace('&amp;', '&', $url);
                 try {
-                    $upload = new RemoteUpload();
-                    $upload->setUserId($this->adminUserId);
-                    $upload->setClassType($classType, $classValue);
-                    $upload->setExtension('jpg');
-                    $upload->setMimeType('image/jpg');
-                    $result = $upload->upload($url);
-                    
+                    // TODO 默认mimetype 和 basename
+                    $remote    = new RemoteParameter($url);
+                    $parameter = new SystemFileUploadParameter($remote);
+                    $parameter->setUserId($this->adminUserId);
+                    $parameter->setClassType($classType);
+                    $parameter->setClassValue($classValue);
+                    $result    = SystemFile::init()->upload($parameter);
                     $list[$i]  = [
                         'state'   => 'SUCCESS',
                         'source'  => $url,
@@ -293,7 +292,7 @@ JS;
                         'file_id' => $result->id
                     ];
                     $success[] = $list[$i];
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $list[$i] = ['state' => $e->getMessage(), 'source' => '', 'url' => ''];
                 }
             }
@@ -303,7 +302,7 @@ JS;
             if ($success) {
                 $this->log()->record(self::LOG_INSERT, 'UEditor抓取图片', json_encode($success, JSON_UNESCAPED_UNICODE));
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $jsonData['state'] = $e->getMessage();
         }
         
@@ -318,7 +317,7 @@ JS;
     /**
      * 单图上传
      */
-    private function serverUpload()
+    private function serverUpload() : Response
     {
         $this->request->setParam('class_type', $this->param('class_image_type/s', 'trim'));
         
@@ -332,9 +331,9 @@ JS;
      * @throws DataNotFoundException
      * @throws DbException
      */
-    private function getFileConfig()
+    private function getFileConfig() : array
     {
-        $fileSet = UploadSetting::init();
+        $fileSet = StorageSetting::init();
         $list    = SystemFileClass::init()->getList();
         $array   = [];
         foreach ($list as $key => $value) {

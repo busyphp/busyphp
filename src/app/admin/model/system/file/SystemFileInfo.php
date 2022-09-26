@@ -7,7 +7,6 @@ use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
@@ -28,6 +27,8 @@ use think\db\exception\DbException;
  * @method static Entity filename($op = null, $value = null) 附件名称;
  * @method static Entity classInfo($op = null, $value = null) 分类信息;
  * @method static Entity className($op = null, $value = null) 分类名称;
+ * @property bool|int $fast
+ * @property bool|int $pending
  */
 class SystemFileInfo extends SystemFileField
 {
@@ -119,7 +120,9 @@ class SystemFileInfo extends SystemFileField
         $this->sizeUnit   = $sizes['unit'];
         $this->sizeNum    = $sizes['number'];
         $this->formatSize = "{$this->sizeNum} {$this->sizeUnit}";
-        $this->filename   = FileHelper::pathInfo($this->url, PATHINFO_BASENAME);
+        $this->filename   = pathinfo($this->url, PATHINFO_BASENAME);
         $this->clientName = (static::$_appList[$this->client]->name ?? '') ?: $this->client;
+        $this->pending    = $this->pending > 0;
+        $this->fast       = $this->fast > 0;
     }
 }

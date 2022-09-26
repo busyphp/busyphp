@@ -6,26 +6,30 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
+use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyle;
+use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyleField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\CaptchaSetting;
 use BusyPHP\app\admin\setting\QrcodeSetting;
-use BusyPHP\app\admin\setting\ThumbSetting;
-use BusyPHP\app\admin\setting\UploadSetting;
+use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
-use BusyPHP\app\admin\setting\WatermarkSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\file\QRCode;
 use BusyPHP\helper\TransHelper;
+use BusyPHP\image\parameter\UrlParameter;
+use BusyPHP\image\result\ImageStyleResult;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
 use Exception;
+use ReflectionException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Filesystem;
 use think\Response;
+use Throwable;
 
 /**
  * 系统管理
@@ -36,13 +40,28 @@ use think\Response;
 class SystemManagerController extends InsideController
 {
     /**
+     * @var string
+     */
+    private $disk;
+    
+    
+    protected function initialize($checkLogin = true)
+    {
+        parent::initialize($checkLogin);
+        
+        $disk       = $this->param('disk/s', 'trim');
+        $this->disk = $disk ?: StorageSetting::STORAGE_LOCAL;
+    }
+    
+    
+    /**
      * 系统基本设置
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ParamInvalidException
      */
-    public function index()
+    public function index() : Response
     {
         if ($this->isPost()) {
             $data = $this->post('data/a');
@@ -68,7 +87,7 @@ class SystemManagerController extends InsideController
      * @throws DbException
      * @throws ParamInvalidException
      */
-    public function admin()
+    public function admin() : Response
     {
         if ($this->isPost()) {
             $data = $this->post('data/a');
@@ -88,62 +107,26 @@ class SystemManagerController extends InsideController
     
     
     /**
-     * 上传设置
+     * 存储设置
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ParamInvalidException
      */
-    public function upload()
+    public function storage() : Response
     {
+        $setting = StorageSetting::init();
         if ($this->isPost()) {
             $data = $this->post('data/a');
-            UploadSetting::init()->set($data);
-            $this->log()->record(self::LOG_UPDATE, '上传设置');
+            $setting->set($data);
+            $this->log()->record(self::LOG_UPDATE, '存储设置');
             $this->updateCache();
             
             return $this->success('设置成功');
         }
         
-        $setting = UploadSetting::init();
-        
-        // 磁盘信息
-        $disks = [];
-        foreach (Filesystem::getConfig('disks') as $key => $disk) {
-            if (($disk['visibility'] ?? '') !== 'public') {
-                continue;
-            }
-            
-            // 默认名称
-            $name = $disk['name'] ?? '';
-            if (!$name) {
-                if (strtolower($disk['type'] ?? '') === 'local') {
-                    $name = '本地服务器';
-                } else {
-                    $name = $key;
-                }
-            }
-            
-            // 默认描述
-            $desc = $disk['description'] ?? '';
-            if (!$desc && strtolower($disk['type'] ?? '') === 'local') {
-                $root = $disk['root'] ?? '';
-                $root = substr($root, strlen($this->app->getRootPath()));
-                $desc = "文件直接上传到本地服务器的 <code>{$root}</code> 目录，占用服务器磁盘空间";
-            }
-            
-            $disks[] = [
-                'name'    => $name,
-                'desc'    => $desc,
-                'type'    => $key,
-                'checked' => $key == $setting->getDisk()
-            ];
-        }
-        
         $this->assign('clients', $this->app->getList());
-        $this->assign('disks', $disks);
-        $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
-        $this->assign('type', SystemFile::getTypes());
+        $this->assign('disks', $setting->getDisks());
         $this->assign('info', $setting->get());
         
         return $this->display();
@@ -151,26 +134,141 @@ class SystemManagerController extends InsideController
     
     
     /**
-     * 图片水印设置
+     * 图片样式管理
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ParamInvalidException
      */
-    public function watermark()
+    public function image_style() : Response
     {
-        if ($this->isPost()) {
-            $data = $this->post('data/a');
-            WatermarkSetting::init()->set($data);
-            $this->log()->record(self::LOG_UPDATE, '图片水印设置');
-            $this->updateCache();
+        if ($this->pluginTable) {
+            $data = [];
+            foreach (Filesystem::disk($this->disk)->image()->selectStyleByCache() as $item) {
+                $data[] = $item;
+            }
             
-            return $this->success('设置成功');
+            return $this->success($this->pluginTable->result($data, count($data)));
         }
         
-        $this->assign('info', WatermarkSetting::init()->get());
+        $this->assign('disks', StorageSetting::init()->getDisks());
+        $this->assign('disk', $this->disk);
         
         return $this->display();
+    }
+    
+    
+    /**
+     * 添加图片样式
+     * @return Response
+     * @throws ReflectionException
+     */
+    public function image_style_add() : Response
+    {
+        if ($this->isPost()) {
+            $data = SystemFileImageStyleField::init();
+            $data->setId($this->post('id/s', 'trim'));
+            $data->setContent($this->post('content/a'));
+            Filesystem::disk($this->disk)->image()->createStyle($data->id, $data->content);
+            
+            $this->log()->record(self::LOG_INSERT, '添加图片样式');
+            
+            return $this->success('添加成功');
+        }
+        
+        $image = Filesystem::disk($this->disk)->image();
+        $this->assign('info', ['content' => ImageStyleResult::filterContext($image, ImageStyleResult::fillContent())]);
+        $this->assign('disk', $this->disk);
+        $this->assign('font_list', $image->getFontList());
+        $this->assign('font_default', $image->getDefaultFontPath());
+        
+        return $this->display();
+    }
+    
+    
+    /**
+     * 修改图片样式
+     * @return Response
+     */
+    public function image_style_edit() : Response
+    {
+        if ($this->isPost()) {
+            $data = SystemFileImageStyleField::init();
+            $data->setId($this->post('id/s', 'trim'));
+            $data->setContent($this->post('content/a'));
+            Filesystem::disk($this->disk)->image()->updateStyle($data->id, $data->content);
+            
+            $this->log()->record(self::LOG_INSERT, '修改图片样式');
+            
+            return $this->success('修改成功');
+        }
+        
+        $image = Filesystem::disk($this->disk)->image();
+        $this->assign('info', ImageStyleResult::filterContext($image, $image->getStyleByCache($this->get('id/s', 'trim'))));
+        $this->assign('disk', $this->disk);
+        $this->assign('font_list', $image->getFontList());
+        $this->assign('font_default', $image->getDefaultFontPath());
+        
+        return $this->display('image_style_add');
+    }
+    
+    
+    /**
+     * 删除图片样式
+     * @throws Throwable
+     */
+    public function image_style_delete() : Response
+    {
+        $driver = Filesystem::disk($this->disk)->image();
+        foreach ($this->param('id/list/请选择要删除的图片样式') as $id) {
+            $driver->deleteStyle($id);
+        }
+        
+        $this->log()->record(self::LOG_DELETE, '删除图片样式');
+        
+        return $this->success('删除成功');
+    }
+    
+    
+    /**
+     * 上传图片样式的水印图片
+     * @return Response
+     */
+    public function image_style_upload_watermark() : Response
+    {
+        $this->request->setRequestIsAjax();
+        $url = Filesystem::disk($this->disk)->image()->uploadWatermark($this->request->file('file'));
+        
+        return $this->success(['file_url' => $url]);
+    }
+    
+    
+    /**
+     * 选择图片样式
+     * @return Response
+     */
+    public function image_style_select() : Response
+    {
+        $list = [];
+        foreach (Filesystem::disk($this->disk)->image()->selectStyleByCache() as $item) {
+            $list[] = $item;
+        }
+        if ($this->pluginSelectPicker) {
+            return $this->success($this->pluginSelectPicker->result($list, (string) ImageStyleResult::id(), (string) ImageStyleResult::id()));
+        }
+        
+        return $this->success($list);
+    }
+    
+    
+    /**
+     * 预览图片样式
+     * @return Response
+     */
+    public function image_style_preview() : Response
+    {
+        $filesystem = Filesystem::disk($this->disk);
+        $parameter  = new UrlParameter(SystemFileImageStyle::getPreviewImagePath($filesystem));
+        $parameter->style($this->get('id/s', 'trim'));
+        
+        return $this->redirect($filesystem->image()->url($parameter));
     }
     
     
@@ -182,19 +280,16 @@ class SystemManagerController extends InsideController
      * @throws ParamInvalidException
      * @throws Exception
      */
-    public function file_class()
+    public function file_class() : Response
     {
         // 分类设置
         if ($this->isPost()) {
             $data = SystemFileClassField::init();
             $data->setId($this->post('id/d'));
-            $data->setAllowExtensions($this->post('allow_extensions/s', 'trim'));
+            $data->setExtensions($this->post('extensions/s', 'trim'));
             $data->setMaxSize($this->post('max_size/d'));
-            $data->setMimeType($this->post('mime_type/s', 'trim'));
-            $data->setWatermark($this->post('watermark/d'));
-            $data->setThumbType($this->post('thumb_type/d'));
-            $data->setThumbWidth($this->post('thumb_width/d'));
-            $data->setThumbHeight($this->post('thumb_height/d'));
+            $data->setMimetype($this->post('mimetype/s', 'trim'));
+            $data->setStyle($this->post('style/a'));
             SystemFileClass::init()->updateData($data);
             
             $this->log()->record(self::LOG_UPDATE, '分类上传设置');
@@ -219,8 +314,8 @@ class SystemManagerController extends InsideController
         //
         // 修改分类
         elseif ($this->get('action/s') == 'edit') {
-            $info = SystemFileClass::init()->getInfo($this->get('id/d'));
-            $this->assign('info', $info);
+            $this->assign('disks', StorageSetting::init()->getDisks());
+            $this->assign('info', SystemFileClass::init()->getInfo($this->get('id/d')));
             
             return $this->display('file_class_edit');
         }
@@ -228,28 +323,7 @@ class SystemManagerController extends InsideController
         // 分类列表
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
         $this->assign('type', SystemFile::getTypes());
-        $this->assign('info', UploadSetting::init()->get());
-        
-        return $this->display();
-    }
-    
-    
-    /**
-     * 缩图生成设置
-     * @throws DbException
-     */
-    public function thumb()
-    {
-        if ($this->isPost()) {
-            $data = $this->post('data/a');
-            ThumbSetting::init()->set($data);
-            $this->log()->record(self::LOG_UPDATE, '缩图生成设置');
-            $this->updateCache();
-            
-            return $this->success('设置成功');
-        }
-        
-        $this->assign('info', ThumbSetting::init()->get());
+        $this->assign('info', StorageSetting::init()->get());
         
         return $this->display();
     }
@@ -306,7 +380,7 @@ class SystemManagerController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function cache_create()
+    public function cache_create() : Response
     {
         $this->updateCache();
         $this->log()->record(self::LOG_DEFAULT, '生成缓存');
@@ -321,7 +395,7 @@ class SystemManagerController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function cache_clear()
+    public function cache_clear() : Response
     {
         $this->clearCache();
         $this->log()->record(self::LOG_DEFAULT, '清理缓存');

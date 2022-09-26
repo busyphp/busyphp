@@ -8,14 +8,18 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\app\admin\setting\UploadSetting;
-use BusyPHP\exception\PartUploadSuccessException;
-use BusyPHP\file\upload\PartUpload;
+use BusyPHP\app\admin\model\system\file\SystemFilePrepareUploadParameter;
+use BusyPHP\app\admin\model\system\file\SystemFileUploadParameter;
+use BusyPHP\app\admin\plugin\FrontUploadInjectScriptPlugin;
+use BusyPHP\app\admin\setting\StorageSetting;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\FilterHelper;
-use Exception;
+use BusyPHP\upload\parameter\LocalParameter;
+use stdClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 通用文件
@@ -40,41 +44,120 @@ class FileController extends InsideController
     
     
     /**
-     * 上传文件
-     * @throws Exception
+     * 前端准备上传
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function upload()
+    public function front_prepare() : Response
+    {
+        $parameter = new SystemFilePrepareUploadParameter(
+            $this->post('md5/s', 'trim'),
+            $this->post('filename/s', 'trim'),
+            $this->post('filesize/d', 'intval'),
+            $this->post('mimetype/s', 'trim')
+        );
+        $parameter->setUserId($this->adminUserId);
+        $parameter->setClassType($this->post('class_type/s', 'trim'));
+        $parameter->setClassValue($this->post('class_value/s', 'trim'));
+        $parameter->setPart($this->post('part/b'));
+        $parameter->setDisk($this->post('disk/s', 'trim'));
+        $result = $this->model->frontPrepareUpload($parameter);
+        $info   = $result->getInfo();
+        $server = $result->getServerUrl();
+        $server = $server === 'local' ? (string) url('front_local') : $server;
+        $data   = [
+            'file_id'    => $info->id,
+            'file_url'   => $info->url,
+            'name'       => $info->name,
+            'filename'   => $info->filename,
+            'extension'  => $info->extension,
+            'path'       => $info->path,
+            'fast'       => $info->fast,
+            'upload_id'  => $result->getUploadId(),
+            'server_url' => $server,
+        ];
+        
+        $this->log()->record(
+            self::LOG_INSERT,
+            $info->fast ? '秒传文件' : '准备上传',
+            json_encode($result, JSON_UNESCAPED_UNICODE)
+        );
+        
+        return $this->success($data);
+    }
+    
+    
+    /**
+     * 前端上传获取临时令牌
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function front_token() : Response
+    {
+        return $this->success($this->model->frontTmpToken($this->post('file_id/d')));
+    }
+    
+    
+    /**
+     * 前端完成上传
+     * @return Response
+     * @throws Throwable
+     */
+    public function front_done() : Response
+    {
+        $this->model->frontDoneUpload(
+            $this->post('file_id/d'),
+            $this->post('upload_id/s', 'trim'),
+            json_decode($this->post('parts/s', 'trim'), true) ?: []
+        );
+        
+        $this->log()->record(self::LOG_UPDATE, '完成上传');
+        
+        return $this->success('上传完成');
+    }
+    
+    
+    /**
+     * 前端上传整个文件或分块
+     * @return Response
+     * @throws Throwable
+     */
+    public function front_local() : Response
     {
         $this->request->setRequestIsAjax();
-        $classType     = $this->post('class_type/s', 'trim');
-        $classValue    = $this->post('class_value/s', 'trim');
-        $chunkFilename = $this->post('chunk_filename/s', 'trim');
-        $chunkComplete = $this->post('chunk_complete/b');
-        $chunkTotal    = $this->post('chunk_total/d');
-        $chunkCurrent  = $this->post('chunk_current/d');
-        $chunkId       = $this->post('chunk_guid/s', 'trim');
         
-        try {
-            $upload = new PartUpload();
-            $upload->setUserId($this->adminUserId);
-            $upload->setClassType($classType, $classValue);
-            $upload->setName($chunkFilename);
-            $upload->setComplete($chunkComplete);
-            $upload->setTotal($chunkTotal);
-            $upload->setCurrent($chunkCurrent);
-            $upload->setId($chunkId);
-            
-            $result = $upload->upload($this->request->file('upload'));
-        } catch (PartUploadSuccessException $e) {
-            return $this->success('PART SUCCESS');
-        }
+        $etag = $this->model->frontLocalUpload(
+            $this->post('file_id/d'),
+            $this->request->file('upload'),
+            $this->post('upload_id/s', 'trim'),
+            $this->post('part_number/d')
+        );
         
-        $data = [
+        return $this->success()->header(['ETag' => $etag]);
+    }
+    
+    
+    /**
+     * 普通上传文件
+     * @throws Throwable
+     */
+    public function upload() : Response
+    {
+        $this->request->setRequestIsAjax();
+        $parameter = new SystemFileUploadParameter(new LocalParameter($this->request->file('upload')));
+        $parameter->setUserId($this->adminUserId);
+        $parameter->setClassType($this->post('class_type/s', 'trim'));
+        $parameter->setClassValue($this->post('class_value/s', 'trim'));
+        $parameter->setDisk($this->post('disk/s', 'trim'));
+        $result = $this->model->upload($parameter);
+        $data   = [
             'file_url'  => $result->url,
             'file_id'   => $result->id,
             'name'      => $result->name,
-            'filename'  => $result->file->getFilename(),
-            'extension' => $result->file->getExtension(),
+            'filename'  => $result->filename,
+            'extension' => $result->extension,
         ];
         $this->log()->record(self::LOG_INSERT, '上传文件', json_encode($data, JSON_UNESCAPED_UNICODE));
         
@@ -88,7 +171,7 @@ class FileController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function picker()
+    public function picker() : Response
     {
         $classType  = $this->get('class_type/s', 'trim');
         $classValue = $this->get('class_value/s', 'trim');
@@ -158,7 +241,7 @@ class FileController extends InsideController
             SystemFile::FILE_TYPE_AUDIO
         ]));
         $this->assign('is_image', $isImage);
-        $this->assign('info', $this->list($this->model, $isImage ? 20 : 30)->select());
+        $this->assign('info', $this->list($this->model->whereComplete(), $isImage ? 20 : 30)->select());
         
         return $this->display();
     }
@@ -170,27 +253,48 @@ class FileController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function config()
+    public function config() : Response
     {
-        $uploadSetting = UploadSetting::init();
-        $classList     = SystemFileClass::init()->getList();
-        $fileClass     = [];
-        foreach ($classList as $key => $r) {
+        $setting   = StorageSetting::init();
+        $fileClass = [];
+        foreach (SystemFileClass::init()->getList() as $key => $item) {
             $fileClass[$key] = [
-                'size'   => $uploadSetting->getMaxSize($key),
-                'suffix' => implode(',', $uploadSetting->getAllowExtensions($key)),
-                'mime'   => implode(',', $uploadSetting->getMimeType($key)),
-                'type'   => $r['type'],
-                'name'   => $r['name'],
-                'thumb'  => $uploadSetting->getThumbType() > 0,
-                'width'  => $uploadSetting->getThumbWidth($key),
-                'height' => $uploadSetting->getThumbHeight($key),
+                'size'             => $setting->getMaxSize($key), // TODO 移除
+                'suffix'           => implode(',', $setting->getAllowExtensions($key)), // TODO 移除
+                'mime'             => implode(',', $setting->getMimeType($key)),  // TODO 移除
+                'max_size'         => $setting->getMaxSize($key),
+                'allow_extensions' => implode(',', $setting->getAllowExtensions($key)),
+                'allow_mimetypes'  => implode(',', $setting->getMimeType($key)),
+                'type'             => $item['type'],
+                'name'             => $item['name']
             ];
         }
         
-        $uploadUrl = url('upload');
-        $pickerUrl = url('picker?class_type=_type_&class_value=_value_&extensions=_extensions_');
-        $fileClass = json_encode($fileClass, JSON_UNESCAPED_UNICODE);
+        // 遍历磁盘
+        $injectScripts = [];
+        foreach ($setting->getDisks() as $disk) {
+            $type            = $disk['type'];
+            $injectScript    = FrontUploadInjectScriptPlugin::getInstance($disk['type'])->injectScript();
+            $injectScripts[] = <<<JS
+config.disks['$type'] = (function (){
+    var exports = {};
+    $injectScript;
+    return exports;
+})();
+JS;
+        }
+        $injectScripts = implode('', $injectScripts);
+        
+        $config = json_encode([
+            'url'     => (string) url('upload'),
+            'prepare' => (string) url('front_prepare'),
+            'done'    => (string) url('front_done'),
+            'token'   => (string) url('front_token'),
+            'picker'  => (string) url('picker?class_type=_type_&class_value=_value_&extensions=_extensions_'),
+            'config'  => $fileClass ?: new stdClass(),
+            'disk'    => $setting->getDisk()
+        ], JSON_UNESCAPED_UNICODE);
+        
         
         $script = <<<JS
 (function (factory) {
@@ -205,15 +309,64 @@ class FileController extends InsideController
     }
 }(function () {
     'use strict';
+    var config = $config;
     
-    return {
-        url    : '{$uploadUrl}',
-        picker : '{$pickerUrl}',
-        config : {$fileClass}
-    }
+   
+    config.disks = {};
+    
+    /**
+     * 初始化异步回调
+     * config.disk.key.asyncInit = function
+     * @method {{asyncInit}}
+     * @param {{}} options 配置
+     */
+    
+    /**
+     * 异步上传文件前回调(还没有切割分块)
+     * config.disk.key.asyncBeforeSendFile = function
+     * @param {busyAdmin.UploadFile} file 文件数据
+     * @param {busyAdmin.UploadPrepareResult} result 准备上传返回数据结构
+     */
+    
+    /**
+     * 异步文件发送前回调(如果有分块，此时可以处理了)
+     * config.disk.key.asyncBeforeSend = function
+     * @param {busyAdmin.UploadBlock} block 块数据
+     */
+    
+    /**
+     * 同步文件发送前回调(如果有分块，此时可以处理了)
+     * config.disk.key.syncBeforeSend = function
+     * @param {busyAdmin.UploadBlock} block 块数据
+     * @param {{}} params HTTP参数
+     * @param {{}} headers HTTP头
+     */
+   
+    /**
+     * 每一个分块或文件上传结果解析，返回false代表上传失败
+     * config.disk.key.uploadAccept = function
+     * @param {busyAdmin.UploadBlock} block 块数据
+     * @param {{_raw: string}} response 响应内容
+     * @param {(result: {}) => void} resultCallback 响应结果回调
+     * @param {(errorMsg: string) => void} errorCallback 响应错误回调
+     * @return {boolean}
+     */
+    
+    /**
+     * 所有文件上传完毕回调
+     * config.disk.key.asyncAfterSendFile = function
+     * @param {busyAdmin.UploadFile} file 文件数据
+     * @param {{_raw: string, _result: {}|null}} result 响应内容
+     */
+    
+    // use-script-start
+    $injectScripts;
+    // use-script-end
+    
+    return config;
 }));
 JS;
         
-        return Response::create($script)->contentType("application/javascript");
+        return Response::create($script)->contentType(FileHelper::getMimetypeByExtension('js'));
     }
 }

@@ -1,0 +1,9 @@
+<ul class="nav nav-lines">
+    <li class="{$url.action == 'storage' ? 'active':''}"><a href="{:url('storage')}">存储设置</a></li>
+    <ba:access value="file_class">
+        <li class="{$url.action == 'file_class' ? 'active':''}"><a href="{:url('file_class')}">文件分类</a></li>
+    </ba:access>
+    <ba:access value="image_style">
+        <li class="{$url.action == 'image_style' ? 'active':''}"><a href="{:url('image_style')}">图片样式</a></li>
+    </ba:access>
+</ul>

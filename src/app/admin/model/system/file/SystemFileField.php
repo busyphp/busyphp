@@ -13,6 +13,8 @@ use BusyPHP\model\Field;
  * @version $Id: 2020/6/6 下午2:54 下午 SystemFileField.php $
  * @method static Entity id($op = null, $value = null) ID
  * @method static Entity createTime($op = null, $value = null) 上传时间
+ * @method static Entity pending($op = null, $value = null) 是否上传中
+ * @method static Entity fast($op = null, $value = null) 是否秒传
  * @method static Entity userId($op = null, $value = null) 会员ID
  * @method static Entity type($op = null, $value = null) 文件类型
  * @method static Entity classType($op = null, $value = null) 文件分类
@@ -49,6 +51,18 @@ class SystemFileField extends Field
      * @var int
      */
     public $userId;
+    
+    /**
+     * 是否上传中
+     * @var int
+     */
+    public $pending;
+    
+    /**
+     * 是否秒传
+     * @var int
+     */
+    public $fast;
     
     /**
      * 文件类型
