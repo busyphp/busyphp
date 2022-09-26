@@ -2,7 +2,11 @@
 
 namespace BusyPHP\helper;
 
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
+use League\MimeTypeDetection\MimeTypeDetector;
+use think\exception\FileException;
 use think\exception\HttpException;
+use think\facade\Request;
 use think\Response;
 
 /**
@@ -13,28 +17,159 @@ use think\Response;
  */
 class FileHelper
 {
+    /** @var string[] 常用mimetype类型 */
+    protected static $mimetypeMap = [
+        'image/apng'                                                                => 'apng',
+        'image/bmp'                                                                 => 'bmp',
+        'image/gif'                                                                 => 'gif',
+        'image/x-icon'                                                              => 'ico',
+        'image/jpeg'                                                                => 'jpeg',
+        'image/png'                                                                 => 'png',
+        'image/tiff'                                                                => 'tiff',
+        'image/webp'                                                                => 'webp',
+        'image/wmf'                                                                 => 'wmf',
+        'video/3gpp'                                                                => '3gpp',
+        'application/x-7z-compressed'                                               => '7z',
+        'application/vnd.android.package-archive'                                   => 'apk',
+        'video/x-msvideo'                                                           => 'avi',
+        'image/avif'                                                                => 'avif',
+        'application/x-msdownload'                                                  => 'bat',
+        'application/x-bzip'                                                        => 'bz',
+        'application/x-bzip2'                                                       => 'bz2',
+        'text/css'                                                                  => 'css',
+        'text/csv'                                                                  => 'csv',
+        'application/x-apple-diskimage'                                             => 'dmg',
+        'application/msword'                                                        => 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'   => 'docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.template'   => 'dotx',
+        'application/xml-dtd'                                                       => 'dtd',
+        'application/vnd.ms-fontobject'                                             => 'eot',
+        'application/postscript'                                                    => 'eps',
+        'video/x-flv'                                                               => 'flv',
+        'text/plain'                                                                => 'txt',
+        'application/x-iso9660-image'                                               => 'iso',
+        'application/java-archive'                                                  => 'jar',
+        'text/x-java-source'                                                        => 'java',
+        'application/javascript'                                                    => 'js',
+        'application/json'                                                          => 'json',
+        'application/json5'                                                         => 'json5',
+        'text/less'                                                                 => 'less',
+        'application/vnd.apple.mpegurl'                                             => 'm3u8',
+        'audio/mpeg'                                                                => 'mp3',
+        'video/mp4'                                                                 => 'mp4',
+        'application/pdf'                                                           => 'pdf',
+        'application/x-httpd-php'                                                   => 'php',
+        'application/powerpoint'                                                    => 'ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+        'application/vnd.3gpp.pic-bw-small'                                         => 'psb',
+        'application/x-photoshop'                                                   => 'psd',
+        'video/mp2t'                                                                => 'ts',
+        'font/ttf'                                                                  => 'ttf',
+        'font/collection'                                                           => 'ttc',
+        'model/u3d'                                                                 => 'u3d',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'         => 'xlsx',
+        'application/vnd.ms-excel'                                                  => 'xls',
+        'application/zip'                                                           => 'zip',
+        'application/xml'                                                           => 'xml',
+        'font/woff'                                                                 => 'woff',
+        'font/woff2'                                                                => 'woff2',
+        'image/svg+xml'                                                             => 'svg',
+        'font/otf'                                                                  => 'otf',
+        'application/x-rar'                                                         => 'rar',
+        'text/html'                                                                 => 'html',
+        'application/iphone'                                                        => 'ipa',
+    ];
+    
+    /** @var MimeTypeDetector */
+    protected static $mimeTypeDetector;
+    
+    
     /**
-     * 获取文件mimeType
-     * @param string $filename 附件路径
-     * @return string|false
+     * Mimetype解析器
+     * @return MimeTypeDetector
      */
-    public static function getMimeType($filename)
+    protected static function mimeTypeDetector() : MimeTypeDetector
     {
-        if (false === $fInfo = finfo_open(FILEINFO_MIME)) {
-            return false;
-        }
-        if (false === $mimeType = finfo_file($fInfo, $filename)) {
-            finfo_close($fInfo);
-            
-            return false;
-        }
-        finfo_close($fInfo);
-        
-        if (preg_match('/([^;]+);?.*$/', $mimeType, $match)) {
-            return $match[1];
+        if (!static::$mimeTypeDetector instanceof MimeTypeDetector) {
+            static::$mimeTypeDetector = new FinfoMimeTypeDetector();
         }
         
-        return $mimeType;
+        return static::$mimeTypeDetector;
+    }
+    
+    
+    /**
+     * 获取文件mimetype
+     * @param string $path 文件绝对路径
+     * @return string
+     */
+    public static function getMimetype(string $path) : string
+    {
+        $mimetype = static::getMimetypeByFile($path);
+        if (in_array(strtolower($mimetype), ['application/octet-stream', 'inode/x-empty', 'application/x-empty'])) {
+            $mimetype = static::getMimetypeByPath($path);
+        }
+        
+        return $mimetype;
+    }
+    
+    
+    /**
+     * 通过路径获取mimetype
+     * @param string $path
+     * @return string
+     */
+    public static function getMimetypeByPath(string $path) : string
+    {
+        return static::mimeTypeDetector()->detectMimeTypeFromPath($path) ?: '';
+    }
+    
+    
+    /**
+     * 通过文件绝对路径获取mimetype
+     * @param string $path
+     * @return string
+     */
+    public static function getMimetypeByFile(string $path) : string
+    {
+        if (!is_file($path)) {
+            throw new FileException(sprintf('文件不存在: %s', $path));
+        }
+        
+        return static::mimeTypeDetector()->detectMimeTypeFromFile($path) ?: '';
+    }
+    
+    
+    /**
+     * 通过文件内容获取mimetype
+     * @param string $content
+     * @return string
+     */
+    public static function getMimetypeByContent(string $content) : string
+    {
+        return static::mimeTypeDetector()->detectMimeTypeFromBuffer($content) ?: '';
+    }
+    
+    
+    /**
+     * 通过文件扩展名获取mimetype
+     * @param string $extension
+     * @return string
+     */
+    public static function getMimetypeByExtension(string $extension) : string
+    {
+        return static::mimeTypeDetector()->detectMimeTypeFromPath('file.' . $extension) ?: '';
+    }
+    
+    
+    /**
+     * 通过Mimetype获取文件扩展名
+     * @param string $mimetype
+     * @return string
+     */
+    public static function getExtensionByMimetype(string $mimetype) : string
+    {
+        return static::$mimetypeMap[$mimetype] ?? '';
     }
     
     
@@ -79,17 +214,6 @@ class FileHelper
         }
         
         return $pathParts;
-    }
-    
-    
-    /**
-     * 获取附件扩展名称
-     * @param $filename
-     * @return string
-     */
-    public static function getExtension($filename)
-    {
-        return self::pathInfo($filename, PATHINFO_EXTENSION);
     }
     
     
@@ -184,31 +308,27 @@ class FileHelper
     public static function responseAssets(string $filename, int $expireSecond = 31536000) : Response
     {
         if (!$filename || !is_file($filename)) {
-            throw new HttpException(404, "资源不存在: {$filename}");
+            throw new HttpException(404, sprintf("资源不存在: %s", $filename));
         }
         
-        // 判断类型
-        switch (strtolower((string) pathinfo($filename, PATHINFO_EXTENSION))) {
-            case 'css':
-                $mimeType = 'text/css';
-            break;
-            case 'js':
-                $mimeType = 'application/javascript';
-            break;
-            default:
-                $mimeType = FileHelper::getMimeType($filename);
+        $header  = [];
+        $content = file_get_contents($filename);
+        $etag    = sprintf('"%s"', md5(filemtime($filename) . $content));
+        if (str_replace('W/', '',Request::header('if-none-match')) == $etag) {
+            $content                  = null;
+            $code                     = 304;
+            $header['Content-Length'] = 0;
+        } else {
+            $code                     = 200;
+            $header['Content-Length'] = strlen($content);
         }
         
-        $response = Response::create(file_get_contents($filename), 'html', 200);
-        $response->contentType($mimeType);
-        $response->lastModified(TransHelper::gmDate(filemtime($filename)));
-        $response->eTag('"' . md5_file($filename) . '"');
-        if ($expireSecond > 1) {
-            $response->cacheControl("max-age={$expireSecond}");
-            $response->expires(TransHelper::gmDate(time() + $expireSecond));
-            $response->allowCache(true);
-        }
+        $header['Cache-Control'] = "max-age=$expireSecond, public";
+        $header['Etag']          = $etag;
         
-        return $response;
+        return Response::create($content)
+            ->contentType(static::getMimetypeByPath($filename) ?: 'text/plain')
+            ->code($code)
+            ->header($header);
     }
 }
