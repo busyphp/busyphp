@@ -20,6 +20,7 @@ use think\Collection;
 use think\Container;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
+use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\InvalidArgumentException;
@@ -341,7 +342,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         }
         
         // 初始化父类
-        parent::__construct(self::$db->instance($this->configName));
+        parent::__construct(self::$db->connect($this->configName));
     }
     
     

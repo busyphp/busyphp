@@ -14,7 +14,6 @@ use think\initializer\Error;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/16 下午11:29 上午 App.php $
  * @property Request $request
- * @property Db      $db
  * @method static static getInstance() 获取单例
  */
 class App extends \think\App
@@ -53,7 +52,6 @@ class App extends \think\App
             \think\App::class              => App::class,
             \think\Request::class          => Request::class,
             \think\exception\Handle::class => Handle::class,
-            \think\Db::class               => Db::class
         ]);
         
         parent::__construct($rootPath);
