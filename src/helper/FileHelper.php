@@ -2,11 +2,16 @@
 
 namespace BusyPHP\helper;
 
+use InvalidArgumentException;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
+use LengthException;
+use RangeException;
 use think\exception\FileException;
 use think\exception\HttpException;
 use think\facade\Request;
+use think\File;
+use think\file\UploadedFile;
 use think\Response;
 
 /**
@@ -18,7 +23,7 @@ use think\Response;
 class FileHelper
 {
     /** @var string[] 常用mimetype类型 */
-    protected static $mimetypeMap = [
+    public static $mimetypeMap = [
         'image/apng'                                                                => 'apng',
         'image/bmp'                                                                 => 'bmp',
         'image/gif'                                                                 => 'gif',
@@ -81,7 +86,58 @@ class FileHelper
     ];
     
     /** @var MimeTypeDetector */
-    protected static $mimeTypeDetector;
+    public static $mimeTypeDetector;
+    
+    /**
+     * 支持 {@see getimagesize()} 获取图片信息的扩展集合
+     * @var string[]
+     */
+    public static $getImageSizeExtensions = [
+        'gif',
+        'jpg',
+        'jpeg',
+        'png',
+        'swf',
+        'swc',
+        'psd',
+        'tiff',
+        'bmp',
+        'iff',
+        'jp2',
+        'jpx',
+        'jb2',
+        'jpc',
+        'xbm',
+        'wbmp',
+        'webp'
+    ];
+    
+    /**
+     * 常用图片格式
+     * @var string[]
+     */
+    public static $commonImageExtensions = [
+        'jpeg',
+        'jpg',
+        'png',
+        'gif',
+        'bmp',
+        'webp'
+    ];
+    
+    /**
+     * 上传错误
+     * @var string[]
+     */
+    public static $uploadErrorMap = [
+        UPLOAD_ERR_INI_SIZE   => '上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值',
+        UPLOAD_ERR_FORM_SIZE  => '上传文件的大小超过了表单中 MAX_FILE_SIZE 选项指定的值',
+        UPLOAD_ERR_PARTIAL    => '文件只有部分被上传',
+        UPLOAD_ERR_NO_FILE    => '没有文件被上传',
+        UPLOAD_ERR_NO_TMP_DIR => '找不到临时文件夹',
+        UPLOAD_ERR_CANT_WRITE => '文件写入失败',
+        UPLOAD_ERR_EXTENSION  => 'PHP扩展停止了文件上传',
+    ];
     
     
     /**
@@ -170,6 +226,193 @@ class FileHelper
     public static function getExtensionByMimetype(string $mimetype) : string
     {
         return static::$mimetypeMap[$mimetype] ?? '';
+    }
+    
+    
+    /**
+     * 检测文件扩展名是否合规
+     * @param string[] $extensions 允许的文件扩展名集合
+     * @param string   $extension 要检测的文件扩展名
+     */
+    public static function checkExtension(array $extensions, string $extension)
+    {
+        $extensions = array_change_key_case($extensions, CASE_LOWER);
+        $extension  = strtolower(trim($extension, '.'));
+        if ($extension === '') {
+            throw new InvalidArgumentException('文件扩展名不能为空');
+        }
+        
+        // 非法文件
+        if (in_array($extension, ['php', 'php5', 'asp', 'jsp'])) {
+            throw new RangeException(sprintf('非法文件类型: %s', $extension));
+        }
+        
+        if ($extensions && !in_array($extension, $extensions)) {
+            throw new RangeException(sprintf('文件格式不正确: %s', $extension));
+        }
+    }
+    
+    
+    /**
+     * 检测图片是否合规
+     * @param string $filename 图片路径或文件内容
+     * @param string $extension 文件扩展名
+     * @param bool   $content $filename是否为文件内容
+     * @return array
+     */
+    public static function checkImage(string $filename, string $extension = '', bool $content = false) : array
+    {
+        if ($content) {
+            if (!$extension) {
+                throw new InvalidArgumentException('文件扩展名不能为空');
+            }
+        } else {
+            $extension = strtolower($extension ?: pathinfo($filename, PATHINFO_EXTENSION));
+        }
+        
+        if (!in_array($extension, static::$getImageSizeExtensions)) {
+            return [0, 0];
+        }
+        
+        $info = $content ? getimagesizefromstring($filename) : getimagesize($filename);
+        if (!$info || ('gif' == $extension && empty($info['bits'])) || $info[0] <= 0 || $info[1] <= 0) {
+            throw new RangeException('非法图像文件');
+        }
+        
+        return $info;
+    }
+    
+    
+    /**
+     * 检测文件Mimetype是否合规
+     * @param array  $mimetypes 允许的mimetype集合
+     * @param string $mimetype 要检测的mimetype
+     */
+    public static function checkMimetype(array $mimetypes, string $mimetype)
+    {
+        if (!$mimetypes) {
+            return;
+        }
+        
+        $mimetypes = array_change_key_case($mimetypes, CASE_LOWER);
+        $mimetype  = strtolower($mimetype);
+        foreach ($mimetypes as $item) {
+            if (false !== strpos($item, '/*')) {
+                $pattern = str_replace('/', '\/', $item);
+                $pattern = str_replace('*', '.*', $pattern);
+                if (preg_match('/^' . $pattern . '$/i', $mimetype)) {
+                    return;
+                }
+            } else {
+                if (in_array($mimetype, $mimetypes)) {
+                    return;
+                }
+            }
+        }
+        
+        throw new RangeException(sprintf("不支持该mimetype: %s", $mimetype));
+    }
+    
+    
+    /**
+     * 检测文件大小是否合规
+     * @param int $maxsize 最大限制
+     * @param int $filesize 文件大小
+     */
+    public static function checkFilesize(int $maxsize, int $filesize)
+    {
+        if ($filesize <= 0) {
+            throw new LengthException('禁止上传空文件');
+        }
+        
+        if ($maxsize > 0 && $filesize > $maxsize) {
+            throw new LengthException(sprintf('请上传%s内的文件', TransHelper::formatBytes($maxsize)));
+        }
+    }
+    
+    
+    /**
+     * 将上传的文件转为File对象
+     * @param File|string|array $file
+     * @return File
+     */
+    public static function convertUploadToFile($file) : File
+    {
+        if (!$file) {
+            throw new InvalidArgumentException('没有要上传的数据');
+        }
+        
+        if (!$file instanceof File) {
+            // 通过键取文件
+            if (is_string($file)) {
+                $file = Request::file($file);
+                if (!$file) {
+                    throw new InvalidArgumentException('没有文件被上传');
+                }
+                
+                if (is_array($file)) {
+                    if (count($file) > 1) {
+                        throw new RangeException('不支持同时上传多个文件，请分开上传');
+                    }
+                    
+                    $file = $file[0];
+                }
+            }
+            
+            //
+            // 是$_FILES
+            elseif (is_array($file) && isset($file['name'])) {
+                if (is_array($file['name'])) {
+                    if (count($file['name']) > 1) {
+                        throw new RangeException('不支持同时上传多个文件，请分开上传');
+                    }
+                    
+                    $newFile = [
+                        'name'     => $file['name'][0],
+                        'tmp_name' => $file['tmp_name'][0],
+                        'type'     => $file['type'][0],
+                        'error'    => $file['error'][0],
+                    ];
+                    $file    = $newFile;
+                }
+                
+                if ($file['error'] > 0) {
+                    throw new FileException(static::$uploadErrorMap[$file['error']] ?? "上传错误{$file['error']}", $file['error']);
+                }
+                
+                $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['error']);
+            }
+            
+            //
+            // 其它数据
+            else {
+                throw new RangeException('上传数据异常');
+            }
+        }
+        
+        return $file;
+    }
+    
+    
+    /**
+     * 通过路径判断是否常见图片
+     * @param string $path
+     * @return bool
+     */
+    public static function isCommonImageByPath(string $path) : bool
+    {
+        return static::isCommonImageByExtension(pathinfo($path, PATHINFO_EXTENSION));
+    }
+    
+    
+    /**
+     * 通过扩展名判断是否常见图片
+     * @param string $extension
+     * @return bool
+     */
+    public static function isCommonImageByExtension(string $extension) : bool
+    {
+        return in_array(strtolower($extension), self::$commonImageExtensions);
     }
     
     
@@ -314,7 +557,7 @@ class FileHelper
         $header  = [];
         $content = file_get_contents($filename);
         $etag    = sprintf('"%s"', md5(filemtime($filename) . $content));
-        if (str_replace('W/', '',Request::header('if-none-match')) == $etag) {
+        if (str_replace('W/', '', Request::header('if-none-match')) == $etag) {
             $content                  = null;
             $code                     = 304;
             $header['Content-Length'] = 0;
