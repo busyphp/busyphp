@@ -25,6 +25,14 @@
 | 基本属性:title |  |  |  |  |
 | data-type | string | `否` | - | 上传组件类型，支持：`single: 单文件上传`,`files:多文件上传`,`card:卡片上传`,`use:自定义上传` |
 | data-name | string | `否` | - | 设置表单参数名称, 如果为 `input`标签，则可以直接设置`name`值 |
+| data-server | string,boolean | `否` | `true` | 指定上传服务器地址<br />`true`: `直传模式`<br />`false`: `内置非直传`<br/> `指定url`: `自定义上传地址` |
+| data-method | string | `否` | `POST` | 指定请求方式 |
+| data-binary | boolean | `否` | `false` | 是否以`binary`方式发送文件数据，可通过 `php://input` 获取 |
+| data-credential | boolean | `否` | `false` | 跨域时，是否允许携带cookie |
+| data-file-val | boolean | `否` | `file` | 指定`POST`方式的文件字段名称 |
+| data-params | object,Function | `否` | `{}` | 上传时携带的参数 |
+| data-headers | object,Function | `否` | `{}` | 上传时携带的请求头 |
+| data-disk | boolean | `否` | - | 指定磁盘系统上传 |
 | data-disabled | boolean | `否` | - | 是否禁用表单, 如果为 `input`标签，则可以直接设置`disabled`值 |
 | data-class-type | string | `否` | `file` | 上传的文件类型 |
 | data-class-value | string | `否` | - | 上传的文件标识 |
@@ -40,6 +48,8 @@
 | data-max-size | number | `否` | - | 设置最多允许选择的文件大小，字节 |
 | data-max-single-size | number | `否` | - | 设置单个文件大小，字节 |
 | data-max-total | number | `否` | - | 设置单次上传最多允许选择的数量 |
+| data-allow-extensions | string | `否` | - | 设置允许的文件扩展名，不含`.`，多个用英文逗号分割 |
+| data-allow-mimetypes | string | `否` | - | 设置允许的文件mimetype，多个用英文逗号分割 |
 | data-auto | boolean | `否` | `true` | 是否自动上传 |
 | data-object-fit | string | `否` | - | 设置图片或视频预览填充方式`css属性object-fit`的值，默认为`cover` |
 | 系统文件库:title |  |  |  |  |
