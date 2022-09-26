@@ -273,7 +273,7 @@ class Service extends ThinkService
         $route->rule('general/captcha', CaptchaController::class . '@index');
         
         // 动态缩图路由
-        $route->rule('thumbs/<src>', ThumbController::class . '@index')->pattern(['src' => '.+']);
+        $route->rule('thumbs/<path>', ThumbController::class . '@index')->pattern(['path' => '.+']);
         $route->rule('thumbs', ThumbController::class . '.@index');
         
         // 动态二维码路由
