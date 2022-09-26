@@ -25,13 +25,24 @@ class Map extends Field
     
     /**
      * 获取值
-     * @param string $key 键名
-     * @param mixed  $default 默认值
+     * @param string                     $key 键名
+     * @param mixed                      $default 默认值
+     * @param callable|callable[]|string $filter 过滤方式
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function get(string $key, $default = null, $filter = null)
     {
-        return $this->{StringHelper::camel($key)} ?? $default;
+        $value  = $this->{StringHelper::camel($key)} ?? $default;
+        $filter = !is_array($filter) ? explode(',', (string) $filter) : $filter;
+        foreach ($filter as $item) {
+            if (!$item || !function_exists($item)) {
+                continue;
+            }
+            
+            $value = call_user_func($item, $value);
+        }
+        
+        return $value;
     }
     
     
@@ -40,7 +51,7 @@ class Map extends Field
      * @param string $key 键名
      * @param mixed  $value 键值
      */
-    public function set($key, $value)
+    public function set(string $key, $value)
     {
         $this->{StringHelper::camel($key)} = $value;
     }
@@ -55,5 +66,16 @@ class Map extends Field
         foreach ($keys as $key) {
             unset($this->{StringHelper::camel($key)});
         }
+    }
+    
+    
+    /**
+     * 检测是否存在
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key) : bool
+    {
+        return isset($this->{StringHelper::camel($key)});
     }
 }
