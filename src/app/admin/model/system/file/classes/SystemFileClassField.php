@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
-use BusyPHP\app\admin\setting\UploadSetting;
+use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\StringHelper;
@@ -23,13 +23,10 @@ use BusyPHP\app\admin\model\system\file\SystemFile;
  * @method static Entity var($op = null, $value = null) 分类标识
  * @method static Entity type($op = null, $value = null) 附件类型
  * @method static Entity sort($op = null, $value = null) 自定义排序
- * @method static Entity allowExtensions($op = null, $value = null) 留空使用系统设置，多个用英文逗号隔开
- * @method static Entity maxSize($op = null, $value = null) 单位MB，0使用系统默认设置，0以上按照该设置
- * @method static Entity mimeType($op = null, $value = null) 允许的MimeType，多个用英文逗号分割
- * @method static Entity thumbType($op = null, $value = null) 缩图方式
- * @method static Entity thumbWidth($op = null, $value = null) 缩图宽度
- * @method static Entity thumbHeight($op = null, $value = null) 缩图高度
- * @method static Entity watermark($op = null, $value = null) 是否加水印
+ * @method static Entity extensions($op = null, $value = null) 限制文件格式
+ * @method static Entity maxSize($op = null, $value = null) 限制文件大小
+ * @method static Entity mimetype($op = null, $value = null) 限制文件mimetype
+ * @method static Entity style($op = null, $value = null) 样式
  * @method static Entity system($op = null, $value = null) 是否系统类型
  */
 class SystemFileClassField extends Field
@@ -65,46 +62,28 @@ class SystemFileClassField extends Field
     public $sort;
     
     /**
-     * 留空使用系统设置，多个用英文逗号隔开
+     * 限制文件格式
      * @var string
      */
-    public $allowExtensions;
+    public $extensions;
     
     /**
-     * 单位MB，0使用系统默认设置，0以上按照该设置
+     * 限制文件大小
      * @var int
      */
     public $maxSize;
     
     /**
-     * 允许的MimeType，多个用英文逗号分割
+     * 限制文件mimetype
      * @var string
      */
-    public $mimeType;
+    public $mimetype;
     
     /**
-     * 缩图方式
-     * @var int
+     * 样式
+     * @var string
      */
-    public $thumbType;
-    
-    /**
-     * 缩图宽度
-     * @var int
-     */
-    public $thumbWidth;
-    
-    /**
-     * 缩图高度
-     * @var int
-     */
-    public $thumbHeight;
-    
-    /**
-     * 是否加水印
-     * @var int
-     */
-    public $watermark;
+    public $style;
     
     /**
      * 是否系统类型
@@ -116,44 +95,36 @@ class SystemFileClassField extends Field
     /**
      * 设置
      * @param int $id
-     * @return $this
      * @throws ParamInvalidException
      */
-    public function setId($id)
+    public function setId(int $id)
     {
-        $this->id = floatval($id);
+        $this->id = $id;
         if ($this->id < 1) {
             throw new ParamInvalidException('id');
         }
-        
-        return $this;
     }
     
     
     /**
      * 设置分类名称
      * @param string $name
-     * @return $this
      * @throws VerifyException
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->name = trim($name);
         if (!$this->name) {
             throw new VerifyException('请输入文件分类名称', 'name');
         }
-        
-        return $this;
     }
     
     
     /**
      * 设置分类标识
      * @param string $var
-     * @return $this
-     * @throws VerifyException
      */
-    public function setVar($var)
+    public function setVar(string $var)
     {
         $this->var = trim($var);
         if (!$this->var) {
@@ -168,18 +139,14 @@ class SystemFileClassField extends Field
         if (!RegexHelper::english(substr($this->var, 0, 1))) {
             throw new VerifyException('文件分类标识不能为数字或下划线开头', 'var');
         }
-        
-        return $this;
     }
     
     
     /**
      * 设置附件类型
      * @param string $type
-     * @return $this
-     * @throws VerifyException
      */
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->type = trim($type);
         if (!$this->type) {
@@ -188,111 +155,55 @@ class SystemFileClassField extends Field
         if (!in_array($this->type, array_keys(SystemFile::getTypes()))) {
             throw new VerifyException('请选择有效的文件类型', 'type');
         }
-        
-        return $this;
     }
     
     
     /**
      * 设置系统
      * @param int $system
-     * @return $this
      */
-    public function setSystem($system)
+    public function setSystem(int $system)
     {
         $this->system = TransHelper::toBool($system);
-        
-        return $this;
     }
     
     
     /**
-     * 设置留空使用系统设置，多个用英文逗号隔开
-     * @param string $allowExtensions
-     * @return $this
+     * 设置限制文件格式
+     * @param string $extensions
      */
-    public function setAllowExtensions($allowExtensions)
+    public function setExtensions(string $extensions)
     {
-        $this->allowExtensions = UploadSetting::parseExtensions(trim($allowExtensions));
-        
-        return $this;
+        $this->extensions = StorageSetting::parseExtensions(trim($extensions));
     }
     
     
     /**
-     * 设置单位MB，0使用系统默认设置，0以上按照该设置
+     * 设置限制文件大小
      * @param int $maxSize
-     * @return $this
      */
-    public function setMaxSize($maxSize)
+    public function setMaxSize(int $maxSize)
     {
         $this->maxSize = floatval($maxSize);
-        
-        return $this;
     }
     
     
     /**
-     * 设置允许的MimeType，多个用英文逗号分割
-     * @param string $mimeType
-     * @return $this
+     * 设置限制文件mimetype
+     * @param string $mimetype
      */
-    public function setMimeType($mimeType)
+    public function setMimetype(string $mimetype)
     {
-        $this->mimeType = UploadSetting::parseExtensions(trim($mimeType));
-        
-        return $this;
+        $this->mimetype = StorageSetting::parseExtensions(trim($mimetype));
     }
     
     
     /**
-     * 设置缩图方式
-     * @param int $thumbType
-     * @return $this
+     * 设置图片样式
+     * @param array $style
      */
-    public function setThumbType($thumbType)
+    public function setStyle(array $style)
     {
-        $this->thumbType = intval($thumbType);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置缩图宽度
-     * @param int $thumbWidth
-     * @return $this
-     */
-    public function setThumbWidth($thumbWidth)
-    {
-        $this->thumbWidth = intval($thumbWidth);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置缩图高度
-     * @param int $thumbHeight
-     * @return $this
-     */
-    public function setThumbHeight($thumbHeight)
-    {
-        $this->thumbHeight = intval($thumbHeight);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否加水印
-     * @param int $watermark
-     * @return $this
-     */
-    public function setWatermark($watermark)
-    {
-        $this->watermark = intval($watermark);
-        
-        return $this;
+        $this->style = json_encode($style, JSON_UNESCAPED_UNICODE);
     }
 }

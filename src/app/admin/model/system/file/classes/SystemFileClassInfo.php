@@ -16,8 +16,8 @@ use BusyPHP\model\Entity;
  * @method static Entity isImage() 是否图片
  * @method static Entity isVideo() 是否视频
  * @method static Entity isAudio() 是否音频
- * @property bool $system
- * @property bool $watermark
+ * @property bool|int     $system
+ * @property array|string $style
  */
 class SystemFileClassInfo extends SystemFileClassField
 {
@@ -54,12 +54,12 @@ class SystemFileClassInfo extends SystemFileClassField
     
     public function onParseAfter()
     {
-        $this->watermark = $this->watermark > 0;
-        $this->system    = $this->system > 0;
-        $this->typeName  = SystemFile::getTypes($this->type);
-        $this->isFile    = $this->type == SystemFile::FILE_TYPE_FILE;
-        $this->isImage   = $this->type == SystemFile::FILE_TYPE_IMAGE;
-        $this->isVideo   = $this->type == SystemFile::FILE_TYPE_VIDEO;
-        $this->isAudio   = $this->type == SystemFile::FILE_TYPE_AUDIO;
+        $this->system   = $this->system > 0;
+        $this->typeName = SystemFile::getTypes($this->type);
+        $this->isFile   = $this->type == SystemFile::FILE_TYPE_FILE;
+        $this->isImage  = $this->type == SystemFile::FILE_TYPE_IMAGE;
+        $this->isVideo  = $this->type == SystemFile::FILE_TYPE_VIDEO;
+        $this->isAudio  = $this->type == SystemFile::FILE_TYPE_AUDIO;
+        $this->style    = json_decode($this->style, true) ?: [];
     }
 }

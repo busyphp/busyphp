@@ -1,0 +1,600 @@
+<script src="/vue.js"></script>
+<extend name="@admin:layout"/>
+<block name="content">
+    <?php
+    
+    use BusyPHP\helper\TransHelper;
+    use BusyPHP\image\parameter\AutoOrientParameter;
+    use BusyPHP\image\parameter\BaseParameter;
+    use BusyPHP\image\parameter\BlurParameter;
+    use BusyPHP\image\parameter\BrightParameter;
+    use BusyPHP\image\parameter\ContrastParameter;
+    use BusyPHP\image\parameter\CropParameter;
+    use BusyPHP\image\parameter\FlipParameter;
+    use BusyPHP\image\parameter\FormatParameter;
+    use BusyPHP\image\parameter\GammaParameter;
+    use BusyPHP\image\parameter\GrayscaleParameter;
+    use BusyPHP\image\parameter\ImageParameter;
+    use BusyPHP\image\parameter\InterlaceParameter;
+    use BusyPHP\image\parameter\InvertParameter;
+    use BusyPHP\image\parameter\PixelateParameter;
+    use BusyPHP\image\parameter\QualityParameter;
+    use BusyPHP\image\parameter\RadiusParameter;
+    use BusyPHP\image\parameter\RotateParameter;
+    use BusyPHP\image\parameter\SharpenParameter;
+    use BusyPHP\image\parameter\StripMetaParameter;
+    use BusyPHP\image\parameter\TextParameter;
+    use BusyPHP\image\parameter\ZoomParameter;
+    
+    ?>
+    <div class="form-horizontal">
+        <input type="hidden" name="disk" value="{$disk}"/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label required">样式名</label>
+            <div class="col-sm-9">
+                <eq name="url.action" value="image_style_edit">
+                    <input type="text" readonly name="id" value="{$info.id|default=''}" class="form-control"/>
+                    <span class="help-block">创建后不可修改</span>
+                    <else/>
+                    <input type="text" class="form-control" maxlength="32" name="id" value="{$info.id|default=''}" placeholder="请输入样式名" required/>
+                    <span class="help-block">设置样式标识，不能重复，支持英文数字下划线</span>
+                </eq>
+            </div>
+        </div>
+
+        <div id="app">
+            <template>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label required">处理能力</label>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-4 col-xs-6" v-for="(item, key) in content">
+                                <input type="checkbox" :name="'content['+ key +'][status]'" v-model="item.status" value="1" :title="item.name" data-toggle="busy-checkbox"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--缩放-->
+                <div v-for="(item, key) in content">
+                    <template v-if="item.status">
+                        <div class="form-group-title">{{item.name}}</div>
+
+                        <!--缩放-->
+                        <template v-if="key == '<?=ZoomParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">缩放方式</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
+                                        <?=TransHelper::toOptionHtml(ZoomParameter::getTypes());?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">缩放宽高</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">宽</div>
+                                        <input type="number" step="1" :name="'content['+ key +'][attr][width]'" class="form-control" v-model="item.attr.width"/>
+                                        <div class="input-group-addon no-border-left no-border-right">高</div>
+                                        <input type="number" step="1" :name="'content['+ key +'][attr][height]'" class="form-control" v-model="item.attr.height"/>
+                                        <div class="input-group-addon no-border-left">像素</div>
+                                    </div>
+                                    <div v-if="item.attr.type == <?=ZoomParameter::TYPE_DEFAULT?>">
+                                        <div class="space-5"></div>
+                                        <input type="checkbox" :name="'content['+ key +'][attr][enlarge]'" v-model="item.attr.enlarge" data-toggle="busy-checkbox" value="1" title="图片小于缩放尺寸的要放大"/>
+                                        <div class="help-block">
+                                            宽或高至少需要设置一项
+                                        </div>
+                                    </div>
+                                    <div class="help-block" v-if="item.attr.type == <?=ZoomParameter::TYPE_FILL?> || item.attr.type == <?=ZoomParameter::TYPE_LOSE?>">
+                                        必须设置宽和高
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" v-if="item.attr.type == <?=ZoomParameter::TYPE_FILL?>">
+                                <label class="col-sm-2 control-label">填充颜色</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group" data-toggle="busy-color-picker">
+                                        <input type="text" class="form-control" :name="'content['+ key +'][attr][color]'" v-model="item.attr.color" placeholder="请选择填充颜色" readonly/>
+                                        <div class="input-group-addon no-border-left">
+                                            <i><span class="caret"></span></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </template>
+
+                        <!--裁剪-->
+                        <template v-else-if="key == '<?=CropParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">裁剪方式</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
+                                        <?=TransHelper::toOptionHtml(CropParameter::getTypes())?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!--缩放裁剪-->
+                            <div class="form-group" v-if="item.attr.type == '<?=CropParameter::TYPE_CROP?>'">
+                                <label class="col-sm-2 control-label">裁剪宽高</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">宽</div>
+                                        <input type="number" step="1" :name="'content['+ key +'][attr][width]'" class="form-control" v-model="item.attr.width"/>
+                                        <div class="input-group-addon no-border-left no-border-right">高</div>
+                                        <input type="number" step="1" :name="'content['+ key +'][attr][height]'" class="form-control" v-model="item.attr.height"/>
+                                        <div class="input-group-addon no-border-left">像素</div>
+                                    </div>
+                                    <div class="help-block">宽或高至少需要设置一项</div>
+                                </div>
+                            </div>
+
+                            <!--普通裁剪-->
+                            <div v-else-if="item.attr.type == '<?=CropParameter::TYPE_CUT?>'">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">裁剪位置</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">水平</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dx]'" class="form-control" v-model="item.attr.dx"/>
+                                            <div class="input-group-addon no-border-left no-border-right">垂直</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dy]'" class="form-control" v-model="item.attr.dy"/>
+                                            <div class="input-group-addon no-border-left">像素</div>
+                                        </div>
+                                        <div class="help-block">相对于图片的左上角</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">裁剪宽高</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">宽</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][width]'" class="form-control" v-model="item.attr.width"/>
+                                            <div class="input-group-addon no-border-left no-border-right">高</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][height]'" class="form-control" v-model="item.attr.height"/>
+                                            <div class="input-group-addon no-border-left">像素</div>
+                                        </div>
+                                        <div class="help-block">必须设置宽和高</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--圆角裁剪-->
+                        <template v-else-if="key == '<?=RadiusParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">圆角半径</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        <input type="number" step="1" :name="'content['+ key +'][attr][rx]'" class="form-control" v-model="item.attr.rx"/>
+                                        <div class="input-group-addon no-border-left">像素</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">内切圆裁剪</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][inside]'" v-model="item.attr.inside" value="1"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--旋转-->
+                        <template v-else-if="key == '<?=RotateParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">旋转角度</label>
+                                <div class="col-sm-9">
+                                    <input type="text" :name="'content['+ key +'][attr][rotate]'" v-model="item.attr.rotate" class="form-control" data-toggle="busy-range-slider" data-min="0" data-max="360">
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--镜像反转-->
+                        <template v-else-if="key == '<?=FlipParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">镜像反转</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][flip]'" v-model="item.attr.flip">
+                                        <option value="">不翻转</option>
+                                        <?=TransHelper::toOptionHtml(FlipParameter::getFlips())?>
+                                    </select>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--自适应旋转-->
+                        <template v-else-if="key == '<?=AutoOrientParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">自适应旋转</label>
+                                <div class="col-sm-9">
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" :name="'content['+ key +'][attr][auto_orient]'" v-model="item.attr.auto_orient" value="1" data-toggle="busy-checkbox" title="根据图片EXIF信息自动旋转图片"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--亮度-->
+                        <template v-else-if="key == '<?=BrightParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">亮度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][bright]'" v-model="item.attr.bright" data-toggle="busy-range-slider" data-min="-100" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--对比度-->
+                        <template v-else-if="key == '<?=ContrastParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">对比度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][contrast]'" v-model="item.attr.contrast" data-toggle="busy-range-slider" data-min="-100" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--锐化-->
+                        <template v-else-if="key == '<?=SharpenParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">锐化</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][sharpen]'" v-model="item.attr.sharpen" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--高斯模糊-->
+                        <template v-else-if="key == '<?=BlurParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">模糊半径</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][radius]'" v-model="item.attr.radius" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">正态分布标准差</label>
+                                <div class="col-sm-9">
+                                    <input type="number" step="1" min="0" class="form-control" :name="'content['+ key +'][attr][sigma]'" v-model="item.attr.sigma" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--伽马校正-->
+                        <template v-else-if="key == '<?=GammaParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">伽马校正</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][gamma]'" v-model="item.attr.gamma" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+
+                        <!--图片像素化-->
+                        <template v-else-if="key == '<?=PixelateParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">图片像素化</label>
+                                <div class="col-sm-9">
+                                    <input type="number" step="1" class="form-control" :name="'content['+ key +'][attr][pixelate]'" v-model="item.attr.pixelate"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--颜色反转-->
+                        <template v-else-if="key == '<?=InvertParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">颜色反转</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][invert]'" value="1" v-model="item.attr.invert"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--灰度图-->
+                        <template v-else-if="key == '<?=GrayscaleParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">灰度图</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][grayscale]'" value="1" v-model="item.attr.grayscale"/>
+                                </div>
+                            </div>
+                        </template>
+
+
+                        <!--格式转换-->
+                        <template v-else-if="key == '<?=FormatParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">输出格式</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][format]'" v-model="item.attr.format">
+                                        <option value="">原图格式</option>
+                                        <?=TransHelper::toOptionHtml(FormatParameter::getFormats())?>
+                                    </select>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--渐进显示-->
+                        <template v-else-if="key == '<?=InterlaceParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">渐进显示</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][interlace]'" v-model="item.attr.interlace" value="1"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--去除元信息-->
+                        <template v-else-if="key == '<?=StripMetaParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">去除元信息</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][strip_meta]'" v-model="item.attr.strip_meta" value="1"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--质量-->
+                        <template v-else-if="key == '<?=QualityParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">质量类型</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
+                                        <?=TransHelper::toOptionHtml(QualityParameter::getTypes())?>
+                                    </select>
+
+                                    <p class="help-block" v-if="item.attr.type == <?=QualityParameter::TYPE_ABSOLUTE?>">
+                                        按照设置的质量强制转换
+                                    </p>
+                                    <p class="help-block" v-if="item.attr.type == <?=QualityParameter::TYPE_RELATIVE?>">
+                                        例如原图质量为80，将相对质量设置为80后，得到处理结果图的图片质量为64（80x80%）
+                                    </p>
+                                    <p class="help-block" v-if="item.attr.type == <?=QualityParameter::TYPE_MIN?>">
+                                        例如原图质量为85，将最低质量设置为80后，处理结果图的图片质量为85；如果将最低质量设置为90，则处理结果图的图片质量会被提升至90
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">输出质量</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][quality]'" v-model="item.attr.quality" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--图片-->
+                        <template v-else-if="key == '<?=ImageParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">水印图片</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" :name="'content['+ key +'][attr][image]'" v-model="item.attr.image" data-toggle="busy-upload" data-select="false" data-upload-name="上传水印" data-server="{:url('image_style_upload_watermark')}" data-params='{"disk": "{$disk}"}'/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">透明度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][opacity]'" v-model="item.attr.opacity" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">旋转角度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][rotate]'" v-model="item.attr.rotate" data-toggle="busy-range-slider" data-min="0" data-max="360"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">是否铺满</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][overspread]'" v-model="item.attr.overspread" value="1"/>
+                                </div>
+                            </div>
+                            <template v-if="!item.attr.overspread">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">水印位置</label>
+                                    <div class="col-sm-9">
+                                        <table class="table table-bordered no-margin-bottom">
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_LEFT?>" title="左上"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_CENTER?>" title="正上"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_RIGHT?>" title="右上"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_LEFT_CENTER?>" title="正左"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_CENTER?>" title="中心"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_RIGHT_CENTER?>" title="正右"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_LEFT?>" title="左下"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_CENTER?>" title="正下"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_RIGHT?>" title="右下"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td colspan="3">
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_RAND?>" title="随机方向"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">位置偏移</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">水平</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dx]'" class="form-control" v-model="item.attr.dx"/>
+                                            <div class="input-group-addon no-border-left no-border-right">垂直</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dy]'" class="form-control" v-model="item.attr.dy"/>
+                                            <div class="input-group-addon no-border-left">像素</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!--文字-->
+                        <template v-else-if="key == '<?=TextParameter::getParameterKey()?>'">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">文字内容</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" :name="'content['+ key +'][attr][text]'" v-model="item.attr.text" placeholder="请输入水印文字"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">文字字体</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" :name="'content['+ key +'][attr][font]'" v-model="item.attr.font">
+                                        <option v-for="font in fontList" :value="font.path">{{font.name}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">文字大小</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][fontsize]'" v-model="item.attr.fontsize"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">文字颜色</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group" data-toggle="busy-color-picker">
+                                        <input type="text" class="form-control" :name="'content['+ key +'][attr][color]'" v-model="item.attr.color" placeholder="请选择文字颜色" readonly/>
+                                        <div class="input-group-addon no-border-left">
+                                            <i><span class="caret"></span></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">透明度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][opacity]'" v-model="item.attr.opacity" data-toggle="busy-range-slider" data-min="0" data-max="100"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">旋转角度</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" :name="'content['+ key +'][attr][rotate]'" v-model="item.attr.rotate" data-toggle="busy-range-slider" data-min="0" data-max="360"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">是否铺满</label>
+                                <div class="col-sm-9">
+                                    <div class="space-5 hidden-xs"></div>
+                                    <input type="checkbox" class="switch input-sm" data-toggle="busy-checkbox" :name="'content['+ key +'][attr][overspread]'" v-model="item.attr.overspread" value="1"/>
+                                </div>
+                            </div>
+                            <template v-if="!item.attr.overspread">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">水印位置</label>
+                                    <div class="col-sm-9">
+                                        <table class="table table-bordered no-margin-bottom">
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_LEFT?>" title="左上"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_CENTER?>" title="正上"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_TOP_RIGHT?>" title="右上"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_LEFT_CENTER?>" title="正左"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_CENTER?>" title="中心"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_RIGHT_CENTER?>" title="正右"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_LEFT?>" title="左下"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_CENTER?>" title="正下"/>
+                                                </td>
+                                                <td>
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_BOTTOM_RIGHT?>" title="右下"/>
+                                                </td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td colspan="3">
+                                                    <input data-toggle="busy-radio" type="radio" :name="'content['+ key +'][attr][gravity]'" v-model="item.attr.gravity" value="<?=BaseParameter::GRAVITY_RAND?>" title="随机方向"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">位置偏移</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">水平</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dx]'" class="form-control" v-model="item.attr.dx"/>
+                                            <div class="input-group-addon no-border-left no-border-right">垂直</div>
+                                            <input type="number" step="1" :name="'content['+ key +'][attr][dy]'" class="form-control" v-model="item.attr.dy"/>
+                                            <div class="input-group-addon no-border-left">像素</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.require([busyAdmin.lib.vue], function (Vue) {
+            new Vue({
+                el      : '#app',
+                data    : {
+                    info        : <?=json_encode($info ?? new stdClass(), JSON_UNESCAPED_UNICODE)?>,
+                    fontList    : <?=json_encode($font_list ?? [], JSON_UNESCAPED_UNICODE)?>,
+                    defaultFont : '{$font_default|default=""}',
+                    content     : {},
+                    textKey     : '<?=TextParameter::getParameterKey()?>',
+                },
+                mounted : function () {
+                    this.content                = this.info.content;
+                    this.content[this.textKey].attr.font = this.content[this.textKey].attr.font || this.defaultFont;
+                }
+            })
+        });
+    </script>
+</block>
