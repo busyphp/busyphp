@@ -673,6 +673,30 @@ declare namespace busyAdmin {
          * 内容值发生改变的时候触发
          */
         uploadChange: string,
+        /**
+         * 异步初始化触发
+         */
+        uploadAsyncInit: string,
+        /**
+         * 异步上传文件前回调(还没有切割分块)
+         */
+        uploadAsyncBeforeSendFile: string,
+        /**
+         * 同步文件发送前回调(如果有分块，此时可以处理了)
+         */
+        uploadBeforeSend: string,
+        /**
+         * 异步文件发送前回调(如果有分块，此时可以处理了)
+         */
+        uploadAsyncBeforeSend: string,
+        /**
+         * 每一个分块或文件上传结果解析，返回false代表上传失败
+         */
+        uploadAccept: string,
+        /**
+         * 异步所有文件上传完毕回调
+         */
+        uploadAsyncAfterSendFile: string,
 
         //+======================================================================
         //+ SelectPicker
