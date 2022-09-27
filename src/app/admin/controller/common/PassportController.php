@@ -9,7 +9,10 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\facade\CaptchaUrl;
+use think\facade\Session;
 use think\Response;
+use think\response\Redirect;
+use Throwable;
 
 /**
  * 登录
@@ -19,13 +22,16 @@ use think\Response;
  */
 class PassportController extends InsideController
 {
+    const SESSION_VERIFY_STATUS_KEY = 'admin_login_need_verify';
+    
+    
     public function initialize($checkLogin = false)
     {
         parent::initialize($checkLogin);
     }
     
     
-    public function index()
+    public function index() : Redirect
     {
         return $this->redirect(url('admin_login'));
     }
@@ -34,9 +40,11 @@ class PassportController extends InsideController
     /**
      * 登录
      * @return Response
+     * @throws Throwable
      */
-    public function login()
+    public function login() : Response
     {
+        $needCheckVerify = Session::get(self::SESSION_VERIFY_STATUS_KEY) ?: false;
         if ($this->isPost()) {
             $username  = $this->post('username/s', 'trim');
             $password  = $this->post('password/s', 'trim');
@@ -45,8 +53,8 @@ class PassportController extends InsideController
             
             try {
                 $adminModel = AdminUser::init();
-                $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify) {
-                    if (AdminSetting::init()->isVerify()) {
+                $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify, $needCheckVerify) {
+                    if ($needCheckVerify && AdminSetting::init()->isVerify()) {
                         try {
                             captcha_check($verify, 'admin_login');
                         } catch (VerifyException $e) {
@@ -73,6 +81,8 @@ class PassportController extends InsideController
                     }
                 }
                 
+                Session::delete(self::SESSION_VERIFY_STATUS_KEY);
+                
                 return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
             } catch (VerifyException $e) {
                 if ($e->getField() == 'verify') {
@@ -80,6 +90,8 @@ class PassportController extends InsideController
                 } elseif ($e->getCode() > 0) {
                     $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', '密码错误');
                 }
+                
+                Session::set(self::SESSION_VERIFY_STATUS_KEY, true);
                 
                 throw $e;
             }
@@ -105,6 +117,7 @@ class PassportController extends InsideController
         
         $this->assign('admin_title', $adminSetting->getTitle());
         $this->assign('is_verify', $adminSetting->isVerify());
+        $this->assign('show_verify', $needCheckVerify ? 1 : 0);
         $this->assign('save_login', $adminSetting->getSaveLogin() > 0);
         $this->assign('logo', $adminSetting->getLogoHorizontal());
         $this->assign('bg', $bg);
@@ -121,7 +134,7 @@ class PassportController extends InsideController
     /**
      * 退出登录
      */
-    public function out()
+    public function out() : Response
     {
         if ($this->isLogin()) {
             $this->log()->record(self::LOG_DEFAULT, '退出登录');

@@ -35,9 +35,9 @@
                             </div>
                         </div>
                         <eq name="is_verify" value="1">
-                            <div class="form-group">
+                            <div class="form-group hidden" id="verifyGroup">
                                 <div class="input-group">
-                                    <input type="text" maxlength="4" required class="form-control" placeholder="请输入验证码" name="verify">
+                                    <input type="text" maxlength="4" class="form-control" placeholder="请输入验证码" name="verify">
                                     <div class="input-group-image">
                                         <img data-toggle="busy-change-verify" src="{$verify_url}"/>
                                     </div>
@@ -83,9 +83,20 @@
         if (self !== top) {
             parent.busyAdmin.route.show('{:url("admin_login")}');
         }
-        
+
         busyAdmin.data.onLoginError = function () {
-            $('[data-toggle="busy-change-verify"]').trigger('click');
+            var $verifyGroup = $('#verifyGroup');
+            var $verifyInput = $('[name="verify"]');
+            var $verifyImg   = $('[data-toggle="busy-change-verify"]');
+            if ($verifyGroup.length) {
+                $verifyGroup.removeClass('hidden');
+                $verifyInput.attr('required', 'required');
+                $verifyImg.trigger('click');
+            }
         };
+
+        if ({$show_verify}) {
+            busyAdmin.data.onLoginError();
+        }
     </script>
 </block>
