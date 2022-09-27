@@ -96,7 +96,7 @@ class ArrayHelper extends Arr
      */
     public static function treeToList(array $tree, $childKey = 'child', bool $clearChild = true, &$list = []) : array
     {
-        $childKey = is_string($childKey) ? $clearChild : (string) $childKey;
+        $childKey = (string) $childKey;
         
         foreach ($tree as $item) {
             if (is_object($item)) {
