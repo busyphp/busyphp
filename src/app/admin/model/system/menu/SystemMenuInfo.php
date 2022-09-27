@@ -63,10 +63,17 @@ class SystemMenuInfo extends SystemMenuField
      */
     public $paramList;
     
+    /**
+     * 路由路径
+     * @var string
+     */
+    public $routePath;
+    
     
     public function onParseAfter()
     {
-        $this->hash       = md5(Str::snake($this->path));
+        $this->routePath  = Str::snake($this->path);
+        $this->hash       = md5($this->routePath);
         $this->parentHash = $this->parentPath ? md5(Str::snake($this->parentPath)) : '';
         $this->hide       = $this->hide > 0;
         $this->disabled   = $this->disabled > 0;
