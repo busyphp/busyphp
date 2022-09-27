@@ -103,7 +103,8 @@ class AdminHandle extends Handle
             'self'       => url(),
             'controller' => $request->controller(),
             'action'     => $request->action(),
-            'path'       => $request->getRoutePath(true),
+            'path'       => $request->getRoutePath(),
+            'route_path' => $request->getRoutePath(true)
         ];
         
         
@@ -111,7 +112,7 @@ class AdminHandle extends Handle
         $menuModel   = SystemMenu::init();
         $hashList    = $menuModel->getHashList();
         $breadcrumb  = [];
-        $currentMenu = $hashList[md5($data['url']['path'])] ?? null;
+        $currentMenu = $hashList[md5($data['url']['route_path'])] ?? null;
         if ($currentMenu) {
             $idList     = $menuModel->getIdList();
             $parentList = $menuModel->getIdParens();
