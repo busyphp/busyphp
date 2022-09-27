@@ -9,6 +9,7 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyle;
 use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyleField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\app\admin\setting\AdminSetting;
@@ -55,6 +56,17 @@ class SystemManagerController extends InsideController
     
     
     /**
+     * 写入菜单
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function assignNav()
+    {
+        $this->assign('nav', SystemMenu::init()->getChildList('system_manager/index', true, true));
+    }
+    
+    
+    /**
      * 系统基本设置
      * @return Response
      * @throws DataNotFoundException
@@ -75,13 +87,14 @@ class SystemManagerController extends InsideController
         $info = PublicSetting::init()->get();
         $this->assign('info', $info);
         $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('System.Index/index', $info));
+        $this->assignNav();
         
         return $this->display();
     }
     
     
     /**
-     * 后台安全设置
+     * 管理面板设置
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
@@ -92,7 +105,7 @@ class SystemManagerController extends InsideController
         if ($this->isPost()) {
             $data = $this->post('data/a');
             AdminSetting::init()->set($data);
-            $this->log()->record(self::LOG_UPDATE, '后台安全设置');
+            $this->log()->record(self::LOG_UPDATE, '管理面板设置');
             $this->updateCache();
             
             return $this->success('设置成功');
@@ -101,6 +114,7 @@ class SystemManagerController extends InsideController
         $info                     = AdminSetting::init()->get();
         $info['watermark']['txt'] = ($info['watermark']['txt'] ?? '') ?: "登录人：{username}\r\n内部系统，严禁拍照，截图\r\n{time}";
         $this->assign('info', $info);
+        $this->assignNav();
         
         return $this->display();
     }
@@ -128,6 +142,7 @@ class SystemManagerController extends InsideController
         $this->assign('clients', $this->app->getList());
         $this->assign('disks', $setting->getDisks());
         $this->assign('info', $setting->get());
+        $this->assignNav();
         
         return $this->display();
     }
@@ -136,6 +151,8 @@ class SystemManagerController extends InsideController
     /**
      * 图片样式管理
      * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function image_style() : Response
     {
@@ -150,6 +167,7 @@ class SystemManagerController extends InsideController
         
         $this->assign('disks', StorageSetting::init()->getDisks());
         $this->assign('disk', $this->disk);
+        $this->assignNav();
         
         return $this->display();
     }
@@ -324,6 +342,7 @@ class SystemManagerController extends InsideController
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
         $this->assign('type', SystemFile::getTypes());
         $this->assign('info', StorageSetting::init()->get());
+        $this->assignNav();
         
         return $this->display();
     }
@@ -346,6 +365,7 @@ class SystemManagerController extends InsideController
         
         $this->assign('clients', $this->app->getList());
         $this->assign('info', CaptchaSetting::init()->get());
+        $this->assignNav();
         
         return $this->display();
     }
@@ -369,6 +389,7 @@ class SystemManagerController extends InsideController
         $this->assign('level_options', TransHelper::toOptionHtml(QRCode::getLevels(), QrcodeSetting::init()
             ->getLevel()));
         $this->assign('info', QrcodeSetting::init()->get());
+        $this->assignNav();
         
         return $this->display();
     }

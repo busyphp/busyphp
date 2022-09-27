@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="panel panel-default">
-        <include file="@admin:system/system_manager/storage_nav"/>
+        <include file="@admin:system/system_manager/nav"/>
         <div class="panel-body">
             <ul class="nav nav-pills">
                 <foreach name="disks" item="vo">
@@ -20,7 +20,7 @@
                 <thead>
                     <tr>
                         <th class="text-center" width="40" data-checkbox="true"></th>
-                        <th data-field="id" data-align="center" width="150" data-formatter="@">样式名</th>
+                        <th data-field="id" data-align="center" width="100" data-formatter="@">样式名</th>
                         <th data-field="rule" data-halign="center" data-align="left" data-formatter="@">样式</th>
                         <th data-field="operate" data-align="center" data-formatter="@" width="100">操作</th>
                     </tr>
@@ -61,7 +61,7 @@
             </script>
 
             <script id="rule" type="text/html">
-                {{value}}
+                <div class="text-wrap">{{value}}</div>
             </script>
 
             <script id="operate" type="text/html">

@@ -218,7 +218,7 @@ class SystemMenu extends Model
             }
             
             // 删除子菜单
-            $childIds = array_keys(ArrayHelper::listByKey($this->getChildList($info->path), SystemMenuField::id()));
+            $childIds = array_keys(ArrayHelper::listByKey($this->getAllChildList($info->path), SystemMenuField::id()));
             if ($childIds) {
                 $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
             }
@@ -277,17 +277,46 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取某菜单的所有子菜单
+     * 获取某菜单下的所有子节点菜单
      * @param string $path 菜单连接
      * @return SystemMenuInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getChildList(string $path) : array
+    public function getAllChildList(string $path) : array
     {
         $list = ArrayHelper::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
         
         return ArrayHelper::treeToList($list, SystemMenuInfo::child());
+    }
+    
+    
+    /**
+     * 获取某菜单下的子菜单
+     * @param string $path 菜单路径
+     * @param bool   $self 是否含自己
+     * @param bool   $hide 是否只查询隐藏的菜单
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function getChildList(string $path, bool $self = false, bool $hide = false) : array
+    {
+        return $this
+            ->where(function(SystemMenu $model) use ($path, $self, $hide) {
+                $model->whereOr(function(SystemMenu $model) use ($path, $hide) {
+                    $model->whereEntity(SystemMenuField::parentPath($path));
+                    $model->whereEntity(SystemMenuField::hide($hide));
+                });
+                
+                if ($self) {
+                    $model->whereOr(SystemFileField::path(), $path);
+                }
+            })
+            ->order(SystemMenuField::sort(), 'asc')
+            ->order(SystemMenuField::id(), 'asc')
+            ->orderRaw(sprintf('field(`%s`, "%s") asc', SystemMenuField::path(), $path))
+            ->selectList();
     }
     
     

@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="panel panel-default">
-        <include file="@admin:system/system_manager/storage_nav" />
+        <include file="@admin:system/system_manager/nav" />
         <div class="panel-body">
             <div class="hidden-xs space-15"></div>
             <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">

@@ -482,7 +482,7 @@ class AdminGroup extends Model
             // 需要获取控制器补全
             $values = explode('/', $path) ?: [];
             if (count($values) == 1) {
-                $path = "{$controller}/{$values[0]}";
+                $path = sprintf('%s/%s', $controller, $values[0]);
             }
             
             // 放行白名单
