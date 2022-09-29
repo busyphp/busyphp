@@ -313,7 +313,7 @@ abstract class AdminController extends Controller
      * @param array        $data 成功数据
      * @return Response
      */
-    protected function success($message = '', $jumpUrl = '', array $data = [])
+    protected function success($message = '', $jumpUrl = '', array $data = []) : Response
     {
         if (is_array($jumpUrl)) {
             $data    = $jumpUrl;
@@ -340,7 +340,7 @@ abstract class AdminController extends Controller
      * @param int              $code 错误码
      * @return Response
      */
-    protected function error($message, $jumpUrl = '', int $code = 0)
+    protected function error($message, $jumpUrl = '', int $code = 0) : Response
     {
         if ($this->isAjax()) {
             return AdminHandle::restResponseError($message, $jumpUrl, $code);
@@ -353,7 +353,7 @@ abstract class AdminController extends Controller
     /**
      * @inheritDoc
      */
-    protected function dispatchJump($message, bool $status = true, $jumpUrl = '')
+    protected function dispatchJump($message, bool $status = true, $jumpUrl = '') : Response
     {
         // 覆盖模板
         $this->app->config->set(['error_tmpl' => __DIR__ . DIRECTORY_SEPARATOR . '../view/message.html'], 'app');

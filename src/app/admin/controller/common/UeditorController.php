@@ -47,7 +47,7 @@ class UeditorController extends InsideController
     }
     
     
-    public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : View
+    public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : Response
     {
         // 是否输出JS
         if ($this->get('js/b')) {

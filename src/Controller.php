@@ -173,9 +173,9 @@ abstract class Controller
      * @param string $charset 输出编码
      * @param string $contentType 输出类型
      * @param string $content 输出内容
-     * @return View
+     * @return Response
      */
-    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
+    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : Response
     {
         $this->initView();
         $this->view->data($template);
@@ -201,7 +201,7 @@ abstract class Controller
      * @param string $content 模板输出内容
      * @return string
      */
-    protected function fetch($template = '', $content = '')
+    protected function fetch($template = '', $content = '') : string
     {
         return $this->display($template, 'utf-8', '', $content)->getContent();
     }
@@ -308,7 +308,6 @@ abstract class Controller
                 }
                 
                 return $method($data, $code, $header, $options);
-            break;
             
             // 跳转
             case 'REDIRECT':
@@ -335,9 +334,9 @@ abstract class Controller
      * 操作错误跳转的快捷方法
      * @param mixed  $message 错误信息
      * @param string $jumpUrl 页面跳转地址
-     * @return View
+     * @return Response
      */
-    protected function error($message, $jumpUrl = '')
+    protected function error($message, $jumpUrl = '') : Response
     {
         return $this->dispatchJump($message, false, $jumpUrl);
     }
@@ -347,9 +346,9 @@ abstract class Controller
      * 操作成功跳转的快捷方法
      * @param string $message 提示信息
      * @param string $jumpUrl 页面跳转地址
-     * @return View
+     * @return Response
      */
-    protected function success($message, $jumpUrl = '')
+    protected function success($message, $jumpUrl = '') : Response
     {
         return $this->dispatchJump($message, true, $jumpUrl);
     }
@@ -361,9 +360,9 @@ abstract class Controller
      * @param mixed  $message 提示信息
      * @param bool   $status 状态
      * @param string $jumpUrl 页面跳转地址
-     * @return View
+     * @return Response
      */
-    protected function dispatchJump($message, bool $status = true, $jumpUrl = '')
+    protected function dispatchJump($message, bool $status = true, $jumpUrl = '') : Response
     {
         if ($message instanceof Throwable) {
             $message = $message->getMessage();

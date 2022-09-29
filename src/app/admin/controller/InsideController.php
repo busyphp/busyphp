@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\controller;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\Service;
 use think\Container;
+use think\Response;
 
 /**
  * admin内部基本控制器
@@ -18,7 +19,7 @@ class InsideController extends AdminController
     /**
      * @inheritDoc
      */
-    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '')
+    protected function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : Response
     {
         return parent::display($this->parseTemplate($template), $charset, $contentType, $content);
     }
