@@ -4,13 +4,13 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\filesystem\Driver;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\file\SystemFilePrepareUploadParameter;
 use BusyPHP\app\admin\model\system\file\SystemFileUploadParameter;
-use BusyPHP\app\admin\plugin\FrontUploadInjectScriptPlugin;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\FilterHelper;
@@ -274,7 +274,7 @@ class FileController extends InsideController
         $injectScripts = [];
         foreach ($setting->getDisks() as $disk) {
             $type            = $disk['type'];
-            $injectScript    = FrontUploadInjectScriptPlugin::getInstance($disk['type'])->injectScript();
+            $injectScript    = Driver::getInstance($disk['type'])->frontUploadInjectScript();
             $injectScripts[] = <<<JS
 config.disks['$type'] = (function (){
     var exports = {};
