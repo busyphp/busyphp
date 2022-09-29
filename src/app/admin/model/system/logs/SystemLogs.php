@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\system\logs;
 
 use BusyPHP\App;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\model;
 use BusyPHP\Service;
 use Exception;
@@ -32,12 +33,6 @@ class SystemLogs extends Model
     
     /** @var int 删除操作 */
     const TYPE_DELETE = 3;
-    
-    /** @var string 守护模式客户端标识 */
-    const CLI_CLIENT_KEY = ':system_cli';
-    
-    /** @var string 守护模式客户端名称 */
-    const CLI_CLIENT_NAME = '守护模式';
     
     protected $bindParseClass = SystemLogsInfo::class;
     
@@ -122,7 +117,7 @@ class SystemLogs extends Model
             $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
             $insert->classType  = $this->getOptions('logs_class_type') ?: '';
             $insert->classValue = $this->getOptions('logs_class_value') ?: '';
-            $insert->client     = $isCli ? self::CLI_CLIENT_KEY : $app->getDirName();
+            $insert->client     = $isCli ? AppHelper::CLI_CLIENT_KEY : $app->getDirName();
             $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
             $insert->url        = $isCli ? '' : ($request->url() ?: '');
             $insert->headers    = json_encode($request->header() ?: [], JSON_UNESCAPED_UNICODE);

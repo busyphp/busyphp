@@ -7,7 +7,7 @@ use BusyPHP\app\admin\model\system\logs\SystemLogsField;
 use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\app\admin\plugin\TablePlugin;
-use BusyPHP\contract\structs\items\AppListItem;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\Model;
@@ -70,7 +70,7 @@ class SystemLogsController extends InsideController
         }
         
         $this->assign('type_options', TransHelper::toOptionHtml(SystemLogs::getTypes()));
-        $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, AppListItem::dir(), AppListItem::name()));
+        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
         $this->assign('time', $timeRange);
         
         return $this->display();

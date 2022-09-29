@@ -3,11 +3,9 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
-use BusyPHP\contract\structs\items\AppListItem;
-use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
@@ -86,16 +84,6 @@ class SystemFileInfo extends SystemFileField
      */
     public $className;
     
-    /**
-     * @var AppListItem[]
-     */
-    protected static $_appList;
-    
-    /**
-     * @var SystemFileClassInfo[]
-     */
-    protected static $_fileClassList;
-    
     
     /**
      * @throws DataNotFoundException
@@ -103,25 +91,22 @@ class SystemFileInfo extends SystemFileField
      */
     public function onParseAfter()
     {
-        if (!is_array(static::$_appList)) {
-            static::$_appList = ArrayHelper::listByKey(App::getInstance()->getList(), AppListItem::dir());
-        }
-        
-        if (!is_array(static::$_fileClassList)) {
-            static::$_fileClassList = SystemFileClass::init()->getList();
+        static $fileClassList;
+        if (!isset($fileClassList)) {
+            $fileClassList = SystemFileClass::init()->getList();
         }
         
         $this->typeName         = SystemFile::getTypes((string) $this->type);
-        $this->classInfo        = static::$_fileClassList[$this->classType] ?? null;
+        $this->classInfo        = $fileClassList[$this->classType] ?? null;
         $this->className        = $this->classInfo->name ?? '';
         $this->formatCreateTime = TransHelper::date($this->createTime);
         
         $sizes            = TransHelper::formatBytes($this->size, true);
         $this->sizeUnit   = $sizes['unit'];
         $this->sizeNum    = $sizes['number'];
-        $this->formatSize = "{$this->sizeNum} {$this->sizeUnit}";
+        $this->formatSize = "$this->sizeNum $this->sizeUnit";
         $this->filename   = pathinfo($this->url, PATHINFO_BASENAME);
-        $this->clientName = (static::$_appList[$this->client]->name ?? '') ?: $this->client;
+        $this->clientName = AppHelper::getName($this->client);
         $this->pending    = $this->pending > 0;
         $this->fast       = $this->fast > 0;
     }

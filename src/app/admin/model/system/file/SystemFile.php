@@ -5,10 +5,10 @@ namespace BusyPHP\app\admin\model\system\file;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\image\parameter\FormatParameter;
@@ -87,7 +87,7 @@ class SystemFile extends Model
         $insert->createTime = time();
         $insert->urlHash    = md5($insert->url);
         $insert->extension  = strtolower($insert->extension);
-        $insert->client     = App::getInstance()->runningInConsole() ? SystemLogs::CLI_CLIENT_KEY : App::getInstance()
+        $insert->client     = App::getInstance()->runningInConsole() ? AppHelper::CLI_CLIENT_KEY : App::getInstance()
             ->getDirName();
         $insert->type       = $classInfo->type;
         

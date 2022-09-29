@@ -19,6 +19,7 @@ use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\file\QRCode;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\image\parameter\UrlParameter;
 use BusyPHP\image\result\ImageStyleResult;
@@ -139,7 +140,7 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $this->assign('clients', $this->app->getList());
+        $this->assign('clients', AppHelper::getList());
         $this->assign('disks', $setting->getDisks());
         $this->assign('info', $setting->get());
         $this->assignNav();
@@ -363,7 +364,7 @@ class SystemManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $this->assign('clients', $this->app->getList());
+        $this->assign('clients', AppHelper::getList());
         $this->assign('info', CaptchaSetting::init()->get());
         $this->assignNav();
         

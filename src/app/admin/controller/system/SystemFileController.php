@@ -6,6 +6,7 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\app\admin\plugin\TablePlugin;
+use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
@@ -91,7 +92,7 @@ class SystemFileController extends InsideController
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
-        $this->assign('client_options', TransHelper::toOptionHtml($this->app->getList(), null, 'name', 'dir'));
+        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
         $this->assign('time', $timeRange);
         
         return $this->display();

@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace BusyPHP;
 
-use BusyPHP\contract\structs\items\AppListItem;
 use BusyPHP\initializer\RegisterService;
 use think\initializer\BootService;
 use think\initializer\Error;
@@ -115,44 +114,6 @@ class App extends \think\App
     
     
     /**
-     * 获取应用集合
-     * @return AppListItem[]
-     */
-    public function getList() : array
-    {
-        $basePath = $this->getBasePath();
-        $list     = [];
-        $maps     = ['admin' => '后台管理', 'home' => '前端网站'];
-        foreach (scandir($basePath) as $value) {
-            if (!is_dir($path = $basePath . $value) || $value === '.' || $value === '..') {
-                continue;
-            }
-            
-            $name   = '';
-            $config = [];
-            if (is_file($configFile = $path . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php')) {
-                $config = include $configFile;
-                $config = is_array($config) ? $config : [];
-                $name   = $config['app_name'] ?? '';
-            }
-            if (!$name) {
-                $name = ($maps[$value] ?? '') ?: $value;
-            }
-            
-            $item         = new AppListItem();
-            $item->path   = $path;
-            $item->dir    = $value;
-            $item->name   = $name;
-            $item->config = $config;
-            
-            $list[] = $item;
-        }
-        
-        return $list;
-    }
-    
-    
-    /**
      * 获取网站入口根目录路径
      * @param string $path
      * @return string
@@ -161,20 +122,6 @@ class App extends \think\App
     {
         $dir  = str_replace('/', DIRECTORY_SEPARATOR, $this->config->get('app.public_dir', '') ?: 'public');
         $root = $this->getRootPath() . trim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        $path = $this->parsePath($path);
-        
-        return $path ? $root . $path : $root;
-    }
-    
-    
-    /**
-     * 获取核心目录路径
-     * @param string $path
-     * @return string
-     */
-    public function getCorePath(string $path = '') : string
-    {
-        $root = $this->getRootPath() . 'core' . DIRECTORY_SEPARATOR;
         $path = $this->parsePath($path);
         
         return $path ? $root . $path : $root;
