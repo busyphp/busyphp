@@ -99,14 +99,14 @@ class Request extends \think\Request
     
     /**
      * 获取路由路径
-     * @param bool $isSnake 是否转换为下划线形式
+     * @param bool $snake 是否转换为下划线形式
      * @return string
      */
-    public function getRoutePath(bool $isSnake = false) : string
+    public function getRoutePath(bool $snake = false) : string
     {
         $path = $this->controller() . '/' . $this->action();
         
-        return $isSnake ? StringHelper::snake($path) : $path;
+        return $snake ? StringHelper::snake($path) : $path;
     }
     
     
@@ -130,7 +130,7 @@ class Request extends \think\Request
      * @param string|array $value
      * @return $this
      */
-    public function setGet($name, $value = '') : self
+    public function setGet(string $name, $value = '') : self
     {
         if (isset($this->get[$name]) && is_array($this->get[$name])) {
             $this->get[$name] = array_merge($this->get[$name], $value);
@@ -148,7 +148,7 @@ class Request extends \think\Request
      * @param string|array $value
      * @return $this
      */
-    public function setPut($name, $value = '') : self
+    public function setPut(string $name, $value = '') : self
     {
         if (isset($this->put[$name]) && is_array($this->put[$name])) {
             $this->put[$name] = array_merge($this->put[$name], $value);
@@ -166,7 +166,7 @@ class Request extends \think\Request
      * @param string|array $value
      * @return $this
      */
-    public function setParam($name, $value = '') : self
+    public function setParam(string $name, $value = '') : self
     {
         if (isset($this->param[$name]) && is_array($this->param[$name])) {
             $this->param[$name] = array_merge($this->param[$name], $value);
@@ -184,7 +184,7 @@ class Request extends \think\Request
      * @param string|array $value
      * @return $this
      */
-    public function setPost($name, $value = '') : self
+    public function setPost(string $name, $value = '') : self
     {
         if (isset($this->post[$name]) && is_array($this->post[$name])) {
             $this->post[$name] = array_merge($this->post[$name], $value);
@@ -202,7 +202,7 @@ class Request extends \think\Request
      * @param string|array $value
      * @return $this
      */
-    public function setRequest($name, $value = '') : self
+    public function setRequest(string $name, $value = '') : self
     {
         if (isset($this->request[$name]) && is_array($this->request[$name])) {
             $this->request[$name] = array_merge($this->request[$name], $value);
@@ -250,16 +250,15 @@ class Request extends \think\Request
     public function getVarRedirectUrl() : string
     {
         $varRedirectUrl = Config::get('route.var_redirect_url');
-        $varRedirectUrl = $varRedirectUrl ?: $this->varRedirectUrl;
         
-        return $varRedirectUrl;
+        return $varRedirectUrl ?: $this->varRedirectUrl;
     }
     
     
     /**
      * 获取来源地址
-     * @param string $default 默认地址
-     * @param bool   $byServer 如果无法从参数获取，是否从server中获取
+     * @param string|null $default 默认地址
+     * @param bool        $byServer 如果无法从参数获取，是否从server中获取
      * @return string
      */
     public function getRedirectUrl(string $default = null, $byServer = true) : string
@@ -327,7 +326,7 @@ class Request extends \think\Request
      */
     public function getAssetsUrl(bool $domain = false) : string
     {
-        if ($domainAssets = App::getInstance()->config->get('route.domain_assets')) {
+        if ($domainAssets = Config::get('route.domain_assets')) {
             return rtrim($domainAssets, '/') . '/';
         } else {
             return $this->getWebUrl($domain) . 'assets/';
