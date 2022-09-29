@@ -2,8 +2,8 @@
 
 namespace BusyPHP\app\admin\controller\common;
 
-use BusyPHP\app\admin\controller\common\message\MessageAgencySubscribe;
-use BusyPHP\app\admin\controller\common\message\MessageNoticeSubscribe;
+use BusyPHP\app\admin\controller\common\message\subscribe\MessageAgencySubscribe;
+use BusyPHP\app\admin\controller\common\message\subscribe\MessageNoticeSubscribe;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
@@ -159,8 +159,8 @@ class IndexController extends InsideController
                     'data'           => $data,
                     
                     // 消息启用状态
-                    'message_notice' => MessageNoticeSubscribe::hasSubscribe(),
-                    'message_agency' => MessageAgencySubscribe::hasSubscribe(),
+                    'message_notice' => MessageNoticeSubscribe::getInstance()->hasSubscribe(),
+                    'message_agency' => MessageAgencySubscribe::getInstance()->hasSubscribe(),
                 ]);
             
             // 显示

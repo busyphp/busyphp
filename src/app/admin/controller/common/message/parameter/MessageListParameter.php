@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\model\admin\message\provide;
+namespace BusyPHP\app\admin\controller\common\message\parameter;
 
 /**
  * 消息参数模型
@@ -9,7 +9,7 @@ namespace BusyPHP\app\admin\model\admin\message\provide;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/17 下午9:17 下午 MessageParams.php $
  */
-class MessageListParams extends MessageParams
+class MessageListParameter extends MessageParameter
 {
     /** @var int */
     private $page = 0;

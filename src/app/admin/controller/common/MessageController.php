@@ -3,13 +3,14 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
+use BusyPHP\app\admin\controller\common\message\parameter\MessageListParameter;
+use BusyPHP\app\admin\controller\common\message\parameter\MessageParameter;
+use BusyPHP\app\admin\controller\common\message\parameter\MessageUpdateParameter;
+use BusyPHP\app\admin\controller\common\message\subscribe\MessageAgencySubscribe;
+use BusyPHP\app\admin\controller\common\message\subscribe\MessageNoticeSubscribe;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\model\admin\message\provide\MessageListParams;
-use BusyPHP\app\admin\model\admin\message\provide\MessageParams;
-use BusyPHP\app\admin\model\admin\message\provide\MessageUpdateParams;
-use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
-use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
 use BusyPHP\helper\TransHelper;
+use think\Response;
 
 /**
  * 通用通知/待办
@@ -33,12 +34,12 @@ class MessageController extends InsideController
     /**
      * 消息通知
      */
-    public function index()
+    public function index() : Response
     {
         $action = $this->get('action', 'trim');
         $type   = $this->get('type', 'trim');
         
-        $params = new MessageParams();
+        $params = new MessageParameter();
         $params->setUser($this->adminUser);
         
         // 通知
@@ -63,8 +64,8 @@ class MessageController extends InsideController
                     return $this->agencyList();
             }
         } else {
-            $noticeTotal = MessageNoticeSubscribe::triggerTotal($params);
-            $agencyTotal = MessageAgencySubscribe::triggerTotal($params);
+            $noticeTotal = MessageNoticeSubscribe::getInstance()->total($params);
+            $agencyTotal = MessageAgencySubscribe::getInstance()->total($params);
             
             return $this->success([
                 'notice_total' => $noticeTotal,
@@ -78,13 +79,13 @@ class MessageController extends InsideController
     /**
      * 通知列表
      */
-    protected function noticeList()
+    protected function noticeList() : Response
     {
-        $listParams = new MessageListParams();
+        $listParams = new MessageListParameter();
         $listParams->setUser($this->adminUser);
         $listParams->setPage($this->get('page/d'));
         $list = [];
-        foreach (MessageNoticeSubscribe::triggerList($listParams) as $item) {
+        foreach (MessageNoticeSubscribe::getInstance()->list($listParams) as $item) {
             $list[] = [
                 'id'          => $item->getId(),
                 'title'       => $item->getTitle(),
@@ -107,12 +108,12 @@ class MessageController extends InsideController
     /**
      * 读取通知
      */
-    protected function noticeRead()
+    protected function noticeRead() : Response
     {
-        $updateParams = new MessageUpdateParams();
+        $updateParams = new MessageUpdateParameter();
         $updateParams->setUser($this->adminUser);
         $updateParams->setId($this->get('id/d'));
-        MessageNoticeSubscribe::triggerRead($updateParams);
+        MessageNoticeSubscribe::getInstance()->read($updateParams);
         $this->log()->record(self::LOG_UPDATE, '读取通知');
         
         return $this->success();
@@ -122,11 +123,11 @@ class MessageController extends InsideController
     /**
      * 全部已读通知
      */
-    protected function noticeAllRead()
+    protected function noticeAllRead() : Response
     {
-        $params = new MessageParams();
+        $params = new MessageParameter();
         $params->setUser($this->adminUser);
-        MessageNoticeSubscribe::triggerAllRead($params);
+        MessageNoticeSubscribe::getInstance()->allRead($params);
         $this->log()->record(self::LOG_UPDATE, '全部已读通知');
         
         return $this->success('操作成功');
@@ -136,12 +137,12 @@ class MessageController extends InsideController
     /**
      * 删除通知
      */
-    protected function noticeDelete()
+    protected function noticeDelete() : Response
     {
-        $updateParams = new MessageUpdateParams();
+        $updateParams = new MessageUpdateParameter();
         $updateParams->setUser($this->adminUser);
         $updateParams->setId($this->get('id/d'));
-        MessageNoticeSubscribe::triggerRead($updateParams);
+        MessageNoticeSubscribe::getInstance()->delete($updateParams);
         $this->log()->record(self::LOG_DELETE, '删除通知');
         
         return $this->success('删除成功');
@@ -151,11 +152,11 @@ class MessageController extends InsideController
     /**
      * 清空通知
      */
-    protected function noticeClear()
+    protected function noticeClear() : Response
     {
-        $params = new MessageParams();
+        $params = new MessageParameter();
         $params->setUser($this->adminUser);
-        MessageNoticeSubscribe::triggerClear($params);
+        MessageNoticeSubscribe::getInstance()->clear($params);
         $this->log()->record(self::LOG_DELETE, '清空通知');
         
         return $this->success('清空成功');
@@ -165,13 +166,13 @@ class MessageController extends InsideController
     /**
      * 待办列表
      */
-    protected function agencyList()
+    protected function agencyList() : Response
     {
-        $params = new MessageParams();
+        $params = new MessageParameter();
         $params->setUser($this->adminUser);
         
         $list = [];
-        foreach (MessageAgencySubscribe::triggerList($params) as $item) {
+        foreach (MessageAgencySubscribe::getInstance()->list($params) as $item) {
             $list[] = [
                 'id'    => $item->getId(),
                 'url'   => $item->getOperateUrl(),
@@ -187,13 +188,13 @@ class MessageController extends InsideController
     /**
      * 读取待办
      */
-    protected function agencyRead()
+    protected function agencyRead() : Response
     {
-        $updateParams = new MessageUpdateParams();
+        $updateParams = new MessageUpdateParameter();
         $updateParams->setUser($this->adminUser);
         $updateParams->setId($this->get('id/d'));
         
-        MessageAgencySubscribe::triggerRead($updateParams);
+        MessageAgencySubscribe::getInstance()->read($updateParams);
         $this->log()->record(self::LOG_UPDATE, '读取待办');
         
         return $this->success();

@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\model\admin\message\provide;
+namespace BusyPHP\app\admin\controller\common\message\parameter;
 
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 
@@ -9,9 +9,9 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
  * 消息参数模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/12/17 下午9:17 下午 MessageParams.php $
+ * @version $Id: 2020/12/17 下午9:17 下午 MessageParameter.php $
  */
-class MessageParams
+class MessageParameter
 {
     /** @var AdminUserInfo */
     private $user;

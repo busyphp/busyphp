@@ -1,15 +1,15 @@
 <?php
 declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\model\admin\message\provide;
+namespace BusyPHP\app\admin\controller\common\message\info;
 
 /**
- * 消息通知item规定
+ * 消息通知消息结构
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/12/17 下午9:17 下午 MessageNoticeItem.php $
+ * @version $Id: 2020/12/17 下午9:17 下午 MessageNoticeInfo.php $
  */
-class MessageNoticeItem
+class MessageNoticeInfo
 {
     /** @var string */
     private $id = '';
@@ -231,14 +231,14 @@ class MessageNoticeItem
      * @param string $icon 图标类或图片地址
      * @param string $iconColor 图标颜色
      */
-    public function setIcon(bool $iconClass, $icon, $iconColor = '') : void
+    public function setIcon(bool $iconClass, string $icon, string $iconColor = '') : void
     {
         $this->iconClass = $iconClass;
         if ($this->iconClass) {
-            $this->icon      = trim((string) $icon);
+            $this->icon      = trim($icon);
             $this->iconColor = $iconColor;
         } else {
-            $this->imageUrl = trim((string) $icon);
+            $this->imageUrl = trim($icon);
         }
     }
 }

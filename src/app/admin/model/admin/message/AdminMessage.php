@@ -15,7 +15,7 @@ use think\route\Url;
  * @method AdminMessageInfo findInfo($data = null, $notFoundMessage = null)
  * @method AdminMessageInfo getInfo($data, $notFoundMessage = null)
  * @method AdminMessageInfo[] selectList()
- * @method AdminMessageInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method AdminMessageInfo[] buildListWithField(array $values, $key = null, $field = null)
  */
 class AdminMessage extends Model
 {
@@ -36,7 +36,7 @@ class AdminMessage extends Model
      * @return int
      * @throws DbException
      */
-    public function add($userId, $content, $url = '', $desc = '', $icon = '')
+    public function add($userId, $content, $url = '', $desc = '', $icon = '') : int
     {
         $url               = (string) $url;
         $data              = AdminMessageField::init();
@@ -47,45 +47,45 @@ class AdminMessage extends Model
         $data->url         = trim($url);
         $data->icon        = is_array($icon) ? json_encode($icon) : json_encode([$icon]);
         
-        return $this->addData($data);
+        return (int) $this->addData($data);
     }
     
     
     /**
      * 标记消息为已读
-     * @param $id
+     * @param int $id
      * @throws DbException
      */
-    public function setRead($id)
+    public function setRead(int $id)
     {
         $save           = AdminMessageField::init();
         $save->read     = true;
         $save->readTime = time();
-        $this->whereEntity(AdminMessageField::id(intval($id)))->saveData($save);
+        $this->whereEntity(AdminMessageField::id($id))->saveData($save);
     }
     
     
     /**
      * 清空消息
-     * @param $userId
+     * @param int $userId
      * @throws DbException
      */
-    public function clearByUserId($userId)
+    public function clearByUserId(int $userId)
     {
-        $this->whereEntity(AdminMessageField::userId(intval($userId)))->delete();
+        $this->whereEntity(AdminMessageField::userId($userId))->delete();
     }
     
     
     /**
      * 全部设为已读
-     * @param $userId
+     * @param int $userId
      * @throws DbException
      */
-    public function setAllReadByUserId($userId)
+    public function setAllReadByUserId(int $userId)
     {
         $save           = AdminMessageField::init();
         $save->read     = true;
         $save->readTime = time();
-        $this->whereEntity(AdminMessageField::userId(intval($userId)), AdminMessageField::read(0))->saveData($save);
+        $this->whereEntity(AdminMessageField::userId($userId), AdminMessageField::read(0))->saveData($save);
     }
 }

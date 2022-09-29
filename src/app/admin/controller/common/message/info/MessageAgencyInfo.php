@@ -1,15 +1,15 @@
 <?php
 declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\model\admin\message\provide;
+namespace BusyPHP\app\admin\controller\common\message\info;
 
 /**
- * 待办任务item规定
+ * 待办任务消息结构
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/12/17 下午9:17 下午 MessageAgencyItem.php $
+ * @version $Id: 2020/12/17 下午9:17 下午 MessageAgencyInfo.php $
  */
-class MessageAgencyItem
+class MessageAgencyInfo
 {
     /** @var string */
     private $id = '';
