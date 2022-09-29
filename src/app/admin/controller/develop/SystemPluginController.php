@@ -3,10 +3,8 @@
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\plugin\SystemPluginPackageInfo;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
-use BusyPHP\contract\abstracts\PluginManager;
-use BusyPHP\contract\structs\items\PluginInfo;
-use Exception;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\Response;
@@ -20,27 +18,15 @@ use think\Response;
 class SystemPluginController extends InsideController
 {
     /**
-     * 获取管理器
-     * @param string $package 包名
-     * @return PluginManager
-     * @throws DataNotFoundException
-     */
-    private function manager(string $package) : PluginManager
-    {
-        return SystemPlugin::manager($package, $this->adminUser);
-    }
-    
-    
-    /**
      * 插件列表
      */
-    public function index()
+    public function index() : Response
     {
         if ($this->pluginTable) {
             $list = Collection::make(SystemPlugin::getPluginList());
             
             if ($this->pluginTable->word) {
-                $list = $list->whereLike(PluginInfo::name(), $this->pluginTable->word);
+                $list = $list->whereLike(SystemPluginPackageInfo::name(), $this->pluginTable->word);
                 $list = array_values($list->toArray());
             }
             
@@ -55,32 +41,32 @@ class SystemPluginController extends InsideController
     /**
      * 安装插件
      * @return Response
-     * @throws Exception
+     * @throws DataNotFoundException
      */
-    public function install()
+    public function install() : Response
     {
-        return $this->manager($this->param('package/s', 'trim'))->install();
+        return SystemPlugin::manager($this->param('package/s', 'trim'), $this->adminUser)->install();
     }
     
     
     /**
      * 卸载插件
      * @return Response
-     * @throws Exception
+     * @throws DataNotFoundException
      */
-    public function uninstall()
+    public function uninstall() : Response
     {
-        return $this->manager($this->param('package/s', 'trim'))->uninstall();
+        return SystemPlugin::manager($this->param('package/s', 'trim'), $this->adminUser)->uninstall();
     }
     
     
     /**
      * 插件设置
      * @return Response
-     * @throws Exception
+     * @throws DataNotFoundException
      */
-    public function setting()
+    public function setting() : Response
     {
-        return $this->manager($this->param('package/s', 'trim'))->setting();
+        return SystemPlugin::manager($this->param('package/s', 'trim'), $this->adminUser)->setting();
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\contract\structs\items;
+namespace BusyPHP\app\admin\model\system\plugin;
 
 use BusyPHP\model\Field;
 
@@ -8,9 +8,9 @@ use BusyPHP\model\Field;
  * 插件设置配置
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/11/2 下午上午8:50 PluginSettingConfig.php $
+ * @version $Id: 2021/11/2 下午上午8:50 SystemPluginSettingConfig.php $
  */
-class PluginSettingConfig extends Field
+class SystemPluginSettingConfig extends Field
 {
     /**
      * Modal对话框尺寸，支持 sm, lg

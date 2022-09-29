@@ -1,9 +1,7 @@
 <?php
 
-namespace BusyPHP\contract\structs\items;
+namespace BusyPHP\app\admin\model\system\plugin;
 
-use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
-use BusyPHP\app\admin\model\system\plugin\SystemPluginInfo;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\db\exception\DataNotFoundException;
@@ -13,7 +11,7 @@ use think\db\exception\DbException;
  * 插件信息结构
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/11/1 下午上午11:01 PackageInfo.php $
+ * @version $Id: 2021/11/1 下午上午11:01 SystemPluginPackageInfo.php $
  * @method static Entity name() 名称
  * @method static Entity description() 说明
  * @method static Entity package() 包名
@@ -28,7 +26,7 @@ use think\db\exception\DbException;
  * @method static Entity canUninstall() 是否允许卸载
  * @method static Entity canSetting() 是否允许设置
  */
-class PluginInfo extends Field
+class SystemPluginPackageInfo extends Field
 {
     /**
      * 名称
@@ -56,7 +54,7 @@ class PluginInfo extends Field
     
     /**
      * 作者信息
-     * @var PluginAuthorInfo[]
+     * @var SystemPluginAuthorInfo[]
      */
     public $authors;
     
@@ -86,7 +84,7 @@ class PluginInfo extends Field
     
     /**
      * 安装/卸载配置
-     * @var PluginInstallConfig
+     * @var SystemPluginInstallConfig
      */
     public $installConfig;
     
@@ -98,7 +96,7 @@ class PluginInfo extends Field
     
     /**
      * 设置配置
-     * @var PluginSettingConfig
+     * @var SystemPluginSettingConfig
      */
     public $settingConfig;
     

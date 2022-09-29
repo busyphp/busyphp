@@ -1,28 +1,25 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\contract\abstracts;
+namespace BusyPHP\app\admin\model\system\plugin;
 
 use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
-use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
-use BusyPHP\contract\structs\items\PluginInfo;
-use Exception;
 use think\db\exception\DbException;
 use think\facade\Route;
 use think\Response;
 
 /**
- * 插件管理接口
+ * 插件管理基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/10/31 下午下午4:09 PluginManager.php $
+ * @version $Id: 2021/10/31 下午下午4:09 SystemPluginManager.php $
  */
-abstract class PluginManager extends AdminController
+abstract class SystemPluginManager extends AdminController
 {
     /**
      * 包信息
-     * @var PluginInfo
+     * @var SystemPluginPackageInfo
      */
     protected $info;
     
@@ -67,10 +64,10 @@ abstract class PluginManager extends AdminController
     
     /**
      * 设置信息
-     * @param AdminUserInfo $userInfo
-     * @param PluginInfo    $packageInfo
+     * @param AdminUserInfo           $userInfo
+     * @param SystemPluginPackageInfo $packageInfo
      */
-    public function setParams(AdminUserInfo $userInfo, PluginInfo $packageInfo) : void
+    public function setParams(AdminUserInfo $userInfo, SystemPluginPackageInfo $packageInfo) : void
     {
         $this->adminUser     = $userInfo;
         $this->adminUserId   = $this->adminUser->id;
@@ -147,7 +144,6 @@ abstract class PluginManager extends AdminController
     /**
      * 安装插件
      * @return Response
-     * @throws Exception
      */
     abstract public function install() : Response;
     
@@ -155,7 +151,6 @@ abstract class PluginManager extends AdminController
     /**
      * 卸载插件
      * @return Response
-     * @return Exception
      */
     abstract public function uninstall() : Response;
     
@@ -163,7 +158,6 @@ abstract class PluginManager extends AdminController
     /**
      * 设置插件
      * @return Response
-     * @return Exception
      */
     abstract public function setting() : Response;
 }
