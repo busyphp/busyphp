@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\filesystem\Driver as FilesystemManager;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Setting;
@@ -249,27 +250,10 @@ class StorageSetting extends Setting
                 continue;
             }
             
-            // 默认名称
-            $name = $disk['name'] ?? '';
-            if (!$name) {
-                if (strtolower($disk['type'] ?? '') === 'local') {
-                    $name = '本地服务器';
-                } else {
-                    $name = $key;
-                }
-            }
-            
-            // 默认描述
-            $desc = $disk['description'] ?? '';
-            if (!$desc && strtolower($disk['type'] ?? '') === 'local') {
-                $root = $disk['root'] ?? '';
-                $root = substr($root, strlen($this->app->getRootPath()));
-                $desc = "文件直接上传到本地服务器的 <code>{$root}</code> 目录，占用服务器磁盘空间";
-            }
-            
+            $manager = FilesystemManager::getInstance($key);
             $disks[] = [
-                'name'    => $name,
-                'desc'    => $desc,
+                'name'    => $manager->getName(),
+                'desc'    => $manager->getDescription(),
                 'type'    => $key,
                 'checked' => $key == $this->getDisk()
             ];

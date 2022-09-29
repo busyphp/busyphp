@@ -40,6 +40,20 @@ abstract class Driver
     
     
     /**
+     * 获取磁盘名称
+     * @return string
+     */
+    abstract public function getName() : string;
+    
+    
+    /**
+     * 获取磁盘说明
+     * @return string
+     */
+    abstract public function getDescription() : string;
+    
+    
+    /**
      * 获取实例
      * @param string $disk
      * @return static
