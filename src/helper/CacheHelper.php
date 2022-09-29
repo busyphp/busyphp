@@ -176,6 +176,28 @@ class CacheHelper
     
     
     /**
+     * 获取缓存名称
+     * @param mixed  $tag 缓存标签
+     * @param string $name 缓存名称
+     */
+    public static function getCacheKey($tag, string $name) : string
+    {
+        return Cache::getCacheKey(static::name(static::tag($tag), $name));
+    }
+    
+    
+    /**
+     * 获取标签名称
+     * @param mixed $tag 缓存标签
+     * @return string
+     */
+    public static function getTagKey($tag) : string
+    {
+        return Cache::getCacheKey(Cache::getTagKey(static::tag($tag)));
+    }
+    
+    
+    /**
      * 生成TAG
      * @param mixed $tag 缓存标签
      * @return string
