@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use ArrayAccess;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
@@ -11,11 +12,12 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\model\Query;
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 use Exception;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionException;
-use ReturnTypeWillChange;
 use think\Collection;
 use think\Container;
 use think\contract\Arrayable;
@@ -452,20 +454,20 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function getCache($name)
     {
-        return Cache::get(static::class, $name);
+        return CacheHelper::get(static::class, $name);
     }
     
     
     /**
      * 设置静态缓存
-     * @param string $name 缓存名称
-     * @param mixed  $value 缓存值
-     * @param int    $expire 缓存时长, 单位秒，0为不过期, 默认过期时间10分钟
+     * @param string                                  $name 缓存名称
+     * @param mixed                                   $value 缓存内容
+     * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
      * @return bool
      */
-    public function setCache(string $name, $value, int $expire = 600)
+    public function setCache(string $name, $value, $expire = 600) : bool
     {
-        return Cache::set(static::class, $name, $value, $expire);
+        return CacheHelper::set(static::class, $name, $value, $expire);
     }
     
     
@@ -474,18 +476,18 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $name 缓存名称
      * @return bool
      */
-    public function deleteCache(string $name = '')
+    public function deleteCache(string $name = '') : bool
     {
-        return Cache::delete(static::class, $name);
+        return CacheHelper::delete(static::class, $name);
     }
     
     
     /**
      * 清理静态缓存
      */
-    public function clearCache()
+    public function clearCache() : bool
     {
-        Cache::clear(static::class);
+        return CacheHelper::clear(static::class);
     }
     
     
@@ -559,28 +561,28 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     }
     
     
-    #[ReturnTypeWillChange]
+    #[\ReturnTypeWillChange]
     public function offsetSet($name, $value)
     {
         $this->setAttr($name, $value);
     }
     
     
-    #[ReturnTypeWillChange]
+    #[\ReturnTypeWillChange]
     public function offsetExists($name) : bool
     {
         return $this->__isset($name);
     }
     
     
-    #[ReturnTypeWillChange]
+    #[\ReturnTypeWillChange]
     public function offsetUnset($name)
     {
         $this->__unset($name);
     }
     
     
-    #[ReturnTypeWillChange]
+    #[\ReturnTypeWillChange]
     public function offsetGet($name)
     {
         return $this->getAttr($name);

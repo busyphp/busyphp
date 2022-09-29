@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\concern;
 
-use BusyPHP\Cache;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\image\parameter\UrlParameter;
 use think\facade\Request;
 use think\Response;
@@ -32,9 +32,9 @@ trait ResponseConcern
         
         $key  = md5(serialize($urlParameter) . $append); // TODO 读取源文件的最后修改时间并追加到Key中
         $dir  = 'image';
-        $data = Cache::get($dir, $key);
+        $data = CacheHelper::get($dir, $key);
         if (!$data) {
-            Cache::set($dir, $key, $data = $this->process($urlParameter)->getData(), $urlParameter->getLifetime());
+            CacheHelper::set($dir, $key, $data = $this->process($urlParameter)->getData(), $urlParameter->getLifetime());
         }
         
         $mimetype = finfo_buffer(finfo_open(FILEINFO_MIME_TYPE), $data);

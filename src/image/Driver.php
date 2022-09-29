@@ -3,8 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image;
 
-use BusyPHP\Cache;
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\image\parameter\BaseParameter;
 use BusyPHP\image\parameter\ProcessParameter;
 use BusyPHP\image\parameter\UrlParameter;
@@ -192,10 +192,10 @@ abstract class Driver
     public function selectStyleByCache() : array
     {
         $key = "stylelist";
-        if (!$list = Cache::get(static::class, $key)) {
+        if (!$list = CacheHelper::get(static::class, $key)) {
             $list = $this->selectStyle();
             $list = ArrayHelper::listByKey($list, ImageStyleResult::id());
-            Cache::set(static::class, $key, $list, 10 * 60);
+            CacheHelper::set(static::class, $key, $list, 10 * 60);
         }
         
         return $list;
@@ -207,6 +207,6 @@ abstract class Driver
      */
     protected function clearSelectStyleCache()
     {
-        Cache::delete(static::class, 'stylelist');
+        CacheHelper::delete(static::class, 'stylelist');
     }
 }
