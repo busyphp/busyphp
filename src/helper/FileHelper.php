@@ -2,6 +2,7 @@
 
 namespace BusyPHP\helper;
 
+use FilesystemIterator;
 use InvalidArgumentException;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
@@ -13,6 +14,7 @@ use think\facade\Request;
 use think\File;
 use think\file\UploadedFile;
 use think\Response;
+use Throwable;
 
 /**
  * 文件操作辅助类
@@ -461,47 +463,62 @@ class FileHelper
     
     
     /**
-     * 文件写入
-     * @param string $filename 文件地址，不存在会自动创建
-     * @param string $string 写入的内容
+     * 写入内容到文件
+     * @param string $filename 文件路径
+     * @param string $content 文件内容
+     * @param int    $writeFlags 写入
+     * @param int    $dirPermissions 目录权限
+     * @param int    $filePermissions 文件权限
      * @return bool
      */
-    public static function write(string $filename, string $string = '') : bool
+    public static function write(string $filename, string $content = '', $writeFlags = LOCK_EX, int $dirPermissions = 0775, int $filePermissions = 0777) : bool
     {
-        $string = $string ?? '';
-        $path   = dirname($filename);
-        if (!is_dir($path)) {
-            if (!mkdir($path, 0775, true)) {
-                return false;
-            }
-        }
-        
-        if (false === $handle = fopen($filename, "w")) {
+        if (!static::createDir(dirname($filename), $dirPermissions)) {
             return false;
         }
         
-        if (false === $result = fwrite($handle, $string)) {
-            fclose($handle);
-            
+        if (file_put_contents($filename, $content, $writeFlags) === false) {
             return false;
         }
-        fclose($handle);
         
-        return chmod($filename, 0777);
+        return chmod($filename, $filePermissions);
+    }
+    
+    
+    /**
+     * 删除文件
+     * @param string $path
+     * @return bool
+     */
+    public static function delete(string $path) : bool
+    {
+        if (!is_file($path)) {
+            return false;
+        }
+        
+        try {
+            return unlink($path);
+        } catch (Throwable $e) {
+            return false;
+        }
     }
     
     
     /**
      * 创建文件夹
      * @param string $path 路径
+     * @param int    $permissions 权限
      * @return bool
      */
-    public static function createDir(string $path) : bool
+    public static function createDir(string $path, int $permissions = 0777) : bool
     {
-        $path = dirname($path);
+        $umask = umask(0);
         if (!is_dir($path)) {
-            return mkdir($path, 0777, true);
+            if (false === @mkdir($path, $permissions, true) || false === is_dir($path)) {
+                return false;
+            }
         }
+        umask($umask);
         
         return true;
     }
@@ -510,32 +527,22 @@ class FileHelper
     /**
      * 删除文件夹
      * @param string $path 路径
-     * @param bool   $retain 是否保留文件夹，true 保留，false 不保留，默认不保留
      * @return bool
      */
-    public static function deleteDir(string $path, bool $retain = false) : bool
+    public static function deleteDir(string $path) : bool
     {
         if (!is_dir($path)) {
             return false;
         }
         
-        $handle = opendir($path);
-        while ($file = readdir($handle)) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            
-            $filePath = $path . '/' . $file;
-            if (!is_dir($filePath)) {
-                @unlink($filePath);
-            } else {
-                self::deleteDir($filePath, false);
-            }
-        }
-        closedir($handle);
+        $items = new FilesystemIterator($path);
         
-        if ($retain) {
-            return true;
+        foreach ($items as $item) {
+            if ($item->isDir() && !$item->isLink()) {
+                static::deleteDir($item->getPathname());
+            } else {
+                static::delete($item->getPathname());
+            }
         }
         
         return rmdir($path);
@@ -551,7 +558,7 @@ class FileHelper
     public static function responseAssets(string $filename, int $expireSecond = 31536000) : Response
     {
         if (!$filename || !is_file($filename)) {
-            throw new HttpException(404, sprintf("资源不存在: %s", $filename));
+            throw new HttpException(404, sprintf("The resource does not exist: %s", $filename));
         }
         
         $header  = [];
@@ -566,7 +573,7 @@ class FileHelper
             $header['Content-Length'] = strlen($content);
         }
         
-        $header['Cache-Control'] = "max-age=$expireSecond, public";
+        $header['Cache-Control'] = sprintf("max-age=%s, public", $expireSecond);
         $header['Etag']          = $etag;
         
         return Response::create($content)
