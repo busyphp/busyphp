@@ -4,9 +4,8 @@ declare (strict_types = 1);
 namespace BusyPHP\command;
 
 use BusyPHP\App;
-use BusyPHP\contract\interfaces\PluginCommandInitialize;
 use BusyPHP\helper\FileHelper;
-use Exception;
+use BusyPHP\interfaces\PluginCommandInitializeInterface;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -14,6 +13,7 @@ use think\console\Output;
 use think\Container;
 use think\exception\ClassNotFoundException;
 use think\exception\FileException;
+use Throwable;
 use ZipArchive;
 
 /**
@@ -52,17 +52,13 @@ class InstallCommand extends Command
             return;
         }
         
-        // 安装配置文件
-        if (!$this->moveConfig()) {
-            return;
-        }
         
         // 初始化插件
         if (!$this->pluginInitialize()) {
             return;
         }
         
-        $output->info("BusyPHP V{$this->app->getFrameworkVersion()} 初始化完成");
+        $output->info("BusyPHP V{$this->app->getFrameworkVersion()} init complete.");
     }
     
     
@@ -95,7 +91,7 @@ class InstallCommand extends Command
      * 解压文件
      * @return bool
      */
-    protected function extract()
+    protected function extract() : bool
     {
         $packages = $this->getPackages();
         $extracts = [];
@@ -125,7 +121,7 @@ class InstallCommand extends Command
      * @param string $toDir
      * @return bool
      */
-    private function doExtract($source, $toDir)
+    private function doExtract($source, $toDir) : bool
     {
         $sourceFile = $this->app->getRootPath() . 'vendor/' . $source;
         $toDir      = trim($toDir, '/');
@@ -136,29 +132,29 @@ class InstallCommand extends Command
         
         try {
             if (!class_exists('ZipArchive')) {
-                throw new ClassNotFoundException('需要启用ZipArchive扩展才能继续安装');
+                throw new ClassNotFoundException('You need to enable the "ZipArchive" extension to continue the installation');
             }
             
-            $this->output->info("开始解压文件: {$source} 至 {$toDir}");
+            $this->output->info(sprintf('To start unpacking the file: %s to %s', $source, $toDir));
             $zip = new ZipArchive();
             $res = $zip->open($sourceFile);
             if (true !== $res) {
-                throw new FileException("打开文件失败: {$source}");
+                throw new FileException(sprintf('Failed to open file is %s', $source));
             }
             
             if (!$res = $zip->extractTo($this->app->getRootPath() . $toDir)) {
                 $zip->close();
                 
-                throw new FileException("解压文件失败: {$source}");
+                throw new FileException(sprintf('Failed to decompress the file is %s', $source));
             }
             $zip->close();
             
             FileHelper::write($lockFile, "本文件为系统解压文件 {$source} 至 {$toDir} 后自动生成的防止重复解压锁，删除后重新执行Composer将会覆盖 {$toDir} 下的文件");
             
-            $this->output->info("解压文件至: {$toDir} 成功!");
+            $this->output->info(sprintf('Unzip file to %s succeeded!', $toDir));
             
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->output->error($e->getMessage());
             
             return false;
@@ -167,56 +163,9 @@ class InstallCommand extends Command
     
     
     /**
-     * 安装配置文件
-     * @return bool
-     */
-    protected function moveConfig()
-    {
-        $packages  = $this->getPackages();
-        $configDir = $this->app->getConfigPath() . DIRECTORY_SEPARATOR . 'extend' . DIRECTORY_SEPARATOR;
-        if (!is_dir($configDir)) {
-            if (!FileHelper::createDir($configDir)) {
-                $this->output->error("配置文件目录不可写: {$configDir}");
-                
-                return false;
-            }
-        }
-        
-        foreach ($packages as $package) {
-            $installPath = $this->app->getRootPath() . 'vendor/' . $package['name'] . DIRECTORY_SEPARATOR;
-            foreach ($package['config'] ?? [] as $name => $file) {
-                $target = $configDir . $name . '.php';
-                $source = $installPath . $file;
-                
-                if (is_file($target)) {
-                    $this->output->warning("配置文件 {$target} 已存在!");
-                    continue;
-                }
-                
-                if (!is_file($source)) {
-                    $this->output->error("配置文件 {$source} 不存在!");
-                    
-                    return false;
-                }
-                
-                if (!copy($source, $target)) {
-                    $this->output->error("安装配置文件 {$source} 至 {$target} 失败!");
-                    
-                    return false;
-                }
-                
-                $this->output->info("安装配置文件 {$source} 至 {$target} 成功.");
-            }
-        }
-        
-        return true;
-    }
-    
-    
-    /**
      * 初始化插件
      */
-    protected function pluginInitialize()
+    protected function pluginInitialize() : bool
     {
         $packages    = $this->getPackages();
         $initializes = [];
@@ -231,14 +180,14 @@ class InstallCommand extends Command
                 continue;
             }
             
-            $obj = Container::getInstance()->make($initialize, [], true);
-            if (!$obj instanceof PluginCommandInitialize) {
-                continue;
-            }
-            
             try {
-                $obj->initialize($this->output);
-            } catch (Exception $e) {
+                $obj = Container::getInstance()->make($initialize, [], true);
+                if ($obj instanceof PluginCommandInitializeInterface) {
+                    $obj->onPluginCommandInitialize($this->output);
+                }
+            } catch (Throwable $e) {
+                $this->output->error(sprintf('Failed to initialize plugin "%s", %s', $initialize, $e->getMessage()));
+                
                 return false;
             }
         }
@@ -251,7 +200,7 @@ class InstallCommand extends Command
      * 获取Composer项目列表
      * @return array
      */
-    private function getPackages()
+    private function getPackages() : array
     {
         if (isset($this->list)) {
             return $this->list;
@@ -265,7 +214,7 @@ class InstallCommand extends Command
     
     /**
      * 获取busyphp插件列表
-     * @param string $devComposerFile 开发文件
+     * @param string|null $devComposerFile 开发文件
      * @return array
      */
     public static function packages(?string $devComposerFile = null) : array
