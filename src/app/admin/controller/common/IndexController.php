@@ -5,7 +5,6 @@ namespace BusyPHP\app\admin\controller\common;
 use BusyPHP\app\admin\controller\common\message\subscribe\MessageAgencySubscribe;
 use BusyPHP\app\admin\controller\common\message\subscribe\MessageNoticeSubscribe;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
@@ -176,7 +175,6 @@ class IndexController extends InsideController
                     'system_name'     => php_uname('s'),
                     'soft_name'       => $_SERVER['SERVER_SOFTWARE'] ?? '',
                     'framework_name'  => $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion(),
-                    'extend_template' => AdminPanelDisplayEvent::triggerEvent('Common.Index/index'),
                 ]));
         }
     }

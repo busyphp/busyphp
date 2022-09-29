@@ -95,7 +95,7 @@ class InsideController extends AdminController
      */
     protected function getUseTemplateAttr(string $key, string $attr, $default = null)
     {
-        return $this->app->config->get("app.admin.template.{$key}.{$attr}", $default);
+        return $this->app->config->get(sprintf("app.admin.template.%s.%s", $key, $attr), $default);
     }
     
     
@@ -108,7 +108,7 @@ class InsideController extends AdminController
      */
     protected function getUseTemplate(string $name, string $defaultTemplate = '', array $assignVars = []) : string
     {
-        $template = $this->app->config->get("app.admin.template.{$name}", '');
+        $template = $this->app->config->get(sprintf('app.admin.template.%s', $name), '');
         if (is_array($template)) {
             $assign   = $template['assign'] ?? '';
             $template = $template['path'] ?? '';
@@ -118,7 +118,7 @@ class InsideController extends AdminController
             }
             
             if ($assign) {
-                $assigns = Container::getInstance()->invokeFunction($assign, [$assignVars]);
+                $assigns = (array) Container::getInstance()->invokeFunction($assign, [$assignVars]);
                 foreach ($assigns as $key => $item) {
                     $this->assign($key, $item);
                 }
@@ -130,7 +130,7 @@ class InsideController extends AdminController
         }
         
         if ($template && !is_file($template)) {
-            $template = "@{$template}";
+            $template = sprintf('@%s', $template);
         }
         
         return $template ?: $defaultTemplate;

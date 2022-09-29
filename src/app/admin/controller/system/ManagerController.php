@@ -3,7 +3,6 @@
 namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyle;
@@ -41,6 +40,8 @@ use Throwable;
  */
 class ManagerController extends InsideController
 {
+    const TEMPLATE_INDEX = self::class . 'index';
+    
     /**
      * @var string
      */
@@ -61,9 +62,12 @@ class ManagerController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    protected function assignNav()
+    protected function assignNav() : array
     {
-        $this->assign('nav', SystemMenu::init()->getChildList('system_manager/index', true, true));
+        $navs = SystemMenu::init()->getChildList('system_manager/index', true, true);
+        $this->assign('nav', $navs);
+        
+        return $navs;
     }
     
     
@@ -85,12 +89,10 @@ class ManagerController extends InsideController
             return $this->success('设置成功');
         }
         
-        $info = PublicSetting::init()->get();
-        $this->assign('info', $info);
-        $this->assign('extend_template', AdminPanelDisplayEvent::triggerEvent('System.Index/index', $info));
-        $this->assignNav();
-        
-        return $this->display();
+        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX, '', [
+            'info' => PublicSetting::init()->get(),
+            'nav'  => $this->assignNav()
+        ]));
     }
     
     
