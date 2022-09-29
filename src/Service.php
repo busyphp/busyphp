@@ -21,11 +21,9 @@ use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\app\general\controller\QRCodeController;
 use BusyPHP\app\general\controller\ThumbController;
 use BusyPHP\app\general\controller\CaptchaController;
-use BusyPHP\cache\File;
 use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\model\Query;
 use BusyPHP\view\taglib\Cx;
 use BusyPHP\view\View;
 use Closure;
@@ -192,16 +190,13 @@ class Service extends ThinkService
         
         
         // 数据库配置
-        $mysql['query']                   = $this->value($mysql, 'query', Query::class);
-        $mysql['prefix']                  = $this->value($mysql, 'prefix', 'busy_');
-        $mysql['schema_cache_path']       = $this->value($mysql, 'schema_cache_path', $this->app->getRuntimeCachePath('schema/'));
+        $mysql['prefix']                  = $mysql['prefix'] ?? 'busy_';
         $database['connections']['mysql'] = $mysql;
         
         
         // 文件缓存
         $cache['stores']          = $this->value($cache, 'stores', []);
         $file                     = $this->value($cache['stores'], 'file', []);
-        $file['type']             = $this->value($file, 'type', File::class);
         $file['path']             = $this->value($file, 'path', $this->app->getRuntimeCachePath());
         $cache['stores']['file']  = $file;
         $redis                    = $this->value($cache['stores'], 'redis', []);
@@ -219,7 +214,7 @@ class Service extends ThinkService
         $trace['file'] = $this->value($trace, 'file', $tplPath . 'trace.html');
         
         // session
-        $session['path'] = $this->value($session, 'path', $this->app->getRuntimeCachePath('session/'));
+        $session['path'] = $this->value($session, 'path', $this->app->getRuntimeRootPath('session/'));
         
         
         // 组合参数进行设置

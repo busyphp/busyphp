@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\upload\parameter;
 
-use BusyPHP\cache\File;
+use think\File;
 
 /**
  * 执行分块上传参数模版
