@@ -2,14 +2,13 @@
 
 namespace BusyPHP\app\admin\controller\common;
 
+use BusyPHP\app\admin\controller\common\message\MessageAgencySubscribe;
+use BusyPHP\app\admin\controller\common\message\MessageNoticeSubscribe;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\event\AdminPanelDisplayEvent;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\app\admin\subscribe\MessageAgencySubscribe;
-use BusyPHP\app\admin\subscribe\MessageNoticeSubscribe;
-use Exception;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -32,9 +31,8 @@ class IndexController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws Exception
      */
-    public function index()
+    public function index() : Response
     {
         switch ($this->requestPluginName) {
             // 输出程序信息
@@ -56,17 +54,21 @@ class IndexController extends InsideController
                         'data-url'    => (string) url('Common.User/password'),
                     ]
                 ];
-                $dropList[] = [
-                    'text' => '主题设置',
-                    'icon' => 'bicon bicon-theme',
-                    'attr' => [
-                        'data-toggle'          => 'busy-modal',
-                        'data-url'             => (string) url('Common.User/theme'),
-                        'data-on-hide'         => 'busyAdmin.data.themeClose',
-                        'data-form-on-success' => 'busyAdmin.data.themeSuccess',
-                        'data-busy-id'         => 'theme-setting',
-                    ]
-                ];
+                
+                // 是否启用切换主题
+                if ($this->app->config->get('app.admin.theme', true)) {
+                    $dropList[] = [
+                        'text' => '主题设置',
+                        'icon' => 'bicon bicon-theme',
+                        'attr' => [
+                            'data-toggle'          => 'busy-modal',
+                            'data-url'             => (string) url('Common.User/theme'),
+                            'data-on-hide'         => 'busyAdmin.data.themeClose',
+                            'data-form-on-success' => 'busyAdmin.data.themeSuccess',
+                            'data-busy-id'         => 'theme-setting',
+                        ]
+                    ];
+                }
                 $dropList[] = [
                     'type' => 'divider'
                 ];
@@ -103,6 +105,15 @@ class IndexController extends InsideController
                     ];
                 }
                 
+                // 自定义header下拉菜单
+                foreach ($this->app->config->get('app.admin.user_dropdowns', []) as $item) {
+                    if (is_callable($item)) {
+                        $dropList[] = Container::getInstance()->invokeFunction($item, [$this->adminUser]);
+                    } else {
+                        $dropList[] = $item;
+                    }
+                }
+                
                 $dropList[] = [
                     'text' => '退出登录',
                     'icon' => 'bicon bicon-exit',
@@ -114,11 +125,15 @@ class IndexController extends InsideController
                     ]
                 ];
                 
+                
                 // 自定义全局数据
                 $data = $this->app->config->get('app.admin.data', []);
                 if ($data) {
-                    $data = is_callable($data) ? Container::getInstance()
-                        ->invokeFunction($data, [$this->adminUser]) : (is_array($data) ? $data : []);
+                    if (is_callable($data)) {
+                        $data = Container::getInstance()->invokeFunction($data, [$this->adminUser]);
+                    } else {
+                        $data = is_array($data) ? $data : [];
+                    }
                 } else {
                     $data = [];
                 }
