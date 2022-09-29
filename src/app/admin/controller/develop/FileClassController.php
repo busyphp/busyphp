@@ -20,9 +20,9 @@ use think\Response;
  * 开发模式-系统附件分类管理
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/1 下午3:34 下午 SystemFileClass.php $
+ * @version $Id: 2020/6/1 下午3:34 下午 FileClassController.php $
  */
-class SystemFileClassController extends InsideController
+class FileClassController extends InsideController
 {
     /**
      * @var SystemFileClass

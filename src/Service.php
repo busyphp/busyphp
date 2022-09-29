@@ -6,17 +6,17 @@ namespace BusyPHP;
 use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\app\admin\controller\common\IndexController;
 use BusyPHP\app\admin\controller\common\PassportController;
-use BusyPHP\app\admin\controller\develop\ManualComponentController;
-use BusyPHP\app\admin\controller\develop\ManualElementController;
-use BusyPHP\app\admin\controller\develop\SystemConfigController;
-use BusyPHP\app\admin\controller\develop\SystemFileClassController;
-use BusyPHP\app\admin\controller\develop\SystemMenuController;
-use BusyPHP\app\admin\controller\develop\SystemPluginController;
-use BusyPHP\app\admin\controller\system\SystemFileController;
-use BusyPHP\app\admin\controller\system\SystemLogsController;
-use BusyPHP\app\admin\controller\system\SystemManagerController;
-use BusyPHP\app\admin\controller\system\SystemUserController;
-use BusyPHP\app\admin\controller\system\SystemGroupController;
+use BusyPHP\app\admin\controller\develop\ComponentController;
+use BusyPHP\app\admin\controller\develop\ElementController;
+use BusyPHP\app\admin\controller\develop\ConfigController;
+use BusyPHP\app\admin\controller\develop\FileClassController;
+use BusyPHP\app\admin\controller\develop\MenuController;
+use BusyPHP\app\admin\controller\develop\PluginController;
+use BusyPHP\app\admin\controller\system\FileController;
+use BusyPHP\app\admin\controller\system\LogsController;
+use BusyPHP\app\admin\controller\system\ManagerController;
+use BusyPHP\app\admin\controller\system\UserController;
+use BusyPHP\app\admin\controller\system\GroupController;
 use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\app\general\controller\QRCodeController;
 use BusyPHP\app\general\controller\ThumbController;
@@ -283,17 +283,17 @@ class Service extends ThinkService
         // 后台路由
         if ($this->app->http->getName() === 'admin') {
             $routeConfig = [
-                'system_menu'       => ['group' => 'develop', 'class' => SystemMenuController::class,],
-                'system_config'     => ['group' => 'develop', 'class' => SystemConfigController::class],
-                'system_file_class' => ['group' => 'develop', 'class' => SystemFileClassController::class],
-                'system_plugin'     => ['group' => 'develop', 'class' => SystemPluginController::class],
-                'manual_component'  => ['group' => 'develop', 'class' => ManualComponentController::class],
-                'manual_element'    => ['group' => 'develop', 'class' => ManualElementController::class],
-                'system_file'       => ['group' => 'system', 'class' => SystemFileController::class],
-                'system_user'       => ['group' => 'system', 'class' => SystemUserController::class],
-                'system_group'      => ['group' => 'system', 'class' => SystemGroupController::class],
-                'system_logs'       => ['group' => 'system', 'class' => SystemLogsController::class],
-                'system_manager'    => ['group' => 'system', 'class' => SystemManagerController::class],
+                'system_menu'       => ['group' => 'develop', 'class' => MenuController::class,],
+                'system_config'     => ['group' => 'develop', 'class' => ConfigController::class],
+                'system_file_class' => ['group' => 'develop', 'class' => FileClassController::class],
+                'system_plugin'     => ['group' => 'develop', 'class' => PluginController::class],
+                'manual_component'  => ['group' => 'develop', 'class' => ComponentController::class],
+                'manual_element'    => ['group' => 'develop', 'class' => ElementController::class],
+                'system_file'       => ['group' => 'system', 'class' => FileController::class],
+                'system_user'       => ['group' => 'system', 'class' => UserController::class],
+                'system_group'      => ['group' => 'system', 'class' => GroupController::class],
+                'system_logs'       => ['group' => 'system', 'class' => LogsController::class],
+                'system_manager'    => ['group' => 'system', 'class' => ManagerController::class],
             ];
             
             $actionPattern  = '<' . self::ROUTE_VAR_ACTION . '>';

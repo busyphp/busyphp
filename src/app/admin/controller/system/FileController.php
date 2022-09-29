@@ -21,9 +21,9 @@ use think\Response;
  * 附件管理
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/4 下午2:17 下午 File.php $
+ * @version $Id: 2020/6/4 下午2:17 下午 FileController.php $
  */
-class SystemFileController extends InsideController
+class FileController extends InsideController
 {
     /**
      * @var SystemFile

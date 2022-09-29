@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\controller\system\SystemUserController;
+use BusyPHP\app\admin\controller\system\UserController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
@@ -45,7 +45,7 @@ class UserController extends InsideController
         
         $this->setPageTitle('修改个人资料');
         
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PROFILE, '', [
+        return $this->display($this->getUseTemplate(UserController::TEMPLATE_MY_PROFILE, '', [
             'info' => $this->adminUser
         ]));
     }
@@ -78,7 +78,7 @@ class UserController extends InsideController
         }
         $this->setPageTitle('修改个人密码');
         
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PWD, '', [
+        return $this->display($this->getUseTemplate(UserController::TEMPLATE_MY_PWD, '', [
             'info' => $this->adminUser
         ]));
     }
@@ -165,7 +165,7 @@ class UserController extends InsideController
         $title = $this->param('title/s', 'trim');
         $this->setPageTitle($title ?: '管理员详情');
         
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_DETAIL, '', [
+        return $this->display($this->getUseTemplate(UserController::TEMPLATE_DETAIL, '', [
             'info' => AdminUser::init()->getInfo($this->param('id/d'))
         ]));
     }

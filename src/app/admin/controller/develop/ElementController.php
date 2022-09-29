@@ -8,9 +8,9 @@ use BusyPHP\app\admin\controller\InsideController;
  * 基本元素
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/2/28 下午9:01 下午 ManualController.php $
+ * @version $Id: 2021/2/28 下午9:01 下午 ElementController.php $
  */
-class ManualElementController extends InsideController
+class ElementController extends InsideController
 {
     /**
      * 按钮/按钮组

@@ -3,10 +3,7 @@
 namespace BusyPHP\app\admin\model\system\plugin;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\command\InstallCommand;
-use BusyPHP\exception\ClassNotExtendsException;
-use BusyPHP\exception\ClassNotFoundException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Model;
 use Composer\InstalledVersions;
@@ -147,36 +144,6 @@ class SystemPlugin extends Model
     public static function createId(string $package) : string
     {
         return md5($package);
-    }
-    
-    
-    /**
-     * 创建管理类
-     * @param string        $package
-     * @param AdminUserInfo $userInfo
-     * @return SystemPluginManager
-     * @throws DataNotFoundException
-     */
-    public static function manager(string $package, AdminUserInfo $userInfo) : SystemPluginManager
-    {
-        $list = static::getPluginList();
-        $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package());
-        $info = $list[$package] ?? null;
-        if (!$info) {
-            throw new DataNotFoundException("插件 {$package} 不存在");
-        }
-        
-        if (!$info->class || !class_exists($info->class)) {
-            throw new ClassNotFoundException($info->class, "插件 {$package} 管理类");
-        }
-        
-        $manager = new $info->class(App::getInstance());
-        if (!$manager instanceof SystemPluginManager) {
-            throw new ClassNotExtendsException($manager, SystemPluginManager::class, "插件 {$package} 管理类");
-        }
-        $manager->setParams($userInfo, $info);
-        
-        return $manager;
     }
     
     

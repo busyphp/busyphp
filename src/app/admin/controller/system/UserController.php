@@ -28,7 +28,7 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午12:02 下午 User.php $
  */
-class SystemUserController extends InsideController
+class UserController extends InsideController
 {
     /** @var string 列表模板 */
     const TEMPLATE_INDEX = self::class . 'index';

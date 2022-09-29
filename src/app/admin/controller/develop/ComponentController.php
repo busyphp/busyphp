@@ -12,9 +12,9 @@ use BusyPHP\app\admin\plugin\linkagePicker\LinkageHandler;
  * 组件开发手册
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/2/28 下午9:01 下午 ManualController.php $
+ * @version $Id: 2021/2/28 下午9:01 下午 ComponentController.php $
  */
-class ManualComponentController extends InsideController
+class ComponentController extends InsideController
 {
     /**
      * 日期/时间

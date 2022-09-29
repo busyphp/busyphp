@@ -1,10 +1,12 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\model\system\plugin;
+namespace BusyPHP\app\admin\controller\develop\plugin;
 
 use BusyPHP\app\admin\controller\AdminController;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
+use BusyPHP\app\admin\model\system\plugin\SystemPluginPackageInfo;
 use think\db\exception\DbException;
 use think\facade\Route;
 use think\Response;
@@ -13,9 +15,9 @@ use think\Response;
  * 插件管理基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2021/10/31 下午下午4:09 SystemPluginManager.php $
+ * @version $Id: 2021/10/31 下午下午4:09 SystemPluginBaseController.php $
  */
-abstract class SystemPluginManager extends AdminController
+abstract class SystemPluginBaseController extends AdminController
 {
     /**
      * 包信息

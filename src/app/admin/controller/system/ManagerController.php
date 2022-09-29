@@ -39,7 +39,7 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/18 下午下午3:50 SystemManager.php $
  */
-class SystemManagerController extends InsideController
+class ManagerController extends InsideController
 {
     /**
      * @var string
