@@ -6,13 +6,61 @@ namespace BusyPHP;
 use InvalidArgumentException;
 
 /**
- * URL基本类
+ * URL生成类
+ * 基于 topthink/think-multi-app 改写，主要解决去掉默认应用名
+ * @author liu21st <liu21st@gmail.com>
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/10 下午9:44 下午 Url.php $
  */
-class Url extends \think\app\Url
+class Url extends \think\route\Url
 {
+    /**
+     * 直接解析URL地址
+     * @access protected
+     * @param string      $url URL
+     * @param string|bool $domain Domain
+     * @return string
+     */
+    protected function parseUrl(string $url, &$domain) : string
+    {
+        $request = $this->app->request;
+        
+        if (0 === strpos($url, '/')) {
+            // 直接作为路由地址解析
+            $url = substr($url, 1);
+        } elseif (false !== strpos($url, '\\')) {
+            // 解析到类
+            $url = ltrim(str_replace('\\', '/', $url), '/');
+        } elseif (0 === strpos($url, '@')) {
+            // 解析到控制器
+            $url = substr($url, 1);
+        } elseif ('' === $url) {
+            $url = $this->getAppName() . '/' . $request->controller() . '/' . $request->action();
+        } else {
+            // 解析到 应用/控制器/操作
+            $controller = $request->controller();
+            $app        = $this->getAppName();
+            $path       = explode('/', $url);
+            $action     = array_pop($path);
+            $controller = empty($path) ? $controller : array_pop($path);
+            $app        = empty($path) ? $app : array_pop($path);
+            $url        = $controller . '/' . $action;
+            $bind       = $this->app->config->get('app.domain_bind', []);
+            
+            if ($key = array_search($this->app->http->getName(), $bind)) {
+                isset($bind[$_SERVER['SERVER_NAME']]) && $domain = $_SERVER['SERVER_NAME'];
+                
+                $domain = is_bool($domain) ? $key : $domain;
+            } else {
+                $url = $app . '/' . $url;
+            }
+        }
+        
+        return $url;
+    }
+    
+    
     public function build()
     {
         // 解析URL
@@ -138,7 +186,7 @@ class Url extends \think\app\Url
             // 添加参数
             if ($this->route->config('url_common_param')) {
                 $vars = http_build_query($vars);
-                $url .= $suffix . ($vars ? '?' . $vars : '') . $anchor;
+                $url  .= $suffix . ($vars ? '?' . $vars : '') . $anchor;
             } else {
                 foreach ($vars as $var => $val) {
                     $val = (string) $val;
@@ -165,5 +213,23 @@ class Url extends \think\app\Url
         
         // URL组装
         return $domain . rtrim($this->root, '/') . '/' . ltrim($url, '/');
+    }
+    
+    
+    /**
+     * 获取URL的应用名
+     * @access protected
+     * @return string
+     */
+    protected function getAppName()
+    {
+        $app = $this->app->http->getName();
+        $map = $this->app->config->get('app.app_map', []);
+        
+        if ($key = array_search($app, $map)) {
+            $app = $key;
+        }
+        
+        return $app;
     }
 }

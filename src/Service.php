@@ -28,7 +28,7 @@ use BusyPHP\helper\FileHelper;
 use BusyPHP\model\Query;
 use BusyPHP\view\taglib\Cx;
 use BusyPHP\view\View;
-use think\app\Url as ThinkUrl;
+use Closure;
 use think\cache\driver\Redis;
 use think\event\HttpRun;
 use think\middleware\SessionInit;
@@ -70,7 +70,9 @@ class Service extends ThinkService
     public function boot()
     {
         // 绑定URL生成类
-        $this->app->bind(ThinkUrl::class, Url::class);
+        $this->app->bind([
+            'think\route\Url' => Url::class,
+        ]);
         
         
         // 配置BaseModel
@@ -104,7 +106,8 @@ class Service extends ThinkService
         
         // 监听HttpRun
         $this->app->event->listen(HttpRun::class, function() {
-            $this->app->middleware->add(function(Request $request, \Closure $next) {
+            $this->app->middleware->add(MultipleApp::class);
+            $this->app->middleware->add(function(Request $request, Closure $next) {
                 $this->configHttpRun();
                 
                 return $next($request);
@@ -120,7 +123,7 @@ class Service extends ThinkService
         
         // 添加路由中间件
         $this->app->middleware->import([
-            function(Request $request, \Closure $next) {
+            function(Request $request, Closure $next) {
                 // 通过插件方式引入
                 if ($request->route(self::ROUTE_VAR_TYPE) === 'plugin') {
                     $group = $request->route(self::ROUTE_VAR_GROUP);
