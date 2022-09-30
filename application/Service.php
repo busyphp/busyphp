@@ -113,7 +113,7 @@ class Service extends \BusyPHP\Service
                     $roleItem = $route->rule("$key/$actionPattern", "{$item['class']}@$actionPattern");
                     $roleItem->append([
                         self::ROUTE_VAR_DIR     => $item['group'],
-                        self::ROUTE_VAR_TYPE    => self::ROUTE_VAL_PLUGIN,
+                        self::ROUTE_VAR_TYPE    => self::ROUTE_TYPE_PLUGIN,
                         self::ROUTE_VAR_CONTROL => $key
                     ]);
                     if (isset($item['actions'])) {
@@ -151,7 +151,7 @@ class Service extends \BusyPHP\Service
                         self::ROUTE_VAR_ACTION  => 'out'
                     ])->name('admin_out');
                 })->append([
-                    self::ROUTE_VAR_TYPE  => self::ROUTE_VAL_PLUGIN,
+                    self::ROUTE_VAR_TYPE  => self::ROUTE_TYPE_PLUGIN,
                     self::ROUTE_VAR_GROUP => 'Common'
                 ]);
             }
