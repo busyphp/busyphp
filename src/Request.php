@@ -249,7 +249,7 @@ class Request extends \think\Request
      */
     public function getVarRedirectUrl() : string
     {
-        $varRedirectUrl = Config::get('route.var_redirect_url');
+        $varRedirectUrl = Config::get('route.var_redirect_url') ?: 'redirect_url';
         
         return $varRedirectUrl ?: $this->varRedirectUrl;
     }

@@ -12,8 +12,8 @@ BusyPHP使用说明
 <?php
 
 use BusyPHP\app\admin\controller\common\IndexController;
-use BusyPHP\app\admin\controller\system\SystemGroupController;
-use BusyPHP\app\admin\controller\system\SystemUserController;
+use BusyPHP\app\admin\controller\system\GroupController;
+use BusyPHP\app\admin\controller\system\UserController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 
 return [
@@ -48,49 +48,49 @@ return [
                 'assign' => '', // 模板赋值闭包，返回array
             ],
             // 管理员列表模板
-            SystemUserController::TEMPLATE_INDEX      => [
+            UserController::TEMPLATE_INDEX      => [
                 'path'         => '',
                 'assign'       => '',
                 'plugin_table' => '' // 列表table插件搜索处理闭包
             ],
             // 添加管理员模板
-            SystemUserController::TEMPLATE_ADD        => [
+            UserController::TEMPLATE_ADD        => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改管理员模板
-            SystemUserController::TEMPLATE_EDIT       => [
+            UserController::TEMPLATE_EDIT       => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改管理员密码模板
-            SystemUserController::TEMPLATE_PWD        => [
+            UserController::TEMPLATE_PWD        => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改管理员个人资料
-            SystemUserController::TEMPLATE_MY_PROFILE => [
+            UserController::TEMPLATE_MY_PROFILE => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改管理员个人密码
-            SystemUserController::TEMPLATE_MY_PWD     => [
+            UserController::TEMPLATE_MY_PWD     => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 角色组列表模板
-            SystemGroupController::TEMPLATE_INDEX     => [
+            GroupController::TEMPLATE_INDEX     => [
                 'path'         => '',
                 'assign'       => '',
                 'plugin_table' => ''
             ],
             // 添加角色组模板
-            SystemGroupController::TEMPLATE_ADD        => [
+            GroupController::TEMPLATE_ADD        => [
                 'path'   => '',
                 'assign' => '',
             ],
             // 修改角色组模板
-            SystemGroupController::TEMPLATE_EDIT       => [
+            GroupController::TEMPLATE_EDIT       => [
                 'path'   => '',
                 'assign' => '',
             ],

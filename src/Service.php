@@ -24,10 +24,7 @@ use BusyPHP\app\general\controller\CaptchaController;
 use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\view\taglib\Cx;
-use BusyPHP\view\View;
 use Closure;
-use think\cache\driver\Redis;
 use think\event\HttpRun;
 use think\middleware\SessionInit;
 use think\Paginator;
@@ -144,9 +141,7 @@ class Service extends ThinkService
         
         // 分页页面获取注册
         Paginator::currentPageResolver(function($varPage = '') {
-            $varPage = $varPage ?: $this->app->config->get('route.var_page');
-            $varPage = $varPage ?: 'page';
-            $page    = $this->app->request->param($varPage);
+            $page = $this->app->request->param($varPage);
             
             if (filter_var($page, FILTER_VALIDATE_INT) !== false && (int) $page >= 1) {
                 return (int) $page;
@@ -182,33 +177,32 @@ class Service extends ThinkService
         $app['app_express']    = true;
         
         // 模板配置
-        $view['type']            = $this->value($view, 'type', View::class);
-        $view['taglib_build_in'] = $this->value($view, 'taglib_build_in', Cx::class);
-        $view['taglib_begin']    = $this->value($view, 'taglib_begin', '<');
-        $view['taglib_end']      = $this->value($view, 'taglib_end', '>');
-        $view['default_filter']  = $this->value($view, 'default_filter', '');
-        
+        $view['type'] = $this->value($view, 'type', 'think');
         
         // 数据库配置
         $mysql['prefix']                  = $mysql['prefix'] ?? 'busy_';
         $database['connections']['mysql'] = $mysql;
         
-        
-        // 文件缓存
-        $cache['stores']          = $this->value($cache, 'stores', []);
-        $file                     = $this->value($cache['stores'], 'file', []);
-        $file['path']             = $this->value($file, 'path', $this->app->getRuntimeCachePath());
-        $cache['stores']['file']  = $file;
-        $redis                    = $this->value($cache['stores'], 'redis', []);
-        $redis['type']            = $this->value($redis, 'type', Redis::class);
-        $cache['stores']['redis'] = $redis;
-        
+        // 缓存驱动
+        $cache['stores']              = $this->value($cache, 'stores', []);
+        $item                         = $this->value($cache['stores'], 'file', []);
+        $item['path']                 = $this->value($item, 'path', $this->app->getRuntimeCachePath());
+        $cache['stores']['file']      = $item;
+        $item                         = $this->value($cache['stores'], 'redis', []);
+        $item['type']                 = $this->value($item, 'type', 'redis');
+        $cache['stores']['redis']     = $item;
+        $item                         = $this->value($cache['stores'], 'memcache', []);
+        $item['type']                 = $this->value($item, 'type', 'memcache');
+        $cache['stores']['memcache']  = $item;
+        $item                         = $this->value($cache['stores'], 'memcached', []);
+        $item['type']                 = $this->value($item, 'type', 'memcached');
+        $cache['stores']['memcached'] = $item;
+        $item                         = $this->value($cache['stores'], 'wincache', []);
+        $item['type']                 = $this->value($item, 'type', 'wincache');
+        $cache['stores']['wincache']  = $item;
         
         // 路由配置
-        $route['group']            = $this->value($route, 'group', false);
-        $route['var_redirect_url'] = $this->value($route, 'var_redirect_url', 'redirect_url');
-        $route['var_page']         = $this->value($route, 'var_page', 'page');
-        
+        $route['group'] = $this->value($route, 'group', false);
         
         // trace
         $trace['file'] = $this->value($trace, 'file', $tplPath . 'trace.html');

@@ -40,10 +40,11 @@
 	},
 	"autoload"     : {
 		"psr-4"    : {
-			"BusyPHP\\" : "src"
+			"BusyPHP\\"             : "src",
+			"Intervention\\Image\\" : "src/third/extend/intervention/image"
 		},
 		"classmap" : [
-			"src/override"
+			"src/third/override"
 		]
 	},
 	"autoload-dev" : {

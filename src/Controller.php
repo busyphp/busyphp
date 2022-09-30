@@ -191,6 +191,26 @@ abstract class Controller
             $this->view->content($content);
         }
         
+        $this->view->filter(function(string $content) {
+            return str_replace([
+                '__ROOT__',
+                '__APP__',
+                '__SELF__',
+                '__URL__',
+                '__ROUTE__',
+                '__ASSETS__',
+                '__DOMAIN__',
+            ], [
+                $this->request->getWebUrl(),
+                $this->request->getAppUrl(),
+                $this->request->url(),
+                (string) url(),
+                $this->request->getRoutePath(),
+                $this->request->getAssetsUrl(),
+                $this->request->domain(),
+            ], $content);
+        });
+        
         return $this->view;
     }
     
