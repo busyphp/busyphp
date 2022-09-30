@@ -55,6 +55,7 @@ class Service extends \BusyPHP\Service
                     $taglibPreLoad                     = $view['taglib_pre_load'] ?? '';
                     $config['view']['taglib_pre_load'] = Ba::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
                     $config['view']['template_detect'] = [$this, 'adminTemplateDetect'];
+                    $config['view']['default_filter']  = '';
                     $this->app->config->set($config);
                 }
                 
@@ -165,7 +166,7 @@ class Service extends \BusyPHP\Service
      * @param array  $config
      * @return string
      */
-    public function adminTemplateDetect(string $template, array $config):string
+    public function adminTemplateDetect(string $template, array $config) : string
     {
         // @admin:
         // 解析到 application/admin/view 目录
