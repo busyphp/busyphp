@@ -393,10 +393,10 @@ abstract class Controller
         $this->assign('message', $message);
         if ($status) {
             $this->assign('jump_url', $jumpUrl ?: $this->request->getRedirectUrl($this->request->getAppUrl()));
-            $template = $this->app->config->get('app.success_tmpl');
+            $template = $this->app->config->get('app.success_tmpl') ?: __DIR__ . '/tpl/message.html';
         } else {
             $this->assign('jump_url', $jumpUrl ?: 'javascript:history.back(-1);');
-            $template = $this->app->config->get('app.error_tmpl');
+            $template = $this->app->config->get('app.error_tmpl') ?: __DIR__ . '/tpl/message.html';
         }
         
         return $this->display($template);

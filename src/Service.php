@@ -58,18 +58,11 @@ class Service extends ThinkService
     
     public function register()
     {
-        $this->configInit();
     }
     
     
     public function boot()
     {
-        // 绑定URL生成类
-        $this->app->bind([
-            'think\route\Url' => Url::class,
-        ]);
-        
-        
         // 配置BaseModel
         Model::setDb($this->app->db);
         Model::setEvent($this->app->event);
@@ -153,78 +146,6 @@ class Service extends ThinkService
     
     
     /**
-     * 设置默认配置
-     */
-    private function configInit()
-    {
-        $config      = $this->app->config->get();
-        $app         = $this->value($config, 'app', []);
-        $view        = $this->value($config, 'view', []);
-        $database    = $this->value($config, 'database', []);
-        $connections = $this->value($database, 'connections', []);
-        $mysql       = $this->value($connections, 'mysql', []);
-        $cache       = $this->value($config, 'cache', []);
-        $route       = $this->value($config, 'route', []);
-        $trace       = $this->value($config, 'trace', []);
-        $session     = $this->value($config, 'session', []);
-        
-        
-        // 应用
-        $tplPath               = $this->app->getFrameworkPath('tpl/');
-        $app['exception_tmpl'] = $this->value($app, 'exception_tmpl', $tplPath . 'exception.html');
-        $app['success_tmpl']   = $this->value($app, 'success_tpl', $tplPath . 'message.html');
-        $app['error_tmpl']     = $this->value($app, 'error_tpl', $tplPath . 'message.html');
-        $app['app_express']    = true;
-        
-        // 模板配置
-        $view['type'] = $this->value($view, 'type', 'think');
-        
-        // 数据库配置
-        $mysql['prefix']                  = $mysql['prefix'] ?? 'busy_';
-        $database['connections']['mysql'] = $mysql;
-        
-        // 缓存驱动
-        $cache['stores']              = $this->value($cache, 'stores', []);
-        $item                         = $this->value($cache['stores'], 'file', []);
-        $item['path']                 = $this->value($item, 'path', $this->app->getRuntimeCachePath());
-        $cache['stores']['file']      = $item;
-        $item                         = $this->value($cache['stores'], 'redis', []);
-        $item['type']                 = $this->value($item, 'type', 'redis');
-        $cache['stores']['redis']     = $item;
-        $item                         = $this->value($cache['stores'], 'memcache', []);
-        $item['type']                 = $this->value($item, 'type', 'memcache');
-        $cache['stores']['memcache']  = $item;
-        $item                         = $this->value($cache['stores'], 'memcached', []);
-        $item['type']                 = $this->value($item, 'type', 'memcached');
-        $cache['stores']['memcached'] = $item;
-        $item                         = $this->value($cache['stores'], 'wincache', []);
-        $item['type']                 = $this->value($item, 'type', 'wincache');
-        $cache['stores']['wincache']  = $item;
-        
-        // 路由配置
-        $route['group'] = $this->value($route, 'group', false);
-        
-        // trace
-        $trace['file'] = $this->value($trace, 'file', $tplPath . 'trace.html');
-        
-        // session
-        $session['path'] = $this->value($session, 'path', $this->app->getRuntimeRootPath('session/'));
-        
-        
-        // 组合参数进行设置
-        $config['app']      = $app;
-        $config['view']     = $view;
-        $config['database'] = $database;
-        $config['cache']    = $cache;
-        $config['route']    = $route;
-        $config['trace']    = $trace;
-        $config['session']  = $session;
-        
-        $this->app->config->set($config);
-    }
-    
-    
-    /**
      * Http运行配置
      */
     private function configHttpRun()
@@ -291,7 +212,7 @@ class Service extends ThinkService
             $actionPattern  = '<' . self::ROUTE_VAR_ACTION . '>';
             $controlPattern = '<' . self::ROUTE_VAR_CONTROL . '>';
             foreach ($routeConfig as $key => $item) {
-                $roleItem = $route->rule("{$key}/{$actionPattern}", "{$item['class']}@{$actionPattern}");
+                $roleItem = $route->rule("$key/$actionPattern", "{$item['class']}@$actionPattern");
                 $roleItem->append([
                     self::ROUTE_VAR_DIR     => $item['group'],
                     self::ROUTE_VAR_TYPE    => 'plugin',
@@ -307,7 +228,7 @@ class Service extends ThinkService
             // 通用注册
             $route->group(function() use ($route, $actionPattern, $controlPattern) {
                 // 全局
-                $route->rule("Common.{$controlPattern}/{$actionPattern}", "BusyPHP\app\admin\controller\common\\{$controlPattern}Controller@{$actionPattern}");
+                $route->rule("Common.$controlPattern/$actionPattern", "BusyPHP\app\admin\controller\common\\{$controlPattern}Controller@$actionPattern");
                 
                 // 注册首页
                 $route->group(function() use ($route) {
@@ -321,13 +242,13 @@ class Service extends ThinkService
                 
                 // 注册登录地址
                 $passport = PassportController::class;
-                $route->rule('login', "{$passport}@login")->append([
+                $route->rule('login', "$passport@login")->append([
                     self::ROUTE_VAR_CONTROL => 'Passport',
                     self::ROUTE_VAR_ACTION  => 'login'
                 ])->name('admin_login');
                 
                 // 注册退出地址
-                $route->rule('out', "{$passport}@out")->append([
+                $route->rule('out', "$passport@out")->append([
                     self::ROUTE_VAR_CONTROL => 'Passport',
                     self::ROUTE_VAR_ACTION  => 'out'
                 ])->name('admin_out');

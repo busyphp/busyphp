@@ -15,20 +15,21 @@ use BusyPHP\app\admin\plugin\TreePlugin;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\Controller;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\Model;
-use BusyPHP\Url;
-use Exception;
+use FilesystemIterator;
+use SplFileInfo;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpResponseException;
-use think\facade\Cache;
 use think\facade\Event;
 use think\Response;
+use think\route\Url;
 use Throwable;
 
 /**
@@ -245,7 +246,7 @@ abstract class AdminController extends Controller
             $this->adminUser     = AdminUser::init()->checkLogin($this->saveOperate);
             $this->adminUserId   = $this->adminUser->id;
             $this->adminUsername = $this->adminUser->username;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return null;
         }
         
@@ -392,22 +393,21 @@ abstract class AdminController extends Controller
      */
     protected function clearCache()
     {
-        $path = $this->app->getBasePath();
-        foreach (scandir($path) as $value) {
-            if (!is_dir($path . $value) || $value === '.' || $value === '..') {
+        /** @var SplFileInfo $item */
+        foreach (new FilesystemIterator($this->app->getBasePath()) as $item) {
+            if (!$item->isDir()) {
                 continue;
             }
             
-            FileHelper::deleteDir($this->app->getRuntimeRootPath("{$value}/temp"));
-            FileHelper::deleteDir($this->app->getRuntimeRootPath("{$value}/cache"));
+            FileHelper::deleteDir($this->app->getRuntimeRootPath(sprintf('app/%s/temp', $item->getFilename())));
         }
         
         // 清理系统缓存
+        CacheHelper::clean();
         FileHelper::deleteDir($this->app->getRuntimeCachePath());
+        
         // 清理临时配置
         FileHelper::deleteDir($this->app->getRuntimeConfigPath());
-        // 清理基本缓存
-        Cache::clear();
         
         // 触发清理缓存事件
         Event::trigger(new AdminPanelClearCacheEvent());

@@ -11,7 +11,6 @@ use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\Handle;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Request;
-use BusyPHP\Url;
 use stdClass;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -19,6 +18,7 @@ use think\db\exception\DbException;
 use think\exception\HttpResponseException;
 use think\Response;
 use think\response\View;
+use think\route\Url;
 use Throwable;
 
 /**
@@ -151,7 +151,7 @@ class AdminHandle extends Handle
         $theme        = AdminUser::init()->getTheme($adminUser);
         $skinRoot     = $request->getAssetsUrl() . 'admin/';
         $version      = $app->config->get('app.admin.version', '');
-        $version      = $version ? ".{$version}" : '';
+        $version      = $version ? ".$version" : '';
         $data['skin'] = [
             'root'    => $skinRoot,
             'css'     => $skinRoot . 'css/',
