@@ -101,7 +101,7 @@ class UserController extends InsideController
         
         $list = [];
         $i    = 0;
-        foreach (glob($this->app->getFrameworkPath('app/admin/static/themes/*.*')) as $i => $cssFile) {
+        foreach (glob(__DIR__ . '/../../../../assets/admin/themes/*.*') as $i => $cssFile) {
             if (false === $config = $this->parseFile($cssFile, $i)) {
                 continue;
             }
