@@ -103,7 +103,7 @@ class Html
         }
         // 调用Trace页面模板
         ob_start();
-        include $this->config['file'] ?: __DIR__ . '/../../../../tpl/trace.html';
+        include $this->config['file'] ?: __DIR__ . '/../../../../../assets/template/trace.html';
         return ob_get_clean();
     }
 

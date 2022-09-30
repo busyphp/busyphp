@@ -88,7 +88,7 @@ class PublicSetting extends Setting
     {
         $image = $this->get('img_error_placeholder', '');
         if (!$image) {
-            $image = $this->app->request->getAssetsUrl() . 'static/images/no_image.jpeg';
+            $image = $this->app->request->getAssetsUrl() . 'system/images/no_image.jpeg';
             
             if ($isPath) {
                 // 资源真实存在于assets目录下，则返回该资源
@@ -97,7 +97,7 @@ class PublicSetting extends Setting
                 }
                 
                 // 返回系统资源
-                return $this->app->getFrameworkPath('static/images/no_image.jpeg');
+                return __DIR__ . '/../../../assets/images/no_image.jpeg';
             }
         }
         

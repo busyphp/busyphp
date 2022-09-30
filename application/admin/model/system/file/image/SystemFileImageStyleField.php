@@ -20,7 +20,7 @@ class SystemFileImageStyleField extends Field
 {
     /**
      * 样式名
-     * @var int
+     * @var string
      */
     public $id;
     

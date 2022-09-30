@@ -149,7 +149,8 @@ class AdminHandle extends Handle
         
         // 样式路径配置
         $theme        = AdminUser::init()->getTheme($adminUser);
-        $skinRoot     = $request->getAssetsUrl() . 'admin/';
+        $assetsUrl    = $request->getAssetsUrl();
+        $skinRoot     = $assetsUrl . 'admin/';
         $version      = $app->config->get('app.admin.version', '');
         $version      = $version ? ".$version" : '';
         $data['skin'] = [
@@ -157,9 +158,9 @@ class AdminHandle extends Handle
             'css'     => $skinRoot . 'css/',
             'js'      => $skinRoot . 'js/',
             'images'  => $skinRoot . 'images/',
-            'lib'     => $skinRoot . 'lib/',
             'themes'  => $skinRoot . 'themes/',
             'theme'   => $skinRoot . "themes/{$theme['skin']}.css",
+            'lib'     => $assetsUrl . 'system/js/',
             'version' => ($app->isDebug() && $app->config->get('app.admin.debug', false)) ? time() : ($app->getFrameworkVersion() . $version),
         ];
         

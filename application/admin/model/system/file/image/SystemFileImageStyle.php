@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\image;
 
-use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\image\driver\Local;
 use BusyPHP\image\driver\local\LocalImageStyleManagerInterface;
@@ -66,7 +65,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
         
         $path = "system/preview.jpeg";
         if (!$disk->has($path)) {
-            $disk->put($path, file_get_contents(App::getInstance()->getFrameworkPath('static/images/preview.jpeg')));
+            $disk->put($path, file_get_contents(__DIR__ . '/../../../../../../assets/images/preview.jpeg'));
         }
         
         return $path;

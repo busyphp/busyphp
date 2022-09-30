@@ -233,7 +233,7 @@ class Handle
         ob_start();
         $data = $this->convertExceptionToArray($exception);
         extract($data);
-        include $this->app->config->get('app.exception_tmpl') ?: __DIR__ . '/../../../../../tpl/exception.html';
+        include $this->app->config->get('app.exception_tmpl') ?: __DIR__ . '/../../../../../../assets/template/exception.html';
         
         return ob_get_clean();
     }

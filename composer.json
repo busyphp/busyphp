@@ -41,6 +41,7 @@
 	"autoload"     : {
 		"psr-4"    : {
 			"BusyPHP\\"             : "src",
+			"BusyPHP\\app\\"        : "application",
 			"Intervention\\Image\\" : "src/third/extend/intervention/image"
 		},
 		"classmap" : [
