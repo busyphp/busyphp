@@ -35,8 +35,8 @@ class Service extends ThinkService
     /** @var string 路由定义方法参数 */
     public const ROUTE_VAR_ACTION = '__busy_action__';
     
-    /** @var string 插件路由 */
-    public const ROUTE_PLUGIN = 'plugin';
+    /** @var string 路由定义类型-插件 */
+    public const ROUTE_VAL_PLUGIN = 'plugin';
     
     
     public function boot()
@@ -95,7 +95,7 @@ class Service extends ThinkService
         $this->app->middleware->import([
             function(Request $request, Closure $next) {
                 // 通过插件方式引入
-                if ($request->route(self::ROUTE_VAR_TYPE) === self::ROUTE_PLUGIN) {
+                if ($request->route(self::ROUTE_VAR_TYPE) === self::ROUTE_VAL_PLUGIN) {
                     $group = $request->route(self::ROUTE_VAR_GROUP);
                     $request->setController(($group ? $group . '.' : '') . $request->route(self::ROUTE_VAR_CONTROL));
                     $request->setAction($request->route(self::ROUTE_VAR_ACTION));
