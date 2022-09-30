@@ -60,6 +60,7 @@ class Template
         'tpl_replace_string' => [],
         'tpl_var_identify'   => 'array', // .语法变量识别，array|object|'', 为空时自动识别
         'default_filter'     => 'htmlentities', // 默认过滤方法 用于普通标签输出
+        'template_detect'    => '', // 自定义模板侦测
     ];
 
     /**
@@ -1235,27 +1236,19 @@ class Template
     private function parseTemplateFile(string $template): string
     {
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
-            // @app:
-            // 解析到 src/app 目录
-            if (0 === strpos($template, '@app:')) {
-                $template = __DIR__ . '/../../../../../../application/' . ltrim(substr($template, 5), '/') . '.html';
+            $state = false;
+            if (is_callable($detect = $this->config['template_detect'] ?? '')) {
+                $state = true;
+                $template = call_user_func_array($detect, [$template, $this->config]);
             }
-        
-            // @admin:
-            // 解析到 src/admin/view 目录
-            elseif (0 === strpos($template, '@admin:')) {
-                $template = __DIR__ . '/../../../../../../application/admin/view/' . ltrim(substr($template, 7), '/') . '.html';
-            }
-        
-            //
-            // 默认
-            else {
+    
+            if (($state && empty($template)) || !$state) {
                 if (0 !== strpos($template, '/')) {
                     $template = str_replace(['/', ':'], $this->config['view_depr'], $template);
                 } else {
                     $template = str_replace(['/', ':'], $this->config['view_depr'], substr($template, 1));
                 }
-            
+    
                 $template = $this->config['view_path'] . $template . '.' . ltrim($this->config['view_suffix'], '.');
             }
         }
