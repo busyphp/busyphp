@@ -27,6 +27,9 @@ class RegisterService extends \think\initializer\RegisterService
         // 注册基本服务类
         $app->register(Service::class);
         
+        // 注册Application服务类
+        $app->register(\BusyPHP\app\Service::class);
+        
         // 注册扩展服务类
         $file = $app->getRootPath() . 'vendor/busyphp_services.php';
         if (is_file($file)) {
