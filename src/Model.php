@@ -133,7 +133,10 @@ abstract class Model extends Query
      */
     protected $manager;
     
-    /** @var LoggerInterface */
+    /**
+     * 日志接口
+     * @var LoggerInterface
+     */
     protected $logger = null;
     
     /**
@@ -599,11 +602,9 @@ abstract class Model extends Query
         
         if (is_callable($this->findInfoFilter)) {
             return call_user_func_array($this->findInfoFilter, [$data]);
-        } elseif (is_string($this->findInfoFilter) && function_exists($this->findInfoFilter)) {
-            return call_user_func_array($this->findInfoFilter, [$data]);
-        } else {
-            return $data;
         }
+        
+        return $data;
     }
     
     
@@ -1782,7 +1783,6 @@ abstract class Model extends Query
     
     /**
      * 执行查询但只返回PDOStatement对象
-     * todo 目前使用where指定条件不会解析参数
      * @return PDOStatement
      */
     public function getPdo() : PDOStatement
