@@ -4,9 +4,10 @@ declare(strict_types = 1);
 namespace BusyPHP\image\parameter;
 
 use BusyPHP\exception\ParamInvalidException;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\image\parameter\concern\ColorConcern;
 use BusyPHP\image\parameter\concern\WidthHeightConcern;
-use BusyPHP\Model;
 
 /**
  * 缩放参数模板
@@ -120,6 +121,6 @@ class ZoomParameter extends BaseParameter
      */
     public static function getTypes(?int $type = null)
     {
-        return Model::parseVars(Model::parseConst(self::class, 'TYPE_', [], 'name'), $type);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', [], ClassHelper::CONST_MAP_NAME), $type);
     }
 }

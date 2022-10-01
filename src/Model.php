@@ -3,9 +3,10 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
-use ArrayAccess;
 use BusyPHP\helper\CacheHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
@@ -13,16 +14,12 @@ use BusyPHP\helper\FilterHelper;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
-use Exception;
-use JsonSerializable;
 use PDOStatement;
-use ReflectionClass;
-use ReflectionException;
+use Psr\Log\LoggerInterface;
 use think\Collection;
 use think\Container;
-use think\contract\Arrayable;
-use think\contract\Jsonable;
 use think\Db;
+use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\InvalidArgumentException;
@@ -30,8 +27,7 @@ use think\db\Query;
 use think\db\Raw;
 use think\DbManager;
 use think\helper\Str;
-use think\model\concern\Attribute;
-use think\model\concern\Conversion;
+use think\Log;
 use think\model\concern\ModelEvent;
 use think\model\concern\TimeStamp;
 use Throwable;
@@ -54,12 +50,16 @@ use Throwable;
  * @method $this lockShare(boolean $isLock) 是否加共享锁，允许其它对象读不允许写
  * @template T
  */
-abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
+abstract class Model extends Query
 {
-    use Attribute;
     use ModelEvent;
     use TimeStamp;
-    use Conversion;
+    
+    /**
+     * 回调方法
+     * @var Closure[]
+     */
+    private $callback = [];
     
     /**
      * findInfo方法参数过滤器
@@ -104,34 +104,37 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected $listNotFoundMessage = '';
     
     /**
-     * join查询别名
+     * 设置join别名
      * @var string
      */
-    protected $joinAlias;
+    protected $joinAlias = '';
     
     /**
      * 当前数据表主键
-     * @var string|array
-     */
-    protected $pk = 'id';
-    
-    /**
-     * 数据表名称
      * @var string
      */
-    protected $table;
+    protected $pk = 'id';
     
     /**
      * 数据表后缀
      * @var string
      */
-    protected $suffix;
+    protected $suffix = '';
     
     /**
      * 当前模型的数据库连接标识
      * @var string
      */
-    protected $configName;
+    protected $connect = '';
+    
+    /**
+     * 当前Db对象
+     * @var Db
+     */
+    protected $manager;
+    
+    /** @var LoggerInterface */
+    protected $logger = null;
     
     /**
      * Db对象
@@ -163,41 +166,35 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     protected static $bindParseClassHandle = [];
     
-    /**
-     * 回调方法
-     * @var Closure[]
-     */
-    private $callback = [];
-    
     //+--------------------------------------
     //| 回调常量
     //+--------------------------------------
     /** 操作前回调，一般用于创建/更新/删除前 */
-    const CALLBACK_BEFORE = 'before';
+    public const CALLBACK_BEFORE = 'before';
     
     /** 操作后回调，一般用于创建/更新/删除后 */
-    const CALLBACK_AFTER = 'after';
+    public const CALLBACK_AFTER = 'after';
     
     /** 操作失败回调，一般用于失败的情况下 */
-    const CALLBACK_ERROR = 'error';
+    public const CALLBACK_ERROR = 'error';
     
     /** 操作完成回调，一般用于成功/失败的情况下 */
-    const CALLBACK_COMPLETE = 'complete';
+    public const CALLBACK_COMPLETE = 'complete';
     
     /** 处理过程中回调，一般用于业务逻辑中 */
-    const CALLBACK_PROCESS = 'process';
+    public const CALLBACK_PROCESS = 'process';
     
     //+--------------------------------------
     //| 数据库回调常量
     //+--------------------------------------
     /** @var string 新增完成事件 */
-    const CHANGED_INSERT = 'insert';
+    public const CHANGED_INSERT = 'insert';
     
     /** @var string 更新完成事件 */
-    const CHANGED_UPDATE = 'update';
+    public const CHANGED_UPDATE = 'update';
     
     /** @var string 删除完成事件 */
-    const CHANGED_DELETE = 'delete';
+    public const CHANGED_DELETE = 'delete';
     
     
     /**
@@ -244,7 +241,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public static function setDb(DbManager $db)
     {
-        self::$db = $db;
+        static::$db = $db;
     }
     
     
@@ -256,18 +253,21 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public static function setInvoker(callable $callable) : void
     {
-        self::$invoker = $callable;
+        static::$invoker = $callable;
     }
     
     
     /**
      * 切换后缀进行查询
-     * @param string $suffix 切换的表后缀
-     * @return $this
+     * @param string               $suffix 切换的表后缀
+     * @param LoggerInterface|null $log 日志接口
+     * @param string               $connect 数据库连接标识
+     * @param bool                 $force 是否强制重连
+     * @return static
      */
-    public static function suffix(string $suffix)
+    public static function suffix(string $suffix, LoggerInterface $log = null, string $connect = '', bool $force = false)
     {
-        $model = new static();
+        $model = new static($log, $connect, $force);
         $model->setSuffix($suffix);
         
         return $model;
@@ -276,25 +276,96 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 切换数据库连接进行查询
-     * @param string $name 数据库连接标识
-     * @return $this
+     * @param string               $connect 数据库连接标识
+     * @param LoggerInterface|null $log 日志接口
+     * @param bool                 $force 是否强制重连
+     * @return static
      */
-    public static function connect(string $name)
+    public static function connect(string $connect, LoggerInterface $log = null, bool $force = false)
     {
-        $model = new static();
-        $model->setConfigName($name);
-        
-        return $model;
+        return new static($log, $connect, $force);
     }
     
     
     /**
      * 快速实例化
+     * @param LoggerInterface|null $log 日志接口
+     * @return static
+     */
+    public static function init(LoggerInterface $log = null)
+    {
+        return new static($log);
+    }
+    
+    
+    /**
+     * 构架函数
+     * @param LoggerInterface|null $log 日志接口
+     * @param string               $connect 连接标识
+     * @param bool                 $force 是否强制重连
+     */
+    public function __construct(LoggerInterface $log = null, string $connect = '', bool $force = false)
+    {
+        // 当前模型名
+        if (empty($this->name)) {
+            $this->name = basename(str_replace('\\', '/', static::class));
+        }
+        
+        // 连接标识
+        if ($connect) {
+            $this->connect = $connect;
+        }
+        
+        // 指定日志接口
+        if ($log) {
+            $this->logger = $log;
+        }
+        
+        // 自定义日志接口
+        if ($this->logger) {
+            $this->manager = Container::getInstance()->make('db', [], true);
+            $this->manager->setLog($this->logger);
+        } else {
+            if (!$this->manager) {
+                $this->manager = static::$db;
+            }
+        }
+        $this->pk($this->pk);
+        
+        // 执行服务注入
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
+        
+        parent::__construct($this->manager->connect($this->connect, $force));
+    }
+    
+    
+    /**
+     * @inheritDoc
      * @return $this
      */
-    public static function init()
+    public function newQuery() : BaseQuery
     {
-        return new static();
+        $query = new static($this->getLogger(), $this->getConnect());
+        
+        if (isset($this->options['table'])) {
+            $query->table($this->options['table']);
+        } else {
+            $query->name($this->name);
+        }
+        
+        if (!empty($this->options['json'])) {
+            $query->json($this->options['json'], $this->options['json_assoc']);
+        }
+        
+        if (isset($this->options['field_type'])) {
+            $query->setFieldType($this->options['field_type']);
+        }
+        
+        return $query;
     }
     
     
@@ -307,8 +378,8 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function invoke($method, array $vars = [])
     {
-        if (self::$invoker) {
-            $call = self::$invoker;
+        if (static::$invoker) {
+            $call = static::$invoker;
             
             return $call($method instanceof Closure ? $method : Closure::fromCallable([$this, $method]), $vars);
         }
@@ -318,44 +389,38 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 架构函数
+     * @inheritDoc
      */
-    public function __construct()
+    public function getTable(string $name = '')
     {
-        // 当前模型名
-        if (empty($this->name)) {
-            $name       = str_replace('\\', '/', static::class);
-            $this->name = basename($name);
+        if (empty($name) && isset($this->options['table'])) {
+            return $this->options['table'];
         }
         
-        // 设置表名称
-        $this->name($this->name . $this->suffix);
-        $this->pk($this->pk);
+        $name = $name ?: ($this->name . $this->suffix);
         
-        // 设置表名称
-        if (!empty($this->table)) {
-            $this->table($this->table . $this->suffix);
-        }
-        
-        // 执行服务注入
-        if (!empty(static::$maker)) {
-            foreach (static::$maker as $maker) {
-                call_user_func($maker, $this);
-            }
-        }
-        
-        // 初始化父类
-        parent::__construct(self::$db->connect($this->configName));
+        return $this->prefix . Str::snake($name);
     }
     
     
     /**
-     * 获取数据表名称，不包含表前缀
+     * @inheritDoc
+     */
+    public function getName() : string
+    {
+        return StringHelper::snake($this->name);
+    }
+    
+    
+    /**
+     * 获取数据表名称(不含前缀)
      * @return string
+     * @deprecated
+     * @see Model::getName()
      */
     public function getTableWithoutPrefix() : string
     {
-        return Str::snake($this->name);
+        return $this->getName();
     }
     
     
@@ -378,7 +443,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function getSuffix() : string
     {
-        return $this->suffix ?: '';
+        return $this->suffix;
     }
     
     
@@ -386,32 +451,29 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * 获取当前模型的数据库连接标识
      * @return string
      */
-    public function getConfigName() : string
+    public function getConnect() : string
     {
-        return $this->configName;
+        return $this->connect;
     }
     
     
     /**
-     * 设置当前模型的数据库连接标识名称
-     * @param string $configName 数据表连接标识
-     * @return $this
+     * 获取日志接口
+     * @return LoggerInterface
      */
-    public function setConfigName(string $configName) : Model
+    public function getLogger() : ?LoggerInterface
     {
-        $this->configName = $configName;
-        
-        return $this;
+        return $this->logger;
     }
     
     
     /**
      * 设置操作前回调方法
-     * @param mixed   $callType 回调类型
-     * @param Closure $callback 回调方法，具体参数由子类定义
+     * @param mixed    $callType 回调类型
+     * @param callable $callback 回调方法，具体参数由子类定义
      * @return $this
      */
-    public function setCallback($callType, Closure $callback) : Model
+    public function setCallback($callType, callable $callback)
     {
         $this->callback[$callType] = $callback;
         
@@ -428,7 +490,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     protected function triggerCallback($callType, ...$args)
     {
         if (isset($this->callback[$callType])) {
-            return Container::getInstance()->invokeFunction($this->callback[$callType], $args);
+            return Container::getInstance()->invoke($this->callback[$callType], $args);
         }
         
         return null;
@@ -507,6 +569,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     }
     
     
+    /**
+     * @throws DbException
+     */
     public static function __callStatic(string $method, array $args)
     {
         if (isset(static::$macro[static::class][$method])) {
@@ -514,79 +579,6 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         }
         
         throw new DbException('method not exist:' . static::class . '::' . $method);
-    }
-    
-    
-    /**
-     * 修改器 设置数据对象的值
-     * @param string $name 名称
-     * @param mixed  $value 值
-     * @return void
-     */
-    public function __set(string $name, $value) : void
-    {
-        $this->setAttr($name, $value);
-    }
-    
-    
-    /**
-     * 获取器 获取数据对象的值
-     * @param string $name 名称
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        return $this->getAttr($name);
-    }
-    
-    
-    /**
-     * 检测数据对象的值
-     * @param string $name 名称
-     * @return bool
-     */
-    public function __isset(string $name) : bool
-    {
-        return !is_null($this->getAttr($name));
-    }
-    
-    
-    /**
-     * 销毁数据对象的值
-     * @param string $name 名称
-     * @return void
-     */
-    public function __unset(string $name) : void
-    {
-        unset($this->data[$name], $this->relation[$name]);
-    }
-    
-    
-    #[\ReturnTypeWillChange]
-    public function offsetSet($name, $value)
-    {
-        $this->setAttr($name, $value);
-    }
-    
-    
-    #[\ReturnTypeWillChange]
-    public function offsetExists($name) : bool
-    {
-        return $this->__isset($name);
-    }
-    
-    
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($name)
-    {
-        $this->__unset($name);
-    }
-    
-    
-    #[\ReturnTypeWillChange]
-    public function offsetGet($name)
-    {
-        return $this->getAttr($name);
     }
     
     
@@ -620,7 +612,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param string $class
      * @return $this
      */
-    public function parse(string $class) : self
+    public function parse(string $class)
     {
         $this->useBindParseClass = $class;
         
@@ -633,7 +625,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array $info
      * @return array|Field
      */
-    public function toField(array $info)
+    private function toField(array $info)
     {
         return $this->toFieldList([$info])[0];
     }
@@ -644,7 +636,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array|Collection $list
      * @return array|Field[]
      */
-    public function toFieldList($list)
+    private function toFieldList($list)
     {
         if ($list instanceof Collection) {
             $list = $list->toArray();
@@ -682,7 +674,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array $info
      * @return array|Field
      */
-    public function toExtendField(array $info)
+    private function toExtendField(array $info)
     {
         return $this->toExtendFieldList([$info])[0];
     }
@@ -693,7 +685,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array|Collection $list
      * @return array|Field[]
      */
-    public function toExtendFieldList($list)
+    private function toExtendFieldList($list)
     {
         if ($list instanceof Collection) {
             $list = $list->toArray();
@@ -733,7 +725,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 解析通用信息
-     * @param $list
+     * @param array $list
      */
     protected function onParseBindList(array &$list)
     {
@@ -742,7 +734,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     /**
      * 解析关联信息
-     * @param $list
+     * @param array $list
      */
     protected function onParseBindExtendList(array &$list)
     {
@@ -876,64 +868,73 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         // 全部触发
         if (method_exists($this, 'onChanged')) {
-            $this->catchException(function() use ($method, $id, $options) {
+            $this->ignoreException(function() use ($method, $id, $options) {
                 $this->onChanged($method, $id, $options);
-            }, false, static::class . '::onChanged', 'error');
+            });
         }
         
         // 写入触发
         if (($method == self::CHANGED_INSERT || $method == self::CHANGED_UPDATE) && method_exists($this, 'onAfterWrite')) {
-            $this->catchException(function() use ($id, $options) {
+            $this->ignoreException(function() use ($id, $options) {
                 $this->onAfterWrite($id, $options);
-            }, false, static::class . '::onAfterWrite', 'error');
+            });
         }
         
         // 新增触发
         if ($method == self::CHANGED_INSERT && method_exists($this, 'onAfterInsert')) {
-            $this->catchException(function() use ($id, $options) {
+            $this->ignoreException(function() use ($id, $options) {
                 $this->onAfterInsert($id, $options);
-            }, false, static::class . '::onAfterInsert', 'error');
+            });
         }
         
         // 更新触发
         if ($method == self::CHANGED_UPDATE && method_exists($this, 'onAfterUpdate')) {
-            $this->catchException(function() use ($id, $options) {
+            $this->ignoreException(function() use ($id, $options) {
                 $this->onAfterUpdate($id, $options);
-            }, false, static::class . '::onAfterUpdate', 'error');
+            });
         }
         
         // 删除触发
         if ($method == self::CHANGED_DELETE && method_exists($this, 'onAfterDelete')) {
-            $this->catchException(function() use ($id, $options) {
+            $this->ignoreException(function() use ($id, $options) {
                 $this->onAfterDelete($id, $options);
-            }, false, static::class . '::onAfterDelete', 'error');
+            });
         }
     }
     
     
     /**
-     * 捕获错误并执行
-     * @param Closure $closure 闭包
-     * @param mixed   $errorReturn 错误返回值
-     * @param string  $errorPrefix 系统异常消息前缀
-     * @param string  $type 记录类型
+     * 忽略异常错误并执行
+     * @param callable    $closure 闭包
+     * @param string|null $tag 日志标签
      * @return mixed
      */
-    protected function catchException(Closure $closure, $errorReturn = false, string $errorPrefix = '', string $type = 'sql')
+    protected function ignoreException(callable $closure, string $tag = null)
     {
         try {
             return call_user_func($closure);
-        } catch (Exception | Throwable $e) {
-            if ($type == 'sql') {
-                if ($this->getConfig('trigger_sql')) {
-                    LogHelper::default()->record($e, 'sql');
-                }
-            } else {
-                LogHelper::default()->tag($errorPrefix)->record($e, $type);
+        } catch (Throwable $e) {
+            try {
+                $this->log($e, Log::WARNING, $tag);
+            } catch (Throwable $e) {
+                // 忽略错误
             }
             
-            return $errorReturn;
+            return null;
         }
+    }
+    
+    
+    /**
+     * 记录日志
+     * @param mixed        $content 日志内容
+     * @param string|array $level 日志级别
+     * @param string|null  $tag 日志标签
+     * @param string|null  $method 所在方法(一般用于记录异常触发所在的方法)
+     */
+    public function log($content, $level = Log::SQL, string $tag = null, string $method = null)
+    {
+        $this->manager->log(LogHelper::format($content, $tag, $method), $level);
     }
     
     
@@ -954,7 +955,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            LogHelper::default()->record("{$alias}startTrans", 'sql');
+            $this->log("{$alias}startTrans");
         }
     }
     
@@ -975,7 +976,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            LogHelper::default()->record("{$alias}commit", 'sql');
+            $this->log("{$alias}commit");
         }
     }
     
@@ -995,7 +996,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         if ($this->getConfig('trigger_sql')) {
             $alias = $alias ? $alias . ' ' : '';
-            LogHelper::default()->record("{$alias}rollback", 'sql');
+            $this->log("{$alias}rollback");
         }
     }
     
@@ -1260,9 +1261,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         // 触发回调
         if (method_exists($this, 'onAddAll')) {
-            $this->catchException(function() {
+            $this->ignoreException(function() {
                 $this->onAddAll();
-            }, false, static::class . '::onAddAll', 'error');
+            });
         }
         
         return $result;
@@ -1282,7 +1283,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     
     
     /**
-     * 批量更新，不支持链式操作
+     * 批量更新数据
      * @param array  $data 更新的数据<pre>
      * $this->saveAll([
      *     [
@@ -1339,9 +1340,9 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
         
         // 触发回调
         if (method_exists($this, 'onSaveAll')) {
-            $this->catchException(function() {
+            $this->ignoreException(function() {
                 $this->onSaveAll();
-            }, false, static::class . '::onSaveAll', 'error');
+            });
         }
         
         return $result;
@@ -1578,14 +1579,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array $array
      * @param mixed $var
      * @return array|mixed
+     * @deprecated
+     * @see ArrayHelper::getValueOrSelf()
      */
-    public static function parseVars($array, $var = null)
+    public static function parseVars(array $array, $var = null)
     {
-        if (is_null($var)) {
-            return $array;
-        }
-        
-        return isset($array[$var]) ? $array[$var] : null;
+        return ArrayHelper::getValueOrSelf($array, $var);
     }
     
     
@@ -1596,65 +1595,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      * @param array       $annotations 其他注解
      * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
      * @return array
+     * @deprecated
+     * @see ClassHelper::getConstMap()
      */
     public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
     {
-        try {
-            $reflect = new ReflectionClass($class === true ? static::class : $class);
-        } catch (ReflectionException $e) {
-            return [];
-        }
-        
-        $list = [];
-        foreach ($reflect->getConstants() as $key => $value) {
-            if (0 !== strpos($key, $prefix)) {
-                continue;
-            }
-            
-            $constant = $reflect->getReflectionConstant($key);
-            $doc      = $constant->getDocComment();
-            $name     = '';
-            $item     = [];
-            if (false === strpos($doc, PHP_EOL)) {
-                if (preg_match('/\/\*\*\s@.*?\s[int|float|string|bool|boolean|null]+(.*?)\*\//i', $doc, $match)) {
-                    $name = trim($match[1] ?? '');
-                } else {
-                    preg_match('/\/\*\*(.*?)\*\//i', $doc, $match);
-                    $name = trim($match[1] ?? '');
-                }
-            } else {
-                if (preg_match('/\/\*\*(.*?)(@.*?)\*\//is', $doc, $match)) {
-                    $name = preg_replace('/\n.*?\*/', '', $match[1] ?? '');
-                    $name = trim($name);
-                    
-                    if ($annotations) {
-                        $extendRegex = implode('|', $annotations);
-                        preg_match_all('/@([' . $extendRegex . ']+)(.*?)\*+/is', $match[2] . '*', $extendMatch);
-                        foreach ($extendMatch[1] ?? [] as $i => $extendKey) {
-                            $item[$extendKey] = trim($extendMatch[2][$i] ?? '');
-                        }
-                    }
-                }
-            }
-            
-            foreach ($annotations as $extendKey) {
-                $item[$extendKey] = $item[$extendKey] ?? '';
-            }
-            $item['name']  = $name;
-            $item['key']   = $key;
-            $item['value'] = $value;
-            
-            
-            if (is_callable($mapping)) {
-                $item = call_user_func_array($mapping, [$item]);
-            } elseif (is_string($mapping) && !empty($mapping)) {
-                $item = $item[$mapping];
-            }
-            
-            $list[$value] = $item;
-        }
-        
-        return $list;
+        return ClassHelper::getConstMap($class === true ? static::class : $class, $prefix, $annotations, $mapping);
     }
     
     
@@ -1699,13 +1645,25 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 获取Join别名
      * @return string
+     * @deprecated
+     * @see Model::getAlias()
      */
     public function getJoinAlias() : string
+    {
+        return $this->getAlias();
+    }
+    
+    
+    /**
+     * 获取Join别名
+     * @return string
+     */
+    public function getAlias() : string
     {
         $alias = $this->options['alias'] ?? '';
         $alias = $alias ?: $this->joinAlias;
         
-        return $alias ?: $this->getTableWithoutPrefix();
+        return $alias ?: $this->getName();
     }
     
     
@@ -1747,7 +1705,7 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     /**
      * 模型字段实体条件
      * @param mixed ...$entity
-     * @return $this
+     * @return static
      */
     public function whereEntity(...$entity)
     {
@@ -1782,12 +1740,12 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
     {
         if ($join instanceof Model) {
             $model = $join;
-            $join  = [$model->getTable() => $model->getJoinAlias()];
+            $join  = [$model->getTable() => $model->getAlias()];
             $model->removeOption();
         } elseif (is_string($join) && is_subclass_of($join, Model::class)) {
             /** @var Model $model */
             $model = call_user_func([$join, 'init']);
-            $join  = [$model->getTable() => $model->getJoinAlias()];
+            $join  = [$model->getTable() => $model->getAlias()];
             $model->removeOption();
         }
         
@@ -1829,18 +1787,13 @@ abstract class Model extends Query implements JsonSerializable, ArrayAccess, Arr
      */
     public function getPdo() : PDOStatement
     {
-        $this->options['distinct'] = $this->options['distinct'] ?? false;
-        $this->options['extra']    = $this->options['extra'] ?? '';
-        $this->options['join']     = $this->options['join'] ?? [];
-        $this->options['where']    = $this->options['where'] ?? [];
-        $this->options['having']   = $this->options['having'] ?? '';
-        $this->options['order']    = $this->options['order'] ?? [];
-        $this->options['limit']    = $this->options['limit'] ?? '';
-        $this->options['union']    = $this->options['union'] ?? [];
-        $this->options['comment']  = $this->options['comment'] ?? '';
-        $this->options['table']    = $this->options['table'] ?? $this->getTable();
-        
-        return parent::getPdo();
+        try {
+            $this->parseOptions();
+            
+            return parent::getPdo();
+        } finally {
+            $this->removeOption();
+        }
     }
     
     

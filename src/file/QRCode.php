@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\file;
 
 use BusyPHP\app\admin\setting\QrcodeSetting;
-use BusyPHP\Model;
+use BusyPHP\helper\ClassHelper;
 use Exception;
 use LogicException;
 use PHPQRCode\Constants;
@@ -397,8 +397,6 @@ class QRCode
      */
     public static function getLevels() : array
     {
-        return Model::parseConst(self::class, 'LEVEL_', [], function($map) {
-            return $map['name'];
-        });
+        return ClassHelper::getConstMap(self::class, 'LEVEL_', ClassHelper::CONST_MAP_NAME);
     }
 }

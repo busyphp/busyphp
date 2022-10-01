@@ -8,6 +8,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
 use Exception;
@@ -598,11 +599,7 @@ class SystemMenu extends Model
      */
     public static function getTargets($var = null)
     {
-        return self::parseVars(
-            self::parseConst(self::class, 'TARGET_', [], function($item) {
-                return $item['name'];
-            }), $var
-        );
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TARGET_', ClassHelper::CONST_MAP_NAME), $var);
     }
     
     

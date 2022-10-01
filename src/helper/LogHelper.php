@@ -3,12 +3,15 @@
 namespace BusyPHP\helper;
 
 use BusyPHP\App;
-use Exception;
 use JsonSerializable;
 use think\Container;
 use think\contract\Jsonable;
+use think\Exception as ThinkException;
 use think\exception\ErrorException;
+use think\facade\Config;
+use think\facade\Lang;
 use think\facade\Log;
+use think\Log as ThinkLog;
 use think\log\Channel;
 use Throwable;
 
@@ -49,15 +52,21 @@ class LogHelper
     
     /**
      * LogHelper constructor.
-     * @param Channel $channel
+     * @param string|null $channel
      */
-    public function __construct($channel = null)
+    public function __construct(string $channel = null)
     {
-        if (!$channel instanceof Channel) {
-            $channel = Log::channel();
-        }
-        
-        $this->channel = $channel;
+        $this->channel = Log::channel($channel);
+    }
+    
+    
+    /**
+     * 获取日志对象
+     * @return Channel
+     */
+    public function channel() : Channel
+    {
+        return $this->channel;
     }
     
     
@@ -118,9 +127,9 @@ class LogHelper
      * @param bool   $lazy 是否延迟写入
      * @return $this
      */
-    public function record($msg, string $type = 'info', array $context = [], bool $lazy = true) : self
+    public function record($msg, string $type = ThinkLog::INFO, array $context = [], bool $lazy = true) : self
     {
-        $this->channel->record(self::parse($msg, $this->options['tag'] ?? '', $this->options['method'] ?? ''), $type, $context, $lazy);
+        $this->channel->record(static::format($msg, $this->options['tag'] ?? '', $this->options['method'] ?? ''), $type, $context, $lazy);
         $this->options = [];
         
         return $this;
@@ -135,25 +144,35 @@ class LogHelper
      * @param array  $context 替换内容
      * @return $this
      */
-    public function write($msg, string $type = 'info', array $context = []) : self
+    public function write($msg, string $type = ThinkLog::INFO, array $context = []) : self
     {
         return $this->record($msg, $type, $context, false);
     }
     
     
     /**
-     * 解析异常消息
-     * @param mixed  $content 消息内容
-     * @param string $tag 标签/标题
-     * @param string $method 所在方法
+     * @deprecated
+     * @see LogHelper::format()
+     */
+    public static function parse($content, string $tag = null, string $method = null) : string
+    {
+        return static::format($content, $tag, $method);
+    }
+    
+    
+    /**
+     * 格式化日志内容
+     * @param mixed       $content 日志内容
+     * @param string|null $tag 日志标签
+     * @param string|null $method 所在方法
      * @return string
      */
-    public static function parse($content, ?string $tag = null, ?string $method = null) : string
+    public static function format($content, string $tag = null, string $method = null) : string
     {
-        $tag    = $tag ? "{$tag} : " : '';
-        $method = $method ? " #method [{$method}]" : '';
+        $tag    = $tag ? "$tag : " : '';
+        $method = $method ? " #method [$method]" : '';
         
-        if ($content instanceof Throwable || $content instanceof Exception) {
+        if ($content instanceof Throwable) {
             $message = static::getMessage($content);
             $code    = static::getCode($content);
             $file    = $content->getFile();
@@ -161,25 +180,24 @@ class LogHelper
             $class   = get_class($content);
             
             
-            $msg = "{$tag}{$message} #throw [{$code}:{$class}] #file [{$file}:{$line}]{$method}";
-            $app = App::getInstance();
+            $msg = "$tag$message #throw [$code:$class] #file [$file:$line]$method";
             
             // 扩展数据
-            if ($app->config->get('log.record_data', true)) {
-                if ($content instanceof \think\Exception) {
+            if (Config::get('log.record_data', true)) {
+                if ($content instanceof ThinkException) {
                     $class = get_class($content);
                     foreach ($content->getData() as $label => $item) {
-                        $msg .= PHP_EOL . "[LABEL] {$class} {$label}: ";
+                        $msg .= PHP_EOL . "[LABEL] $class $label: ";
                         foreach ($item as $key => $value) {
                             $value = is_array($value) || is_object($value) ? json_encode($value) : $value;
-                            $msg   .= PHP_EOL . "{$key}: {$value}";
+                            $msg   .= PHP_EOL . "$key: $value";
                         }
                     }
                 }
             }
             
             // 记录trace
-            if ($app->config->get('log.record_trace', false)) {
+            if (Config::get('log.record_trace', false)) {
                 $msg .= PHP_EOL . "Trace String: " . PHP_EOL . $content->getTraceAsString();
             }
         } else {
@@ -187,7 +205,7 @@ class LogHelper
                 if (is_object($content)) {
                     if (method_exists($content, '__toString')) {
                         $content = (string) $content;
-                    } else if ($content instanceof JsonSerializable) {
+                    } elseif ($content instanceof JsonSerializable) {
                         $content = json_encode($content, JSON_UNESCAPED_UNICODE);
                     } elseif ($content instanceof Jsonable) {
                         $content = $content->toJson(JSON_UNESCAPED_UNICODE);
@@ -204,7 +222,7 @@ class LogHelper
             }
             
             
-            $msg = "{$tag}{$content}{$method}";
+            $msg = "$tag$content$method";
         }
         
         return $msg;
@@ -214,28 +232,24 @@ class LogHelper
     /**
      * 获取错误信息
      * ErrorException则使用错误级别作为错误编码
-     * @access protected
      * @param Throwable $exception
-     * @return string                错误信息
+     * @return string 错误信息
      */
     public static function getMessage(Throwable $exception) : string
     {
         $message = $exception->getMessage();
-        $app     = App::getInstance();
-        
-        if ($app->runningInConsole()) {
+        if (App::getInstance()->runningInConsole()) {
             return $message;
         }
         
-        $lang = $app->lang;
         if (strpos($message, ':')) {
             $name    = strstr($message, ':', true);
-            $message = $lang->has($name) ? $lang->get($name) . strstr($message, ':') : $message;
+            $message = Lang::has($name) ? Lang::get($name) . strstr($message, ':') : $message;
         } elseif (strpos($message, ',')) {
             $name    = strstr($message, ',', true);
-            $message = $lang->has($name) ? $lang->get($name) . ':' . substr(strstr($message, ','), 1) : $message;
-        } elseif ($lang->has($message)) {
-            $message = $lang->get($message);
+            $message = Lang::has($name) ? Lang::get($name) . ':' . substr(strstr($message, ','), 1) : $message;
+        } elseif (Lang::has($message)) {
+            $message = Lang::get($message);
         }
         
         return $message;
@@ -245,11 +259,10 @@ class LogHelper
     /**
      * 获取错误编码
      * ErrorException则使用错误级别作为错误编码
-     * @access protected
      * @param Throwable $exception
-     * @return integer                错误编码
+     * @return int 错误编码
      */
-    public static function getCode(Throwable $exception)
+    public static function getCode(Throwable $exception) : int
     {
         $code = $exception->getCode();
         
@@ -268,33 +281,29 @@ class LogHelper
      */
     public static function use(string $name) : LogHelper
     {
-        if (isset(static::$instances[$name])) {
-            return static::$instances[$name];
+        $type = "log_helper_use_$name";
+        if (!isset(static::$instances[$type])) {
+            $config = Config::get('log', []);
+            if (empty($config['channels'][$type])) {
+                $config['channels'][$type] = [
+                    'type'           => 'File',
+                    'path'           => App::getInstance()->getRuntimeRootPath('log/' . $name),
+                    'single'         => false,
+                    'apart_level'    => [],
+                    'max_files'      => 0,
+                    'json'           => false,
+                    'processor'      => null,
+                    'close'          => false,
+                    'format'         => '[%s][%s] %s',
+                    'realtime_write' => false,
+                ];
+                Config::set($config, 'log');
+            }
+            
+            static::$instances[$type] = new static($type);
         }
         
-        $app    = App::getInstance();
-        $config = $app->config->get('log', []);
-        $type   = "bp:use_{$name}";
-        if (empty($config['channels'][$type])) {
-            $config['channels'][$type] = [
-                'type'           => 'File',
-                'path'           => $app->getRuntimeRootPath('log' . DIRECTORY_SEPARATOR . $name),
-                'single'         => false,
-                'apart_level'    => [],
-                'max_files'      => 0,
-                'json'           => false,
-                'processor'      => null,
-                'close'          => false,
-                'format'         => '[%s][%s] %s',
-                'realtime_write' => false,
-            ];
-            $app->config->set($config, 'log');
-        }
-        
-        $instance                 = new static(Log::channel($type));
-        static::$instances[$name] = $instance;
-        
-        return $instance;
+        return static::$instances[$type];
     }
     
     
@@ -305,7 +314,7 @@ class LogHelper
      */
     public static function plugin(string $name) : LogHelper
     {
-        return static::use("plugin_{$name}");
+        return static::use("plugins/$name");
     }
     
     

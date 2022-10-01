@@ -3,11 +3,11 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\parameter;
 
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\Model;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionProperty;
 use think\Container;
 
 /**
@@ -106,7 +106,7 @@ abstract class BaseParameter
      */
     public static function getGravitys($format = null)
     {
-        return Model::parseVars(Model::parseConst(self::class, 'GRAVITY_', [], 'name'), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'GRAVITY_', ClassHelper::CONST_MAP_NAME), $format);
     }
     
     

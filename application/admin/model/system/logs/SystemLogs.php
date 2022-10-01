@@ -5,6 +5,8 @@ namespace BusyPHP\app\admin\model\system\logs;
 
 use BusyPHP\App;
 use BusyPHP\helper\AppHelper;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\model;
 use BusyPHP\Service;
 use Exception;
@@ -168,8 +170,6 @@ class SystemLogs extends Model
      */
     public static function getTypes($var = null)
     {
-        return self::parseVars(self::parseConst(self::class, 'TYPE_', [], function($item) {
-            return $item['name'];
-        }), $var);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', ClassHelper::CONST_MAP_NAME), $var);
     }
 }

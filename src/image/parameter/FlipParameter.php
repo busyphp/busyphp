@@ -3,7 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\parameter;
 
-use BusyPHP\Model;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 
 /**
  * 图片反转参数模板
@@ -71,7 +72,7 @@ class FlipParameter extends BaseParameter
      */
     public static function getFlips($format = null)
     {
-        return Model::parseVars(Model::parseConst(self::class, 'FLIP_', [], 'name'), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FLIP_', ClassHelper::CONST_MAP_NAME), $format);
     }
     
     

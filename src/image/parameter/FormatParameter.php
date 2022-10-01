@@ -3,7 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\parameter;
 
-use BusyPHP\Model;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 
 /**
  * 格式转换参数模板
@@ -97,7 +98,7 @@ class FormatParameter extends BaseParameter
      */
     public static function getFormats($format = null)
     {
-        return Model::parseVars(Model::parseConst(self::class, 'FORMAT_', [], 'name'), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FORMAT_', ClassHelper::CONST_MAP_NAME), $format);
     }
     
     

@@ -3,7 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\parameter;
 
-use BusyPHP\Model;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 
 /**
  * 图片质量参数模板
@@ -95,7 +96,7 @@ class QualityParameter extends BaseParameter
      */
     public static function getTypes(?int $type = null)
     {
-        return Model::parseVars(Model::parseConst(self::class, 'TYPE_', [], 'name'), $type);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', ClassHelper::CONST_MAP_NAME), $type);
     }
     
     

@@ -9,6 +9,8 @@ use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\AppHelper;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\image\parameter\FormatParameter;
@@ -241,9 +243,7 @@ class SystemFile extends Model
      */
     public static function getTypes($var = null)
     {
-        return self::parseVars(self::parseConst(self::class, 'FILE_TYPE_', [], function($item) {
-            return $item['name'];
-        }), $var);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FILE_TYPE_', ClassHelper::CONST_MAP_NAME), $var);
     }
     
     
