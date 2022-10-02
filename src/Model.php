@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
@@ -559,29 +560,56 @@ abstract class Model extends Query
     
     public function __call(string $method, array $args)
     {
-        $lowerMethod = strtolower($method);
-        if ($lowerMethod == 'lockshare') {
-            return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
-        }
-        
         if (isset(static::$macro[static::class][$method])) {
             return call_user_func_array(static::$macro[static::class][$method]->bindTo($this, static::class), $args);
+        }
+        
+        $lower = strtolower($method);
+        switch (true) {
+            // 共享锁
+            case $lower == 'lockshare':
+                return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
+            
+            // 根据某个字段获取记录的某个值
+            case substr($lower, 0, 10) == 'getfieldby':
+                $name = Str::snake(substr($method, 10));
+                
+                return $this->where($name, '=', $args[0])->val($args[1], $args[2] ?? null);
+            
+            // getInfoByField
+            case substr($lower, 0, 9) == 'getinfoby':
+                $name = Str::snake(substr($method, 9));
+                
+                return $this->where($name, '=', $args[0])->failException(true)->findInfo(null, $args[1] ?? null);
+            
+            // findInfoByField
+            case substr($lower, 0, 10) == 'findinfoby':
+                $name = Str::snake(substr($method, 10));
+                
+                return $this->where($name, '=', $args[0])->findInfo(null, $args[1] ?? null);
+            // getExtendInfoByField
+            case substr($lower, 0, 15) == 'getextendinfoby':
+                $name = Str::snake(substr($method, 15));
+                
+                return $this->where($name, '=', $args[0])->failException(true)->findExtendInfo(null, $args[1] ?? null);
+            // findExtendInfoByField
+            case substr($lower, 0, 16) == 'findextendinfoby':
+                $name = Str::snake(substr($method, 16));
+                
+                return $this->where($name, '=', $args[0])->findExtendInfo(null, $args[1] ?? null);
         }
         
         return parent::__call($method, $args);
     }
     
     
-    /**
-     * @throws DbException
-     */
     public static function __callStatic(string $method, array $args)
     {
         if (isset(static::$macro[static::class][$method])) {
             return call_user_func_array(static::$macro[static::class][$method]->bindTo(null, static::class), $args);
         }
         
-        throw new DbException('method not exist:' . static::class . '::' . $method);
+        throw new MethodNotFoundException(static::class, $method);
     }
     
     
@@ -1840,76 +1868,5 @@ abstract class Model extends Query
     final public function optimize()
     {
         $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
-    }
-    
-    
-    /**
-     * 打印结构
-     */
-    final public function printField()
-    {
-        $list   = $this->getFields();
-        $br     = PHP_EOL;
-        $string = '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
-        foreach ($list as $i => $r) {
-            $r['type']    = explode('(', $r['type']);
-            $r['type']    = strtoupper($r['type'][0]);
-            $r['comment'] = trim($r['comment']);
-            
-            $type      = 'string';
-            $r['name'] = Str::camel($r['name']);
-            if (in_array($r['type'], [
-                'TINYINT',
-                'SMALLINT',
-                'MEDIUMINT',
-                'INT',
-                'BIGINT',
-                'SERIAL'
-            ])) {
-                $type = 'int';
-            } elseif (in_array($r['type'], ['DECIMAL', 'FLOAT', 'DOUBLE', 'REAL'])) {
-                $type = 'float';
-            }
-            $r['type'] = $type;
-            
-            $string   .= "* @method static \BusyPHP\model\Entity {$r['name']}(\$op = null, \$value = null) {$r['comment']}{$br}";
-            $list[$i] = $r;
-        }
-        $string .= '</pre>';
-        
-        $string .= '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
-        foreach ($list as $i => $r) {
-            $string .= "/**{$br}";
-            if ($r['comment']) {
-                $string .= " * {$r['comment']}{$br}";
-            }
-            $string .= " * @var {$r['type']} {$br}";
-            $string .= " */{$br}";
-            $string .= "public \${$r['name']};{$br}";
-        }
-        $string .= '</pre>';
-        
-        $string .= '<pre contenteditable="true" style="background-color: #F3F3F3; margin: 15px; padding: 15px; border-radius: 5px; border: 1px #BBB solid;">';
-        foreach ($list as $i => $r) {
-            $string .= "/**{$br}";
-            $string .= " * 设置{$r['comment']}{$br}";
-            $string .= " * @param {$r['type']} \${$r['name']}{$br}";
-            $string .= " * @return \$this{$br}";
-            $string .= " */{$br}";
-            
-            $string .= "public function set" . ucfirst($r['name']) . "(\${$r['name']}) {{$br}";
-            if ($r['type'] == 'int') {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = intval(\${$r['name']});{$br}";
-            } elseif ($r['type'] == 'float') {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = floatval(\${$r['name']});{$br}";
-            } else {
-                $string .= "&nbsp;&nbsp;&nbsp;&nbsp;\$this->{$r['name']} = trim(\${$r['name']});{$br}";
-            }
-            $string .= "&nbsp;&nbsp;&nbsp;&nbsp;return \$this;{$br}";
-            $string .= "}<br />";
-        }
-        $string .= '</pre>';
-        
-        echo $string;
     }
 }

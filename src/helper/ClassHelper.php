@@ -73,9 +73,9 @@ class ClassHelper
     /**
      * 编码注释中的特殊字符
      * @param string $content
-     * @return array|string|string[]
+     * @return string
      */
-    public static function encodeDocSpecialStr(string $content)
+    public static function encodeDocSpecialStr(string $content) : string
     {
         $content = str_replace('\*', '<!Kg!>', $content);
         
@@ -86,13 +86,27 @@ class ClassHelper
     /**
      * 解码注释中的特殊字符
      * @param string $content
-     * @return array|string|string[]
+     * @return string
      */
-    public static function decodeDocSpecialStr(string $content)
+    public static function decodeDocSpecialStr(string $content) : string
     {
         $content = str_replace('<!Kg!>', '*', $content);
         
         return str_replace('<!QA!>', '@', $content);
+    }
+    
+    
+    /**
+     * 替换 @mehotd 中的特殊字符
+     * @param string $content
+     * @return string
+     */
+    public static function replaceMethodDocSpecialStr(string $content) : string
+    {
+        $content = str_replace('(', '[', $content);
+        $content = str_replace(')', ']', $content);
+        
+        return str_replace(';', '/', $content);
     }
     
     
@@ -287,11 +301,7 @@ class ClassHelper
             $name = static::parseClassnameByTraits($classname, $class, $member);
         }
         
-        if (!is_null($name) && substr($name, 0, 1) !== '\\') {
-            $name = '\\' . $name;
-        }
-        
-        return $name;
+        return self::getAbsoluteClassname($name);
     }
     
     
@@ -343,5 +353,44 @@ class ClassHelper
     public static function classExists(string $class) : bool
     {
         return class_exists($class) || interface_exists($class);
+    }
+    
+    
+    /**
+     * 获取属性值
+     * @param object               $object 类对象
+     * @param string               $name 属性名称
+     * @param bool                 $accessible 是否可访问
+     * @param ReflectionClass|null $class ReflectionClass
+     * @return mixed
+     * @throws ReflectionException
+     */
+    public static function getPropertyValue(object $object, string $name, bool $accessible = false, ReflectionClass $class = null)
+    {
+        if (!$class) {
+            $class = new ReflectionClass($object);
+        }
+        
+        $property = $class->getProperty($name);
+        if ($accessible) {
+            $property->setAccessible($accessible);
+        }
+        
+        return $property->getValue($object);
+    }
+    
+    
+    /**
+     * 获取完整类名称
+     * @param string|null $classname
+     * @return string|null
+     */
+    public static function getAbsoluteClassname(?string $classname) : ?string
+    {
+        if (!$classname) {
+            return $classname;
+        }
+        
+        return '\\' . ltrim($classname, '\\');
     }
 }
