@@ -19,6 +19,7 @@ use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\setting\AdminSetting;
+use BusyPHP\model\Entity;
 use Exception;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -34,10 +35,10 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:57 下午 AdminUser.php $
- * @method AdminUserInfo findInfo($data = null, $notFoundMessage = null)
- * @method AdminUserInfo getInfo($data, $notFoundMessage = null)
+ * @method AdminUserInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method AdminUserInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method AdminUserInfo[] selectList()
- * @method AdminUserInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method AdminUserInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
  */
 class AdminUser extends Model
 {
@@ -68,7 +69,7 @@ class AdminUser extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getInfoByUsername($username)
+    public function getInfoByUsername($username) : AdminUserInfo
     {
         return $this->whereEntity(AdminUserField::username(trim($username)))->failException(true)->findInfo();
     }
@@ -81,7 +82,7 @@ class AdminUser extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getInfoByEmail($email)
+    public function getInfoByEmail($email) : AdminUserInfo
     {
         return $this->whereEntity(AdminUserField::email(trim($email)))->failException(true)->findInfo();
     }
@@ -94,7 +95,7 @@ class AdminUser extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getInfoByPhone($phone)
+    public function getInfoByPhone($phone) : AdminUserInfo
     {
         return $this->whereEntity(AdminUserField::phone(trim($phone)))->failException(true)->findInfo();
     }
@@ -107,7 +108,7 @@ class AdminUser extends Model
      * @return int
      * @throws Throwable
      */
-    public function createAdmin(AdminUserField $insert, bool $triggerEvent = true)
+    public function createAdmin(AdminUserField $insert, bool $triggerEvent = true) : int
     {
         if (!$insert->username || !$insert->password || !$insert->groupIds) {
             throw new ParamInvalidException('username,password,group_ids');
@@ -136,7 +137,7 @@ class AdminUser extends Model
             $insert->password   = password_hash($insert->password, PASSWORD_DEFAULT);
             $insert->theme      = '';
             
-            $id = $this->addData($insert);
+            $id = (int) $this->addData($insert);
             
             // 触发创建后事件
             $event             = new CreateAdminUserAfterEvent();
@@ -265,7 +266,7 @@ class AdminUser extends Model
      * @throws VerifyException
      * @throws Throwable
      */
-    public function updatePassword($id, $password, $confirmPassword)
+    public function updatePassword(int $id, string $password, string $confirmPassword)
     {
         $saveData           = AdminUserField::init();
         $saveData->id       = floatval($id);
@@ -436,7 +437,7 @@ class AdminUser extends Model
      * @throws DbException
      * @throws VerifyException
      */
-    public function checkLogin($saveOperateTime = false)
+    public function checkLogin($saveOperateTime = false) : AdminUserInfo
     {
         $cookieUserId  = intval(Cookie::get(AdminUser::COOKIE_USER_ID, '0'));
         $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY, ''));
@@ -568,10 +569,10 @@ class AdminUser extends Model
     
     /**
      * 获取主题
-     * @param AdminUserInfo $userInfo
+     * @param AdminUserInfo|null $userInfo
      * @return array
      */
-    public function getTheme(?AdminUserInfo $userInfo = null)
+    public function getTheme(?AdminUserInfo $userInfo = null) : array
     {
         if ($userInfo) {
             $theme = $userInfo->theme;
@@ -593,10 +594,10 @@ class AdminUser extends Model
     
     /**
      * 解锁
-     * @param $id
+     * @param int $id
      * @throws Throwable
      */
-    public function unlock($id)
+    public function unlock(int $id)
     {
         $update = AdminUserField::init();
         $update->setId($id);
@@ -622,7 +623,7 @@ class AdminUser extends Model
      * @param string        $token
      * @return string
      */
-    public static function createAuthKey(AdminUserInfo $userInfo, $token)
+    public static function createAuthKey(AdminUserInfo $userInfo, string $token) : string
     {
         return md5(implode('_', [
             $token,
@@ -635,10 +636,10 @@ class AdminUser extends Model
     
     /**
      * 生成密码
-     * @param $password
+     * @param string $password
      * @return string
      */
-    public static function createPassword($password) : string
+    public static function createPassword(string $password) : string
     {
         return md5(md5($password) . 'Admin.BusyPHP');
     }
@@ -646,11 +647,11 @@ class AdminUser extends Model
     
     /**
      * 校验密码
-     * @param $inputPassword
-     * @param $dbPassword
+     * @param string $inputPassword
+     * @param string $dbPassword
      * @return bool
      */
-    public static function verifyPassword($inputPassword, $dbPassword)
+    public static function verifyPassword(string $inputPassword, string $dbPassword) : bool
     {
         return password_verify(self::createPassword($inputPassword), $dbPassword);
     }
@@ -658,12 +659,11 @@ class AdminUser extends Model
     
     /**
      * 校验密码
-     * @param $password
-     * @param $confirmPassword
+     * @param string $password
+     * @param string $confirmPassword
      * @return string
-     * @throws VerifyException
      */
-    public static function checkPassword($password, $confirmPassword)
+    public static function checkPassword(string $password, string $confirmPassword) : string
     {
         $password        = trim($password);
         $confirmPassword = trim($confirmPassword);
@@ -707,10 +707,10 @@ class AdminUser extends Model
     public static function checkPhone(string $phone) : bool
     {
         $class = self::class;
-        $regex = App::getInstance()->config->get("app.model.{$class}.check_phone_match", '');
+        $regex = App::getInstance()->config->get("app.model.$class.check_phone_match", '');
         if ($regex) {
             if (is_callable($regex)) {
-                return Container::getInstance()->invokeFunction($regex, [$phone]) ? true : false;
+                return (bool) Container::getInstance()->invokeFunction($regex, [$phone]);
             } else {
                 return preg_match($regex, $phone) === 1;
             }

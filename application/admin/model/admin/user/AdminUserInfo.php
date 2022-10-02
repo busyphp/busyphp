@@ -31,6 +31,7 @@ use think\db\exception\DbException;
  * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
  * @method static Entity skin($op = null, $value = null) 皮肤
  * @property array|string $theme
+ * @property array|string $groupIds
  */
 class AdminUserInfo extends AdminUserField
 {
@@ -130,8 +131,8 @@ class AdminUserInfo extends AdminUserField
      */
     public function onParseAfter()
     {
-        if (!is_array(static::$_groupList)) {
-            static::$_groupList = AdminGroup::init()->getIdList();
+        if (!is_array(self::$_groupList)) {
+            self::$_groupList = AdminGroup::init()->getIdList();
         }
         
         $this->theme              = json_decode($this->theme, true) ?: [];
