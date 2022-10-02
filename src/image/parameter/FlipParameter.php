@@ -72,7 +72,7 @@ class FlipParameter extends BaseParameter
      */
     public static function getFlips($format = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FLIP_', ClassHelper::CONST_MAP_NAME), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FLIP_', ClassHelper::ATTR_NAME), $format);
     }
     
     

@@ -96,7 +96,7 @@ class QualityParameter extends BaseParameter
      */
     public static function getTypes(?int $type = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', ClassHelper::CONST_MAP_NAME), $type);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', ClassHelper::ATTR_NAME), $type);
     }
     
     

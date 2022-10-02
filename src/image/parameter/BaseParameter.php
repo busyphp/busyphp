@@ -106,7 +106,7 @@ abstract class BaseParameter
      */
     public static function getGravitys($format = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'GRAVITY_', ClassHelper::CONST_MAP_NAME), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'GRAVITY_', ClassHelper::ATTR_NAME), $format);
     }
     
     

@@ -37,16 +37,16 @@ class ClassHelper
     ];
     
     /** @var string const名称 */
-    public const CONST_MAP_NAME = 'name';
+    public const ATTR_NAME = 'name';
     
     /** @var string const类型 */
-    public const CONST_MAP_VAR = 'var';
+    public const ATTR_VAR = 'var';
     
     /** @var string const定义名称 */
-    public const CONST_MAP_KEY = 'key';
+    public const ATTR_KEY = 'key';
     
     /** @var string const值 */
-    public const CONST_MAP_VALUE = 'value';
+    public const ATTR_VALUE = 'value';
     
     /** @var string 转为整数类型 */
     public const CAST_INT = 'int';
@@ -137,83 +137,105 @@ class ClassHelper
                 continue;
             }
             
-            $constant = $reflect->getReflectionConstant($key);
-            $doc      = static::encodeDocSpecialStr($constant->getDocComment());
-            $name     = '';
-            $item     = [];
-            if (false === strpos($doc, PHP_EOL)) {
-                if (preg_match('/\*\*\s@var(.+)\s(.+)\*\//i', $doc, $match)) {
-                    $type = trim($match[1]);
-                    $name = trim($match[2]);
-                } else {
-                    $type = 'mixed';
-                }
-                $item['var'] = $type;
+            $list[$value] = static::extractDocAttrs(
+                $reflect,
+                $key,
+                $value,
+                $reflect->getReflectionConstant($key)->getDocComment(),
+                $attrsOrMapKey,
+                $mapKey
+            );
+        }
+        
+        return $list;
+    }
+    
+    
+    /**
+     * 提取文档中的 @属性
+     * @param ReflectionClass $class ReflectionClass
+     * @param string          $key 属性名称
+     * @param string          $value 属性值
+     * @param string          $doc 属性文档
+     * @param array|string    $attrsOrMapKey 其它属性或数据映射
+     * @param string|callable $mapKey 指定某个属性的值作为值
+     * @return mixed
+     */
+    public static function extractDocAttrs(ReflectionClass $class, string $key, string $value, string $doc, $attrsOrMapKey = [], $mapKey = null)
+    {
+        $doc  = static::encodeDocSpecialStr($doc);
+        $name = '';
+        $item = [];
+        if (false === strpos($doc, PHP_EOL)) {
+            if (preg_match('/\*\*\s@var(.+)\s(.+)\*\//i', $doc, $match)) {
+                $type = trim($match[1]);
+                $name = trim($match[2]);
             } else {
-                // 取出名称
-                if (preg_match('/\/\*\*(.*?)(@.*?)\*\//is', $doc, $match)) {
-                    $name = trim(preg_replace('/\s?\*/', '', $match[1]));
+                $type = 'mixed';
+            }
+            $item[self::ATTR_VAR] = $type;
+        } else {
+            // 取出名称
+            if (preg_match('/\/\*\*(.*?)(@.*?)\*\//is', $doc, $match)) {
+                $name = trim(preg_replace('/\s?\*/', '', $match[1]));
+                
+                // 取出 @name
+                foreach (preg_split('/\*\s+@/', $match[2]) as $vo) {
+                    $vo = preg_replace('/\s?\*|@/', '', $vo);
                     
-                    // 取出 @name
-                    foreach (preg_split('/\*\s+@/', $match[2]) as $vo) {
-                        $vo = preg_replace('/\s?\*|@/', '', $vo);
-                        
-                        // 匹配 "type value"
-                        if (preg_match('/(.*?)\s(.*)/is', $vo, $voMatch)) {
-                            $k = trim($voMatch[1]);
-                            $v = trim(preg_replace('/\n\s*/is', PHP_EOL, $voMatch[2]));
-                            if (isset($item[$k]) && !is_array($item[$k]) && strtolower($k) !== self::CONST_MAP_VAR) {
-                                if (!is_array($item[$k])) {
-                                    $item[$k] = [$item[$k]];
-                                }
-                                $item[$k][] = $v;
-                            } else {
-                                $item[$k] = $v;
+                    // 匹配 "type value"
+                    if (preg_match('/(.*?)\s(.*)/is', $vo, $voMatch)) {
+                        $k = trim($voMatch[1]);
+                        $v = trim(preg_replace('/\n\s*/is', PHP_EOL, $voMatch[2]));
+                        if (isset($item[$k]) && !is_array($item[$k]) && strtolower($k) !== self::ATTR_VAR) {
+                            if (!is_array($item[$k])) {
+                                $item[$k] = [$item[$k]];
                             }
+                            $item[$k][] = $v;
+                        } else {
+                            $item[$k] = $v;
                         }
                     }
                 }
             }
-            
-            // 解析属性
-            foreach ($attrsOrMapKey as $attr => $type) {
-                if (is_numeric($attr)) {
-                    $attr = $type;
-                    $type = '';
-                }
-                
-                if (strtolower($attr) === self::CONST_MAP_VAR) {
-                    continue;
-                }
-                
-                $item[$attr] = static::parseValue($reflect, $item[$attr] ?? '', $type);
-            }
-            
-            // 解析类型
-            $var = $item[self::CONST_MAP_VAR] ?? 'mixed';
-            if (!isset(self::PRIMITIVE_TYPES[$var])) {
-                if (substr($var, 0, 1) !== '\\') {
-                    $var = self::parseValue($reflect, $var, self::CAST_CLASS);
-                }
-            }
-            
-            $item[self::CONST_MAP_VAR]   = $var;
-            $item[self::CONST_MAP_NAME]  = static::decodeDocSpecialStr($name);
-            $item[self::CONST_MAP_KEY]   = $key;
-            $item[self::CONST_MAP_VALUE] = $value;
-            
-            if ($mapKey) {
-                if (is_string($mapKey)) {
-                    $item = $item[$mapKey] ?? null;
-                } elseif (is_callable($mapKey)) {
-                    $item = call_user_func_array($mapKey, [$item]);
-                }
-            }
-            
-            $list[$value] = $item;
         }
         
-        return $list;
+        // 解析属性
+        foreach ($attrsOrMapKey as $attr => $type) {
+            if (is_numeric($attr)) {
+                $attr = $type;
+                $type = '';
+            }
+            
+            if (strtolower($attr) === self::ATTR_VAR) {
+                continue;
+            }
+            
+            $item[$attr] = static::parseValue($class, $item[$attr] ?? '', $type);
+        }
+        
+        // 解析类型
+        $var = $item[self::ATTR_VAR] ?? 'mixed';
+        if (!isset(self::PRIMITIVE_TYPES[$var])) {
+            if (substr($var, 0, 1) !== '\\') {
+                $var = self::parseValue($class, $var, self::CAST_CLASS);
+            }
+        }
+        
+        $item[self::ATTR_VAR]      = $var;
+        $item[self::ATTR_NAME]     = static::decodeDocSpecialStr($name);
+        $item[self::ATTR_KEY] = $key;
+        $item[self::ATTR_VALUE] = $value;
+        
+        if ($mapKey) {
+            if (is_string($mapKey)) {
+                $item = $item[$mapKey] ?? null;
+            } elseif (is_callable($mapKey)) {
+                $item = call_user_func_array($mapKey, [$item]);
+            }
+        }
+        
+        return $item;
     }
     
     

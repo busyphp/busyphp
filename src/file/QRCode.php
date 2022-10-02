@@ -397,6 +397,6 @@ class QRCode
      */
     public static function getLevels() : array
     {
-        return ClassHelper::getConstMap(self::class, 'LEVEL_', ClassHelper::CONST_MAP_NAME);
+        return ClassHelper::getConstMap(self::class, 'LEVEL_', ClassHelper::ATTR_NAME);
     }
 }

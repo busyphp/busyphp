@@ -243,7 +243,7 @@ class SystemFile extends Model
      */
     public static function getTypes($var = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FILE_TYPE_', ClassHelper::CONST_MAP_NAME), $var);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FILE_TYPE_', ClassHelper::ATTR_NAME), $var);
     }
     
     
