@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{$title}</title>
+    <css href="/assets/system/js/bootstrap/css/bootstrap.min.css"/>
+    <css href="/assets/system/js/toastr/toastr.min.css"/>
+    <js href="/assets/system/js/jquery/jquery.min.js"/>
+    <js href="/assets/system/js/bootstrap/js/bootstrap.min.js"/>
+    <js href="/assets/system/js/clipboard/clipboard.min.js"/>
+    <js href="/assets/system/js/toastr/toastr.min.js"/>
+    <style>
+        pre { border: 0; border-radius: 0; padding: 15px;}
+        .nav-pills > li > a { border-radius: 0 !important;}
+        h3 { margin-top: 0;}
+        .row { margin: 0 -10px;}
+        .row .col-sm-3,
+        .row .col-sm-9 { padding: 10px;}
+        hr { margin-top: 20px; margin-bottom: 10px;}
+        .btn { margin-top: -2px; position: relative;}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">结构打印</a>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <h3>{$title}</h3>
+    <hr />
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">导航</h3>
+                </div>
+                <ul class="nav nav-pills nav-stacked" role="tablist">
+                    <foreach name="list" item="vo" key="index">
+                        <li role="presentation" class="{$index == 0 ? 'active':''}">
+                            <a href="#tab{$index}" role="tab" data-toggle="tab">{$vo.name}</a>
+                        </li>
+                    </foreach>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <div class="tab-content">
+                <foreach name="list" item="vo" key="index">
+                    <div role="tabpanel" class="tab-pane {$index == 0 ? 'active' : ''}" id="tab{$index}">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <button type="button" class="btn btn-primary btn-xs pull-right" data-target="#code{$index}">复制</button>
+                                <h3 class="panel-title">{$vo.name}</h3>
+                            </div>
+                            <pre contenteditable="true" readonly="readonly" id="code{$index}">{$vo.content|raw}</pre>
+                        </div>
+                    </div>
+                </foreach>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+       var clipboard= new ClipboardJS('.btn', {
+            text : function (trigger) {
+                return $($(trigger).data('target')).html();
+            },
+        });
+        clipboard.on('success', function () {
+            toastr.success('已复制');
+        })
+    })
+</script>
+</body>
+</html>
