@@ -129,6 +129,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * <p>
      * The return value will be casted to boolean if non-boolean was returned.
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return isset($this->options[$offset]);
@@ -143,6 +144,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * </p>
      * @return mixed Can return all value types.
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->options[$offset] ?? null;
@@ -160,6 +162,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * </p>
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->options[$offset] = $value;
@@ -174,6 +177,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * </p>
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->options[$offset]);
@@ -188,6 +192,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * <p>
      * The return value is cast to an integer.
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->options);
@@ -207,6 +212,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * which is a value of any type other than a resource.
      * @since 5.4
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->options;
@@ -220,6 +226,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * <b>Traversable</b>
      * @throws Exception on failure.
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayIterator($this->options);
