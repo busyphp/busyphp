@@ -334,4 +334,24 @@ class ArrayHelper extends Arr
         
         return $map[$key] ?? null;
     }
+    
+    
+    /**
+     * 将数组中子数组拆解并追加到本身
+     * @param array $array
+     * @return array
+     */
+    public static function flat(array $array) : array
+    {
+        $list = [];
+        foreach ($array as $item) {
+            if (is_array($item)) {
+                $list = array_merge($list, $item);
+            } else {
+                $list[] = $item;
+            }
+        }
+        
+        return $list;
+    }
 }

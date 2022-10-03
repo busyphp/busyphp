@@ -599,7 +599,7 @@ class SystemMenu extends Model
      */
     public static function getTargets($var = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TARGET_', ClassHelper::ATTR_NAME), $var);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TARGET_', ClassHelper::ATTR_NAME), $var);
     }
     
     

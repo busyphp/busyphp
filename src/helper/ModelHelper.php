@@ -5,8 +5,6 @@ namespace BusyPHP\helper;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
-use ReflectionClass;
-use ReflectionException;
 use think\exception\HttpResponseException;
 use think\response\View;
 
@@ -22,7 +20,6 @@ class ModelHelper
      * 构建模型
      * @param Model|string $model
      * @return array{get_by: array, get_field_by:array, get_info_by: array, find_info_by:array, get_extend_info_by: array, find_extend_info_by: array, where_or: array, where: array, common: array, field_static: array, field_property: array, field_setter: array}
-     * @throws ReflectionException
      */
     public static function build($model) : array
     {
@@ -34,9 +31,8 @@ class ModelHelper
             $model = new $model();
         }
         
-        $class                = new ReflectionClass($model);
-        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValue($model, 'bindParseClass', true, $class));
-        $bindParseExtendClass = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValue($model, 'bindParseExtendClass', true, $class));
+        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseClass'));
+        $bindParseExtendClass = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseExtendClass'));
         $entityClass          = ClassHelper::getAbsoluteClassname(Entity::class);
         $pk                   = $model->getPk();
         $pkType               = 'mixed';
@@ -142,7 +138,6 @@ class ModelHelper
      * 打印模型支持的字段虚拟方法/属性
      * @param Model|string $model
      * @return void
-     * @throws ReflectionException
      */
     public static function printField($model) : void
     {
@@ -172,7 +167,6 @@ class ModelHelper
     /**
      * 打印模型支持的虚拟方法
      * @param Model|string $model
-     * @throws ReflectionException
      */
     public static function printModel($model) : void
     {

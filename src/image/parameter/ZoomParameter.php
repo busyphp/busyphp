@@ -121,6 +121,6 @@ class ZoomParameter extends BaseParameter
      */
     public static function getTypes(?int $type = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'TYPE_', [], ClassHelper::ATTR_NAME), $type);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TYPE_', [], ClassHelper::ATTR_NAME), $type);
     }
 }

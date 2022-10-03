@@ -243,7 +243,7 @@ class SystemFile extends Model
      */
     public static function getTypes($var = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FILE_TYPE_', ClassHelper::ATTR_NAME), $var);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FILE_TYPE_', ClassHelper::ATTR_NAME), $var);
     }
     
     
@@ -434,7 +434,7 @@ class SystemFile extends Model
         
         // 秒传
         if ($fast) {
-            $data             = SystemFileField::newField($info, SystemFileField::id());
+            $data             = SystemFileField::copyDBData($info, SystemFileField::id());
             $data->userId     = $userId;
             $data->classType  = $classType;
             $data->classValue = $classValue;

@@ -98,7 +98,7 @@ class FormatParameter extends BaseParameter
      */
     public static function getFormats($format = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstMap(self::class, 'FORMAT_', ClassHelper::ATTR_NAME), $format);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FORMAT_', ClassHelper::ATTR_NAME), $format);
     }
     
     

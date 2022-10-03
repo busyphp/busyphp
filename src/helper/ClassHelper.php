@@ -1,15 +1,16 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
-use BusyPHP\exception\ClassNotFoundException;
 use PhpDocReader\PhpParser\UseStatementParser;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
+use RuntimeException;
+use Throwable;
 
 /**
  * 类辅助
@@ -69,6 +70,12 @@ class ClassHelper
     /** @var UseStatementParser */
     protected static $useStatementParser;
     
+    /** @var ReflectionClass[] */
+    private static $reflectionClass = [];
+    
+    /** @var array[] */
+    private static $constAttrs = [];
+    
     
     /**
      * 编码注释中的特殊字符
@@ -112,42 +119,48 @@ class ClassHelper
     
     /**
      * 解析类常量
-     * @param string|object   $objectOrClass 类
-     * @param string          $prefix 常量前缀
-     * @param array|string    $attrsOrMapKey 其它属性或数据映射
-     * @param string|callable $mapKey 指定某个属性的值作为值
+     * @param string|object                     $objectOrClass 类
+     * @param string                            $prefix 常量前缀
+     * @param array|string                      $attrsOrMapKey 其它属性或数据映射
+     * @param string|callable(array):mixed|null $mapKey 指定某个属性的值作为值
+     * @param string                            $memoryCacheKey 内存缓存标识
      * @return array
      */
-    public static function getConstMap($objectOrClass, string $prefix = '', $attrsOrMapKey = [], $mapKey = null) : array
+    public static function getConstAttrs($objectOrClass, string $prefix = '', $attrsOrMapKey = [], $mapKey = null, string $memoryCacheKey = '') : array
     {
+        $classname = md5(
+            self::getAbsoluteClassname($objectOrClass) .
+            serialize($attrsOrMapKey) .
+            $memoryCacheKey
+        );
+        
+        if (isset(self::$constAttrs[$classname])) {
+            return self::$constAttrs[$classname];
+        }
+        
         if (is_string($attrsOrMapKey) && $attrsOrMapKey) {
             $mapKey        = $attrsOrMapKey;
             $attrsOrMapKey = [];
         }
         
-        try {
-            $reflect = new ReflectionClass($objectOrClass);
-        } catch (ReflectionException $e) {
-            throw new ClassNotFoundException($objectOrClass);
-        }
-        
-        $list = [];
-        foreach ($reflect->getConstants() as $key => $value) {
+        $list  = [];
+        $class = self::getReflectionClass($objectOrClass);
+        foreach ($class->getReflectionConstants() as $constant) {
+            $constantClass = self::getAbsoluteClassname($constant->getDeclaringClass()->getName());
+            if ($constantClass != $classname) {
+                continue;
+            }
+            
+            $key = $constant->getName();
             if ($prefix && 0 !== strpos($key, $prefix)) {
                 continue;
             }
             
-            $list[$value] = static::extractDocAttrs(
-                $reflect,
-                $key,
-                $value,
-                $reflect->getReflectionConstant($key)->getDocComment(),
-                $attrsOrMapKey,
-                $mapKey
-            );
+            $value        = $constant->getValue();
+            $list[$value] = static::extractDocAttrs($class, $key, $value, $constant->getDocComment(), $attrsOrMapKey, $mapKey);
         }
         
-        return $list;
+        return self::$constAttrs[$classname] = $list;
     }
     
     
@@ -155,15 +168,15 @@ class ClassHelper
      * 提取文档中的 @属性
      * @param ReflectionClass $class ReflectionClass
      * @param string          $key 属性名称
-     * @param string          $value 属性值
-     * @param string          $doc 属性文档
+     * @param mixed           $value 属性值
+     * @param string|null     $doc 属性文档
      * @param array|string    $attrsOrMapKey 其它属性或数据映射
-     * @param string|callable $mapKey 指定某个属性的值作为值
+     * @param null            $mapKey 指定某个属性的值作为值
      * @return mixed
      */
-    public static function extractDocAttrs(ReflectionClass $class, string $key, string $value, string $doc, $attrsOrMapKey = [], $mapKey = null)
+    public static function extractDocAttrs(ReflectionClass $class, string $key, $value, $doc = null, $attrsOrMapKey = [], $mapKey = null)
     {
-        $doc  = static::encodeDocSpecialStr($doc);
+        $doc  = static::encodeDocSpecialStr($doc ?: '');
         $name = '';
         $item = [];
         if (false === strpos($doc, PHP_EOL)) {
@@ -222,9 +235,9 @@ class ClassHelper
             }
         }
         
-        $item[self::ATTR_VAR]      = $var;
-        $item[self::ATTR_NAME]     = static::decodeDocSpecialStr($name);
-        $item[self::ATTR_KEY] = $key;
+        $item[self::ATTR_VAR]   = $var;
+        $item[self::ATTR_NAME]  = static::decodeDocSpecialStr($name);
+        $item[self::ATTR_KEY]   = $key;
         $item[self::ATTR_VALUE] = $value;
         
         if ($mapKey) {
@@ -268,7 +281,7 @@ class ClassHelper
             case self::CAST_CLASS:
                 $value = (string) $value;
                 if (substr($value, 0, 1) !== '\\') {
-                    $value = static::parseClassname($value, $class);
+                    $value = static::extractClassname($value, $class);
                 }
                 
                 return $value;
@@ -300,7 +313,7 @@ class ClassHelper
      * @param Reflector|null  $member Reflector
      * @return string|null 类型的完全名，如果无法解析则为null
      */
-    public static function parseClassname(string $classname, ReflectionClass $class, ?Reflector $member = null) : ?string
+    public static function extractClassname(string $classname, ReflectionClass $class, ?Reflector $member = null) : ?string
     {
         $alias        = ($pos = strpos($classname, '\\')) === false ? $classname : substr($classname, 0, $pos);
         $loweredAlias = strtolower($alias);
@@ -320,7 +333,7 @@ class ClassHelper
         } elseif (static::classExists($classname)) {
             $name = $classname;
         } elseif ($member) {
-            $name = static::parseClassnameByTraits($classname, $class, $member);
+            $name = static::extractClassnameByTraits($classname, $class, $member);
         }
         
         return self::getAbsoluteClassname($name);
@@ -334,7 +347,7 @@ class ClassHelper
      * @param Reflector       $member Reflector
      * @return string|null 类型的全名，如果无法解析则为null
      */
-    public static function parseClassnameByTraits(string $classname, ReflectionClass $class, Reflector $member) : ?string
+    public static function extractClassnameByTraits(string $classname, ReflectionClass $class, Reflector $member) : ?string
     {
         /** @var ReflectionClass[] $traits */
         $traits = [];
@@ -356,7 +369,7 @@ class ClassHelper
                 continue;
             }
             
-            $resolvedType = static::parseClassname($classname, $trait, $member);
+            $resolvedType = static::extractClassname($classname, $trait, $member);
             
             if ($resolvedType) {
                 return $resolvedType;
@@ -379,26 +392,89 @@ class ClassHelper
     
     
     /**
-     * 获取属性值
-     * @param object               $object 类对象
-     * @param string               $name 属性名称
-     * @param bool                 $accessible 是否可访问
-     * @param ReflectionClass|null $class ReflectionClass
-     * @return mixed
-     * @throws ReflectionException
+     * 获取类反射对象
+     * @param string|object $objectOrClass 类名或对象
+     * @return ReflectionClass
      */
-    public static function getPropertyValue(object $object, string $name, bool $accessible = false, ReflectionClass $class = null)
+    public static function getReflectionClass($objectOrClass) : ReflectionClass
     {
-        if (!$class) {
-            $class = new ReflectionClass($object);
+        if (is_object($objectOrClass)) {
+            $objectOrClass = get_class($objectOrClass);
         }
         
-        $property = $class->getProperty($name);
-        if ($accessible) {
-            $property->setAccessible($accessible);
+        if (!isset(self::$reflectionClass[$objectOrClass])) {
+            try {
+                self::$reflectionClass[$objectOrClass] = new ReflectionClass($objectOrClass);
+            } catch (Throwable $e) {
+                throw new RuntimeException($e->getMessage());
+            }
+        }
+        
+        return self::$reflectionClass[$objectOrClass];
+    }
+    
+    
+    /**
+     * 通过ReflectionProperty获取值
+     * @param object             $object 对象
+     * @param ReflectionProperty $property ReflectionProperty
+     * @return mixed
+     */
+    public static function getPropertyValue(object $object, ReflectionProperty $property)
+    {
+        if (!$property->isPublic()) {
+            $property->setAccessible(true);
         }
         
         return $property->getValue($object);
+    }
+    
+    
+    /**
+     * 通过Object获取属性值
+     * @param object $object 类对象
+     * @param string $name 属性名称
+     * @return mixed
+     */
+    public static function getPropertyValueByObject(object $object, string $name)
+    {
+        try {
+            return self::getPropertyValue($object, self::getReflectionClass($object)->getProperty($name));
+        } catch (Throwable $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+    
+    
+    /**
+     * 通过Object设置属性值
+     * @param object $object 类对象
+     * @param string $name 属性名称
+     */
+    public static function setPropertyValueByObject(object $object, string $name, $value)
+    {
+        try {
+            self::setPropertyValue($object, self::getReflectionClass($object)->getProperty($name), $value);
+        } catch (Throwable $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+    
+    
+    /**
+     * 通过ReflectionProperty设置值
+     * @param object             $object 对象
+     * @param ReflectionProperty $property ReflectionProperty
+     * @param mixed              $value 值
+     * @return void
+     */
+    public static function setPropertyValue(object $object, ReflectionProperty $property, $value)
+    {
+        if (!$property->isPublic()) {
+            $property->setAccessible(true);
+        }
+        
+        $property->setValue($object, $value);
     }
     
     
@@ -407,10 +483,13 @@ class ClassHelper
      * @param string|null $classname
      * @return string|null
      */
-    public static function getAbsoluteClassname(?string $classname) : ?string
+    public static function getAbsoluteClassname($classname) : ?string
     {
         if (!$classname) {
             return $classname;
+        }
+        if (is_object($classname)) {
+            $classname = get_class($classname);
         }
         
         return '\\' . ltrim($classname, '\\');
