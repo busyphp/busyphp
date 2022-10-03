@@ -79,6 +79,7 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * which is a value of any type other than a resource.
      * @since 5.4
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();
@@ -93,7 +94,8 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * <p>
      * The return value is cast to an integer.
      */
-    public function count()
+    #[\ReturnTypeWillChange]
+    public function count() : int
     {
         return count($this->toArray());
     }
@@ -106,7 +108,8 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * <b>Traversable</b>
      * @throws Exception on failure.
      */
-    public function getIterator()
+    #[\ReturnTypeWillChange]
+    public function getIterator() : iterable
     {
         return new ArrayObject($this->toArray());
     }
@@ -129,7 +132,8 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * <p>
      * The return value will be casted to boolean if non-boolean was returned.
      */
-    public function offsetExists($offset)
+    #[\ReturnTypeWillChange]
+    public function offsetExists($offset) : bool
     {
         return isset($this->{$offset});
     }
@@ -143,6 +147,7 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * </p>
      * @return mixed Can return all value types.
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->{$offset};
@@ -160,6 +165,7 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * </p>
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->{$offset} = $value;
@@ -174,6 +180,7 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * </p>
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         $this->{$offset} = null;

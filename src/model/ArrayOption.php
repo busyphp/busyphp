@@ -130,7 +130,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * The return value will be casted to boolean if non-boolean was returned.
      */
     #[\ReturnTypeWillChange]
-    public function offsetExists($offset)
+    public function offsetExists($offset) : bool
     {
         return isset($this->options[$offset]);
     }
@@ -193,7 +193,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * The return value is cast to an integer.
      */
     #[\ReturnTypeWillChange]
-    public function count()
+    public function count() : int
     {
         return count($this->options);
     }
@@ -227,7 +227,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * @throws Exception on failure.
      */
     #[\ReturnTypeWillChange]
-    public function getIterator()
+    public function getIterator() : iterable
     {
         return new ArrayIterator($this->options);
     }
