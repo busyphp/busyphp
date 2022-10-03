@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\plugin;
 use BusyPHP\App;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
@@ -132,7 +133,7 @@ class TablePlugin
         foreach ($data as $key => $value) {
             $data[$key] = trim($value);
         }
-        $this->data = Map::parse($data);
+        $this->data = Map::init($data);
         
         // 扩展搜索词
         if ($this->word === '') {
@@ -200,9 +201,12 @@ class TablePlugin
                 call_user_func_array($this->queryHandler, [$model, $this->data]);
             }
             
-            $where = $this->data->getWhere();
-            foreach ($where as $key => $value) {
-                $model->where($key, $value);
+            foreach ($this->data as $key => $value) {
+                if (is_null($value)) {
+                    continue;
+                }
+                
+                $model->where(StringHelper::snake($key), $value);
             }
             
             // 限制条数

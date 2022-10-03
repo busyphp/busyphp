@@ -316,7 +316,7 @@ class ArrayHelper extends Arr
             }
         }
         
-        return $map ? Map::parse($arr) : $arr;
+        return $map ? Map::init($arr) : $arr;
     }
     
     

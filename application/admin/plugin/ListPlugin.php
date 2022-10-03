@@ -8,6 +8,7 @@ use BusyPHP\app\admin\plugin\lists\ListHandler;
 use BusyPHP\app\admin\plugin\lists\ListSelectResult;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\StringHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
 use BusyPHP\Request;
@@ -142,7 +143,7 @@ class ListPlugin
         foreach ($data as $key => $value) {
             $data[$key] = trim($value);
         }
-        $this->data = Map::parse($data);
+        $this->data = Map::init($data);
     }
     
     
@@ -191,9 +192,12 @@ class ListPlugin
             call_user_func_array($this->queryHandler, [$this->model, $this->data]);
         }
         
-        $where = $this->data->getWhere();
-        foreach ($where as $key => $value) {
-            $this->model->where($key, $value);
+        foreach ($this->data as $key => $value) {
+            if (is_null($value)) {
+                continue;
+            }
+            
+            $this->model->where(StringHelper::snake($key), $value);
         }
         
         // 限制条数
