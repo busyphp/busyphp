@@ -7,6 +7,7 @@ use ArrayAccess;
 use ArrayIterator;
 use BusyPHP\helper\StringHelper;
 use Closure;
+use Countable;
 use Exception;
 use IteratorAggregate;
 use JsonSerializable;
@@ -20,7 +21,7 @@ use Traversable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/8 下午上午10:18 Map.php $
  */
-class Map implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate
+class Map implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
     /**
      * 服务注入
@@ -247,5 +248,19 @@ class Map implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Iterato
     public function __toString() : string
     {
         return $this->toJson(JSON_UNESCAPED_UNICODE);
+    }
+    
+    
+    /**
+     * Count elements of an object
+     * @link https://php.net/manual/en/countable.count.php
+     * @return int The custom count as an integer.
+     * <p>
+     * The return value is cast to an integer.
+     * </p>
+     */
+    public function count() : int
+    {
+        return count($this->toArray());
     }
 }
