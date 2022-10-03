@@ -2,8 +2,6 @@
 
 namespace BusyPHP\model;
 
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\StringHelper;
 use Closure;
 use think\db\Raw;
 
@@ -20,6 +18,12 @@ class Entity
      * @var Closure[]
      */
     protected static $maker = [];
+    
+    /**
+     * 类属性名称
+     * @var string
+     */
+    private $property;
     
     /**
      * 字段名
@@ -85,11 +89,11 @@ class Entity
         if (is_array($field)) {
             foreach ($field as $key => $item) {
                 if ($item instanceof Entity) {
-                    $field[$key] = $item->field();
+                    $field[$key] = $item->build();
                 }
             }
         } elseif ($field instanceof Entity) {
-            $field = $field->field();
+            $field = $field->build();
         }
         
         return $field;
@@ -97,47 +101,14 @@ class Entity
     
     
     /**
-     * 构建距离查询字段，计算出来距离单位为米
-     * @param string|Entity $latField 纬度字段
-     * @param string|Entity $lngField 经度字段
-     * @param float         $lat 纬度值
-     * @param float         $lng 经度值
-     * @param string|Entity $alias 别名
-     * @return string
-     */
-    public static function buildDistance($latField, $lngField, float $lat, float $lng, $alias = 'distance') : string
-    {
-        $latField = (string) $latField;
-        $lngField = (string) $lngField;
-        $alias    = (string) $alias;
-        
-        return "round( 6378.138 * 2 * ASIN( SQRT( POW( SIN( ( {$lat} * PI() / 180 - {$latField} * PI() / 180 ) / 2 ), 2 ) + COS({$lat} * PI() / 180) * COS({$latField} * PI() / 180) * POW( SIN( ( {$lng} * PI() / 180 - {$lngField} * PI() / 180 ) / 2 ), 2 ) ) ) * 1000) as {$alias}";
-    }
-    
-    
-    /**
-     * 快速实例化
-     * @param string $field
-     * @return Entity
-     */
-    public static function init(string $field) : self
-    {
-        return new static($field);
-    }
-    
-    
-    /**
      * Entity constructor.
-     * @param string $field
+     * @param string $property 类属性
+     * @param string $field 字段名称
      */
-    public function __construct(string $field)
+    public function __construct(string $property, string $field)
     {
-        $field = trim($field);
-        if (!$field) {
-            throw new ParamInvalidException('$field');
-        }
-        
-        $this->field($field);
+        $this->property = $property;
+        $this->field    = $field;
         
         if (!empty(static::$maker)) {
             foreach (static::$maker as $maker) {
@@ -149,18 +120,11 @@ class Entity
     
     /**
      * 设置表达式, 支持 %s 变量为字段名称
-     * @param string|null $exp <p>
-     * string: 设置值<br />
-     * null: 获取值
-     * </p>
-     * @return Entity|string
+     * @param string $exp 表达式，如：sum 或 sum(%s)
+     * @return $this
      */
-    public function exp(?string $exp = null)
+    public function exp(string $exp) : self
     {
-        if (!$exp) {
-            return $this->exp;
-        }
-        
         $this->exp = $exp;
         
         return $this;
@@ -168,19 +132,12 @@ class Entity
     
     
     /**
-     * 设置/获取 数据表名
-     * @param string|null $table <p>
-     * string: 设置值<br />
-     * null: 获取值
-     * </p>
-     * @return Entity|string
+     * 设置数据表名
+     * @param string $table
+     * @return $this
      */
-    public function table(?string $table = null)
+    public function table(string $table) : self
     {
-        if (!$table) {
-            return $this->table;
-        }
-        
         $this->table = $table;
         
         return $this;
@@ -188,14 +145,56 @@ class Entity
     
     
     /**
-     * 设置/获取 查询条件/更新条件
-     * @param string|null $op <p>
-     * string: 设置值<br />
-     * null: 获取值
-     * </p>
-     * @return Entity|string
+     * 设置value是否转为{@see Raw}对象
+     * @return $this
      */
-    public function op(?string $op = null)
+    public function raw($raw = true) : self
+    {
+        $this->raw = $raw;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置字段别名
+     * @param string $alias
+     * @return $this
+     */
+    public function as(string $alias) : self
+    {
+        $this->as = $alias;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取字段名
+     * @return string
+     */
+    public function field() : string
+    {
+        return $this->field;
+    }
+    
+    
+    /**
+     * 获取属性名
+     * @return string
+     */
+    public function property() : string
+    {
+        return $this->property;
+    }
+    
+    
+    /**
+     * 设置或获取等式
+     * @param string|null $op 设为null则获取，否则设置
+     * @return $this|string
+     */
+    public function op(string $op = null)
     {
         if (!$op) {
             return $this->op;
@@ -208,85 +207,8 @@ class Entity
     
     
     /**
-     * 设置value转为{@see Raw}对象 或 获取value是否转为raw对象
-     * @param bool|null $raw <p>
-     * string: 设置值<br />
-     * null: 获取值
-     * </p>
-     * @return Entity|bool
-     */
-    public function raw($raw = true)
-    {
-        if (is_null($raw)) {
-            return $this->raw;
-        }
-        
-        $this->raw = $raw;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置/获取 字段别名
-     * @param string|null $alias 别名 <p>
-     * string: 设置值<br />
-     * null: 获取值
-     * </p>
-     * @return Entity|string
-     */
-    public function as(?string $alias = null)
-    {
-        if (!$alias) {
-            return $this->as;
-        }
-        
-        $this->as = $alias;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置/获取 字段名
-     * @param string|true|false|null $field <p>
-     * true: 返回下划线风格的字段名称<br />
-     * false: 返回驼峰风格的字段名称<br />
-     * string: 设置字段名<br />
-     * null: 返回构建的查询字段
-     * </p>
-     * @return Entity|string
-     */
-    public function field($field = null)
-    {
-        if ($field && is_string($field)) {
-            $this->field = StringHelper::snake($field);
-            
-            return $this;
-        }
-        
-        // 返回下划线风格
-        if (true === $field) {
-            return $this->field;
-        }
-        
-        //
-        // 返回驼峰格式
-        elseif (false === $field) {
-            return StringHelper::camel($this->field);
-        }
-        
-        // 返回查询字段名
-        return $this->build();
-    }
-    
-    
-    /**
-     * 设置/获取 查询值/更新值
-     * @param mixed|null $value 获取值  <p>
-     * mixed: 设置值<br />
-     * null: 获取值
-     * </p>
+     * 设置或获取值
+     * @param mixed|null $value 传null则获取，否则设置
      * @return Entity|Raw|string
      */
     public function value($value = null)
@@ -319,7 +241,7 @@ class Entity
         
         // 表名
         if ($this->table) {
-            $field = "{$this->table}.{$field}";
+            $field = $this->table . '.' . $field;
         }
         
         // 表达式
@@ -327,16 +249,31 @@ class Entity
             if (false !== strpos($this->exp, '%s')) {
                 $field = sprintf($this->exp, $field);
             } else {
-                $field = "{$this->exp}({$field})";
+                $field = sprintf('%s(%s)', $this->exp, $field);
             }
         }
         
         // 别名
         if ($this->as) {
-            return "{$field} AS {$this->as}";
+            return sprintf('%s AS %s', $field, $this->as);
         }
         
         return $field;
+    }
+    
+    
+    /**
+     * 重置
+     * @return $this
+     */
+    public function reset() : self
+    {
+        $this->exp   = '';
+        $this->table = '';
+        $this->as    = '';
+        $this->op    = '';
+        $this->raw   = false;
+        $this->value = null;
     }
     
     
