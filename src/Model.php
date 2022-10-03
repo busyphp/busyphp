@@ -1625,11 +1625,11 @@ abstract class Model extends Query
      * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
      * @return array
      * @deprecated
-     * @see ClassHelper::getConstMap()
+     * @see ClassHelper::getConstAttrs()
      */
     public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
     {
-        return ClassHelper::getConstMap($class === true ? static::class : $class, $prefix, $annotations, $mapping);
+        return ClassHelper::getConstAttrs($class === true ? static::class : $class, $prefix, $annotations, $mapping);
     }
     
     
@@ -1717,7 +1717,7 @@ abstract class Model extends Query
             }
             
             if ($value instanceof Entity) {
-                $value = new Raw($value->field() . $value->op() . $value->value());
+                $value = new Raw($value->build() . $value->op() . $value->value());
             } elseif (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
                 $value = new Raw($value[1]);
             } elseif (is_bool($value)) {
@@ -1742,9 +1742,9 @@ abstract class Model extends Query
             if ($item instanceof Entity) {
                 $value = $item->value();
                 if ($value instanceof Entity) {
-                    $this->whereRaw(sprintf('`%s` %s `%s`', $item->field(), $item->op(), $value->field()));
+                    $this->whereRaw(sprintf('`%s` %s `%s`', $item->build(), $item->op(), $value->build()));
                 } else {
-                    $this->where($item->field(), $item->op(), $item->value());
+                    $this->where($item->build(), $item->op(), $item->value());
                 }
             }
         }
