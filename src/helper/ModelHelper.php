@@ -20,7 +20,7 @@ class ModelHelper
     /**
      * 构建模型
      * @param Model|string $model
-     * @return array{get_by: array, get_field_by:array, get_info_by: array, find_info_by:array, get_extend_info_by: array, find_extend_info_by: array, where_or: array, where: array, common: array, field_static: array, field_property: array, field_setter: array}
+     * @return array{get_by: array, get_field_by:array, get_info_by: array, find_info_by:array, get_extend_info_by: array, find_extend_info_by: array, where_or: array, where: array, common: array, field_static: array, field_public: array, field_public: array, field_setter: array, field_getter: array}
      */
     public static function build($model) : array
     {
@@ -46,8 +46,10 @@ class ModelHelper
         $whereOrList          = [];
         $whereList            = [];
         $fieldStaticList      = [];
-        $fieldPropertyList    = [];
+        $fieldPublicList      = [];
+        $fieldProtectedList   = [];
         $fieldSetterList      = [];
+        $fieldGetterList      = [];
         
         
         foreach ($model->getFields() as $field) {
@@ -59,13 +61,15 @@ class ModelHelper
                 $pkType = $type;
             }
             
-            $getByList[]         = sprintf('@method array|null getBy%s(%s $%s)', $method, $type, $name);
-            $getFieldByList[]    = sprintf('@method mixed getFieldBy%s(%s $%s, string|%s $field, mixed $default = null)', $method, $type, $name, $entityClass);
-            $whereOrList[]       = sprintf('@method $this whereOr%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
-            $whereList[]         = sprintf('@method $this where%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
-            $fieldStaticList[]   = sprintf('@method static %s %s(mixed $op = null, mixed $condition = null) %s', $entityClass, $name, $comment);
-            $fieldPropertyList[] = sprintf('/**%s * %s%s * @var %s%s */%spublic $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
-            $fieldSetterList[]   = sprintf('@method $this set%s(%s $%s) 设置%s', $method, $type, $name, $comment);
+            $getByList[]          = sprintf('@method array|null getBy%s(%s $%s)', $method, $type, $name);
+            $getFieldByList[]     = sprintf('@method mixed getFieldBy%s(%s $%s, string|%s $field, mixed $default = null)', $method, $type, $name, $entityClass);
+            $whereOrList[]        = sprintf('@method $this whereOr%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
+            $whereList[]          = sprintf('@method $this where%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
+            $fieldStaticList[]    = sprintf('@method static %s %s(mixed $op = null, mixed $condition = null) %s', $entityClass, $name, $comment);
+            $fieldPublicList[]    = sprintf('/**%s * %s%s * @var %s%s */%spublic $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
+            $fieldProtectedList[] = sprintf('/**%s * %s%s * @var %s%s */%sprotected $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
+            $fieldSetterList[]    = sprintf('@method $this set%s(%s $%s) 设置%s', $method, $type, $name, $comment);
+            $fieldGetterList[]    = sprintf('@method $this get%s() 获取%s', $method, $comment);
             
             if ($bindParseClass) {
                 $getInfoByList[]  = sprintf('@method %s getInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseClass, $method, $type, $name);
@@ -103,8 +107,10 @@ class ModelHelper
             'where'               => $whereList,
             'common'              => $commonList,
             'field_static'        => $fieldStaticList,
-            'field_property'      => $fieldPropertyList,
+            'field_public'        => $fieldPublicList,
+            'field_protected'     => $fieldProtectedList,
             'field_setter'        => $fieldSetterList,
+            'field_getter'        => $fieldGetterList,
         ];
     }
     
@@ -154,12 +160,20 @@ class ModelHelper
                 'content' => implode(PHP_EOL . '* ', $builds['field_setter'])
             ],
             [
-                'name'    => '实体属性',
-                'content' => implode(PHP_EOL, $builds['field_property'])
+                'name'    => '虚拟 Getter 方法',
+                'content' => implode(PHP_EOL . '* ', $builds['field_getter'])
+            ],
+            [
+                'name'    => 'public 属性',
+                'content' => implode(PHP_EOL, $builds['field_public'])
+            ],
+            [
+                'name'    => 'protected 属性',
+                'content' => implode(PHP_EOL, $builds['field_protected'])
             ],
             [
                 'name'    => '所有虚拟方法',
-                'content' => implode(PHP_EOL . '* ', array_merge($builds['field_static'], $builds['field_setter']))
+                'content' => implode(PHP_EOL . '* ', array_merge($builds['field_static'], $builds['field_setter'], $builds['field_getter']))
             ],
         ]);
     }
