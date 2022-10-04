@@ -122,8 +122,8 @@ class TransHelper
     public static function toOptionHtml(array $list, $selected = null, $nameKey = '', $valueKey = '', array $attrs = []) : string
     {
         $selected = !is_array($selected) ? [$selected] : $selected;
-        $nameKey  = (string) ($nameKey ?: '');
-        $valueKey = (string) ($valueKey ?: '');
+        $nameKey  = StringHelper::cast($nameKey);
+        $valueKey = StringHelper::cast($valueKey);
         $attrs    = $attrs ?: [];
         
         $options = '';

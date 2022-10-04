@@ -38,9 +38,9 @@ class ArrayHelper extends Arr
      */
     public static function listToTree(array $list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null) : array
     {
-        $pkKey     = (string) $pkKey;
-        $parentKey = (string) $parentKey;
-        $childKey  = (string) $childKey;
+        $pkKey     = StringHelper::cast($pkKey);
+        $parentKey = StringHelper::cast($parentKey);
+        $childKey  = StringHelper::cast($childKey);
         
         // 创建Tree
         $tree = [];
@@ -96,7 +96,7 @@ class ArrayHelper extends Arr
      */
     public static function treeToList(array $tree, $childKey = 'child', bool $clearChild = true, &$list = []) : array
     {
-        $childKey = (string) $childKey;
+        $childKey = StringHelper::cast($childKey);
         
         foreach ($tree as $item) {
             if (is_object($item)) {
@@ -131,7 +131,7 @@ class ArrayHelper extends Arr
      */
     public static function listSortBy(array $list, $field, string $orderBy = self::ORDER_BY_ASC) : array
     {
-        $field = (string) $field;
+        $field = StringHelper::cast($field);
         $refer = $resultSet = [];
         foreach ($list as $i => $data) {
             $refer[$i] = $data[$field];
@@ -202,7 +202,7 @@ class ArrayHelper extends Arr
      */
     public static function listByKey($list, $key)
     {
-        $key          = (string) $key;
+        $key          = StringHelper::cast($key);
         $isCollection = $list instanceof Collection;
         $list         = is_array($list) || $isCollection ? $list : [];
         $newList      = [];
@@ -229,8 +229,8 @@ class ArrayHelper extends Arr
      */
     public static function sortTree(array $tree, $sortKey = 'sort', string $order = self::ORDER_BY_ASC, $childKey = 'child', $level = 1) : array
     {
-        $sortKey  = is_string($sortKey) ? $sortKey : (string) $sortKey;
-        $childKey = is_string($childKey) ? $childKey : (string) $childKey;
+        $sortKey  = StringHelper::cast($sortKey);
+        $childKey = StringHelper::cast($childKey);
         
         foreach ($tree as $i => $r) {
             $r['level'] = $level;
