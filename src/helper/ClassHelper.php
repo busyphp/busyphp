@@ -3,8 +3,10 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
+use BusyPHP\exception\MethodNotFoundException;
 use PhpDocReader\PhpParser\UseStatementParser;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -224,7 +226,7 @@ class ClassHelper
                 continue;
             }
             
-            $item[$attr] = static::parseValue($class, $item[$attr] ?? '', $type);
+            $item[$attr] = static::parseValue($class, $item[$attr] ?? null, $type);
         }
         
         // 解析类型
@@ -277,7 +279,7 @@ class ClassHelper
             case self::CAST_FLOAT:
                 return (float) $value;
             case self::CAST_BOOL:
-                return (bool) $value;
+                return TransHelper::toBool($value);
             case self::CAST_CLASS:
                 $value = (string) $value;
                 if (substr($value, 0, 1) !== '\\') {
@@ -493,5 +495,47 @@ class ClassHelper
         }
         
         return '\\' . ltrim($classname, '\\');
+    }
+    
+    
+    /**
+     * 获取最顶级的ReflectionClass
+     * @param ReflectionClass $class
+     * @return ReflectionClass
+     */
+    public static function getTopReflectionClass(ReflectionClass $class) : ReflectionClass
+    {
+        if (!$parent = $class->getParentClass()) {
+            return $class;
+        }
+        
+        return self::getTopReflectionClass($parent);
+    }
+    
+    
+    /**
+     * 通过Object反射调用方法
+     * @param object $object 对象
+     * @param string $name 方法名称
+     * @param array  $args 方法参数
+     * @return mixed
+     */
+    public static function invokeMethodByObject(object $object, string $name, array $args = [])
+    {
+        $class = self::getReflectionClass($object);
+        if (!$class->hasMethod($name)) {
+            throw new MethodNotFoundException($object, $name);
+        }
+        
+        try {
+            $method = $class->getMethod($name);
+            if (!$method->isPublic()) {
+                $method->setAccessible(true);
+            }
+            
+            return $method->invokeArgs($object, $args);
+        } catch (ReflectionException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
     }
 }
