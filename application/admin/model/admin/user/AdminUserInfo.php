@@ -129,7 +129,7 @@ class AdminUserInfo extends AdminUserField
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         if (!is_array(self::$_groupList)) {
             self::$_groupList = AdminGroup::init()->getIdList();

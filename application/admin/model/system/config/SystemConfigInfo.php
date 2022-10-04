@@ -11,7 +11,7 @@ namespace BusyPHP\app\admin\model\system\config;
  */
 class SystemConfigInfo extends SystemConfigField
 {
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->system  = $this->system > 0;
         $this->append  = $this->append > 0;

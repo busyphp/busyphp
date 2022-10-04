@@ -52,7 +52,7 @@ class SystemFileClassInfo extends SystemFileClassField
     public $isAudio;
     
     
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->system   = $this->system > 0;
         $this->typeName = SystemFile::getTypes($this->type);

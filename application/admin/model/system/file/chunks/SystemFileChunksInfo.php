@@ -37,7 +37,7 @@ class SystemFileChunksInfo extends SystemFileChunksField
     public $path;
     
     
-    public function onParseAfter() : void
+    protected function onParseAfter() : void
     {
         $this->id               = (int) $this->id;
         $this->formatCreateTime = TransHelper::date($this->createTime);

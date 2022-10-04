@@ -16,7 +16,7 @@ class SystemFileFragmentInfo extends SystemFileFragmentField
     public $formatCreateTime;
     
     
-    public function onParseAfter() : void
+    protected function onParseAfter() : void
     {
         $this->id               = (int) $this->id;
         $this->formatCreateTime = TransHelper::date($this->createTime);

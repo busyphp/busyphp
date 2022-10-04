@@ -75,7 +75,7 @@ class AdminGroupInfo extends AdminGroupField
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         if (!is_array(self::$_menuIdParents)) {
             static::$_menuIdParents = SystemMenu::init()->getIdParens();

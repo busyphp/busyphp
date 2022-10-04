@@ -128,7 +128,7 @@ class SystemPluginPackageInfo extends Field
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         if (!isset(self::$_pluginList)) {
             self::$_pluginList = SystemPlugin::init()->getList();

@@ -70,7 +70,7 @@ class SystemMenuInfo extends SystemMenuField
     public $routePath;
     
     
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->routePath  = Str::snake($this->path);
         $this->hash       = md5($this->routePath);

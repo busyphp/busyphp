@@ -18,7 +18,7 @@ class SystemFileImageStyleInfo extends SystemFileImageStyleField
      * @return void
      * @throws ReflectionException
      */
-    public function onParseAfter() : void
+    protected function onParseAfter() : void
     {
         $this->content = ImageStyleResult::fillContent(json_decode($this->content, true) ?: []);
     }

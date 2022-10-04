@@ -12,7 +12,7 @@ namespace BusyPHP\app\admin\model\system\plugin;
  */
 class SystemPluginInfo extends SystemPluginField
 {
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->setting = json_decode($this->setting, true) ?: [];
         $this->install = $this->install > 0;

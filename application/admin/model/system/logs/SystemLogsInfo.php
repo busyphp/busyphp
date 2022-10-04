@@ -36,7 +36,7 @@ class SystemLogsInfo extends SystemLogsField
     public $clientName;
     
     
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->formatCreateTime = TransHelper::date($this->createTime);
         $this->typeName         = SystemLogs::getTypes($this->type);

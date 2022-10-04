@@ -29,7 +29,7 @@ class AdminMessageInfo extends AdminMessageField
     public $iconIsClass;
     
     
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         $this->read = $this->read > 0;
         

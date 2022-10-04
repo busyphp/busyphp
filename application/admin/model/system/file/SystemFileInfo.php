@@ -89,7 +89,7 @@ class SystemFileInfo extends SystemFileField
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function onParseAfter()
+    protected function onParseAfter()
     {
         static $fileClassList;
         if (!isset($fileClassList)) {
