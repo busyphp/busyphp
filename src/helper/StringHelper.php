@@ -119,7 +119,7 @@ class StringHelper extends Str
     {
         $charId = md5(uniqid(mt_rand(), true));
         $hyphen = chr(45);
-    
+        
         return substr($charId, 0, 8) . $hyphen . substr($charId, 8, 4) . $hyphen . substr($charId, 12, 4) . $hyphen . substr($charId, 16, 4) . $hyphen . substr($charId, 20, 12);
     }
     
@@ -167,5 +167,18 @@ class StringHelper extends Str
         }
         
         return implode($break, $lines);
+    }
+    
+    
+    /**
+     * 将list中的成员强制转换为数组
+     * @param array $array
+     * @return array
+     */
+    public static function castList(array $array) : array
+    {
+        return array_map(function($item) {
+            return (string) $item;
+        }, $array);
     }
 }
