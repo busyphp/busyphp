@@ -8,6 +8,7 @@ use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\helper\StringHelper;
+use BusyPHP\interfaces\FieldValidateSceneInterface;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
@@ -31,6 +32,7 @@ use think\helper\Str;
 use think\Log;
 use think\model\concern\ModelEvent;
 use think\model\concern\TimeStamp;
+use think\Validate;
 use Throwable;
 
 /**
@@ -1066,6 +1068,143 @@ abstract class Model extends Query
     
     
     /**
+     * 数据校验
+     * @param array|Field|Validate|string $data 要验证的数据或验证器
+     * @param string|Validate|Field|null  $validate 验证器、验证器类名、验证场景名称
+     * @param string|null                 $scene 验证场景
+     * @return $this
+     */
+    public function validate($data, $validate = null, string $scene = null)
+    {
+        $field = null;
+        switch (true) {
+            // data 为 Field 的类或对象
+            case is_subclass_of($data, Field::class) || $data instanceof Field:
+                $field = $data;
+                $data  = [];
+                $scene = $validate;
+            break;
+            
+            // data 为 Validate 对象
+            case is_subclass_of($data, Validate::class) || $data instanceof Validate:
+                $scene    = $validate;
+                $validate = $data;
+                $data     = [];
+            break;
+            
+            // validate 为 Field 的类或对象
+            case $validate instanceof Field || is_subclass_of($validate, Field::class):
+                $field = $validate;
+            break;
+            
+            // validate 为 Validate 的类或对象
+            case $validate instanceof Validate || is_subclass_of($validate, Validate::class):
+                // Nothing
+            break;
+            
+            default:
+                throw new InvalidArgumentException('必须指定验证器');
+        }
+        
+        // 数据非Array检测
+        if ($data && !is_array($data)) {
+            throw new InvalidArgumentException('验证的数据必须为数组');
+        }
+        
+        // 合并数据
+        $data = array_merge($this->options['data'] ?? [], $data);
+        
+        // 解析参与验证的数据
+        // 如果是Field类进行验证，则将data转为字段标准值
+        $checkData = [];
+        $messages  = [];
+        $rules     = [];
+        $names     = [];
+        if ($field) {
+            // 合并data
+            if ($field instanceof Field) {
+                foreach ($data as $key => $value) {
+                    $field[$key] = $value;
+                }
+            } else {
+                $field = $field::parse($data);
+            }
+            
+            foreach ($field::getPropertyAttrs() as $property => $attr) {
+                if (null !== $value = ($field[$property] ?? null)) {
+                    $checkData[$property] = $value;
+                }
+                
+                // 解析验证规则
+                $validateRule = array_filter((array) ($attr[Field::ATTR_VALIDATE] ?? []));
+                if (!$validateRule) {
+                    continue;
+                }
+                
+                $names[$property] = $attr[ClassHelper::ATTR_NAME];
+                $rules[$property] = [];
+                foreach ($validateRule as $item) {
+                    // 格式: 规则1:配置#错误消息|规则2:配置#错误消息
+                    // 示例: min:3#密码不能少于三个字符|max:20#密码长度不能超过20个字符
+                    $item = explode('|', $item);
+                    [$rule, $msg] = ArrayHelper::split('#', $item[0], 2);
+                    $rule = trim($rule);
+                    $msg  = trim($msg);
+                    if (!$rule) {
+                        continue;
+                    }
+                    $rules[$property][] = $rule;
+                    
+                    // 错误消息
+                    $rule = false !== strpos($rule, ':') ? trim(explode(':', $rule)[0]) : $rule;
+                    if ('' !== $msg && $rule) {
+                        $messages[$property . '.' . $rule] = $msg;
+                    }
+                }
+            }
+            
+            $data = $field->obtainData();
+        } else {
+            $checkData = $data;
+        }
+        
+        // 设置data
+        $this->data($data);
+        
+        // 实例化数据验证类
+        $validate = is_string($validate) ? new $validate() : $validate;
+        $validate = $validate instanceof Validate ? $validate : new Validate();
+        $validate->setDb($this->manager);
+        $validate->failException(true);
+        $validate->message($messages);
+        $validate->rule($rules, $names);
+        
+        // 场景验证
+        if ($scene) {
+            if ($field instanceof FieldValidateSceneInterface) {
+                $only = $field->onValidateScene($validate, $scene);
+                if ($only && is_array($only)) {
+                    foreach ($only as $i => $item) {
+                        if ($item instanceof Entity) {
+                            $item = $item->property();
+                        }
+                        $only[$i] = (string) $item;
+                    }
+                    $validate->only($only);
+                }
+            } else {
+                $validate->scene($scene);
+            }
+        }
+        
+        // 执行验证
+        $validate->check($checkData);
+        
+        return $this;
+    }
+    
+    
+    /**
      * 更新记录
      * @param array $data 更新的数据
      * @return int
@@ -1704,7 +1843,7 @@ abstract class Model extends Query
     protected function parseData($data = []) : array
     {
         if ($data instanceof Field) {
-            $data = $data->getDBData();
+            $data = $data->obtainData();
         }
         
         $fields = $this->getTableFields();
