@@ -1186,7 +1186,7 @@ abstract class Model extends Query
                 if ($only && is_array($only)) {
                     foreach ($only as $i => $item) {
                         if ($item instanceof Entity) {
-                            $item = $item->property();
+                            $item = $item->name();
                         }
                         $only[$i] = (string) $item;
                     }
@@ -1972,9 +1972,9 @@ abstract class Model extends Query
      * @param bool          $split 是否分割传入的时间范围
      * @return $this
      */
-    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, $split = false)
+    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, bool $split = false)
     {
-        $field = (string) $field;
+        $field = Entity::parse($field);
         if ($split && $endOrSpace) {
             [$start, $end] = explode($endOrSpace, $startOrTimeRange);
             $start = (int) strtotime($start);
