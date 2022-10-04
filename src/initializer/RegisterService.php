@@ -1,13 +1,4 @@
 <?php
-// +----------------------------------------------------------------------
-// | ThinkPHP [ WE CAN DO IT JUST THINK ]
-// +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
-// +----------------------------------------------------------------------
-// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | Author: yunwuxin <448901948@qq.com>
-// +----------------------------------------------------------------------
 declare (strict_types = 1);
 
 namespace BusyPHP\initializer;
@@ -16,7 +7,10 @@ use BusyPHP\Service;
 use think\App;
 
 /**
- * 注册系统服务
+ * RegisterService
+ * @author busy^life <busy.life@qq.com>
+ * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
+ * @version $Id: 2022/10/4 10:29 PM RegisterService.php $
  */
 class RegisterService extends \think\initializer\RegisterService
 {
