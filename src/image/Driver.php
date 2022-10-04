@@ -194,7 +194,7 @@ abstract class Driver
         $key = "stylelist";
         if (!$list = CacheHelper::get(static::class, $key)) {
             $list = $this->selectStyle();
-            $list = ArrayHelper::listByKey($list, ImageStyleResult::id());
+            $list = ArrayHelper::listByKey($list, ImageStyleResult::id()->name());
             CacheHelper::set(static::class, $key, $list, 10 * 60);
         }
         

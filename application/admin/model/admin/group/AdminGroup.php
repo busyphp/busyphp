@@ -20,7 +20,6 @@ use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Event;
@@ -80,7 +79,7 @@ class AdminGroup extends Model
      */
     public function getIdList() : array
     {
-        return ArrayHelper::listByKey($this->getList(), AdminGroupField::id());
+        return ArrayHelper::listByKey($this->getList(), AdminGroupField::id()->name());
     }
     
     
@@ -244,7 +243,10 @@ class AdminGroup extends Model
             $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
             
             // 删除子角色
-            $childIds = array_keys(ArrayHelper::listByKey($this->getChildList($info->id), AdminGroupField::id()));
+            $childIds = array_keys(ArrayHelper::listByKey(
+                $this->getChildList($info->id),
+                AdminGroupField::id()->name()
+            ));
             if ($childIds) {
                 $this->whereEntity(AdminGroupField::id('in', $childIds))->delete();
             }
@@ -298,8 +300,14 @@ class AdminGroup extends Model
      */
     public function getChildList($id) : array
     {
-        $list = ArrayHelper::listToTree($this->selectList(), AdminGroupField::id(), AdminGroupField::parentId(), AdminGroupInfo::child(), $id);
-        $list = ArrayHelper::treeToList($list, AdminGroupInfo::child());
+        $list = ArrayHelper::listToTree(
+            $this->selectList(),
+            AdminGroupField::id()->name(),
+            AdminGroupField::parentId()->name(),
+            AdminGroupInfo::child()->name(),
+            $id
+        );
+        $list = ArrayHelper::treeToList($list, AdminGroupInfo::child()->name());
         
         return $list;
     }
@@ -313,7 +321,13 @@ class AdminGroup extends Model
      */
     public function getTreeList() : array
     {
-        return ArrayHelper::listToTree($this->getList(), AdminGroupField::id(), AdminGroupField::parentId(), AdminGroupInfo::child(), 0);
+        return ArrayHelper::listToTree(
+            $this->getList(),
+            AdminGroupField::id()->name(),
+            AdminGroupField::parentId()->name(),
+            AdminGroupInfo::child()->name(),
+            0
+        );
     }
     
     

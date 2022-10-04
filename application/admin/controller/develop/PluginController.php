@@ -85,7 +85,7 @@ class PluginController extends InsideController
     private function manager(string $package) : SystemPluginBaseController
     {
         $list = SystemPlugin::getPluginList();
-        $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package());
+        $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package()->name());
         $info = $list[$package] ?? null;
         if (!$info) {
             throw new DataNotFoundException("插件 {$package} 不存在");

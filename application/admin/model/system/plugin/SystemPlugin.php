@@ -128,7 +128,7 @@ class SystemPlugin extends Model
         $list = $this->getCache('list');
         if (!$list || $must) {
             $list = $this->order(SystemPluginField::sort(), 'asc')->order(SystemPluginField::id(), 'asc')->selectList();
-            $list = ArrayHelper::listByKey($list, SystemPluginField::id());
+            $list = ArrayHelper::listByKey($list, SystemPluginField::id()->name());
             $this->setCache('list', $list);
         }
         
@@ -203,7 +203,7 @@ class SystemPlugin extends Model
     public static function getPluginInfo(string $package) : SystemPluginPackageInfo
     {
         $list = self::getPluginList();
-        $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package());
+        $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package()->name());
         if (!isset($list[$package])) {
             throw new DataNotFoundException("包 {$package} 信息不存在");
         }

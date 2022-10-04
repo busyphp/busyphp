@@ -219,7 +219,7 @@ class SystemMenu extends Model
             }
             
             // 删除子菜单
-            $childIds = array_keys(ArrayHelper::listByKey($this->getAllChildList($info->path), SystemMenuField::id()));
+            $childIds = array_keys(ArrayHelper::listByKey($this->getAllChildList($info->path), SystemMenuField::id()->name()));
             if ($childIds) {
                 $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
             }
@@ -286,9 +286,15 @@ class SystemMenu extends Model
      */
     public function getAllChildList(string $path) : array
     {
-        $list = ArrayHelper::listToTree($this->selectList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), $path);
+        $list = ArrayHelper::listToTree(
+            $this->selectList(),
+            SystemMenuField::path()->name(),
+            SystemMenuField::parentPath()->name(),
+            SystemMenuInfo::child()->name(),
+            $path
+        );
         
-        return ArrayHelper::treeToList($list, SystemMenuInfo::child());
+        return ArrayHelper::treeToList($list, SystemMenuInfo::child()->name());
     }
     
     
@@ -385,7 +391,7 @@ class SystemMenu extends Model
      */
     public function getPathList(bool $safe = false) : array
     {
-        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::path());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::path()->name());
     }
     
     
@@ -398,7 +404,7 @@ class SystemMenu extends Model
      */
     public function getIdList(bool $safe = false) : array
     {
-        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::id());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuField::id()->name());
     }
     
     
@@ -411,7 +417,7 @@ class SystemMenu extends Model
      */
     public function getHashList(bool $safe = false) : array
     {
-        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuInfo::hash());
+        return ArrayHelper::listByKey($safe ? $this->getSafeList() : $this->getList(), SystemMenuInfo::hash()->name());
     }
     
     
@@ -427,7 +433,13 @@ class SystemMenu extends Model
         $cacheName = 'tree';
         $list      = $this->getCache($cacheName);
         if (!$list || $must) {
-            $list = ArrayHelper::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "");
+            $list = ArrayHelper::listToTree(
+                $this->getList(),
+                SystemMenuField::path()->name(),
+                SystemMenuField::parentPath()->name(),
+                SystemMenuInfo::child()->name(),
+                ""
+            );
             $this->setCache($cacheName, $list);
         }
         
@@ -506,13 +518,19 @@ class SystemMenu extends Model
         $cacheName = 'safe_tree';
         $tree      = $this->getCache($cacheName);
         if (!$tree || $must) {
-            $tree = ArrayHelper::listToTree($this->getList(), SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $item) {
-                if ($item->disabled || $item->system) {
-                    return false;
-                }
-                
-                return true;
-            });
+            $tree = ArrayHelper::listToTree(
+                $this->getList(),
+                SystemMenuField::path()->name(),
+                SystemMenuField::parentPath()->name(),
+                SystemMenuInfo::child()->name(),
+                "",
+                function(SystemMenuInfo $item) {
+                    if ($item->disabled || $item->system) {
+                        return false;
+                    }
+                    
+                    return true;
+                });
             $this->setCache($cacheName, $tree);
         }
         
@@ -532,37 +550,43 @@ class SystemMenu extends Model
         $parentsIdsList = $this->getIdParens();
         $list           = $this->getIdList();
         
-        return ArrayHelper::listToTree($list, SystemMenuField::path(), SystemMenuField::parentPath(), SystemMenuInfo::child(), "", function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
-            if ($info->hide && isset($parentsIdsList[$info->id])) {
-                $parentId = array_shift($parentsIdsList[$info->id]);
-                if (isset($list[$parentId])) {
-                    $list[$parentId]->hides[] = $info;
+        return ArrayHelper::listToTree(
+            $list,
+            SystemMenuField::path()->name(),
+            SystemMenuField::parentPath()->name(),
+            SystemMenuInfo::child()->name(),
+            "",
+            function(SystemMenuInfo $info) use ($adminUserInfo, $parentsIdsList, $list) {
+                if ($info->hide && isset($parentsIdsList[$info->id])) {
+                    $parentId = array_shift($parentsIdsList[$info->id]);
+                    if (isset($list[$parentId])) {
+                        $list[$parentId]->hides[] = $info;
+                    }
                 }
-            }
-            
-            // 禁用和隐藏的菜单不输出
-            if ($info->disabled || $info->hide) {
-                return false;
-            }
-            
-            // 系统管理员
-            if ($adminUserInfo->groupHasSystem) {
-                // 系统菜单在非开发模式下不输出
-                if ($info->system && !App::getInstance()->isDebug()) {
+                
+                // 禁用和隐藏的菜单不输出
+                if ($info->disabled || $info->hide) {
                     return false;
                 }
-            } else {
-                // 不在规则内
-                // 不是系统菜单
-                if (!in_array($info->id, $adminUserInfo->groupRuleIds) || $info->system) {
-                    return false;
+                
+                // 系统管理员
+                if ($adminUserInfo->groupHasSystem) {
+                    // 系统菜单在非开发模式下不输出
+                    if ($info->system && !App::getInstance()->isDebug()) {
+                        return false;
+                    }
+                } else {
+                    // 不在规则内
+                    // 不是系统菜单
+                    if (!in_array($info->id, $adminUserInfo->groupRuleIds) || $info->system) {
+                        return false;
+                    }
                 }
-            }
-            
-            $list[$info->id] = $info;
-            
-            return true;
-        });
+                
+                $list[$info->id] = $info;
+                
+                return true;
+            });
     }
     
     

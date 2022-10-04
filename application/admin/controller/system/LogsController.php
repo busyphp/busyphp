@@ -15,7 +15,6 @@ use BusyPHP\model\Map;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
-use think\response\View;
 
 /**
  * 系统日志管理
@@ -31,7 +30,7 @@ class LogsController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
         if ($this->pluginTable) {
@@ -60,7 +59,7 @@ class LogsController extends InsideController
                     }
                     $data->remove('time');
                     
-                    if ($plugin->sortField === (string) SystemLogsInfo::formatCreateTime()) {
+                    if ($plugin->sortField == SystemLogsInfo::formatCreateTime()) {
                         $plugin->sortField = SystemLogsInfo::createTime();
                     }
                 }
@@ -81,7 +80,7 @@ class LogsController extends InsideController
      * 清空操作记录
      * @throws DbException
      */
-    public function clear()
+    public function clear() : Response
     {
         $len = SystemLogs::init()->clear();
         $this->log()->record(self::LOG_DELETE, '清空操作记录');
@@ -92,11 +91,11 @@ class LogsController extends InsideController
     
     /**
      * 查看操作记录
-     * @return View
+     * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function detail()
+    public function detail() : Response
     {
         $this->assign('info', $info = SystemLogs::init()->getInfo($this->get('id/d')));
         

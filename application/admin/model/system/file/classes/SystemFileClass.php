@@ -191,7 +191,7 @@ class SystemFileClass extends Model
             $list = $this->order(SystemFileClassField::sort(), 'asc')
                 ->order(SystemFileClassField::id(), 'desc')
                 ->selectList();
-            $list = ArrayHelper::listByKey($list, SystemFileClassField::var());
+            $list = ArrayHelper::listByKey($list, SystemFileClassField::var()->name());
             $this->setCache('list', $list);
         }
         
