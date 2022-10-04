@@ -343,7 +343,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         $excludes = array_map(function($item) {
             if ($item instanceof Entity) {
-                $item = $item->property();
+                $item = $item->name();
             }
             
             return $item;
@@ -621,7 +621,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     {
         foreach ($map as $name => $property) {
             if ($property instanceof Entity) {
-                $property = $property->property();
+                $property = $property->name();
             }
             
             $map[$name] = (string) $property;
