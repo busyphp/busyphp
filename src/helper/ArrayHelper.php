@@ -338,18 +338,28 @@ class ArrayHelper extends Arr
     
     /**
      * 将数组中子数组拆解并追加到本身
-     * @param array $array
+     * @param array         $array 数组
+     * @param string|null   $split 字符串切分符号
+     * @param callable|null $filter 过滤回调
      * @return array
      */
-    public static function flat(array $array) : array
+    public static function flat(array $array, string $split = null, callable $filter = null) : array
     {
         $list = [];
         foreach ($array as $item) {
+            if ($split && is_string($item) && '' !== $item) {
+                $item = explode($split, $item);
+            }
+            
             if (is_array($item)) {
                 $list = array_merge($list, $item);
             } else {
                 $list[] = $item;
             }
+        }
+        
+        if ($filter) {
+            $list = call_user_func($filter, $list);
         }
         
         return $list;
