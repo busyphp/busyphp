@@ -202,7 +202,7 @@ class ClassHelper
                     if (preg_match('/(.*?)\s(.*)/is', $vo, $voMatch)) {
                         $k = trim($voMatch[1]);
                         $v = trim(preg_replace('/\n\s*/is', PHP_EOL, $voMatch[2]));
-                        if (isset($item[$k]) && !is_array($item[$k]) && strtolower($k) !== self::ATTR_VAR) {
+                        if (isset($item[$k]) && strtolower($k) !== self::ATTR_VAR) {
                             if (!is_array($item[$k])) {
                                 $item[$k] = [$item[$k]];
                             }
