@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\model\Entity;
 use think\facade\Route;
 use think\helper\Str;
 
@@ -12,12 +13,12 @@ use think\helper\Str;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午6:13 SystemMenuInfo.php $
- * @method static mixed child();
- * @method static mixed hash();
- * @method static mixed parentHash();
- * @method static mixed paramList();
- * @method static mixed url();
- * @method static mixed hides();
+ * @method static Entity child();
+ * @method static Entity hash();
+ * @method static Entity parentHash();
+ * @method static Entity paramList();
+ * @method static Entity url();
+ * @method static Entity hides();
  */
 class SystemMenuInfo extends SystemMenuField
 {
