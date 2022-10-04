@@ -2,6 +2,7 @@
 
 namespace BusyPHP\helper;
 
+use BusyPHP\model\Entity;
 use think\helper\Str;
 
 /**
@@ -180,5 +181,20 @@ class StringHelper extends Str
         return array_map(function($item) {
             return (string) $item;
         }, $array);
+    }
+    
+    
+    /**
+     * 强制转换为字符串
+     * @param mixed $value
+     * @return string
+     */
+    public static function cast($value) : string
+    {
+        if ($value instanceof Entity) {
+            return $value->name();
+        }
+        
+        return (string) $value;
     }
 }
