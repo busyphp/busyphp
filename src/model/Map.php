@@ -94,11 +94,9 @@ class Map implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Iterato
         $value  = $this->{StringHelper::camel($key)} ?? $default;
         $filter = !is_array($filter) ? explode(',', (string) $filter) : $filter;
         foreach ($filter as $item) {
-            if (!$item || !function_exists($item)) {
-                continue;
+            if (is_callable($item)) {
+                $value = call_user_func($item, $value);
             }
-            
-            $value = call_user_func($item, $value);
         }
         
         return $value;
