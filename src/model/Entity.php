@@ -23,7 +23,7 @@ class Entity
      * 类属性名称
      * @var string
      */
-    private $property;
+    private $name;
     
     /**
      * 字段名
@@ -102,13 +102,13 @@ class Entity
     
     /**
      * Entity constructor.
-     * @param string $property 类属性
+     * @param string $name 类属性名称
      * @param string $field 字段名称
      */
-    public function __construct(string $property, string $field)
+    public function __construct(string $name, string $field)
     {
-        $this->property = $property;
-        $this->field    = $field;
+        $this->name  = $name;
+        $this->field = $field;
         
         if (!empty(static::$maker)) {
             foreach (static::$maker as $maker) {
@@ -183,9 +183,9 @@ class Entity
      * 获取属性名
      * @return string
      */
-    public function property() : string
+    public function name() : string
     {
-        return $this->property;
+        return $this->name;
     }
     
     
