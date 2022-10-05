@@ -913,13 +913,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             }
             
             // 获取值
-            $value = ClassHelper::getPropertyValue($this, $property);
-            if ($this instanceof FieldObtainDataInterface) {
-                $value = $this->onObtainData($field, $property->getName(), $attrs, $value);
+            if (is_null($value = ClassHelper::getPropertyValue($this, $property))) {
+                return;
             }
             
-            // 过滤null
-            if (is_null($value)) {
+            // 触发获取值接口
+            if ($this instanceof FieldObtainDataInterface && is_null($value = $this->onObtainData($field, $property->getName(), $attrs, $value))) {
                 return;
             }
             
