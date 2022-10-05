@@ -12,6 +12,7 @@ declare (strict_types = 1);
 
 namespace think;
 
+use BusyPHP\helper\StringHelper;
 use Closure;
 use think\exception\ValidateException;
 use think\helper\Str;
@@ -279,7 +280,7 @@ class Validate
     /**
      * 添加字段验证规则
      * @access protected
-     * @param string|array $name 字段名称或者规则数组
+     * @param string|array|\BusyPHP\model\Entity $name 字段名称或者规则数组
      * @param mixed        $rule 验证规则或者字段描述信息
      * @return $this
      */
@@ -291,7 +292,7 @@ class Validate
                 $this->field = array_merge($this->field, $rule);
             }
         } else {
-            $this->rule[$name] = $rule;
+            $this->rule[StringHelper::cast($name)] = $rule;
         }
 
         return $this;
@@ -335,11 +336,17 @@ class Validate
     /**
      * 设置提示信息
      * @access public
-     * @param array $message 错误信息
+     * @param array|\BusyPHP\model\Entity[] $message 错误信息
      * @return Validate
      */
     public function message(array $message)
     {
+        foreach ($message as $k => $v) {
+            if ($k instanceof \BusyPHP\model\Entity) {
+                $k           = $k->name() . '.' . $k->value();
+                $message[$k] = $v;
+            }
+        }
         $this->message = array_merge($this->message, $message);
 
         return $this;
@@ -399,12 +406,12 @@ class Validate
     /**
      * 指定需要验证的字段列表
      * @access public
-     * @param array $fields 字段名
+     * @param array|\BusyPHP\model\Entity[] $fields 字段名
      * @return $this
      */
     public function only(array $fields)
     {
-        $this->only = $fields;
+        $this->only = array_map([StringHelper::class, 'cast'], $fields);
 
         return $this;
     }
@@ -412,7 +419,7 @@ class Validate
     /**
      * 移除某个字段的验证规则
      * @access public
-     * @param string|array $field 字段名
+     * @param string|array|\BusyPHP\model\Entity $field 字段名
      * @param mixed        $rule  验证规则 true 移除所有规则
      * @return $this
      */
@@ -431,7 +438,7 @@ class Validate
                 $rule = explode('|', $rule);
             }
 
-            $this->remove[$field] = $rule;
+            $this->remove[StringHelper::cast($field)] = $rule;
         }
 
         return $this;
@@ -440,7 +447,7 @@ class Validate
     /**
      * 追加某个字段的验证规则
      * @access public
-     * @param string|array $field 字段名
+     * @param string|array|\BusyPHP\model\Entity $field 字段名
      * @param mixed        $rule  验证规则
      * @return $this
      */
@@ -455,7 +462,7 @@ class Validate
                 $rule = explode('|', $rule);
             }
 
-            $this->append[$field] = $rule;
+            $this->append[StringHelper::cast($field)] = $rule;
         }
 
         return $this;
