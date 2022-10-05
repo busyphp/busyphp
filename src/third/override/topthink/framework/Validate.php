@@ -436,6 +436,8 @@ class Validate
         } else {
             if (is_string($rule)) {
                 $rule = explode('|', $rule);
+            } elseif ($rule instanceof ValidateRule) {
+                $rule = $rule->getRule();
             }
 
             $this->remove[StringHelper::cast($field)] = $rule;
@@ -460,6 +462,8 @@ class Validate
         } else {
             if (is_string($rule)) {
                 $rule = explode('|', $rule);
+            } elseif ($rule instanceof ValidateRule) {
+                $rule = $rule->getRule();
             }
 
             $this->append[StringHelper::cast($field)] = $rule;
