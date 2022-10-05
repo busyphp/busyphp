@@ -25,6 +25,7 @@ use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\Db;
 use think\db\Raw;
+use think\Validate;
 use Traversable;
 
 /**
@@ -56,7 +57,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 字段注释属性-使用 {@see Field::toArray()} 方法输出时，重命名该属性的名称 */
     public const ATTR_RENAME = 'busy-rename';
     
-    /** @var string 字段注释属性-是否忽略该属性，使用 {@see Field::toArray()} {@see Field::obtainData()} {@see Field::copyData()} 时有效，一般用于内部使用 */
+    /** @var string 字段注释属性-是否忽略该属性，使用 {@see Field::toArray()} {@see Field::obtain()} {@see Field::copyData()} 时有效，一般用于内部使用 */
     public const ATTR_IGNORE = 'busy-ignore';
     
     // +----------------------------------------------------
@@ -828,13 +829,102 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
-     * 获取可以执行 {@see Db::insert()} {@see Db::update()} {@see Db::save()} {@see Db::data()} 的数据
+     * 设置限制的属性
+     * @param bool                            $exclude 是否排除
+     * @param Entity[]|Entity|string[]|string ...$property 属性，注意非字段
+     */
+    private function setLimitProperty(bool $exclude, ...$property) : array
+    {
+        $this->__private__options['limit_exclude']  = $exclude;
+        $this->__private__options['limit_property'] = array_map(function($item) {
+            if ($item instanceof Entity) {
+                return $item->name();
+            }
+            
+            return (string) $item;
+        }, ArrayHelper::flat($property));
+        
+        return $this->__private__options['limit_property'];
+    }
+    
+    
+    /**
+     * 清理限制
+     */
+    private function clearLimitProperty()
+    {
+        unset($this->__private__options['limit_property']);
+        unset($this->__private__options['limit_exclude']);
+    }
+    
+    
+    /**
+     * 排除属性，执行 {@see Field::obtain()} {@see Field::toArray()} 时有效，与 {@see Field::retain()} 互斥
+     * @param Validate|Entity|string          $property 传入数据校验对象或要排除的属性
+     * @param Entity[]|Entity|string[]|string ...$propertyList 要排除的属性，注意非字段
+     * @return $this
+     */
+    public function exclude($property, ...$propertyList) : self
+    {
+        if (!$property instanceof Validate) {
+            $propertyList = array_merge($propertyList, [$property]);
+        }
+        
+        $list = $this->setLimitProperty(true, ...$propertyList);
+        if ($list && $property instanceof Validate) {
+            foreach ($list as $item) {
+                $property->remove($item, true);
+            }
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 保留属性，执行 {@see Field::obtain()} {@see Field::toArray()} 时有效，与 {@see Field::exclude()} 互斥
+     * @param Validate|Entity|string          $property 传入数据校验对象或要排除的属性
+     * @param Entity[]|Entity|string[]|string ...$propertyList 要保留的属性，注意非字段
+     * @return $this
+     */
+    public function retain($property, ...$propertyList) : self
+    {
+        if (!$property instanceof Validate) {
+            $propertyList = array_merge($propertyList, [$property]);
+        }
+        
+        $list = $this->setLimitProperty(false, ...$propertyList);
+        if ($list && $property instanceof Validate) {
+            $property->only($list);
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取数据，以执行 {@see Db::insert()} {@see Db::update()} {@see Db::save()} {@see Db::data()}
      * @return array
      */
-    public function obtainData() : array
+    public function obtain() : array
     {
+        $limitProperty = $this->__private__options['limit_property'] ?? [];
+        $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
+        $this->clearLimitProperty();
+        
         $data = [];
-        self::eachPropertyAttrs(function(string $field, ReflectionProperty $property, array $attrs) use (&$data) {
+        self::eachPropertyAttrs(function(string $field, ReflectionProperty $property, array $attrs) use (&$data, $limitProperty, $limitExclude) {
+            if ($limitExclude) {
+                if (in_array($property->getName(), $limitProperty)) {
+                    return;
+                }
+            } else {
+                if (!in_array($property->getName(), $limitProperty)) {
+                    return;
+                }
+            }
+            
+            // 获取值
             $value = ClassHelper::getPropertyValue($this, $property);
             if ($this instanceof FieldObtainDataInterface) {
                 $value = $this->onObtainData($field, $property->getName(), $attrs, $value);
@@ -907,13 +997,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
-     * 使用注释属性输出，适用于{@see Field::toArray()}后置方法，如输出JSON数据
+     * 使用自定义注释属性输出，以执行 {@see Field::toArray()}
      * @param string $attr 自定义属性，默认为 "@busy-use-safe"
      * @return $this
      */
-    public function toUse(string $attr = 'safe') : self
+    public function use(string $attr = 'safe') : self
     {
-        $this->__private__options['safe'] = $attr ? 'busy-use-' . $attr : '';
+        $this->__private__options['use'] = $attr ? 'busy-use-' . $attr : '';
         
         return $this;
     }
@@ -921,6 +1011,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public function toArray() : array
     {
+        $use           = $this->__private__options['use'] ?? null;
+        $limitProperty = $this->__private__options['limit_property'] ?? [];
+        $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
+        $this->clearLimitProperty();
+        unset($this->__private__options['use']);
+        
         $vars = get_object_vars($this);
         $keys = array_keys($vars);
         // 取出私有属性
@@ -934,18 +1030,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         
         // 输出指定属性
-        $safe    = $this->__private__options['safe'] ?? null;
-        $safeMap = [];
-        if ($safe) {
-            self::eachPropertyAttrs(function($field, ReflectionProperty $property, array $attrs) use ($safe, &$safeMap) {
-                if (isset($attrs[$safe])) {
-                    $attrs[$safe]   = is_array($attrs[$safe]) ? end($attrs[$safe]) : $attrs[$safe];
-                    $name           = $property->getName();
-                    $safeMap[$name] = $attrs[$safe] ?: self::getPropertyToRenameMap($name);
+        $useMap = [];
+        if ($use) {
+            self::eachPropertyAttrs(function($field, ReflectionProperty $property, array $attrs) use ($use, &$useMap) {
+                if (!isset($attrs[$use])) {
+                    return;
                 }
+                
+                $name          = $property->getName();
+                $attrs[$use]   = is_array($attrs[$use]) ? end($attrs[$use]) : $attrs[$use];
+                $useMap[$name] = $attrs[$use] ?: self::getPropertyToRenameMap($name);
             });
         }
-        unset($this->__private__options['safe']);
         
         // 遍历所有
         $array = [];
@@ -953,9 +1049,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             if (0 === strpos($property, self::$privateVarPrefix) || in_array($property, self::getIgnorePropertyList())) {
                 continue;
             }
+            if ($limitExclude) {
+                if (in_array($property, $limitProperty)) {
+                    continue;
+                }
+            } else {
+                if (!in_array($property, $limitProperty)) {
+                    continue;
+                }
+            }
             
-            if ($safe) {
-                if ($name = $safeMap[$property] ?? null) {
+            if ($use) {
+                if ($name = $useMap[$property] ?? null) {
                     $array[$name] = $value;
                 }
             } else {
