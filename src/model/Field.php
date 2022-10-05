@@ -69,18 +69,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 属性的权限 */
     public const DEFINE_ACCESS = 'access';
     
-    // +----------------------------------------------------
-    // + 常用场景名称
-    // +----------------------------------------------------
-    /** @var string 验证场景-添加 */
-    public const SCENE_ADD = 'add';
-    
-    /** @var string 验证场景-修改 */
-    public const SCENE_EDIT = 'edit';
-    
-    /** @var string 验证场景-删除 */
-    public const SCENE_DELETE = 'delete';
-    
     /**
      * 服务注入
      * @var Closure[]
