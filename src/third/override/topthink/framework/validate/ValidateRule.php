@@ -35,7 +35,7 @@ namespace think\validate;
  * @method ValidateRule allowIp(mixed $rule, string $msg = '') static 验证IP许可
  * @method ValidateRule denyIp(mixed $rule, string $msg = '') static 验证IP禁用
  * @method ValidateRule regex(mixed $rule, string $msg = '') static 使用正则验证数据
- * @method ValidateRule token(mixed $rule='__token__', string $msg = '') static 验证表单令牌
+ * @method ValidateRule token(mixed $rule = '__token__', string $msg = '') static 验证表单令牌
  * @method ValidateRule is(mixed $rule, string $msg = '') static 验证字段值是否为有效格式
  * @method ValidateRule isRequire(mixed $rule = null, string $msg = '') static 验证字段必须
  * @method ValidateRule isNumber(mixed $rule = null, string $msg = '') static 验证字段值是否为数字
@@ -76,19 +76,20 @@ class ValidateRule
 {
     // 验证字段的名称
     protected $title;
-
+    
     // 当前验证规则
     protected $rule = [];
-
+    
     // 验证提示信息
     protected $message = [];
-
+    
+    
     /**
      * 添加验证因子
      * @access protected
-     * @param  string    $name  验证名称
-     * @param  mixed     $rule  验证规则
-     * @param  string    $msg   提示信息
+     * @param string $name 验证名称
+     * @param mixed  $rule 验证规则
+     * @param string $msg 提示信息
      * @return $this
      */
     protected function addItem(string $name, $rule = null, string $msg = '')
@@ -98,42 +99,46 @@ class ValidateRule
         } else {
             $this->rule[] = $name;
         }
-
+        
         $this->message[] = $msg;
-
+        
         return $this;
     }
-
+    
+    
     /**
      * 获取验证规则
      * @access public
      * @return array
      */
-    public function getRule(): array
+    public function getRule() : array
     {
         return $this->rule;
     }
-
+    
+    
     /**
      * 获取验证字段名称
      * @access public
      * @return string
      */
-    public function getTitle(): string
+    public function getTitle() : string
     {
         return $this->title ?: '';
     }
-
+    
+    
     /**
      * 获取验证提示
      * @access public
      * @return array
      */
-    public function getMsg(): array
+    public function getMsg() : array
     {
         return $this->message;
     }
-
+    
+    
     /**
      * 设置验证字段名称
      * @access public
@@ -142,31 +147,39 @@ class ValidateRule
     public function title(string $title)
     {
         $this->title = $title;
-
+        
         return $this;
     }
-
+    
+    
     public function __call($method, $args)
     {
-        if ('is' == strtolower(substr($method, 0, 2))) {
-            $method = substr($method, 2);
-        }
-
-        array_unshift($args, lcfirst($method));
-
-        return call_user_func_array([$this, 'addItem'], $args);
+        return self::add($this, $method, $args);
     }
-
+    
+    
     public static function __callStatic($method, $args)
     {
-        $rule = new static();
-
+        return self::add(new static(), $method, $args);
+    }
+    
+    
+    private static function add(ValidateRule $obj, string $method, array $args)
+    {
         if ('is' == strtolower(substr($method, 0, 2))) {
             $method = substr($method, 2);
         }
-
+        
+        // 验证唯一
+        if ($method === 'unique') {
+            // 支持Model
+            if (isset($args[0]) && $args[0] instanceof \BusyPHP\Model) {
+                $args[0] = get_class($args[0]);
+            }
+        }
+        
         array_unshift($args, lcfirst($method));
-
-        return call_user_func_array([$rule, 'addItem'], $args);
+        
+        return call_user_func_array([$obj, 'addItem'], $args);
     }
 }
