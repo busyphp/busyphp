@@ -35,6 +35,9 @@ use Traversable;
  */
 class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
+    // +----------------------------------------------------
+    // + 注释属性
+    // +----------------------------------------------------
     /** @var string 字段注释属性-定义 {@see Model::validate()} 的校验参数，支持多个，支持按"|"分割校验规则 */
     public const ATTR_VALIDATE = 'busy-validate';
     
@@ -53,14 +56,29 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 字段注释属性-使用 {@see Field::toArray()} 方法输出时，重命名该属性的名称 */
     public const ATTR_RENAME = 'busy-rename';
     
-    /** @var string 字段注释属性-是否忽略该属性，所有操作均有效，一般用于内部使用 */
+    /** @var string 字段注释属性-是否忽略该属性，使用 {@see Field::toArray()} {@see Field::obtainData()} {@see Field::copyData()} 时有效，一般用于内部使用 */
     public const ATTR_IGNORE = 'busy-ignore';
     
+    // +----------------------------------------------------
+    // + 内部属性
+    // +----------------------------------------------------
     /** @var string 属性反射对象 */
-    public const ATTR_PROPERTY = 'property';
+    public const DEFINE_PROPERTY = 'property';
     
     /** @var string 属性的权限 */
-    public const ATTR_ACCESS = 'access';
+    public const DEFINE_ACCESS = 'access';
+    
+    // +----------------------------------------------------
+    // + 常用场景名称
+    // +----------------------------------------------------
+    /** @var string 验证场景-添加 */
+    public const SCENE_ADD = 'add';
+    
+    /** @var string 验证场景-修改 */
+    public const SCENE_EDIT = 'edit';
+    
+    /** @var string 验证场景-删除 */
+    public const SCENE_DELETE = 'delete';
     
     /**
      * 服务注入
@@ -79,12 +97,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * @var array[][]
      */
     private static $propertyAttrs = [];
-    
-    /**
-     * 子类所有字段集合
-     * @var string[][]
-     */
-    private static $fieldList = [];
     
     /**
      * 子类所有属性集合
@@ -121,6 +133,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * @var string[][]
      */
     private static $useNameToPropertyMap = [];
+    
+    /**
+     * 忽略的子类属性集合
+     * @var string[][]
+     */
+    private static $ignorePropertyList = [];
     
     /**
      * 输入名称 => 子类属性名称映射
@@ -319,8 +337,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 设置值
         end:
-        if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
-            ClassHelper::setPropertyValue($field, $attrs[self::ATTR_PROPERTY], $value);
+        if ($attrs[self::DEFINE_ACCESS] == ReflectionProperty::IS_PRIVATE) {
+            ClassHelper::setPropertyValue($field, $attrs[self::DEFINE_PROPERTY], $value);
         } else {
             $field->{$property} = $value;
         }
@@ -331,11 +349,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 复制Field为新的Field
-     * @param Field         $needField 要复制的Field对象或子对象
+     * @param Field         $needField 要复制的Field对象或类名
      * @param Entity|string ...$excludes 排除字段
      * @return static
      */
-    public static function copyField(Field $needField, ...$excludes) : self
+    public static function copyData(Field $needField, ...$excludes) : self
     {
         if (!$needField instanceof static) {
             throw new ClassNotExtendsException($needField, static::class);
@@ -358,7 +376,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             
             // 获取值
             /** @var ReflectionProperty $needProperty */
-            $needProperty = $needField::getPropertyAttrs($property->getName())[self::ATTR_PROPERTY] ?? null;
+            $needProperty = $needField::getPropertyAttrs($property->getName())[self::DEFINE_PROPERTY] ?? null;
             if (!$needProperty) {
                 return;
             }
@@ -382,18 +400,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     public static function getPropertyAttrs(string $property = null) : ?array
     {
-        if (!isset(self::$propertyAttrs[static::class]) || !isset(self::$propertyToFieldMap[static::class]) || !isset(self::$fieldList[static::class])) {
+        if (!isset(self::$propertyAttrs[static::class]) || !isset(self::$propertyToFieldMap[static::class])) {
             $class        = ClassHelper::getReflectionClass(static::class);
             $data         = [];
-            $useFields    = [];
-            $useNames     = [];
+            $testFields   = [];
+            $testRenames  = [];
             $names        = [];
             $fields       = [];
-            $fieldList    = [];
             $fieldMap     = [];
             $renames      = [];
             $renameMap    = [];
             $propertyList = [];
+            $ignores      = [];
             foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE) as $item) {
                 $name = $item->getName();
                 if ($item->isStatic() || 0 === strpos($name, self::$privateVarPrefix)) {
@@ -419,75 +437,71 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     self::ATTR_ARRAY    => ClassHelper::CAST_STRING
                 ]);
                 
-                $attr[self::ATTR_PROPERTY] = $item;
-                $attr[self::ATTR_ACCESS]   = $access;
-                $attr[self::ATTR_FIELD]    = $attr[self::ATTR_FIELD] ?: $snake;
-                $attr[self::ATTR_RENAME]   = $attr[self::ATTR_RENAME] ?: $snake;
+                $attr[self::DEFINE_PROPERTY] = $item;
+                $attr[self::DEFINE_ACCESS]   = $access;
+                $attr[self::ATTR_FIELD]      = $attr[self::ATTR_FIELD] ?: $snake;
+                $attr[self::ATTR_RENAME]     = $attr[self::ATTR_RENAME] ?: $snake;
                 
                 // 检测rename重复
                 if (in_array($attr[self::ATTR_RENAME], $renames)) {
                     throw new RuntimeException(sprintf('The comment "@%s %s" of property "%s" in class "%s" can\'t repeat', self::ATTR_RENAME, $attr[self::ATTR_RENAME], $name, static::class));
                 }
-                $renames[] = $attr[self::ATTR_RENAME];
-                
                 // 检测field重复
                 if (in_array($attr[self::ATTR_FIELD], $fields)) {
                     throw new RuntimeException(sprintf('The comment "@%s %s" of property "%s" in class "%s" can\'t repeat', self::ATTR_FIELD, $attr[self::ATTR_FIELD], $name, static::class));
                 }
-                $fields[] = $attr[self::ATTR_FIELD];
+                
+                $renames[]        = $attr[self::ATTR_RENAME];
+                $fields[]         = $attr[self::ATTR_FIELD];
+                $propertyList[]   = $name;
+                $fieldMap[$name]  = $attr[self::ATTR_FIELD];
+                $renameMap[$name] = $attr[self::ATTR_RENAME];
                 
                 // 忽略属性
-                if (is_array($attr[self::ATTR_IGNORE])) {
-                    $attr[self::ATTR_IGNORE] = end($attr[self::ATTR_IGNORE]);
-                }
-                if (!$attr[self::ATTR_IGNORE]) {
-                    $fieldList[]      = $attr[self::ATTR_FIELD];
-                    $propertyList[]   = $name;
-                    $fieldMap[$name]  = $attr[self::ATTR_FIELD];
-                    $renameMap[$name] = $attr[self::ATTR_RENAME];
+                $attr[self::ATTR_IGNORE] = is_array($attr[self::ATTR_IGNORE]) ? end($attr[self::ATTR_IGNORE]) : $attr[self::ATTR_IGNORE];
+                if ($attr[self::ATTR_IGNORE]) {
+                    $ignores[] = $name;
                 }
                 
                 // 解析数组转换方式
-                if (is_array($attr[self::ATTR_ARRAY])) {
-                    $attr[self::ATTR_ARRAY] = end($attr[self::ATTR_ARRAY]);
-                }
+                $attr[self::ATTR_ARRAY] = is_array($attr[self::ATTR_ARRAY]) ? end($attr[self::ATTR_ARRAY]) : $attr[self::ATTR_ARRAY];
                 if ($attr[self::ATTR_ARRAY] && preg_match('/^["\'](.+)["\']\s*(.*)$/i', $attr[self::ATTR_ARRAY], $match)) {
                     $attr[self::ATTR_ARRAY] = [$match[1], TransHelper::toBool($match[2])];
                 }
                 
                 // 指定了字段名称
                 if ($attr[self::ATTR_FIELD] != $name) {
-                    $useFields[$name] = $attr[self::ATTR_FIELD];
+                    $testFields[$name] = $attr[self::ATTR_FIELD];
                 }
                 
                 // 指定了重命名
                 if ($attr[self::ATTR_RENAME] != $name) {
-                    $useNames[$name] = $attr[self::ATTR_RENAME];
+                    $testRenames[$name] = $attr[self::ATTR_RENAME];
                 }
                 
                 $data[$name] = $attr;
             }
             
             // 指定的字段名称不能和已有的属性一样
-            foreach ($useFields as $name => $field) {
+            foreach ($testFields as $name => $field) {
                 if (in_array($field, $names)) {
                     throw new RuntimeException(sprintf('The comment "@%s %s" of property "%s" in class "%s" cannot overwrite the existing property', self::ATTR_FIELD, $field, $name, static::class));
                 }
             }
             
             // 指定的重命名称不能和已有的属性一样
-            foreach ($useNames as $name => $field) {
+            foreach ($testRenames as $name => $field) {
                 if (in_array($field, $names)) {
                     throw new RuntimeException(sprintf('The comment "@%s %s" of property "%s" in class "%s" cannot overwrite the existing property', self::ATTR_RENAME, $field, $name, static::class));
                 }
             }
             
-            unset($fields, $renames, $useNames, $useFields);
+            unset($fields, $renames, $testRenames, $testFields);
             self::$propertyToRenameMap[static::class] = $renameMap;
             self::$propertyToFieldMap[static::class]  = $fieldMap;
-            self::$fieldList[static::class]           = $fieldList;
             self::$propertyList[static::class]        = $propertyList;
             self::$propertyAttrs[static::class]       = $data;
+            self::$ignorePropertyList[static::class]  = $ignores;
         }
         
         return ArrayHelper::getValueOrSelf(self::$propertyAttrs[static::class], $property);
@@ -506,7 +520,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 continue;
             }
             
-            call_user_func($callback, $item[self::ATTR_FIELD], $item[self::ATTR_PROPERTY], $item);
+            call_user_func($callback, $item[self::ATTR_FIELD], $item[self::DEFINE_PROPERTY], $item);
         }
     }
     
@@ -524,19 +538,24 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
+     * 获取忽略的属性集合
+     * @return string[]
+     */
+    public static function getIgnorePropertyList() : array
+    {
+        static::getPropertyAttrs();
+        
+        return self::$ignorePropertyList[static::class];
+    }
+    
+    
+    /**
      * 获取所有字段
      * @param Entity|string|Entity[]|string[] ...$excludes 排除的字段
      * @return string[]
      */
     public static function getFieldList(...$excludes) : array
     {
-        static::getPropertyAttrs();
-        
-        $list = self::$fieldList[static::class];
-        if (!$excludes) {
-            return $list;
-        }
-        
         $excludes = array_map(function($item) {
             if ($item instanceof Entity) {
                 return $item->field();
@@ -546,11 +565,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }, ArrayHelper::flat($excludes));
         
         $data = [];
-        foreach ($list as $item) {
-            if (in_array($item, $excludes)) {
+        foreach (self::getPropertyToFieldMap() as $property => $field) {
+            if (in_array($property, self::getIgnorePropertyList()) || in_array($field, $excludes)) {
                 continue;
             }
-            $data[] = $item;
+            $data[] = $field;
         }
         
         return $data;
@@ -772,8 +791,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             //
             // getField
             elseif ($prefix == 'get') {
-                if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
-                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]);
+                if ($attrs[self::DEFINE_ACCESS] == ReflectionProperty::IS_PRIVATE) {
+                    return ClassHelper::getPropertyValue($this, $attrs[self::DEFINE_PROPERTY]);
                 } else {
                     return $this->{$property};
                 }
@@ -782,8 +801,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             //
             // hasField
             else {
-                if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
-                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]) !== null;
+                if ($attrs[self::DEFINE_ACCESS] == ReflectionProperty::IS_PRIVATE) {
+                    return ClassHelper::getPropertyValue($this, $attrs[self::DEFINE_PROPERTY]) !== null;
                 } else {
                     return isset($this->{$property});
                 }
@@ -888,13 +907,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
-     * 使用注释属性安全输出，适用于{@see Field::toArray()}后置方法，如输出JSON数据
-     * @param string $attr 自定义属性，默认为 "@safe"
+     * 使用注释属性输出，适用于{@see Field::toArray()}后置方法，如输出JSON数据
+     * @param string $attr 自定义属性，默认为 "@busy-use-safe"
      * @return $this
      */
-    public function toSafe(string $attr = 'safe') : self
+    public function toUse(string $attr = 'safe') : self
     {
-        $this->__private__options['safe'] = $attr ? 'busy-' . $attr : '';
+        $this->__private__options['safe'] = $attr ? 'busy-use-' . $attr : '';
         
         return $this;
     }
@@ -903,9 +922,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     public function toArray() : array
     {
         $vars = get_object_vars($this);
+        $keys = array_keys($vars);
+        // 取出私有属性
         foreach (ClassHelper::getReflectionClass($this)->getProperties(ReflectionProperty::IS_PRIVATE) as $property) {
             $name = $property->getName();
-            if ($property->isStatic() || 0 === strpos($name, self::$privateVarPrefix)) {
+            if ($property->isStatic() || 0 === strpos($name, self::$privateVarPrefix) || in_array($name, $keys)) {
                 continue;
             }
             
@@ -918,11 +939,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         if ($safe) {
             self::eachPropertyAttrs(function($field, ReflectionProperty $property, array $attrs) use ($safe, &$safeMap) {
                 if (isset($attrs[$safe])) {
-                    // 如果是数组，取最后一个
-                    if (is_array($attrs[$safe])) {
-                        $attrs[$safe] = end($attrs[$safe]);
-                    }
-                    
+                    $attrs[$safe]   = is_array($attrs[$safe]) ? end($attrs[$safe]) : $attrs[$safe];
                     $name           = $property->getName();
                     $safeMap[$name] = $attrs[$safe] ?: self::getPropertyToRenameMap($name);
                 }
@@ -930,9 +947,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         unset($this->__private__options['safe']);
         
+        // 遍历所有
         $array = [];
         foreach ($vars as $property => $value) {
-            if (0 === strpos($property, self::$privateVarPrefix)) {
+            if (0 === strpos($property, self::$privateVarPrefix) || in_array($property, self::getIgnorePropertyList())) {
                 continue;
             }
             

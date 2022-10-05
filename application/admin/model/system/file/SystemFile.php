@@ -434,7 +434,7 @@ class SystemFile extends Model
         
         // 秒传
         if ($fast) {
-            $data             = SystemFileField::copyField($info, SystemFileField::id());
+            $data             = SystemFileField::copyData($info, SystemFileField::id());
             $data->userId     = $userId;
             $data->classType  = $classType;
             $data->classValue = $classValue;
