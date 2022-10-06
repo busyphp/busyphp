@@ -230,7 +230,7 @@ abstract class AdminController extends Controller
         }
         
         // 权限验证
-        if (!AdminGroup::checkPermission($this->adminUser)) {
+        if (!AdminGroup::getClass()::checkPermission($this->adminUser)) {
             throw new HttpResponseException($this->error('无权限操作', $this->request->getAppUrl(), 0));
         }
     }

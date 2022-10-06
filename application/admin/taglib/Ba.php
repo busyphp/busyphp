@@ -62,7 +62,7 @@ class Ba extends TagLib
         
         /** @see AdminGroup::checkPermission() */
         return <<<HTML
-<?php if ({$groupClass}::checkPermission(\$system['user'] ?? null, {$path})): ?>{$content}<?php endif; ?>
+<?php if ({$groupClass}::getClass()::checkPermission(\$system['user'] ?? null, {$path})): ?>{$content}<?php endif; ?>
 HTML;
     }
 }

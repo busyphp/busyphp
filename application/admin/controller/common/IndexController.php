@@ -72,8 +72,8 @@ class IndexController extends InsideController
                     'type' => 'divider'
                 ];
                 
-                $hasCacheClear  = AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_clear');
-                $hasCacheCreate = AdminGroup::checkPermission($this->adminUser, 'system_manager/cache_create');
+                $hasCacheClear  = AdminGroup::getClass()::checkPermission($this->adminUser, 'system_manager/cache_clear');
+                $hasCacheCreate = AdminGroup::getClass()::checkPermission($this->adminUser, 'system_manager/cache_create');
                 if ($hasCacheClear) {
                     $dropList[] = [
                         'text' => '清理缓存',

@@ -6,8 +6,6 @@ namespace BusyPHP\app\admin\model\admin\group;
 use BusyPHP\App;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\model;
@@ -129,32 +127,6 @@ class AdminGroup extends Model
             
             return $finalInfo;
         });
-    }
-    
-    
-    /**
-     * 校验数据
-     * @param AdminGroupField $data
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ParamInvalidException
-     * @throws VerifyException
-     */
-    protected function checkData(AdminGroupField $data)
-    {
-        if (!$data->rule || !$data->name || !$data->defaultMenuId) {
-            throw new ParamInvalidException('rule,name,default_menu_id');
-        }
-        
-        $idList  = SystemMenu::init()->getIdList();
-        $newRule = [];
-        foreach ($data->rule as $id) {
-            if (!isset($idList[$id])) {
-                continue;
-            }
-            $newRule[] = $id;
-        }
-        $data->setRule($newRule);
     }
     
     
