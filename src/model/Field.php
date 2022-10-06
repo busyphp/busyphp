@@ -837,16 +837,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
-     * 清理限制
-     */
-    private function clearLimitProperty()
-    {
-        unset($this->__private__options['limit_property']);
-        unset($this->__private__options['limit_exclude']);
-    }
-    
-    
-    /**
      * 排除属性，执行 {@see Field::obtain()} {@see Field::toArray()} 时有效，与 {@see Field::retain()} 互斥
      * @param Validate|Entity|string          $property 传入数据校验对象或要排除的属性
      * @param Entity[]|Entity|string[]|string ...$propertyList 要排除的属性，注意非字段
@@ -891,6 +881,31 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
+     * 使用自定义注释属性输出，以执行 {@see Field::toArray()}
+     * @param string $attr 自定义属性，默认为 "@busy-use-safe"
+     * @return $this
+     */
+    public function use(string $attr = 'safe') : self
+    {
+        $this->__private__options['use'] = $attr ? 'busy-use-' . $attr : '';
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 重置由 {@see Field::use()} {@see Field::retain()} {@see Field::exclude()} 设置的条件
+     * @return $this
+     */
+    public function reset() : self
+    {
+        unset($this->__private__options['limit_property']);
+        unset($this->__private__options['limit_exclude']);
+        unset($this->__private__options['use']);
+    }
+    
+    
+    /**
      * 获取数据，以执行 {@see Db::insert()} {@see Db::update()} {@see Db::save()} {@see Db::data()}
      * @return array
      */
@@ -898,7 +913,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     {
         $limitProperty = $this->__private__options['limit_property'] ?? [];
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
-        $this->clearLimitProperty();
         
         $data = [];
         self::eachPropertyAttrs(function(string $field, ReflectionProperty $property, array $attrs) use (&$data, $limitProperty, $limitExclude) {
@@ -983,26 +997,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     }
     
     
-    /**
-     * 使用自定义注释属性输出，以执行 {@see Field::toArray()}
-     * @param string $attr 自定义属性，默认为 "@busy-use-safe"
-     * @return $this
-     */
-    public function use(string $attr = 'safe') : self
-    {
-        $this->__private__options['use'] = $attr ? 'busy-use-' . $attr : '';
-        
-        return $this;
-    }
-    
-    
     public function toArray() : array
     {
         $use           = $this->__private__options['use'] ?? null;
         $limitProperty = $this->__private__options['limit_property'] ?? [];
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
-        $this->clearLimitProperty();
-        unset($this->__private__options['use']);
         
         $vars = get_object_vars($this);
         $keys = array_keys($vars);
