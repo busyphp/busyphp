@@ -3,19 +3,19 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\MethodNotFoundException;
-use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\interfaces\FieldValidateSceneInterface;
+use BusyPHP\interfaces\FieldSceneValidateInterface;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\model\traits\Event;
+use BusyPHP\traits\Cache;
 use Closure;
-use DateInterval;
-use DateTimeInterface;
 use PDOStatement;
 use Psr\Log\LoggerInterface;
 use think\Collection;
@@ -28,9 +28,9 @@ use think\db\exception\InvalidArgumentException;
 use think\db\Query;
 use think\db\Raw;
 use think\DbManager;
+use think\facade\Config;
 use think\helper\Str;
 use think\Log;
-use think\model\concern\ModelEvent;
 use think\model\concern\TimeStamp;
 use think\Validate;
 use Throwable;
@@ -55,14 +55,30 @@ use Throwable;
  */
 abstract class Model extends Query
 {
-    use ModelEvent;
+    use Cache;
+    use Event;
     use TimeStamp;
     
-    /**
-     * 回调方法
-     * @var Closure[]
-     */
-    private $callback = [];
+    // +----------------------------------------------------
+    // + 常用场景名称
+    // +----------------------------------------------------
+    /** @var string 验证场景-创建信息 */
+    public const SCENE_ADD = 'create';
+    
+    /** @var string 验证场景-更新信息 */
+    public const SCENE_EDIT = 'update';
+    
+    //+--------------------------------------
+    //| 数据库回调常量
+    //+--------------------------------------
+    /** @var string 新增完成事件 */
+    public const CHANGED_INSERT = 'insert';
+    
+    /** @var string 更新完成事件 */
+    public const CHANGED_UPDATE = 'update';
+    
+    /** @var string 删除完成事件 */
+    public const CHANGED_DELETE = 'delete';
     
     /**
      * findInfo方法参数过滤器
@@ -172,36 +188,6 @@ abstract class Model extends Query
      */
     protected static $bindParseClassHandle = [];
     
-    //+--------------------------------------
-    //| 回调常量
-    //+--------------------------------------
-    /** 操作前回调，一般用于创建/更新/删除前 */
-    public const CALLBACK_BEFORE = 'before';
-    
-    /** 操作后回调，一般用于创建/更新/删除后 */
-    public const CALLBACK_AFTER = 'after';
-    
-    /** 操作失败回调，一般用于失败的情况下 */
-    public const CALLBACK_ERROR = 'error';
-    
-    /** 操作完成回调，一般用于成功/失败的情况下 */
-    public const CALLBACK_COMPLETE = 'complete';
-    
-    /** 处理过程中回调，一般用于业务逻辑中 */
-    public const CALLBACK_PROCESS = 'process';
-    
-    //+--------------------------------------
-    //| 数据库回调常量
-    //+--------------------------------------
-    /** @var string 新增完成事件 */
-    public const CHANGED_INSERT = 'insert';
-    
-    /** @var string 更新完成事件 */
-    public const CHANGED_UPDATE = 'update';
-    
-    /** @var string 删除完成事件 */
-    public const CHANGED_DELETE = 'delete';
-    
     
     /**
      * 设置服务注入
@@ -294,13 +280,102 @@ abstract class Model extends Query
     
     
     /**
-     * 快速实例化
+     * 定义模型类名
+     * @return class-string<Model>
+     */
+    protected static function defineClass() : string
+    {
+        return '';
+    }
+    
+    
+    /**
+     * 获取模型类名
+     * @return class-string<static>
+     */
+    public static function getClass() : string
+    {
+        if ($model = self::getDefine('model')) {
+            $define = static::defineClass();
+            if (!is_subclass_of($model, $define)) {
+                throw new ClassNotExtendsException($model, $define);
+            }
+            
+            return $model;
+        }
+        
+        return static::class;
+    }
+    
+    
+    /**
+     * 获取模型配置
+     * @param string $name
+     * @param mixed  $default
+     * @return mixed
+     */
+    public static function getDefine(string $name, $default = null)
+    {
+        $class = static::defineClass();
+        if ($class && !is_subclass_of($class, self::class)) {
+            throw new ClassNotExtendsException($class, self::class);
+        }
+        
+        $config = Config::get('database.model.' . $class, null);
+        if (is_array($config)) {
+            return ArrayHelper::get($config, $name, $default);
+        }
+        
+        if ($name === 'model') {
+            return $config ?: $default;
+        }
+        
+        return $default;
+    }
+    
+    
+    /**
+     * 实例化一个模型
      * @param LoggerInterface|null $log 日志接口
+     * @param string               $connect 连接标识
+     * @param bool                 $force 是否强制重连
      * @return static
      */
-    public static function init(LoggerInterface $log = null)
+    public static function init(LoggerInterface $log = null, string $connect = '', bool $force = false)
     {
-        return new static($log);
+        $class = self::getClass();
+        
+        return new $class($log, $connect, $force);
+    }
+    
+    
+    /**
+     * 解析静态一维数组数据
+     * @param array $array
+     * @param mixed $var
+     * @return array|mixed
+     * @deprecated
+     * @see ArrayHelper::getValueOrSelf()
+     */
+    public static function parseVars(array $array, $var = null)
+    {
+        return ArrayHelper::getValueOrSelf($array, $var);
+    }
+    
+    
+    /**
+     * 解析类常量
+     * @param string|true $class 类，传入true则代表本类
+     * @param string      $prefix 常量前缀
+     * @param array       $annotations 其他注解
+     * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
+     * @return array
+     * @deprecated
+     * @see ClassHelper::getConstAttrs()
+     */
+    public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
+    {
+        return ClassHelper::getConstAttrs($class === true ? static::class : $class, $prefix, $annotations, $mapping);
     }
     
     
@@ -419,18 +494,6 @@ abstract class Model extends Query
     
     
     /**
-     * 获取数据表名称(不含前缀)
-     * @return string
-     * @deprecated
-     * @see Model::getName()
-     */
-    public function getTableWithoutPrefix() : string
-    {
-        return $this->getName();
-    }
-    
-    
-    /**
      * 设置当前模型数据表的后缀
      * @param string $suffix 数据表后缀
      * @return $this
@@ -474,36 +537,6 @@ abstract class Model extends Query
     
     
     /**
-     * 设置操作前回调方法
-     * @param mixed    $callType 回调类型
-     * @param callable $callback 回调方法，具体参数由子类定义
-     * @return $this
-     */
-    public function setCallback($callType, callable $callback)
-    {
-        $this->callback[$callType] = $callback;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 触发回调方法
-     * @param mixed $callType 回调类型
-     * @param mixed ...$args 回调方法参数
-     * @return mixed
-     */
-    protected function triggerCallback($callType, ...$args)
-    {
-        if (isset($this->callback[$callType])) {
-            return Container::getInstance()->invoke($this->callback[$callType], $args);
-        }
-        
-        return null;
-    }
-    
-    
-    /**
      * 触发事件回调
      * @param string $event
      */
@@ -513,50 +546,6 @@ abstract class Model extends Query
         if (method_exists($this, $call)) {
             call_user_func([$this, $call]);
         }
-    }
-    
-    
-    /**
-     * 获取静态缓存
-     * @param string $name 缓存名称
-     * @return mixed
-     */
-    public function getCache($name)
-    {
-        return CacheHelper::get(static::class, $name);
-    }
-    
-    
-    /**
-     * 设置静态缓存
-     * @param string                                  $name 缓存名称
-     * @param mixed                                   $value 缓存内容
-     * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
-     * @return bool
-     */
-    public function setCache(string $name, $value, $expire = 600) : bool
-    {
-        return CacheHelper::set(static::class, $name, $value, $expire);
-    }
-    
-    
-    /**
-     * 移除静态缓存
-     * @param string $name 缓存名称
-     * @return bool
-     */
-    public function deleteCache(string $name = '') : bool
-    {
-        return CacheHelper::delete(static::class, $name);
-    }
-    
-    
-    /**
-     * 清理静态缓存
-     */
-    public function clearCache() : bool
-    {
-        return CacheHelper::clear(static::class);
     }
     
     
@@ -640,7 +629,7 @@ abstract class Model extends Query
     
     /**
      * 设置信息解析类
-     * @param string $class
+     * @param class-string<Field> $class
      * @return $this
      */
     public function parse(string $class)
@@ -1080,9 +1069,10 @@ abstract class Model extends Query
         switch (true) {
             // data 为 Field 的类或对象
             case is_subclass_of($data, Field::class) || $data instanceof Field:
-                $field = $data;
-                $data  = [];
-                $scene = $validate;
+                $field    = $data;
+                $scene    = $validate;
+                $validate = null;
+                $data     = [];
             break;
             
             // data 为 Validate 对象
@@ -1131,6 +1121,7 @@ abstract class Model extends Query
             }
             
             foreach ($field::getPropertyAttrs() as $property => $attr) {
+                $names[$property] = $attr[ClassHelper::ATTR_NAME];
                 if (null !== $value = ($field[$property] ?? null)) {
                     $checkData[$property] = $value;
                 }
@@ -1141,7 +1132,6 @@ abstract class Model extends Query
                     continue;
                 }
                 
-                $names[$property] = $attr[ClassHelper::ATTR_NAME];
                 $rules[$property] = [];
                 foreach ($validateRule as $item) {
                     // 格式: 规则1:配置#错误消息|规则2:配置#错误消息
@@ -1162,14 +1152,9 @@ abstract class Model extends Query
                     }
                 }
             }
-            
-            $data = $field->obtainData();
         } else {
             $checkData = $data;
         }
-        
-        // 设置data
-        $this->data($data);
         
         // 实例化数据验证类
         $validate = is_string($validate) ? new $validate() : $validate;
@@ -1180,17 +1165,20 @@ abstract class Model extends Query
         $validate->rule($rules, $names);
         
         // 场景验证
-        if ($scene) {
-            if ($field instanceof FieldValidateSceneInterface) {
-                $only = $field->onValidateScene($validate, $scene);
-                if ($only && is_array($only)) {
-                    foreach ($only as $i => $item) {
-                        if ($item instanceof Entity) {
-                            $item = $item->name();
-                        }
-                        $only[$i] = (string) $item;
-                    }
-                    $validate->only($only);
+        $state = true;
+        if ($scene !== '') {
+            $method = 'onScene' . StringHelper::studly($scene);
+            if ($field instanceof FieldSceneValidateInterface) {
+                if (false === $only = $field->onSceneValidate($this, $validate, $scene)) {
+                    $state = false;
+                } elseif (is_array($only)) {
+                    $field->retain($validate, ...$only);
+                }
+            } elseif (method_exists($field, $method)) {
+                if (false === $only = call_user_func_array([$field, $method], [$this, $validate, $scene])) {
+                    $state = false;
+                } elseif (is_array($only)) {
+                    $field->retain($validate, ...$only);
                 }
             } else {
                 $validate->scene($scene);
@@ -1198,7 +1186,12 @@ abstract class Model extends Query
         }
         
         // 执行验证
-        $validate->check($checkData);
+        if ($state) {
+            $validate->check($checkData);
+        }
+        
+        // 设置data
+        $this->data($field ? $field->obtain() : $data);
         
         return $this;
     }
@@ -1743,36 +1736,6 @@ abstract class Model extends Query
     
     
     /**
-     * 解析静态一维数组数据
-     * @param array $array
-     * @param mixed $var
-     * @return array|mixed
-     * @deprecated
-     * @see ArrayHelper::getValueOrSelf()
-     */
-    public static function parseVars(array $array, $var = null)
-    {
-        return ArrayHelper::getValueOrSelf($array, $var);
-    }
-    
-    
-    /**
-     * 解析类常量
-     * @param string|true $class 类，传入true则代表本类
-     * @param string      $prefix 常量前缀
-     * @param array       $annotations 其他注解
-     * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
-     * @return array
-     * @deprecated
-     * @see ClassHelper::getConstAttrs()
-     */
-    public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
-    {
-        return ClassHelper::getConstAttrs($class === true ? static::class : $class, $prefix, $annotations, $mapping);
-    }
-    
-    
-    /**
      * 查询列表并用字段构建键
      * @param array         $values in查询的值
      * @param string|Entity $key 查询的字段，默认id
@@ -1843,7 +1806,7 @@ abstract class Model extends Query
     protected function parseData($data = []) : array
     {
         if ($data instanceof Field) {
-            $data = $data->obtainData();
+            $data = $data->obtain();
         }
         
         $fields = $this->getTableFields();
@@ -2004,8 +1967,33 @@ abstract class Model extends Query
      * 优化数据表
      * @throws DbException
      */
-    final public function optimize()
+    public function optimize()
     {
         $this->execute("OPTIMIZE TABLE `{$this->getTable()}`");
+    }
+    
+    
+    /**
+     * 执行数据库事务
+     * @param callable $callback 数据操作方法回调
+     * @param bool     $disabled 是否禁用事务
+     * @param string   $alias 事务日志别名
+     * @return mixed
+     * @throws Throwable
+     */
+    public function transaction(callable $callback, bool $disabled = false, string $alias = '')
+    {
+        $this->startTrans();
+        try {
+            $result = call_user_func_array($callback, [$this]);
+            
+            $this->commit();
+            
+            return $result;
+        } catch (Throwable $e) {
+            $this->rollback();
+            
+            throw $e;
+        }
     }
 }

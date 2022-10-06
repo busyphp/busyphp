@@ -43,7 +43,6 @@ class Service extends ThinkService
     {
         // 配置BaseModel
         Model::setDb($this->app->db);
-        Model::setEvent($this->app->event);
         Model::setInvoker([$this->app, 'invoke']);
         Model::maker(function(Model $model) {
             $config = $this->app->config;
