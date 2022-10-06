@@ -68,7 +68,7 @@ class ModelHelper
             $fieldStaticList[]    = sprintf('@method static %s %s(mixed $op = null, mixed $condition = null) %s', $entityClass, $name, $comment);
             $fieldPublicList[]    = sprintf('/**%s * %s%s * @var %s%s */%spublic $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
             $fieldProtectedList[] = sprintf('/**%s * %s%s * @var %s%s */%sprotected $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
-            $fieldSetterList[]    = sprintf('@method $this set%s(%s $%s) 设置%s', $method, $type, $name, $comment);
+            $fieldSetterList[]    = sprintf('@method $this set%s(mixed $%s) 设置%s', $method, $name, $comment);
             $fieldGetterList[]    = sprintf('@method $this get%s() 获取%s', $method, $comment);
             
             if ($bindParseClass) {

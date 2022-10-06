@@ -241,7 +241,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         
         // 为空，直接设置
-        if (is_null($value)) {
+        if (is_null($value) || $value instanceof Entity || $value instanceof Raw) {
             goto end;
         }
         
