@@ -5,7 +5,6 @@ namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
-use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

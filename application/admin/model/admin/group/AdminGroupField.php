@@ -6,7 +6,6 @@ namespace BusyPHP\app\admin\model\admin\group;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\interfaces\FieldObtainDataInterface;
 use BusyPHP\interfaces\FieldSceneValidateInterface;
-use BusyPHP\interfaces\FieldSetValueInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
