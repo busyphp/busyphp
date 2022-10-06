@@ -526,6 +526,16 @@ class Validate
             // elseif
             // ValidateRule
             elseif ($rule instanceof ValidateRule) {
+                $msgList = $rule->getMsg();
+                $index   = 0;
+                foreach ($rule->getRule() as $k => $v) {
+                    $name = $field . '.' . (is_numeric($k) ? $v : $k);
+                    $msg  = $msgList[$index] ?? '';
+                    if ($msg !== '') {
+                        $this->message($name, $msg);
+                    }
+                    $index++;
+                }
                 $rule = $rule->getRule();
             }
             
@@ -739,12 +749,12 @@ class Validate
                 // 验证失败 返回错误信息
                 if (!empty($msg[$i])) {
                     $message = $msg[$i];
-                    if (false !== strpos($message, ':attribute')) {
-                        $message = str_replace(':attribute', $title, $message);
-                    }
-                    
                     if (is_string($message) && strpos($message, '{%') === 0) {
                         $message = $this->lang->get(substr($message, 2, -1));
+                    }
+                    
+                    if (is_string($message) && false !== strpos($message, ':attribute')) {
+                        $message = str_replace(':attribute', $title, $message);
                     }
                 } else {
                     $message = $this->getRuleMsg($field, $title, $info, $rule);
