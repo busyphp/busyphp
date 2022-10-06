@@ -8,7 +8,7 @@ use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\interfaces\FieldSceneValidateInterface;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\helper\ArrayHelper;
@@ -1168,8 +1168,8 @@ abstract class Model extends Query
         $state = true;
         if ($scene !== '') {
             $method = 'onScene' . StringHelper::studly($scene);
-            if ($field instanceof FieldSceneValidateInterface) {
-                if (false === $only = $field->onSceneValidate($this, $validate, $scene)) {
+            if ($field instanceof ModelSceneValidateInterface) {
+                if (false === $only = $field->onModelSceneValidate($this, $validate, $scene)) {
                     $state = false;
                 } elseif (is_array($only)) {
                     $field->retain($validate, ...$only);

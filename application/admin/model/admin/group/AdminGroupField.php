@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\interfaces\FieldObtainDataInterface;
-use BusyPHP\interfaces\FieldSceneValidateInterface;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
@@ -33,7 +33,7 @@ use think\Validate;
  * @method $this setStatus(mixed $status) 设置是否启用
  * @method $this setSort(mixed $sort) 设置排序
  */
-class AdminGroupField extends Field implements FieldSceneValidateInterface, FieldObtainDataInterface
+class AdminGroupField extends Field implements ModelSceneValidateInterface, FieldObtainDataInterface
 {
     /**
      * ID
@@ -94,7 +94,7 @@ class AdminGroupField extends Field implements FieldSceneValidateInterface, Fiel
     /**
      * @inheritDoc
      */
-    public function onSceneValidate(Model $model, Validate $validate, string $name)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name)
     {
         switch ($name) {
             case AdminGroup::SCENE_CREATE:

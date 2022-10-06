@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\interfaces\FieldObtainDataInterface;
-use BusyPHP\interfaces\FieldSceneValidateInterface;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
@@ -63,7 +63,7 @@ use think\validate\ValidateRule;
  * @method $this setErrorRelease(mixed $errorRelease) 设置密码错误锁定释放时间
  * @method $this setTheme(mixed $theme) 设置主题配置
  */
-class AdminUserField extends Field implements FieldSceneValidateInterface, FieldObtainDataInterface
+class AdminUserField extends Field implements ModelSceneValidateInterface, FieldObtainDataInterface
 {
     /**
      * ID
@@ -228,7 +228,7 @@ class AdminUserField extends Field implements FieldSceneValidateInterface, Field
     /**
      * @inheritDoc
      */
-    public function onSceneValidate(Model $model, Validate $validate, string $name)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name)
     {
         $validate
             ->rule($this::phone(), ValidateRule::closure(function($value) {
