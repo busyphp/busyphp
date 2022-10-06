@@ -11,26 +11,38 @@ use BusyPHP\model\Field;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:30 AdminMessageField.php $
- * @method static Entity id($op = null, $value = null)
- * @method static Entity userId($op = null, $value = null) 管理员ID
- * @method static Entity createTime($op = null, $value = null) 创建时间
- * @method static Entity read($op = null, $value = null) 是否已读
- * @method static Entity readTime($op = null, $value = null) 阅读时间
- * @method static Entity content($op = null, $value = null) 消息内容
- * @method static Entity description($op = null, $value = null) 消息备注
- * @method static Entity url($op = null, $value = null) 操作链接
- * @method static Entity icon($op = null, $value = null) 图标
+ * @method static Entity id(mixed $op = null, mixed $condition = null) id
+ * @method static Entity userId(mixed $op = null, mixed $condition = null) 管理员ID
+ * @method static Entity createTime(mixed $op = null, mixed $condition = null) 创建时间
+ * @method static Entity read(mixed $op = null, mixed $condition = null) 是否已读
+ * @method static Entity readTime(mixed $op = null, mixed $condition = null) 阅读时间
+ * @method static Entity content(mixed $op = null, mixed $condition = null) 消息内容
+ * @method static Entity description(mixed $op = null, mixed $condition = null) 消息备注
+ * @method static Entity url(mixed $op = null, mixed $condition = null) 操作链接
+ * @method static Entity icon(mixed $op = null, mixed $condition = null) 图标
+ * @method $this setId(mixed $id) 设置id
+ * @method $this setUserId(mixed $userId) 设置管理员ID
+ * @method $this setCreateTime(mixed $createTime) 设置创建时间
+ * @method $this setRead(mixed $read) 设置是否已读
+ * @method $this setReadTime(mixed $readTime) 设置阅读时间
+ * @method $this setContent(mixed $content) 设置消息内容
+ * @method $this setDescription(mixed $description) 设置消息备注
+ * @method $this setUrl(mixed $url) 设置操作链接
+ * @method $this setIcon(mixed $icon) 设置图标
  */
 class AdminMessageField extends Field
 {
     /**
+     * id
      * @var int
      */
     public $id;
     
     /**
-     * 管理员ID
+     * 用户ID
      * @var int
+     * @busy-validate require#必须指定消息接收者
+     * @busy-validate gt:0#必须指定消息接收者
      */
     public $userId;
     
@@ -42,7 +54,7 @@ class AdminMessageField extends Field
     
     /**
      * 是否已读
-     * @var int
+     * @var bool
      */
     public $read;
     
@@ -55,6 +67,7 @@ class AdminMessageField extends Field
     /**
      * 消息内容
      * @var string
+     * @busy-validate require
      */
     public $content;
     
@@ -72,7 +85,8 @@ class AdminMessageField extends Field
     
     /**
      * 图标
-     * @var string
+     * @var array
+     * @busy-array json
      */
     public $icon;
 }

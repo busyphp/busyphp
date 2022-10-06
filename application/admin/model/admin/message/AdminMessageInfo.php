@@ -12,7 +12,6 @@ use BusyPHP\model\Entity;
  * @version $Id: 2021/6/25 下午下午2:31 AdminMessageInfo.php $
  * @method static Entity iconColor() 图标颜色
  * @method static Entity iconIsClass() 图标是否css类
- * @property bool $read
  */
 class AdminMessageInfo extends AdminMessageField
 {
@@ -31,14 +30,11 @@ class AdminMessageInfo extends AdminMessageField
     
     protected function onParseAfter()
     {
-        $this->read = $this->read > 0;
-        
-        $icons = json_decode($this->icon, true);
         $color = '';
-        if (count($icons) > 1) {
-            [$icon, $color] = $icons;
+        if (count($this->icon) > 1) {
+            [$icon, $color] = $this->icon;
         } else {
-            [$icon] = $icons;
+            [$icon] = $this->icon;
         }
         
         $this->iconColor = $color;

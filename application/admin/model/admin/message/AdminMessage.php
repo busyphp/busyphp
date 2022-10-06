@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\message;
 
 use BusyPHP\Model;
+use BusyPHP\model\Entity;
 use think\db\exception\DbException;
 use think\route\Url;
 
@@ -12,10 +13,10 @@ use think\route\Url;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午10:56 上午 AdminMessage.php $
- * @method AdminMessageInfo findInfo($data = null, $notFoundMessage = null)
- * @method AdminMessageInfo getInfo($data, $notFoundMessage = null)
+ * @method AdminMessageInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method AdminMessageInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method AdminMessageInfo[] selectList()
- * @method AdminMessageInfo[] buildListWithField(array $values, $key = null, $field = null)
+ * @method AdminMessageInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
  */
 class AdminMessage extends Model
 {
@@ -27,7 +28,7 @@ class AdminMessage extends Model
     
     
     /**
-     * 添加消息
+     * 创建消息
      * @param int          $userId 用户ID
      * @param string       $content 消息内容
      * @param string|Url   $url 操作链接
@@ -36,18 +37,17 @@ class AdminMessage extends Model
      * @return int
      * @throws DbException
      */
-    public function add($userId, $content, $url = '', $desc = '', $icon = '') : int
+    public function createInfo(int $userId, string $content, $url = '', $desc = '', $icon = '') : int
     {
-        $url               = (string) $url;
-        $data              = AdminMessageField::init();
-        $data->createTime  = time();
-        $data->userId      = intval($userId);
-        $data->content     = trim($content);
-        $data->description = trim($desc);
-        $data->url         = trim($url);
-        $data->icon        = is_array($icon) ? json_encode($icon) : json_encode([$icon]);
+        $data = AdminMessageField::init();
+        $data->setUserId($userId);
+        $data->setContent($content);
+        $data->setDescription($desc);
+        $data->setUrl((string) $url);
+        $data->setCreateTime(time());
+        $data->setIcon((array) $icon);
         
-        return (int) $this->addData($data);
+        return (int) $this->validate($data, self::SCENE_CREATE)->addData();
     }
     
     
@@ -58,10 +58,11 @@ class AdminMessage extends Model
      */
     public function setRead(int $id)
     {
-        $save           = AdminMessageField::init();
-        $save->read     = true;
-        $save->readTime = time();
-        $this->whereEntity(AdminMessageField::id($id))->saveData($save);
+        $data = AdminMessageField::init();
+        $data->setId($id);
+        $data->setRead(true);
+        $data->setReadTime(time());
+        $this->saveData($data);
     }
     
     
@@ -83,9 +84,9 @@ class AdminMessage extends Model
      */
     public function setAllReadByUserId(int $userId)
     {
-        $save           = AdminMessageField::init();
-        $save->read     = true;
-        $save->readTime = time();
-        $this->whereEntity(AdminMessageField::userId($userId), AdminMessageField::read(0))->saveData($save);
+        $data = AdminMessageField::init();
+        $data->setRead(true);
+        $data->setReadTime(time());
+        $this->whereEntity(AdminMessageField::userId($userId), AdminMessageField::read(0))->saveData($data);
     }
 }
