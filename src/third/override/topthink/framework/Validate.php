@@ -519,7 +519,7 @@ class Validate
                 return $this;
             }
             
-            $this->append[$field] = $rule + $appended;
+            $this->append[$field] = array_merge($appended, $rule);
         }
 
         return $this;
@@ -572,6 +572,9 @@ class Validate
             // 字段验证
             if ($rule instanceof Closure) {
                 $result = call_user_func_array($rule, [$value, $data]);
+                if (is_string($result) && false !== strpos($result, ':attribute')) {
+                    $result = str_replace(':attribute', $title, $result);
+                }
             } elseif ($rule instanceof ValidateRule) {
                 //  验证因子
                 $result = $this->checkItem($key, $value, $rule->getRule(), $data, $rule->getTitle() ?: $title, $rule->getMsg());
@@ -706,6 +709,10 @@ class Validate
                 // 验证失败 返回错误信息
                 if (!empty($msg[$i])) {
                     $message = $msg[$i];
+                    if (false !== strpos($message, ':attribute')) {
+                        $message = str_replace(':attribute', $title, $message);
+                    }
+                    
                     if (is_string($message) && strpos($message, '{%') === 0) {
                         $message = $this->lang->get(substr($message, 2, -1));
                     }
