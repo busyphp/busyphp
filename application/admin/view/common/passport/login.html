@@ -84,7 +84,7 @@
             parent.busyAdmin.route.show('{:url("admin_login")}');
         }
 
-        busyAdmin.data.onLoginError = function () {
+        busyAdmin.data.onLoginError = function (res) {
             var $verifyGroup = $('#verifyGroup');
             var $verifyInput = $('[name="verify"]');
             var $verifyImg   = $('[data-toggle="busy-change-verify"]');
@@ -92,6 +92,11 @@
                 $verifyGroup.removeClass('hidden');
                 $verifyInput.attr('required', 'required');
                 $verifyImg.trigger('click');
+            }
+
+            if ((res||{}).code == -1) {
+                busyAdmin.dialog.alert(res.message.replace(/\n/g, '<br />').replace(/`(.*?)`/g, '<code>$1</code>'));
+                return false;
             }
         };
 

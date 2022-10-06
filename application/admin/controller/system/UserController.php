@@ -131,16 +131,7 @@ class UserController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $insert = AdminUserField::init();
-            $insert->setGroupIds($this->post('group_ids/a'));
-            $insert->setDefaultGroupId($this->post('default_group_id/d'));
-            $insert->setUsername($this->post('username/s', 'trim'));
-            $insert->setPassword($this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
-            $insert->setPhone($this->post('phone/s', 'trim'));
-            $insert->setEmail($this->post('email/s', 'trim'));
-            $insert->setQq($this->post('qq/s', 'trim'));
-            $insert->setChecked($this->post('checked/b'));
-            $this->model->createAdmin($insert);
+            $this->model->createInfo(AdminUserField::parse($this->post()));
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
             
             return $this->success('添加成功');
@@ -184,7 +175,7 @@ class UserController extends InsideController
             $update->setEmail($this->post('email/s', 'trim'));
             $update->setQq($this->post('qq/s', 'trim'));
             $update->setChecked($checked);
-            $this->model->updateAdmin($update);
+            $this->model->updateInfo($update);
             $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
             return $this->success('修改成功');
@@ -257,7 +248,7 @@ class UserController extends InsideController
     public function password() : Response
     {
         if ($this->isPost()) {
-            $this->model->updatePassword($this->post('id/d'), $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            $this->model->updateInfo(AdminUserField::parse($this->post()), AdminUser::SCENE_PASSWORD);
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
             
             return $this->success('修改成功');

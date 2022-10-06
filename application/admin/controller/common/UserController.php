@@ -30,13 +30,10 @@ class UserController extends InsideController
     public function profile() : Response
     {
         if ($this->isPost()) {
-            $update = AdminUserField::init();
-            $update->setId($this->adminUserId);
-            $update->setUsername($this->post('username/s', 'trim'));
-            $update->setPhone($this->post('phone/s', 'trim'));
-            $update->setEmail($this->post('email/s', 'trim'));
-            $update->setQq($this->post('qq/s', 'trim'));
-            AdminUser::init()->whereEntity(AdminUserField::id($this->adminUserId))->updateAdmin($update);
+            AdminUser::init()->updateInfo(
+                AdminUserField::parse($this->post())->setId($this->adminUserId),
+                AdminUser::SCENE_PROFILE
+            );
             $this->log()->record(self::LOG_UPDATE, '修改个人资料');
             
             return $this->success('修改成功');
@@ -63,12 +60,14 @@ class UserController extends InsideController
                 throw new VerifyException('请输入登录密码', 'old_password');
             }
             
-            if (!AdminUser::verifyPassword($oldPassword, $this->adminUser->password)) {
+            if (!AdminUser::getClass()::verifyPassword($oldPassword, $this->adminUser->password)) {
                 throw new VerifyException('登录密码输入错误', 'old_password');
             }
             
-            AdminUser::init()
-                ->updatePassword($this->adminUserId, $this->post('password/s', 'trim'), $this->post('confirm_password/s', 'trim'));
+            AdminUser::init()->updateInfo(
+                AdminUserField::parse($this->post())->setId($this->adminUserId),
+                AdminUser::SCENE_PASSWORD
+            );
             $this->log()
                 ->filterParams(['old_password', 'password', 'confirm_password'])
                 ->record(self::LOG_UPDATE, '修改个人密码');
@@ -91,9 +90,7 @@ class UserController extends InsideController
     public function theme() : Response
     {
         if ($this->isPost()) {
-            AdminUser::init()
-                ->whereEntity(AdminUserField::id($this->adminUserId))
-                ->setTheme($this->adminUserId, $this->post('data/a'));
+            AdminUser::init()->setTheme($this->adminUserId, $this->post('data/a'));
             $this->log()->record(self::LOG_UPDATE, '主题设置');
             
             return $this->success('修改成功');

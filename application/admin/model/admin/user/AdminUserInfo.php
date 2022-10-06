@@ -30,8 +30,6 @@ use think\db\exception\DbException;
  * @method static Entity defaultGroup($op = null, $value = null) 默认角色组信息
  * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
  * @method static Entity skin($op = null, $value = null) 皮肤
- * @property array|string $theme
- * @property array|string $groupIds
  */
 class AdminUserInfo extends AdminUserField
 {
@@ -135,18 +133,15 @@ class AdminUserInfo extends AdminUserField
             self::$_groupList = AdminGroup::init()->getIdList();
         }
         
-        $this->theme              = json_decode($this->theme, true) ?: [];
         $this->skin               = $this->theme['skin'] ?? '';
         $this->formatCreateTime   = TransHelper::date($this->createTime);
         $this->formatUpdateTime   = TransHelper::date($this->updateTime);
         $this->formatLastTime     = $this->lastTime > 0 ? TransHelper::date($this->lastTime) : '';
         $this->formatLoginTime    = $this->loginTime > 0 ? TransHelper::date($this->loginTime) : '';
-        $this->checked            = $this->checked > 0;
-        $this->system             = $this->system > 0;
         $this->isTempLock         = $this->errorRelease > time();
         $this->formatErrorRelease = $this->errorRelease > 0 ? TransHelper::date($this->errorRelease) : '';
         
-        $groupIds             = explode(',', $this->groupIds);
+        $groupIds             = $this->groupIds;
         $this->groupIds       = [];
         $this->groupList      = [];
         $this->groupRuleIds   = [];

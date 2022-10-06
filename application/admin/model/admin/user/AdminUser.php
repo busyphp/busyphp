@@ -3,31 +3,22 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
-use BusyPHP\App;
-use BusyPHP\app\admin\event\model\user\CreateAdminUserAfterEvent;
-use BusyPHP\app\admin\event\model\user\CreateAdminUserBeforeEvent;
-use BusyPHP\app\admin\event\model\user\CreateAdminUserTakeParamsEvent;
-use BusyPHP\app\admin\event\model\user\DeleteAdminUserAfterEvent;
-use BusyPHP\app\admin\event\model\user\DeleteAdminUserBeforeEvent;
-use BusyPHP\app\admin\event\model\user\DeleteAdminUserTakeParamsEvent;
-use BusyPHP\app\admin\event\model\user\UpdateAdminUserAfterEvent;
-use BusyPHP\app\admin\event\model\user\UpdateAdminUserBeforeEvent;
-use BusyPHP\app\admin\event\model\user\UpdateAdminUserTakeParamsEvent;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\RegexHelper;
+use BusyPHP\app\admin\setting\AdminSetting;
+use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\model;
-use BusyPHP\exception\VerifyException;
-use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\model\Entity;
-use Exception;
+use RuntimeException;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\facade\Config;
 use think\facade\Cookie;
-use think\facade\Event;
+use think\facade\Request;
 use think\facade\Session;
+use think\facade\Validate;
 use think\helper\Str;
+use think\validate\ValidateRule;
 use Throwable;
 
 /**
@@ -39,6 +30,13 @@ use Throwable;
  * @method AdminUserInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method AdminUserInfo[] selectList()
  * @method AdminUserInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method AdminUserInfo getInfoByUsername(string $username, string $notFoundMessage = null)
+ * @method AdminUserInfo getInfoByEmail(string $email, string $notFoundMessage = null)
+ * @method AdminUserInfo getInfoByPhone(string $phone, string $notFoundMessage = null)
+ * @method AdminUserInfo|null findInfoByUsername(string $username, string $notFoundMessage = null)
+ * @method AdminUserInfo|null findInfoByEmail(string $email, string $notFoundMessage = null)
+ * @method AdminUserInfo|null findInfoByPhone(string $phone, string $notFoundMessage = null)
+ * @method static static getClass()
  */
 class AdminUser extends Model
 {
@@ -53,6 +51,30 @@ class AdminUser extends Model
     
     const SESSION_OPERATE_TIME = 'admin_operate_time';
     
+    // +----------------------------------------------------
+    // + 操作场景
+    // +----------------------------------------------------
+    /** @var string 操作场景-更新密码 */
+    const SCENE_PASSWORD = 'password';
+    
+    /** @var string 操作场景-更新状态 */
+    const SCENE_CHECKED = 'checked';
+    
+    /** @var string 操作场景-解锁 */
+    const SCENE_UNLOCK = 'unlock';
+    
+    /** @var string 操作场景-切换主题 */
+    const SCENE_THEME = 'theme';
+    
+    /** @var string 操作场景-登录 */
+    const SCENE_LOGIN_SUCCESS = 'login_success';
+    
+    /** @var string 操作场景-登录错误 */
+    const SCENE_LOGIN_ERROR = 'login_error';
+    
+    /** @var string 操作场景-修改个人资料 */
+    const SCENE_PROFILE = 'profile';
+    
     protected $dataNotFoundMessage = '管理员不存在';
     
     protected $listNotFoundMessage = '暂无管理员';
@@ -63,264 +85,79 @@ class AdminUser extends Model
     
     
     /**
-     * 通过管理员账号获取管理员信息
-     * @param string $username 账号
-     * @return AdminUserInfo
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @inheritDoc
      */
-    public function getInfoByUsername($username) : AdminUserInfo
+    final protected static function defineClass() : string
     {
-        return $this->whereEntity(AdminUserField::username(trim($username)))->failException(true)->findInfo();
-    }
-    
-    
-    /**
-     * 通过邮箱账号获取管理员信息
-     * @param string $email 账号
-     * @return AdminUserInfo
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getInfoByEmail($email) : AdminUserInfo
-    {
-        return $this->whereEntity(AdminUserField::email(trim($email)))->failException(true)->findInfo();
-    }
-    
-    
-    /**
-     * 通过邮箱账号获取管理员信息
-     * @param string $phone 账号
-     * @return AdminUserInfo
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getInfoByPhone($phone) : AdminUserInfo
-    {
-        return $this->whereEntity(AdminUserField::phone(trim($phone)))->failException(true)->findInfo();
+        return self::class;
     }
     
     
     /**
      * 添加管理员
-     * @param AdminUserField $insert
-     * @param bool           $triggerEvent 是否触发事件，否则触发回调
-     * @return int
+     * @param AdminUserField $data
+     * @return AdminUserInfo
      * @throws Throwable
      */
-    public function createAdmin(AdminUserField $insert, bool $triggerEvent = true) : int
+    public function createInfo(AdminUserField $data) : AdminUserInfo
     {
-        if (!$insert->username || !$insert->password || !$insert->groupIds) {
-            throw new ParamInvalidException('username,password,group_ids');
-        }
+        $prepare = $this->trigger(new AdminUserEventCreatePrepare($this, $data), true);
         
-        // 触发参数处理事件
-        $event      = new CreateAdminUserTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->data = $insert;
-            $takeParams  = Event::trigger($event, [], true);
-        }
-        
-        $this->startTrans();
-        try {
-            $this->checkRepeat($insert);
+        return $this->transaction(function() use ($data, $prepare) {
+            $this->validate($data, self::SCENE_ADD);
+            $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
+            $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->addData($data))));
             
-            // 触发创建前事件
-            $event             = new CreateAdminUserBeforeEvent();
-            $event->data       = $insert;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
-            $insert->createTime = time();
-            $insert->updateTime = time();
-            $insert->password   = password_hash($insert->password, PASSWORD_DEFAULT);
-            $insert->theme      = '';
-            
-            $id = (int) $this->addData($insert);
-            
-            // 触发创建后事件
-            $event             = new CreateAdminUserAfterEvent();
-            $event->data       = $insert;
-            $event->takeParams = $takeParams;
-            $event->info       = $this->getInfo($id);
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-            
-            return $id;
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+            return $info;
+        });
     }
     
     
     /**
      * 修改管理员
-     * @param AdminUserField $update
-     * @param int            $operateType 操作类型
-     * @param bool           $triggerEvent 是否触发事件，否则触发回调
+     * @param AdminUserField $data 数据
+     * @param string         $scene 场景
      * @throws Throwable
      */
-    public function updateAdmin(AdminUserField $update, int $operateType = UpdateAdminUserBeforeEvent::OPERATE_DEFAULT, bool $triggerEvent = true)
+    public function updateInfo(AdminUserField $data, string $scene = self::SCENE_EDIT) : AdminUserInfo
     {
-        if ($update->id < 1) {
-            throw new ParamInvalidException('id');
-        }
+        $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $scene), true);
         
-        // 触发参数处理事件
-        $event      = new UpdateAdminUserTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->data    = $update;
-            $event->operate = $operateType;
-            $takeParams     = Event::trigger($event, [], true);
-        }
-        
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($update->id);
-            $this->checkRepeat($update, $update->id);
+        return $this->transaction(function() use ($data, $scene, $prepare) {
+            $info = $this->lock(true)->getInfo($data->id);
+            $this->validate($data, $scene);
+            $this->trigger(new AdminUserEventUpdateBefore($this, $data, $scene, $prepare, $info));
+            $this->saveData($data);
+            $this->trigger(new AdminUserEventUpdateAfter($this, $data, $scene, $prepare, $info, $info = $this->getInfo($info->id)));
             
-            // 触发更新前事件
-            $event             = new UpdateAdminUserBeforeEvent();
-            $event->info       = $info;
-            $event->data       = $update;
-            $event->operate    = $operateType;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
-            // 密码
-            if ($update->password) {
-                $update->password = password_hash($update->password, PASSWORD_DEFAULT);
-            }
-            
-            $update->updateTime = time();
-            $this->whereEntity(AdminUserField::id($update->id))->saveData($update);
-            
-            // 触发更新后事件
-            $event             = new UpdateAdminUserAfterEvent();
-            $event->info       = $this->getInfo($info->id);
-            $event->data       = $update;
-            $event->operate    = $operateType;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
-    }
-    
-    
-    /**
-     * 查重
-     * @param AdminUserField $data
-     * @param int            $id
-     * @throws VerifyException
-     */
-    protected function checkRepeat(AdminUserField $data, $id = 0)
-    {
-        if ($data->username) {
-            $this->whereEntity(AdminUserField::username($data->username));
-            if ($id > 0) {
-                $this->whereEntity(AdminUserField::id('<>', $id));
-            }
-            if ($this->count() > 0) {
-                throw new VerifyException('该用户名已存在', 'username');
-            }
-        }
-        
-        if ($data->phone) {
-            $this->whereEntity(AdminUserField::phone($data->phone));
-            if ($id > 0) {
-                $this->whereEntity(AdminUserField::id('<>', $id));
-            }
-            if ($this->count() > 0) {
-                throw new VerifyException('该手机号已存在', 'phone');
-            }
-        }
-        
-        if ($data->email) {
-            $this->whereEntity(AdminUserField::email($data->email));
-            if ($id > 0) {
-                $this->whereEntity(AdminUserField::id('<>', $id));
-            }
-            if ($this->count() > 0) {
-                throw new VerifyException('该邮箱地址已存在', 'phone');
-            }
-        }
-    }
-    
-    
-    /**
-     * 修改管理员密码
-     * @param int    $id
-     * @param string $password
-     * @param string $confirmPassword
-     * @throws ParamInvalidException
-     * @throws VerifyException
-     * @throws Throwable
-     */
-    public function updatePassword(int $id, string $password, string $confirmPassword)
-    {
-        $saveData           = AdminUserField::init();
-        $saveData->id       = floatval($id);
-        $saveData->password = self::checkPassword($password, $confirmPassword);
-        $this->updateAdmin($saveData, UpdateAdminUserBeforeEvent::OPERATE_PASSWORD);
+            return $info;
+        });
     }
     
     
     /**
      * 删除管理员
-     * @param int  $data
-     * @param bool $triggerEvent 是否触发事件，否则触发回调
+     * @param int $data
      * @return int
      * @throws Throwable
      */
-    public function deleteInfo($data, bool $triggerEvent = true) : int
+    public function deleteInfo($data) : int
     {
-        // 触发参数处理事件
-        $event      = new DeleteAdminUserTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->id  = $data;
-            $takeParams = Event::trigger($event, [], true);
-        }
+        $id      = (int) $data;
+        $prepare = $this->trigger(new AdminUserEventDeletePrepare($this, $id), true);
         
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($data);
+        return $this->transaction(function() use ($id, $prepare) {
+            $info = $this->lock(true)->getInfo($id);
             if ($info->system) {
-                throw new VerifyException('系统管理员禁止删除');
+                throw new RuntimeException('系统管理员禁止删除');
             }
             
-            // 触发删除前事件
-            $event             = new DeleteAdminUserBeforeEvent();
-            $event->info       = $info;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
+            $this->trigger(new AdminUserEventDeleteBefore($this, $info->id, $info, $prepare));
             $result = parent::deleteInfo($info->id);
-            
-            // 触发删除后
-            $event             = new DeleteAdminUserAfterEvent();
-            $event->info       = $info;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
+            $this->trigger(new AdminUserEventDeleteAfter($this, $info->id, $info, $prepare));
             
             return $result;
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+        });
     }
     
     
@@ -338,94 +175,78 @@ class AdminUser extends Model
         $password = trim($password);
         $setting  = AdminSetting::init();
         if (!$username) {
-            throw new VerifyException('请输入账号', 'username');
+            throw new VerifyException('请输入账号', 'username_empty');
         }
         if (!$password) {
-            throw new VerifyException('请输入密码', 'password');
+            throw new VerifyException('请输入密码', 'password_empty');
         }
         
-        // 进行回调其它参数验证
-        $this->triggerCallback(self::CALLBACK_PROCESS, []);
+        $this->trigger(new AdminUserEventLoginPrepare());
         
-        $this->startTrans();
-        try {
-            // 查询账户
-            if (RegexHelper::email($username)) {
-                $this->whereEntity(AdminUserField::email($username));
-            } elseif (self::checkPhone($username)) {
-                $this->whereEntity(AdminUserField::phone($username));
-            } else {
-                $this->whereEntity(AdminUserField::username($username));
-            }
-            $info = $this->failException(true)->findInfo(null, '账号不存在或密码有误');
-            
-            // 账号被禁用
-            if (!$info->checked) {
-                throw new VerifyException('您的账号被禁用，请联系管理员', 'checked');
-            }
-            
-            // 错误限制
-            $errorMinute     = $setting->getLoginErrorMinute();
-            $errorLockMinute = $setting->getLoginErrorLockMinute();
-            $errorMax        = $setting->getLoginErrorMax();
-            $checkError      = $errorMinute > 0 && $errorLockMinute > 0 && $errorMax > 0;
-            
-            // 是否已经锁定
-            if ($checkError && $info->isTempLock) {
-                $time = date('Y-m-d H:i:s', $info->errorRelease);
-                throw new VerifyException("连续密码错误超过{$errorMax}次，已被系统锁定至{$time}");
-            }
-            
-            // 检测密码
-            if (!self::verifyPassword($password, $info->password)) {
-                // 记录密码错误次数
-                $errorMsg  = '账号不存在或密码错误';
-                $errorCode = 1;
-                if ($checkError) {
-                    $errorCode = 2;
-                    $save      = AdminUserField::init();
-                    
-                    // 1. 从未出错
-                    // 2. 已锁定并过期
-                    // 3. 已出错且连续时间不满足
-                    // 则清理锁定
-                    if (!$info->errorTime || ($info->errorRelease > 0 && $info->errorRelease < time()) || ($info->errorTime > 0 && time() - $info->errorTime >= $errorMinute * 60)) {
-                        $save->errorTime    = time();
-                        $save->errorRelease = 0;
-                        $save->errorTotal   = 1;
-                    } else {
-                        $save->errorTotal = $info->errorTotal + 1;
-                    }
-                    
-                    // 超过错误次数则锁定
-                    if ($save->errorTotal >= $errorMax) {
-                        $save->errorRelease = time() + $errorLockMinute * 60;
-                        $time               = date('Y-m-d H:i:s', $save->errorRelease);
-                        $errorMsg           = "连续密码错误超过{$errorMax}次，已被系统锁定至{$time}";
-                    } else {
-                        $errorMsg = "密码错误，超过{$errorMax}次将锁定账户，累计第{$save->errorTotal}次";
-                    }
-                    
-                    $this->whereEntity(AdminUserField::id($info->id))->saveData($save);
+        // 查询账户
+        if (Validate::checkRule($username, ValidateRule::isEmail())) {
+            $info = $this->findInfoByEmail($username);
+        } elseif (self::getClass()::checkPhone($username)) {
+            $info = $this->findInfoByPhone($username);
+        } else {
+            $info = $this->findInfoByUsername($username);
+        }
+        if (!$info) {
+            throw new VerifyException('账号不存在或密码有误', 'username_error');
+        }
+        
+        // 账号被禁用
+        if (!$info->checked) {
+            throw new VerifyException('该账号被禁用，请联系管理员', 'disabled');
+        }
+        
+        // 错误限制
+        $errorMinute     = $setting->getLoginErrorMinute();
+        $errorLockMinute = $setting->getLoginErrorLockMinute();
+        $errorMax        = $setting->getLoginErrorMax();
+        $checkError      = $errorMinute > 0 && $errorLockMinute > 0 && $errorMax > 0;
+        $localError      = "该账户于 `%s` 分钟内，密码错误超过 `%s` 次\n被锁定至 `%s`";
+        
+        // 是否已经锁定
+        if ($checkError && $info->isTempLock) {
+            throw new VerifyException(sprintf($localError, $errorMinute, $errorMax, $info->formatErrorRelease), 'locked');
+        }
+        
+        // 检测密码
+        if (!self::getClass()::verifyPassword($password, $info->password)) {
+            // 记录密码错误次数
+            $errorMsg = '账号不存在或密码错误';
+            if ($checkError) {
+                $data = AdminUserField::init();
+                
+                // 1. 从未出错
+                // 2. 已锁定并过期
+                // 3. 已出错且连续时间不满足
+                // 则清理锁定
+                if (!$info->errorTime || ($info->errorRelease > 0 && $info->errorRelease < time()) || ($info->errorTime > 0 && time() - $info->errorTime >= $errorMinute * 60)) {
+                    $data->setErrorTime(time());
+                    $data->setErrorRelease(0);
+                    $data->setErrorTotal(1);
+                } else {
+                    $data->setErrorTotal($info->errorTotal + 1);
                 }
                 
-                throw new VerifyException($errorMsg, 'password', $errorCode);
+                // 超过错误次数则锁定
+                if ($data->errorTotal >= $errorMax) {
+                    $data->setErrorRelease(time() + $errorLockMinute * 60);
+                    $errorMsg = sprintf($localError, $errorMinute, $errorMax, date('Y-m-d H:i:s', $data->errorRelease));
+                } else {
+                    $errorMsg = sprintf("密码错误，超过%s次将锁定账户，累计第%s次", $errorMax, $data->errorTotal);
+                }
+                
+                $data->setId($info->id);
+                $this->updateInfo($data, self::SCENE_LOGIN_ERROR);
             }
             
-            $result = $this->setLoginSuccess($info, $saveLogin);
-            
-            $this->commit();
-            
-            return $result;
-        } catch (Exception $e) {
-            if ($e instanceof VerifyException && $e->getCode() === 2) {
-                $this->commit();
-            } else {
-                $this->rollback();
-            }
-            
-            throw $e;
+            throw new VerifyException($errorMsg, 'password_error');
         }
+        
+        return $this->setLoginSuccess($info, $saveLogin);
     }
     
     
@@ -447,7 +268,7 @@ class AdminUser extends Model
         
         $user          = $this->getInfo($cookieUserId);
         $cookieAuthKey = TripleDesHelper::decrypt($cookieAuthKey, $user->token);
-        if (!$cookieAuthKey || $cookieAuthKey != AdminUser::createAuthKey($user, $user->token)) {
+        if (!$cookieAuthKey || $cookieAuthKey != self::getClass()::createAuthKey($user, $user->token)) {
             throw new VerifyException('通行密钥错误', 'auth');
         }
         
@@ -477,26 +298,19 @@ class AdminUser extends Model
      */
     public function setLoginSuccess(AdminUserInfo $userInfo, bool $saveLogin = false) : AdminUserInfo
     {
-        // 生成密钥
-        $token           = AdminSetting::init()->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
-        $userInfo->token = $token;
-        
-        $save               = AdminUserField::init();
-        $save->id           = $userInfo->id;
-        $save->token        = $token;
-        $save->loginTime    = time();
-        $save->loginIp      = request()->ip();
-        $save->lastTime     = AdminUserField::loginTime();
-        $save->lastIp       = AdminUserField::loginIp();
-        $save->loginTotal   = AdminUserField::loginTotal('+', 1);
-        $save->errorRelease = 0;
-        $save->errorTotal   = 0;
-        $save->errorTime    = 0;
-        $this->updateAdmin($save, UpdateAdminUserBeforeEvent::OPERATE_LOGIN);
-        
-        // 加密数据
-        $cookieAuthKey = TripleDesHelper::encrypt(self::createAuthKey($userInfo, $token), $token);
-        $cookieUserId  = $userInfo->id;
+        $token = AdminSetting::init()->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
+        $data  = AdminUserField::init();
+        $data->setId($userInfo->id);
+        $data->setToken($token);
+        $data->setLoginTime(time());
+        $data->setLoginIp(Request::ip());
+        $data->setLastTime(AdminUserField::loginTime());
+        $data->setLastIp(AdminUserField::loginIp());
+        $data->setLoginTotal(AdminUserField::loginTotal('+', 1));
+        $data->setErrorRelease(0);
+        $data->setErrorTotal(0);
+        $data->setErrorTime(0);
+        $this->updateInfo($data, self::SCENE_LOGIN_SUCCESS);
         
         // 设置COOKIE
         $expire       = null;
@@ -505,12 +319,12 @@ class AdminUser extends Model
             $expire = 86400 * $saveLoginDay;
         }
         
-        Cookie::set(self::COOKIE_AUTH_KEY, (string) $cookieAuthKey, $expire);
-        Cookie::set(self::COOKIE_USER_ID, (string) $cookieUserId, 86400 * 365);
+        Cookie::set(self::COOKIE_AUTH_KEY, TripleDesHelper::encrypt(self::getClass()::createAuthKey($userInfo, $token), $token), $expire);
+        Cookie::set(self::COOKIE_USER_ID, (string) $userInfo->id, 86400 * 365);
         $this->saveThemeToCookie($userInfo->id, $userInfo->theme);
         $this->setOperateTime();
         
-        return $userInfo;
+        return $this->getInfo($userInfo->id);
     }
     
     
@@ -535,8 +349,8 @@ class AdminUser extends Model
     {
         $update = AdminUserField::init();
         $update->setId($id);
-        $update->checked = $checked;
-        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_CHECKED);
+        $update->setChecked($checked);
+        $this->updateInfo($update, self::SCENE_CHECKED);
     }
     
     
@@ -550,8 +364,8 @@ class AdminUser extends Model
     {
         $update = AdminUserField::init();
         $update->setId($id);
-        $update->theme = json_encode($theme, JSON_UNESCAPED_UNICODE);
-        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_THEME);
+        $update->setTheme($theme);
+        $this->updateInfo($update, self::SCENE_THEME);
         $this->saveThemeToCookie($id, $update->theme);
     }
     
@@ -570,7 +384,7 @@ class AdminUser extends Model
     /**
      * 获取主题
      * @param AdminUserInfo|null $userInfo
-     * @return array
+     * @return array{skin: string, nav_mode: bool, nav_single_hold: bool}
      */
     public function getTheme(?AdminUserInfo $userInfo = null) : array
     {
@@ -582,11 +396,10 @@ class AdminUser extends Model
             $theme  = json_decode((string) $theme, true) ?: [];
         }
         
-        $config                   = App::getInstance()->config;
         $theme['skin']            = trim($theme['skin'] ?? '');
-        $theme['skin']            = $theme['skin'] ?: $config->get('app.admin.theme_skin', 'default');
-        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : $config->get('app.admin.theme_nav_mode', false);
-        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : $config->get('app.admin.theme_nav_single_hold', false);
+        $theme['skin']            = $theme['skin'] ?: Config::get('app.admin.theme_skin', 'default');
+        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : Config::get('app.admin.theme_nav_mode', false);
+        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : Config::get('app.admin.theme_nav_single_hold', false);
         
         return $theme;
     }
@@ -601,19 +414,31 @@ class AdminUser extends Model
     {
         $update = AdminUserField::init();
         $update->setId($id);
-        $update->errorRelease = 0;
-        $update->errorTime    = 0;
-        $update->errorTotal   = 0;
-        $this->updateAdmin($update, UpdateAdminUserBeforeEvent::OPERATE_UNLOCK);
+        $update->setErrorRelease(0);
+        $update->setErrorTime(0);
+        $update->setErrorTotal(0);
+        
+        $this->updateInfo($update, self::SCENE_UNLOCK);
     }
     
     
     /**
      * 执行退出登录
      */
-    public static function outLogin()
+    public function outLogin()
     {
         Cookie::delete(self::COOKIE_AUTH_KEY);
+    }
+    
+    
+    /**
+     * 清理用户登录密钥
+     * @throws DbException
+     */
+    public function clearToken()
+    {
+        $this->whereEntity(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
+        $this->clearCache();
     }
     
     
@@ -635,13 +460,24 @@ class AdminUser extends Model
     
     
     /**
+     * hash密码
+     * @param string $password
+     * @return string
+     */
+    protected static function hashPassword(string $password) : string
+    {
+        return md5(md5($password) . 'Admin.BusyPHP');
+    }
+    
+    
+    /**
      * 生成密码
      * @param string $password
      * @return string
      */
     public static function createPassword(string $password) : string
     {
-        return md5(md5($password) . 'Admin.BusyPHP');
+        return password_hash(static::hashPassword($password), PASSWORD_DEFAULT);
     }
     
     
@@ -653,69 +489,40 @@ class AdminUser extends Model
      */
     public static function verifyPassword(string $inputPassword, string $dbPassword) : bool
     {
-        return password_verify(self::createPassword($inputPassword), $dbPassword);
-    }
-    
-    
-    /**
-     * 校验密码
-     * @param string $password
-     * @param string $confirmPassword
-     * @return string
-     */
-    public static function checkPassword(string $password, string $confirmPassword) : string
-    {
-        $password        = trim($password);
-        $confirmPassword = trim($confirmPassword);
-        if (!$password) {
-            throw new VerifyException('请输入密码', 'password');
-        }
-        
-        if (strlen($password) < 6) {
-            throw new VerifyException('密码不能小余6位字符', 'password');
-        }
-        if (strlen($password) > 20) {
-            throw new VerifyException('密码不能大于20位字符', 'password');
-        }
-        if (!$confirmPassword) {
-            throw new VerifyException('请输入确认密码', 'confirm_password');
-        }
-        if ($confirmPassword != $password) {
-            throw new VerifyException('两次输入的密码不一致', 'confirm_password');
-        }
-        
-        return self::createPassword($password);
-    }
-    
-    
-    /**
-     * 清理用户登录密钥
-     * @throws DbException
-     */
-    public function clearToken()
-    {
-        $this->whereEntity(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
-        $this->clearCache();
+        return password_verify(static::hashPassword($inputPassword), $dbPassword);
     }
     
     
     /**
      * 校验手机号
      * @param string $phone
-     * @return bool
+     * @return false|string
      */
-    public static function checkPhone(string $phone) : bool
+    public static function checkPhone(string $phone)
     {
-        $class = self::class;
-        $regex = App::getInstance()->config->get("app.model.$class.check_phone_match", '');
-        if ($regex) {
+        if ($regex = self::getClass()::getCheckPhoneMatch()) {
             if (is_callable($regex)) {
-                return (bool) Container::getInstance()->invokeFunction($regex, [$phone]);
+                $res = Container::getInstance()->invoke($regex, [$phone]);
+                if ($res === false) {
+                    return false;
+                }
+                
+                return $res ?: true;
             } else {
-                return preg_match($regex, $phone) === 1;
+                return Validate::checkRule($phone, ValidateRule::regex($regex));
             }
         }
         
-        return RegexHelper::phone($phone);
+        return Validate::checkRule($phone, ValidateRule::isMobile());
+    }
+    
+    
+    /**
+     * 获取检测手机号配置
+     * @return string|callable
+     */
+    public static function getCheckPhoneMatch()
+    {
+        return self::getDefine('check_phone_match', '');
     }
 }

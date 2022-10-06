@@ -4,11 +4,13 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\admin\user\AdminUserEventLoginPrepare;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\facade\CaptchaUrl;
+use RuntimeException;
 use think\facade\Session;
 use think\Response;
 use think\response\Redirect;
@@ -52,18 +54,18 @@ class PassportController extends InsideController
             $saveLogin = $this->post('save_login/b');
             
             try {
-                $adminModel = AdminUser::init();
-                $adminModel->setCallback(AdminUser::CALLBACK_PROCESS, function() use ($verify, $needCheckVerify) {
-                    if ($needCheckVerify && AdminSetting::init()->isVerify()) {
-                        try {
-                            captcha_check($verify, 'admin_login');
-                        } catch (VerifyException $e) {
-                            throw new VerifyException($e->getMessage(), 'verify');
+                $user = AdminUser::init()
+                    ->listen(AdminUserEventLoginPrepare::class, function() use ($verify, $needCheckVerify) {
+                        if ($needCheckVerify && AdminSetting::init()->isVerify()) {
+                            try {
+                                captcha_check($verify, 'admin_login');
+                            } catch (VerifyException $e) {
+                                throw new VerifyException($e->getMessage(), 'verify');
+                            }
                         }
-                    }
-                });
+                    })
+                    ->login($username, $password, $saveLogin);
                 
-                $user                = $adminModel->login($username, $password, $saveLogin);
                 $this->adminUserId   = $user['id'];
                 $this->adminUsername = $user['username'];
                 $this->log()->filterParams(['password'])->record(self::LOG_DEFAULT, '登录成功');
@@ -85,13 +87,14 @@ class PassportController extends InsideController
                 
                 return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
             } catch (VerifyException $e) {
-                if ($e->getField() == 'verify') {
-                    $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', '验证码错误');
-                } elseif ($e->getCode() > 0) {
-                    $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', '密码错误');
-                }
-                
+                $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', $e->getMessage());
                 Session::set(self::SESSION_VERIFY_STATUS_KEY, true);
+                
+                switch ($e->getField()) {
+                    case 'disabled':
+                    case 'locked':
+                        throw new RuntimeException($e->getMessage(), -1);
+                }
                 
                 throw $e;
             }
@@ -140,7 +143,7 @@ class PassportController extends InsideController
             $this->log()->record(self::LOG_DEFAULT, '退出登录');
         }
         
-        AdminUser::outLogin();
+        AdminUser::init()->outLogin();
         
         return $this->success('退出成功', url('admin_login', [$this->request->getVarRedirectUrl() => $this->request->getRedirectUrl()]));
     }

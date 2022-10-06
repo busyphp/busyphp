@@ -3,69 +3,113 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
-use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\FilterHelper;
-use BusyPHP\helper\RegexHelper;
+use BusyPHP\interfaces\FieldObtainDataInterface;
+use BusyPHP\interfaces\FieldSceneValidateInterface;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\TransHelper;
+use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * 管理员表模型字段
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午2:47 AdminUserField.php $
- * @method static Entity id($op = null, $value = null) ID
- * @method static Entity username($op = null, $value = null) 帐号
- * @method static Entity password($op = null, $value = null) 密码
- * @method static Entity email($op = null, $value = null) 邮箱
- * @method static Entity phone($op = null, $value = null) 联系方式
- * @method static Entity qq($op = null, $value = null) QQ号码
- * @method static Entity groupIds($op = null, $value = null) 权限组ID集合，英文逗号分割，左右要有逗号
- * @method static Entity defaultGroupId($op = null, $value = null) 默认角色组ID
- * @method static Entity lastIp($op = null, $value = null) 最后一次登录IP地址
- * @method static Entity lastTime($op = null, $value = null) 最后一次登录时间
- * @method static Entity loginIp($op = null, $value = null) 本次登录IP
- * @method static Entity loginTime($op = null, $value = null) 本次登录时间
- * @method static Entity loginTotal($op = null, $value = null) 登录次数
- * @method static Entity createTime($op = null, $value = null) 创建时间
- * @method static Entity updateTime($op = null, $value = null) 更新时间
- * @method static Entity checked($op = null, $value = null) 是否审核
- * @method static Entity system($op = null, $value = null) 是否系统管理员
- * @method static Entity token($op = null, $value = null) 密钥
- * @method static Entity errorTotal($op = null, $value = null) 密码错误次数统计
- * @method static Entity errorTime($op = null, $value = null) 密码错误开始时间
- * @method static Entity errorRelease($op = null, $value = null) 密码错误锁定释放时间
- * @method static Entity theme($op = null, $value = null) 主题配置
+ * @method static Entity id(mixed $op = null, mixed $condition = null) ID
+ * @method static Entity username(mixed $op = null, mixed $condition = null) 帐号
+ * @method static Entity password(mixed $op = null, mixed $condition = null) 密码
+ * @method static Entity confirmPassword() 密码
+ * @method static Entity email(mixed $op = null, mixed $condition = null) 邮箱
+ * @method static Entity phone(mixed $op = null, mixed $condition = null) 联系方式
+ * @method static Entity qq(mixed $op = null, mixed $condition = null) QQ号码
+ * @method static Entity groupIds(mixed $op = null, mixed $condition = null) 权限组ID集合，英文逗号分割，左右要有逗号
+ * @method static Entity defaultGroupId(mixed $op = null, mixed $condition = null) 默认角色组
+ * @method static Entity lastIp(mixed $op = null, mixed $condition = null) 最后一次登录IP地址
+ * @method static Entity lastTime(mixed $op = null, mixed $condition = null) 最后一次登录时间
+ * @method static Entity loginIp(mixed $op = null, mixed $condition = null) 本次登录IP
+ * @method static Entity loginTime(mixed $op = null, mixed $condition = null) 本次登录时间
+ * @method static Entity loginTotal(mixed $op = null, mixed $condition = null) 登录次数
+ * @method static Entity createTime(mixed $op = null, mixed $condition = null) 创建时间
+ * @method static Entity updateTime(mixed $op = null, mixed $condition = null) 更新时间
+ * @method static Entity checked(mixed $op = null, mixed $condition = null) 是否审核
+ * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统管理员
+ * @method static Entity token(mixed $op = null, mixed $condition = null) 密钥
+ * @method static Entity errorTotal(mixed $op = null, mixed $condition = null) 密码错误次数统计
+ * @method static Entity errorTime(mixed $op = null, mixed $condition = null) 密码错误开始时间
+ * @method static Entity errorRelease(mixed $op = null, mixed $condition = null) 密码错误锁定释放时间
+ * @method static Entity theme(mixed $op = null, mixed $condition = null) 主题配置
+ * @method $this setId(mixed $id) 设置ID
+ * @method $this setUsername(mixed $username) 设置帐号
+ * @method $this setPassword(mixed $password) 设置密码
+ * @method $this setConfirmPassword(string $confirmPassword) 设置确认密码
+ * @method $this setEmail(mixed $email) 设置邮箱
+ * @method $this setPhone(mixed $phone) 设置联系方式
+ * @method $this setQq(mixed $qq) 设置QQ号码
+ * @method $this setGroupIds(mixed $groupIds) 设置权限组ID集合，英文逗号分割，左右要有逗号
+ * @method $this setDefaultGroupId(mixed $defaultGroupId) 设置默认角色组
+ * @method $this setLastIp(mixed $lastIp) 设置最后一次登录IP地址
+ * @method $this setLastTime(mixed $lastTime) 设置最后一次登录时间
+ * @method $this setLoginIp(mixed $loginIp) 设置本次登录IP
+ * @method $this setLoginTime(mixed $loginTime) 设置本次登录时间
+ * @method $this setLoginTotal(mixed $loginTotal) 设置登录次数
+ * @method $this setCreateTime(mixed $createTime) 设置创建时间
+ * @method $this setUpdateTime(mixed $updateTime) 设置更新时间
+ * @method $this setChecked(mixed $checked) 设置是否审核
+ * @method $this setSystem(mixed $system) 设置是否系统管理员
+ * @method $this setToken(mixed $token) 设置密钥
+ * @method $this setErrorTotal(mixed $errorTotal) 设置密码错误次数统计
+ * @method $this setErrorTime(mixed $errorTime) 设置密码错误开始时间
+ * @method $this setErrorRelease(mixed $errorRelease) 设置密码错误锁定释放时间
+ * @method $this setTheme(mixed $theme) 设置主题配置
  */
-class AdminUserField extends Field
+class AdminUserField extends Field implements FieldSceneValidateInterface, FieldObtainDataInterface
 {
     /**
      * ID
      * @var int
+     * @busy-validate require
+     * @busy-validate number
+     * @busy-validate gt:0
      */
     public $id;
     
     /**
-     * 帐号
+     * 用户名
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-validate min:2#:attribute不能少于:rule个字符
+     * @busy-validate max:20#:attribute不能超过:rule个字符
      */
     public $username;
     
     /**
-     * 密码
+     * 登录密码
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-validate min:6
+     * @busy-validate max:20
      */
     public $password;
     
     /**
+     * 确认密码
+     * @var string
+     * @busy-validate require#输入:attribute以确认
+     * @busy-validate confirm:password#:attribute和登录密码不一致
+     * @busy-ignore true
+     */
+    private $confirmPassword;
+    
+    /**
      * 邮箱
      * @var string
+     * @busy-validate email#请输入有效的:attribute
      */
     public $email;
     
     /**
-     * 联系方式
+     * 手机号
      * @var string
      */
     public $phone;
@@ -73,17 +117,24 @@ class AdminUserField extends Field
     /**
      * QQ号码
      * @var string
+     * @busy-validate number#请输入有效的:attribute
+     * @busy-validate min:5#:attribute至少需要:rule个数字
+     * @busy-validate max:13#:attribute最多允许:rule个数字
      */
     public $qq;
     
     /**
-     * 权限组ID集合，英文逗号分割，左右要有逗号
-     * @var string|array
+     * 角色组
+     * @var array
+     * @busy-validate require#请选择:attribute
+     * @busy-validate array
+     * @busy-validate min:1#请至少选择:rule个:attribute
+     * @busy-array "," true
      */
     public $groupIds;
     
     /**
-     * 默认角色组ID
+     * 默认角色组
      * @var int
      */
     public $defaultGroupId;
@@ -132,13 +183,13 @@ class AdminUserField extends Field
     
     /**
      * 是否审核
-     * @var int
+     * @var bool
      */
     public $checked;
     
     /**
      * 是否系统管理员
-     * @var int
+     * @var bool
      */
     public $system;
     
@@ -168,153 +219,107 @@ class AdminUserField extends Field
     
     /**
      * 主题配置
-     * @var string
+     * @var array
+     * @busy-array json
      */
     public $theme;
     
     
     /**
-     * 设置ID
-     * @param int $id
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
      */
-    public function setId($id)
+    public function onSceneValidate(Model $model, Validate $validate, string $name)
     {
-        $this->id = floatval($id);
-        if ($this->id < 1) {
-            throw new VerifyException('缺少参数', 'id');
+        $validate
+            ->rule($this::phone(), ValidateRule::closure(function($value) {
+                // 必填验证
+                if (AdminUser::getDefine('require_phone', false) && !$value) {
+                    return '请输入:attribute';
+                } elseif (!$value) {
+                    return true;
+                }
+                
+                return AdminUser::getClass()::checkPhone($value);
+            }, '请输入有效的:attribute')->unique($model))
+            ->append($this::email(), ValidateRule::unique($model));
+        
+        $this->setCreateTime(time());
+        $this->setUpdateTime(time());
+        
+        switch ($name) {
+            // 添加场景
+            case AdminUser::SCENE_ADD:
+                $validate->append($this::username(), ValidateRule::unique($model));
+                $this->retain($validate, [
+                    $this::groupIds(),
+                    $this::defaultGroupId(),
+                    $this::username(),
+                    $this::password(),
+                    $this::confirmPassword(),
+                    $this::phone(),
+                    $this::email(),
+                    $this::qq(),
+                    $this::checked(),
+                    $this::createTime(),
+                    $this::updateTime()
+                ]);
+                
+                return true;
+            
+            // 修改
+            case AdminUser::SCENE_EDIT:
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::groupIds(),
+                    $this::defaultGroupId(),
+                    $this::username(),
+                    $this::phone(),
+                    $this::email(),
+                    $this::qq(),
+                    $this::checked(),
+                    $this->updateTime()
+                ]);
+                
+                return true;
+            
+            // 修改个人资料
+            case AdminUser::SCENE_PROFILE:
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::phone(),
+                    $this::email(),
+                    $this::qq(),
+                    $this->updateTime()
+                ]);
+                
+                return true;
+            
+            // 修改密码
+            case AdminUser::SCENE_PASSWORD:
+                $validate->title($this::password(), '新密码');
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::password(),
+                    $this::confirmPassword(),
+                    $this->updateTime()
+                ]);
+                
+                return true;
         }
         
-        return $this;
+        return false;
     }
     
     
     /**
-     * 设置帐号
-     * @param string $username
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
      */
-    public function setUsername($username)
+    public function onObtainData(string $field, string $property, array $attrs, $value)
     {
-        $this->username = trim((string) $username);
-        if (!$this->username) {
-            throw new VerifyException('请输入用户名', 'username');
+        if ($field == $this::password()) {
+            return AdminUser::getClass()::createPassword($value);
         }
         
-        return $this;
-    }
-    
-    
-    /**
-     * 设置密码
-     * @param string $password
-     * @param string $confirmPassword
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setPassword($password, $confirmPassword)
-    {
-        $this->password = AdminUser::checkPassword($password, $confirmPassword);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置邮箱
-     * @param string $email
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setEmail($email)
-    {
-        $this->email = trim((string) $email);
-        if ($this->email) {
-            if (!RegexHelper::email($this->email)) {
-                throw new VerifyException('请输入有效的邮箱地址', 'email');
-            }
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置联系方式
-     * @param string $phone
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setPhone($phone)
-    {
-        $this->phone = trim((string) $phone);
-        if ($this->phone) {
-            if (!AdminUser::checkPhone($phone)) {
-                throw new VerifyException('请输入有效的手机号', 'phone');
-            }
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置QQ号码
-     * @param string $qq
-     * @return $this
-     */
-    public function setQq($qq)
-    {
-        $this->qq = trim((string) $qq);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设为是否审核
-     * @param int $checked
-     * @return $this
-     */
-    public function setChecked($checked)
-    {
-        $this->checked = TransHelper::toBool($checked);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置权限ID集合
-     * @param array $groupIds
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setGroupIds(array $groupIds)
-    {
-        $groupIds = array_map('intval', $groupIds);
-        $groupIds = FilterHelper::trimArray($groupIds);
-        if (!$groupIds) {
-            throw new VerifyException('请选择权限', 'group_ids');
-        }
-        
-        $this->groupIds = ',' . implode(',', $groupIds) . ',';
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置默认角色组ID
-     * @param int $defaultGroupId
-     * @return $this
-     */
-    public function setDefaultGroupId($defaultGroupId)
-    {
-        $this->defaultGroupId = intval($defaultGroupId);
-        
-        return $this;
+        return $value;
     }
 }

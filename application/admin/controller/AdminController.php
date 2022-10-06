@@ -207,7 +207,7 @@ abstract class AdminController extends Controller
     {
         // 验证登录
         if (!$this->isLogin()) {
-            AdminUser::outLogin();
+            AdminUser::init()->outLogin();
             
             // 记录返回地址
             // POST/AJAX 记录来源操作地址为返回地址
