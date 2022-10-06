@@ -883,7 +883,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         $list = $this->setLimitProperty(false, ...$propertyList);
         if ($list && $property instanceof Validate) {
-            $property->only($list);
+            $property->only(...$list);
         }
         
         return $this;
