@@ -125,7 +125,7 @@ class AdminUser extends Model
         
         return $this->transaction(function() use ($data, $scene, $prepare) {
             $info = $this->lock(true)->getInfo($data->id);
-            $this->validate($data, $scene);
+            $this->validate($data, $scene, $info);
             $this->trigger(new AdminUserEventUpdateBefore($this, $data, $scene, $prepare, $info));
             $this->saveData($data);
             $this->trigger(new AdminUserEventUpdateAfter($this, $data, $scene, $prepare, $info, $info = $this->getInfo($info->id)));

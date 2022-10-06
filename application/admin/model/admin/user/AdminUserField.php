@@ -228,7 +228,7 @@ class AdminUserField extends Field implements ModelSceneValidateInterface, Field
     /**
      * @inheritDoc
      */
-    public function onModelSceneValidate(Model $model, Validate $validate, string $name)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
     {
         $validate
             ->rule($this::phone(), ValidateRule::closure(function($value) {

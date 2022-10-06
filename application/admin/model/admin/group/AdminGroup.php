@@ -120,7 +120,7 @@ class AdminGroup extends Model
         
         return $this->transaction(function() use ($data, $scene, $prepare) {
             $info = $this->lock(true)->getInfo($data->id);
-            $this->validate($data, $scene);
+            $this->validate($data, $scene, $info);
             $this->trigger(new AdminGroupEventUpdateBefore($this, $data, $scene, $prepare, $info));
             $this->saveData();
             $this->trigger(new AdminGroupEventUpdateAfter($this, $data, $scene, $prepare, $info, $finalInfo = $this->getInfo($info->id)));

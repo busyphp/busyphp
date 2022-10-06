@@ -1060,26 +1060,29 @@ abstract class Model extends Query
      * 数据校验
      * @param array|Field|Validate|string $data 要验证的数据或验证器
      * @param string|Validate|Field|null  $validate 验证器、验证器类名、验证场景名称
-     * @param string|null                 $scene 验证场景
+     * @param mixed                       $scene 验证场景或场景数据
+     * @param mixed                       $sceneData 场景数据
      * @return $this
      */
-    public function validate($data, $validate = null, string $scene = null)
+    public function validate($data, $validate = null, $scene = null, $sceneData = null)
     {
         $field = null;
         switch (true) {
             // data 为 Field 的类或对象
             case is_subclass_of($data, Field::class) || $data instanceof Field:
-                $field    = $data;
-                $scene    = $validate;
-                $validate = null;
-                $data     = [];
+                $field     = $data;
+                $sceneData = $scene;
+                $scene     = $validate;
+                $validate  = null;
+                $data      = [];
             break;
             
             // data 为 Validate 对象
             case is_subclass_of($data, Validate::class) || $data instanceof Validate:
-                $scene    = $validate;
-                $validate = $data;
-                $data     = [];
+                $sceneData = $scene;
+                $scene     = $validate;
+                $validate  = $data;
+                $data      = [];
             break;
             
             // validate 为 Field 的类或对象
@@ -1169,13 +1172,13 @@ abstract class Model extends Query
         if ($scene !== '') {
             $method = 'onScene' . StringHelper::studly($scene);
             if ($field instanceof ModelSceneValidateInterface) {
-                if (false === $only = $field->onModelSceneValidate($this, $validate, $scene)) {
+                if (false === $only = $field->onModelSceneValidate($this, $validate, $scene, $sceneData)) {
                     $state = false;
                 } elseif (is_array($only)) {
                     $field->retain($validate, ...$only);
                 }
             } elseif (method_exists($field, $method)) {
-                if (false === $only = call_user_func_array([$field, $method], [$this, $validate, $scene])) {
+                if (false === $only = call_user_func_array([$field, $method], [$this, $validate, $scene, $sceneData])) {
                     $state = false;
                 } elseif (is_array($only)) {
                     $field->retain($validate, ...$only);

@@ -94,7 +94,7 @@ class AdminGroupField extends Field implements ModelSceneValidateInterface, Fiel
     /**
      * @inheritDoc
      */
-    public function onModelSceneValidate(Model $model, Validate $validate, string $name)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
     {
         switch ($name) {
             case AdminGroup::SCENE_CREATE:
