@@ -1,14 +1,15 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\model\system\config\SystemConfig as Model;
+use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\app\admin\model\system\config\SystemConfigField;
-use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 开发模式-系统键值对配置管理
@@ -19,7 +20,7 @@ use think\Response;
 class ConfigController extends InsideController
 {
     /**
-     * @var Model
+     * @var SystemConfig
      */
     private $model;
     
@@ -32,7 +33,7 @@ class ConfigController extends InsideController
         
         parent::initialize($checkLogin);
         
-        $this->model = Model::init();
+        $this->model = SystemConfig::init();
     }
     
     
@@ -42,7 +43,7 @@ class ConfigController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         if ($this->pluginTable) {
             return $this->success($this->pluginTable->build($this->model));
@@ -58,15 +59,10 @@ class ConfigController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function add()
+    public function add() : Response
     {
         if ($this->isPost()) {
-            $insert = SystemConfigField::init();
-            $insert->setName($this->post('name/s'));
-            $insert->setType($this->post('type/s'));
-            $insert->setSystem($this->post('system/b'));
-            $insert->setAppend($this->post('append/b'));
-            $this->model->insertData($insert);
+            $this->model->createInfo(SystemConfigField::parse($this->post()));
             $this->log()->record(self::LOG_INSERT, '增加系统配置');
             
             return $this->success('添加成功');
@@ -81,18 +77,12 @@ class ConfigController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws Exception
+     * @throws Throwable
      */
-    public function edit()
+    public function edit() : Response
     {
         if ($this->isPost()) {
-            $update = SystemConfigField::init();
-            $update->setId($this->post('id/d'));
-            $update->setName($this->post('name/s'));
-            $update->setType($this->post('type/s'));
-            $update->setSystem($this->post('system/b'));
-            $update->setAppend($this->post('append/b'));
-            $this->model->updateData($update);
+            $this->model->updateInfo(SystemConfigField::parse($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改系统配置');
             
             return $this->success('修改成功');
@@ -106,9 +96,9 @@ class ConfigController extends InsideController
     
     /**
      * 删除
-     * @throws Exception
+     * @throws Throwable
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的配置', 'intval') as $id) {
             $this->model->deleteInfo($id);

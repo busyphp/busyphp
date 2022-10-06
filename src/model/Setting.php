@@ -8,6 +8,7 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\StringHelper;
 use Closure;
+use Psr\Log\LoggerInterface;
 use think\db\exception\DbException;
 
 /**
@@ -19,9 +20,10 @@ use think\db\exception\DbException;
 abstract class Setting
 {
     /**
-     * @var string 键名
+     * 服务注入
+     * @var Closure[]
      */
-    protected $key = '';
+    protected static $maker = [];
     
     /**
      * @var Setting[]
@@ -29,15 +31,24 @@ abstract class Setting
     private static $inits = [];
     
     /**
+     * @var SystemConfig
+     */
+    private static $manager;
+    
+    /**
+     * @var string 键名
+     */
+    protected $key = '';
+    
+    /**
      * @var App
      */
     protected $app;
     
     /**
-     * 服务注入
-     * @var Closure[]
+     * @var SystemConfig
      */
-    protected static $maker = [];
+    protected $model;
     
     
     /**
@@ -53,21 +64,39 @@ abstract class Setting
     
     /**
      * 快速实例化
+     * @param LoggerInterface|null $logger 日志接口
+     * @param string               $connect 连接标识
+     * @param bool                 $force 是否强制重连
      * @return $this
      */
-    public static function init() : Setting
+    public static function init(LoggerInterface $logger = null, string $connect = '', bool $force = false) : self
     {
         if (!isset(self::$inits[static::class])) {
-            self::$inits[static::class] = new static();
+            self::$inits[static::class] = new static($logger, $connect, $force);
         }
         
         return self::$inits[static::class];
     }
     
     
-    public function __construct()
+    /**
+     * @param LoggerInterface|null $logger 日志接口
+     * @param string               $connect 连接标识
+     * @param bool                 $force 是否强制重连
+     */
+    protected function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false)
     {
         $this->app = App::getInstance();
+        
+        if (!isset(self::$manager)) {
+            self::$manager = SystemConfig::init();
+        }
+        
+        if ($logger || $connect !== '' || $force) {
+            $this->model = SystemConfig::init($logger, $connect, $force);
+        } else {
+            $this->model = self::$manager;
+        }
         
         if (!$this->key) {
             $this->getKey();
@@ -101,13 +130,13 @@ abstract class Setting
     
     /**
      * 设置数据
-     * @param mixed $data
+     * @param array $data
      * @throws DbException
      * @throws ParamInvalidException
      */
-    final public function set($data)
+    final public function set(array $data)
     {
-        SystemConfig::init()->setKey($this->key, $this->parseSet($data));
+        $this->model->setKey($this->key, $this->parseSet($data));
     }
     
     
@@ -119,7 +148,7 @@ abstract class Setting
      */
     final public function get(string $name = '', $default = null)
     {
-        $data = $this->parseGet(SystemConfig::init()->get($this->key));
+        $data = $this->parseGet($this->model->get($this->key));
         
         if (!$name) {
             return $data;
@@ -130,53 +159,23 @@ abstract class Setting
     
     
     /**
-     * 打印方法结构
+     * 设置数据解析器
+     * @param array $data
+     * @return array
      */
-    final public function __printMethod()
+    protected function parseSet(array $data) : array
     {
-        $data   = $this->get();
-        $string = '';
-        foreach ($data as $k => $v) {
-            $name = ucfirst(StringHelper::camel($k));
-            if (is_bool($v)) {
-                $type = 'bool';
-            } elseif (is_array($v)) {
-                $type = 'array';
-            } elseif (is_object($v)) {
-                $type = 'object';
-            } elseif (is_float($v)) {
-                $type = 'float';
-            } elseif (is_numeric($v)) {
-                $type = 'int';
-            } else {
-                $type = 'string';
-            }
-            
-            $string .= "/**<br />";
-            $string .= "&nbsp;* 获取<br />";
-            $string .= "&nbsp;* @return {$type}<br />";
-            $string .= "&nbsp;*/<br />";
-            $string .= "public function get{$name}() { <br />";
-            $string .= "&nbsp;&nbsp;&nbsp;&nbsp;return \$this->get('{$k}'); <br />";
-            $string .= "}<br />";
-        }
-        
-        echo $string;
+        return $data;
     }
     
     
     /**
      * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
+     * @param array $data
+     * @return array
      */
-    abstract protected function parseGet($data);
-    
-    
-    /**
-     * 设置数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    abstract protected function parseSet($data);
+    protected function parseGet(array $data) : array
+    {
+        return $data;
+    }
 }

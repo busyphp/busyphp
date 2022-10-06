@@ -17,11 +17,9 @@ use BusyPHP\helper\FilterHelper;
 class WatermarkSetting extends Setting
 {
     /**
-     * @param array $data
-     * @return array
-     * @throws VerifyException
+     * @inheritDoc
      */
-    protected function parseSet($data)
+    protected function parseSet(array $data) : array
     {
         $data = FilterHelper::trim($data);
         
@@ -35,17 +33,6 @@ class WatermarkSetting extends Setting
             throw new VerifyException('水印文件不存在', 'file');
         }
         
-        return $data;
-    }
-    
-    
-    /**
-     * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    protected function parseGet($data)
-    {
         return $data;
     }
     

@@ -17,26 +17,11 @@ use BusyPHP\model\Setting;
 class QrcodeSetting extends Setting
 {
     /**
-     * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
+     * @inheritDoc
      */
-    protected function parseGet($data)
+    protected function parseSet(array $data) : array
     {
-        return $data;
-    }
-    
-    
-    /**
-     * 设置数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    protected function parseSet($data)
-    {
-        $data = FilterHelper::trim($data);
-        
-        return $data;
+        return FilterHelper::trim($data);
     }
     
     

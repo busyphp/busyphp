@@ -15,15 +15,12 @@ use BusyPHP\helper\FilterHelper;
  */
 class PublicSetting extends Setting
 {
-    protected function parseSet($data)
+    /**
+     * @inheritDoc
+     */
+    protected function parseSet(array $data) : array
     {
         return FilterHelper::trim($data);
-    }
-    
-    
-    protected function parseGet($data)
-    {
-        return $data;
     }
     
     

@@ -65,10 +65,9 @@ class StorageSetting extends Setting
     
     
     /**
-     * @param array $data
-     * @return array
+     * @inheritDoc
      */
-    protected function parseSet($data)
+    protected function parseSet(array $data) : array
     {
         $data = FilterHelper::trim($data);
         
@@ -83,17 +82,6 @@ class StorageSetting extends Setting
             $data['clients'][$client] = $item;
         }
         
-        return $data;
-    }
-    
-    
-    /**
-     * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    protected function parseGet($data)
-    {
         return $data;
     }
     

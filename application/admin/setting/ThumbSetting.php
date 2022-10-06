@@ -18,22 +18,9 @@ use BusyPHP\model\Setting;
 class ThumbSetting extends Setting
 {
     /**
-     * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
+     * @inheritDoc
      */
-    protected function parseGet($data)
-    {
-        return $data;
-    }
-    
-    
-    /**
-     * 设置数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    protected function parseSet($data)
+    protected function parseSet(array $data) : array
     {
         $data                   = FilterHelper::trim($data);
         $data['save_local']     = TransHelper::toBool($data['save_local'] ?? 0);

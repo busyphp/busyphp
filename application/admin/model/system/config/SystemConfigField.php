@@ -3,28 +3,32 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\config;
 
-use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\StringHelper;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\RegexHelper;
-use BusyPHP\helper\TransHelper;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
+use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * 系统键值对配置数据模型字段
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午3:06 SystemConfigField.php $
- * @method static Entity id($op = null, $value = null) ID
- * @method static Entity content($op = null, $value = null)
- * @method static Entity name($op = null, $value = null) 备注
- * @method static Entity type($op = null, $value = null) 类型
- * @method static Entity system($op = null, $value = null) 系统配置
- * @method static Entity append($op = null, $value = null) 是否加入全局配置
+ * @method static Entity id(mixed $op = null, mixed $condition = null) ID
+ * @method static Entity content(mixed $op = null, mixed $condition = null) content
+ * @method static Entity name(mixed $op = null, mixed $condition = null) 备注
+ * @method static Entity type(mixed $op = null, mixed $condition = null) 类型
+ * @method static Entity system(mixed $op = null, mixed $condition = null) 系统配置
+ * @method static Entity append(mixed $op = null, mixed $condition = null) 是否加入全局配置
+ * @method $this setId(mixed $id) 设置ID
+ * @method $this setContent(mixed $content) 设置content
+ * @method $this setName(mixed $name) 设置备注
+ * @method $this setType(mixed $type) 设置类型
+ * @method $this setSystem(mixed $system) 设置系统配置
+ * @method $this setAppend(mixed $append) 设置是否加入全局配置
  */
-class SystemConfigField extends Field
+class SystemConfigField extends Field implements ModelSceneValidateInterface
 {
     /**
      * ID
@@ -33,132 +37,80 @@ class SystemConfigField extends Field
     public $id;
     
     /**
-     * @var string
+     * content
+     * @var array
+     * @busy-array serialize
      */
     public $content;
     
     /**
-     * 备注
+     * 配置名称
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-filter trim
      */
     public $name;
     
     /**
-     * 类型
+     * 配置标识
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-filter trim
      */
     public $type;
     
     /**
      * 系统配置
-     * @var int
+     * @var bool
      */
-    public $system;
+    public $system = false;
     
     /**
      * 是否加入全局配置
-     * @var int
+     * @var bool
      */
-    public $append;
+    public $append = false;
     
     
     /**
-     * 设置
-     * @param int $id
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
+     * @param null|SystemConfigInfo $data
      */
-    public function setId($id)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
     {
-        $this->id = floatval($id);
-        if ($this->id < 1) {
-            throw new VerifyException('缺少参数', 'id');
+        $validate->append(
+            $this::type(),
+            ValidateRule::regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', ':attribute必须是英文数字下划线组合，且必须是英文开头')->unique($model)
+        );
+        
+        if ($name == SystemConfig::SCENE_CREATE) {
+            $this->setId(0);
+            $this->setContent([]);
+            $this->retain($validate, [
+                $this::name(),
+                $this::type(),
+                $this::content(),
+                $this::system(),
+                $this::append(),
+            ]);
+            
+            return true;
+        } elseif ($name == SystemConfig::SCENE_UPDATE) {
+            if ($data->system) {
+                $this->setSystem(true);
+            }
+            $this->retain($validate, [
+                $this::id(),
+                $this::name(),
+                $this::type(),
+                $this::content(),
+                $this::system(),
+                $this::append()
+            ]);
+            
+            return true;
         }
         
-        return $this;
-    }
-    
-    
-    /**
-     * 设置
-     * @param mixed $content
-     * @return $this
-     */
-    public function setContent($content)
-    {
-        $this->content = serialize($content);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置备注
-     * @param string $name
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setName($name)
-    {
-        $this->name = trim($name);
-        if (!$this->name) {
-            throw new VerifyException('请输入配置名称', 'name');
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置类型
-     * @param string $type
-     * @return $this
-     * @throws VerifyException
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function setType($type)
-    {
-        $this->type = trim($type);
-        if (!$this->type) {
-            throw new VerifyException('请输入配置标识', 'type');
-        }
-        if (!RegexHelper::account($this->type)) {
-            throw new VerifyException('配置标识格式有误，只能包含英文、数字、下划线', 'type');
-        }
-        
-        // 只能是英文开头
-        $this->type = StringHelper::snake($this->type);
-        if (!RegexHelper::english(substr($this->type, 0, 1))) {
-            throw new VerifyException('配置标识不能为数字或下划线开头', 'type');
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置系统配置
-     * @param int $system
-     * @return $this
-     */
-    public function setSystem($system)
-    {
-        $this->system = TransHelper::toBool($system);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否加入全局配置
-     * @param int $append
-     * @return $this
-     */
-    public function setAppend($append)
-    {
-        $this->append = TransHelper::toBool($append);
-        
-        return $this;
+        return false;
     }
 }

@@ -5,22 +5,24 @@ namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\helper\LogHelper;
 use BusyPHP\model;
-use Exception;
+use BusyPHP\model\Entity;
+use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use Throwable;
 
 /**
  * 系统键值对配置数据模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午3:20 SystemConfig.php $
- * @method SystemConfigInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemConfigInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemConfigInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemConfigInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemConfigInfo[] selectList()
+ * @method SystemConfigInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static SystemConfig getClass()
  */
 class SystemConfig extends Model
 {
@@ -32,67 +34,38 @@ class SystemConfig extends Model
     
     
     /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
+    
+    
+    /**
      * 添加配置
-     * @param SystemConfigField $insert
+     * @param SystemConfigField $data
      * @return int
      * @throws DbException
      */
-    public function insertData(SystemConfigField $insert)
+    public function createInfo(SystemConfigField $data) : int
     {
-        $insert->content = '';
-        $this->checkRepeat($insert);
-        
-        return $this->addData($insert);
+        return (int) $this->validate($data, self::SCENE_CREATE)->addData();
     }
     
     
     /**
      * 修改配置
-     * @param SystemConfigField $update
-     * @throws ParamInvalidException
-     * @throws Exception
-     */
-    public function updateData(SystemConfigField $update)
-    {
-        if ($update->id < 1) {
-            throw new ParamInvalidException('id');
-        }
-        
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($update->id);
-            if ($info->system) {
-                $update->system = true;
-                $update->type   = $info->type;
-            }
-            
-            $this->checkRepeat($update, $update->id);
-            $this->whereEntity(SystemConfigField::id($update->id))->saveData($update);
-            $this->commit();
-        } catch (Exception $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
-    }
-    
-    
-    /**
-     * 查重
      * @param SystemConfigField $data
-     * @param int               $id
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws ParamInvalidException
+     * @throws Throwable
      */
-    protected function checkRepeat(SystemConfigField $data, $id = 0)
+    public function updateInfo(SystemConfigField $data)
     {
-        $this->whereEntity(SystemConfigField::type($data->type));
-        if ($id > 0) {
-            $this->whereEntity(SystemConfigField::id('<>', $id));
-        }
-        if ($this->findInfo()) {
-            throw new VerifyException('该配置标识已存在', 'type');
-        }
+        $this->transaction(function() use ($data) {
+            $info = $this->lock(true)->getInfo($data->id);
+            $this->validate($data, self::SCENE_UPDATE, $info)->saveData();
+        });
     }
     
     
@@ -100,39 +73,27 @@ class SystemConfig extends Model
      * 删除配置
      * @param int $data 信息ID
      * @return int
-     * @throws VerifyException
-     * @throws Exception
+     * @throws Throwable
      */
     public function deleteInfo($data) : int
     {
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($data);
+        $id = (int) $data;
+        
+        return $this->transaction(function() use ($id) {
+            $info = $this->lock(true)->getInfo($id);
             if ($info->system) {
-                throw new VerifyException('禁止删除系统配置');
+                throw new RuntimeException('禁止删除系统配置');
             }
             
-            $res = parent::deleteInfo($info->id);
-            $this->commit();
-            
-            try {
-                $this->deleteCache($info->type);
-            } catch (Exception $e) {
-            }
-            
-            return $res;
-        } catch (Exception $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+            return parent::deleteInfo($info->id);
+        });
     }
     
     
     /**
      * 设置键值数据
      * @param string $key 数据名称
-     * @param mixed  $value 数据值
+     * @param array  $value 数据值
      * @throws DbException
      * @throws ParamInvalidException
      */
@@ -143,9 +104,9 @@ class SystemConfig extends Model
             throw new ParamInvalidException('key');
         }
         
-        $update = SystemConfigField::init();
-        $update->setContent($value);
-        $this->whereEntity(SystemConfigField::type($key))->saveData($update);
+        $data = SystemConfigField::init();
+        $data->setContent($value);
+        $this->whereEntity(SystemConfigField::type($key))->saveData($data);
     }
     
     
@@ -160,14 +121,11 @@ class SystemConfig extends Model
         $cache = $this->getCache($key);
         if (!$cache || $must) {
             try {
-                $cache = $this->whereEntity(SystemConfigField::type($key))
-                    ->failException(true)
-                    ->findInfo(null, "找不到配置[{$key}]的数据");
-            } catch (Exception $e) {
-                LogHelper::default()->error($e);
+                $cache = $this->whereEntity(SystemConfigField::type($key))->failException(true)->findInfo();
+            } catch (Throwable $e) {
                 $this->deleteCache($key);
                 
-                return null;
+                throw new RuntimeException(sprintf('Configuration "%s" does not exist', $key));
             }
             
             $this->setCache($key, $cache);
@@ -199,15 +157,14 @@ class SystemConfig extends Model
     {
         $config = [];
         foreach ($this->selectList() as $item) {
-            $result = $this->get($item->type, true);
-            if ($item->append && $result) {
-                $config[$item->type] = $result;
+            $this->setCache($item->type, $item);
+            if ($item->append) {
+                $config[$item->type] = $item->content;
             }
         }
         
         // 生成系统配置
-        $string = var_export($config, true);
         FileHelper::write(App::getInstance()
-            ->getRuntimeConfigPath('config.php'), "<?php // 本配置由系统自动生成 \n\n return {$string};");
+            ->getRuntimeConfigPath('config.php'), sprintf("<?php\n// 本配置由系统自动生成与%s\nreturn %s;", date('Y-m-d H:i:s'), var_export($config, true)));
     }
 }

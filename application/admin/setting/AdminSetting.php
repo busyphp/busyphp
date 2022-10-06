@@ -19,11 +19,10 @@ use think\db\exception\DbException;
 class AdminSetting extends Setting
 {
     /**
-     * @param mixed $data
-     * @return array
+     * @inheritDoc
      * @throws DbException
      */
-    protected function parseSet($data)
+    protected function parseSet(array $data) : array
     {
         $data                            = FilterHelper::trim($data);
         $data['verify']                  = TransHelper::toBool($data['verify']);
@@ -39,17 +38,6 @@ class AdminSetting extends Setting
             AdminUser::init()->clearToken();
         }
         
-        return $data;
-    }
-    
-    
-    /**
-     * 获取数据解析器
-     * @param mixed $data
-     * @return mixed
-     */
-    protected function parseGet($data)
-    {
         return $data;
     }
     
