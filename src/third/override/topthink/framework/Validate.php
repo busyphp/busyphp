@@ -297,6 +297,24 @@ class Validate
 
         return $this;
     }
+    
+    
+    /**
+     * 设置字段描述
+     * @param string|array|\BusyPHP\model\Entity $field 字段名称
+     * @param string                             $title 字段描述
+     * @return $this
+     */
+    public function title($field, string $title = '')
+    {
+        if (is_array($field)) {
+            $this->field = array_merge($this->field, $field);
+        } else {
+            $this->field[StringHelper::cast($field)] = $title;
+        }
+        
+        return $this;
+    }
 
     /**
      * 注册验证（类型）规则
