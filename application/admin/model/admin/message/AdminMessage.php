@@ -17,6 +17,7 @@ use think\route\Url;
  * @method AdminMessageInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method AdminMessageInfo[] selectList()
  * @method AdminMessageInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static AdminMessage getClass()
  */
 class AdminMessage extends Model
 {
@@ -25,6 +26,15 @@ class AdminMessage extends Model
     protected $listNotFoundMessage = '暂无消息';
     
     protected $bindParseClass      = AdminMessageInfo::class;
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
     
     
     /**
