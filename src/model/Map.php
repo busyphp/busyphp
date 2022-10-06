@@ -139,7 +139,12 @@ class Map implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Iterato
     
     public function toArray() : array
     {
-        return get_object_vars($this);
+        $data = [];
+        foreach (get_object_vars($this) as $key => $value) {
+            $data[StringHelper::snake($key)] = $value;
+        }
+        
+        return $data;
     }
     
     
