@@ -78,18 +78,16 @@ class AdminGroupInfo extends AdminGroupField
     protected function onParseAfter()
     {
         if (!is_array(self::$_menuIdParents)) {
-            static::$_menuIdParents = SystemMenu::init()->getIdParens();
+            self::$_menuIdParents = SystemMenu::init()->getIdParens();
         }
         if (!is_array(self::$_menuIdList)) {
-            static::$_menuIdList = SystemMenu::init()->getIdList();
+            self::$_menuIdList = SystemMenu::init()->getIdList();
         }
-        
-        $this->system = TransHelper::toBool($this->system);
         
         // 遍历权限剔除失效节点
         $rule            = [];
         $this->rulePaths = [];
-        foreach (explode(',', $this->rule) as $ruleId) {
+        foreach ($this->rule as $ruleId) {
             if (!isset(self::$_menuIdParents[$ruleId])) {
                 continue;
             }

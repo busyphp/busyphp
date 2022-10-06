@@ -4,25 +4,17 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\model\admin\group;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\event\model\group\CreateAdminGroupAfterEvent;
-use BusyPHP\app\admin\event\model\group\CreateAdminGroupBeforeEvent;
-use BusyPHP\app\admin\event\model\group\CreateAdminGroupTakeParamsEvent;
-use BusyPHP\app\admin\event\model\group\DeleteAdminGroupAfterEvent;
-use BusyPHP\app\admin\event\model\group\DeleteAdminGroupBeforeEvent;
-use BusyPHP\app\admin\event\model\group\DeleteAdminGroupTakeParamsEvent;
-use BusyPHP\app\admin\event\model\group\UpdateAdminGroupAfterEvent;
-use BusyPHP\app\admin\event\model\group\UpdateAdminGroupBeforeEvent;
-use BusyPHP\app\admin\event\model\group\UpdateAdminGroupTakeParamsEvent;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\helper\StringHelper;
-use BusyPHP\model;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
-use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\helper\StringHelper;
+use BusyPHP\model;
+use BusyPHP\model\Entity;
+use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
-use think\facade\Event;
 use Throwable;
 
 /**
@@ -30,10 +22,11 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:56 下午 AdminGroup.php $
- * @method AdminGroupInfo findInfo($data = null, $notFoundMessage = null)
- * @method AdminGroupInfo getInfo($data, $notFoundMessage = null)
+ * @method AdminGroupInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method AdminGroupInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method AdminGroupInfo[] selectList()
- * @method AdminGroupInfo[] buildListWithField(array $values, $key = null, $field = null) : array()
+ * @method AdminGroupInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static AdminGroup getClass()
  */
 class AdminGroup extends Model
 {
@@ -42,6 +35,9 @@ class AdminGroup extends Model
     protected $findInfoFilter      = 'intval';
     
     protected $bindParseClass      = AdminGroupInfo::class;
+    
+    /** @var string 操作场景-启用/禁用角色 */
+    public const SCENE_STATUS = 'status';
     
     /**
      * 权限验证放行的控制器白名单
@@ -53,13 +49,22 @@ class AdminGroup extends Model
     
     
     /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
+    
+    
+    /**
      * 获取列表
      * @param bool $must
      * @return AdminGroupInfo[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getList($must = false)
+    public function getList($must = false) : array
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
@@ -85,104 +90,45 @@ class AdminGroup extends Model
     
     /**
      * 添加管理角色
-     * @param AdminGroupField $insert
-     * @param bool            $triggerEvent 是否触发事件，否则触发回调
-     * @return int
+     * @param AdminGroupField $data
+     * @return AdminGroupInfo
      * @throws Throwable
      */
-    public function createGroup(AdminGroupField $insert, bool $triggerEvent = true)
+    public function createInfo(AdminGroupField $data) : AdminGroupInfo
     {
-        // 触发参数处理事件
-        $event      = new CreateAdminGroupTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->data = $insert;
-            $takeParams  = Event::trigger($event, [], true);
-        }
+        $prepare = $this->trigger(new AdminGroupEventCreatePrepare($this, $data), true);
         
-        $this->startTrans();
-        try {
-            $this->checkData($insert);
+        
+        return $this->transaction(function() use ($prepare, $data) {
+            $this->validate($data, self::SCENE_CREATE);
+            $this->trigger(new AdminGroupEventCreateBefore($this, $data, $prepare));
+            $this->trigger(new AdminGroupEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->addData())));
             
-            // 触发创建前事件
-            $event             = new CreateAdminGroupBeforeEvent();
-            $event->data       = $insert;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
-            $id = $this->addData($insert);
-            
-            // 触发创建后事件
-            $event             = new CreateAdminGroupAfterEvent();
-            $event->data       = $insert;
-            $event->takeParams = $takeParams;
-            $event->info       = $this->getInfo($id);
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-            
-            return $id;
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+            return $info;
+        });
     }
     
     
     /**
      * 修改管理角色
-     * @param AdminGroupField $update $id
-     * @param bool            $triggerEvent 是否触发事件，否则触发回调
+     * @param AdminGroupField $data
+     * @param string          $scene 场景
+     * @return AdminGroupInfo
      * @throws Throwable
      */
-    public function updateGroup(AdminGroupField $update, bool $triggerEvent = true)
+    public function updateInfo(AdminGroupField $data, string $scene = self::SCENE_UPDATE) : AdminGroupInfo
     {
-        if ($update->id < 1) {
-            throw new ParamInvalidException('$update->id');
-        }
+        $prepare = $this->trigger(new AdminGroupEventUpdatePrepare($this, $data, $scene), true);
         
-        // 触发参数处理事件
-        $event      = new UpdateAdminGroupTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->data    = $update;
-            $event->operate = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
-            $takeParams     = Event::trigger($event, [], true);
-        }
-        
-        $this->startTrans();
-        try {
-            $this->checkData($update);
-            $info = $this->lock(true)->getInfo($update->id);
-            if ($info->system && !$update->status) {
-                throw new VerifyException('无法禁用系统权限');
-            }
+        return $this->transaction(function() use ($data, $scene, $prepare) {
+            $info = $this->lock(true)->getInfo($data->id);
+            $this->validate($data, $scene);
+            $this->trigger(new AdminGroupEventUpdateBefore($this, $data, $scene, $prepare, $info));
+            $this->saveData();
+            $this->trigger(new AdminGroupEventUpdateAfter($this, $data, $scene, $prepare, $info, $finalInfo = $this->getInfo($info->id)));
             
-            // 触发更新前事件
-            $event             = new UpdateAdminGroupBeforeEvent();
-            $event->data       = $update;
-            $event->info       = $info;
-            $event->takeParams = $takeParams;
-            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
-            $this->whereEntity(AdminGroupField::id($update->id))->saveData($update);
-            
-            // 触发更新后事件
-            $event             = new UpdateAdminGroupAfterEvent();
-            $event->data       = $update;
-            $event->info       = $this->getInfo($info->id);
-            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_DEFAULT;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+            return $finalInfo;
+        });
     }
     
     
@@ -202,7 +148,7 @@ class AdminGroup extends Model
         
         $idList  = SystemMenu::init()->getIdList();
         $newRule = [];
-        foreach (explode(',', $data->rule) as $id) {
+        foreach ($data->rule as $id) {
             if (!isset($idList[$id])) {
                 continue;
             }
@@ -214,33 +160,24 @@ class AdminGroup extends Model
     
     /**
      * 删除用户组
-     * @param int  $data
-     * @param bool $triggerEvent 是否触发事件，否则触发回调
+     * @param int $data
      * @return int
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Throwable
      */
-    public function deleteInfo($data, bool $triggerEvent = true) : int
+    public function deleteInfo($data) : int
     {
-        // 触发参数处理事件
-        $event      = new DeleteAdminGroupTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->id  = $data;
-            $takeParams = Event::trigger($event, [], true);
-        }
+        $id      = (int) $data;
+        $prepare = $this->trigger(new AdminGroupEventDeletePrepare($this, $id), true);
         
-        $this->startTrans();
-        try {
-            $info = $this->getInfo($data);
+        return $this->transaction(function() use ($id, $prepare) {
+            $info = $this->lock(true)->getInfo($id);
             if ($info->system) {
-                throw new VerifyException('系统管理权限组禁止删除');
+                throw new RuntimeException('系统管理权限组禁止删除');
             }
             
-            // 触发删除前事件
-            $event             = new DeleteAdminGroupBeforeEvent();
-            $event->info       = $info;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
+            $this->trigger(new AdminGroupEventDeleteBefore($this, $info->id, $info, $prepare));
             
             // 删除子角色
             $childIds = array_keys(ArrayHelper::listByKey(
@@ -251,22 +188,11 @@ class AdminGroup extends Model
                 $this->whereEntity(AdminGroupField::id('in', $childIds))->delete();
             }
             
-            $res = parent::deleteInfo($data);
+            $result = parent::deleteInfo($info->id);
+            $this->trigger(new AdminGroupEventDeleteAfter($this, $info->id, $info, $prepare));
             
-            // 触发删除后事件
-            $event             = new DeleteAdminGroupAfterEvent();
-            $event->info       = $info;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-            
-            return $res;
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+            return $result;
+        });
     }
     
     
@@ -307,9 +233,8 @@ class AdminGroup extends Model
             AdminGroupInfo::child()->name(),
             $id
         );
-        $list = ArrayHelper::treeToList($list, AdminGroupInfo::child()->name());
         
-        return $list;
+        return ArrayHelper::treeToList($list, AdminGroupInfo::child()->name());
     }
     
     
@@ -385,55 +310,22 @@ class AdminGroup extends Model
      * 设置启用/禁用
      * @param int  $id
      * @param bool $status
-     * @param bool $triggerEvent 是否触发事件，否则触发回调
+     * @return AdminGroupInfo
      * @throws Throwable
      */
-    public function changeStatus($id, bool $status, bool $triggerEvent = true)
+    public function changeStatus($id, bool $status) : AdminGroupInfo
     {
         $update = AdminGroupField::init();
         $update->setId($id);
         $update->setStatus($status);
         
-        // 触发参数处理事件
-        $event      = new UpdateAdminGroupTakeParamsEvent();
-        $takeParams = null;
-        if ($triggerEvent) {
-            $event->data    = $update;
-            $event->operate = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
-            $takeParams     = Event::trigger($event, [], true);
-        }
-        
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($id);
-            if ($info->system) {
-                throw new VerifyException('无法禁用系统权限');
+        $this->listen(AdminGroupEventUpdateBefore::class, function(AdminGroupEventUpdateBefore $before) {
+            if ($before->info->system) {
+                throw new RuntimeException('无法禁用系统权限');
             }
-            
-            // 触发更新前事件
-            $event             = new UpdateAdminGroupBeforeEvent();
-            $event->data       = $update;
-            $event->info       = $info;
-            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_BEFORE, $event);
-            
-            $this->whereEntity(AdminGroupField::id($id))->saveData($update);
-            
-            // 触发更新后事件
-            $event             = new UpdateAdminGroupAfterEvent();
-            $event->data       = $update;
-            $event->info       = $this->getInfo($info->id);
-            $event->operate    = UpdateAdminGroupTakeParamsEvent::OPERATE_STATUS;
-            $event->takeParams = $takeParams;
-            $triggerEvent ? Event::trigger($event) : $this->triggerCallback(self::CALLBACK_AFTER, $event);
-            
-            $this->commit();
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+        });
+        
+        return $this->updateInfo($update, self::SCENE_STATUS);
     }
     
     

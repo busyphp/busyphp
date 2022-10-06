@@ -3,27 +3,38 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\group;
 
-use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\FilterHelper;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\interfaces\FieldObtainDataInterface;
+use BusyPHP\interfaces\FieldSceneValidateInterface;
+use BusyPHP\interfaces\FieldSetValueInterface;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\TransHelper;
+use think\Validate;
 
 /**
  * 用户组模型字段
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午12:54 AdminGroupField.php $
- * @method static Entity id($op = null, $value = null) ID
- * @method static Entity parentId($op = null, $value = null) 上级权限ID
- * @method static Entity name($op = null, $value = null) 权限名称
- * @method static Entity rule($op = null, $value = null) 权限规则ID集合，英文逗号分割，左右要有逗号
- * @method static Entity system($op = null, $value = null) 是否系统权限
- * @method static Entity defaultMenuId($op = null, $value = null) 默认菜单ID
- * @method static Entity status($op = null, $value = null) 是否启用
- * @method static Entity sort($op = null, $value = null) 排序
+ * @method static Entity id(mixed $op = null, mixed $condition = null) ID
+ * @method static Entity parentId(mixed $op = null, mixed $condition = null) 上级权限ID
+ * @method static Entity name(mixed $op = null, mixed $condition = null) 权限名称
+ * @method static Entity defaultMenuId(mixed $op = null, mixed $condition = null) 默认菜单ID
+ * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统权限
+ * @method static Entity rule(mixed $op = null, mixed $condition = null) 权限规则ID集合，英文逗号分割，左右要有逗号
+ * @method static Entity status(mixed $op = null, mixed $condition = null) 是否启用
+ * @method static Entity sort(mixed $op = null, mixed $condition = null) 排序
+ * @method $this setId(mixed $id) 设置ID
+ * @method $this setParentId(mixed $parentId) 设置上级权限ID
+ * @method $this setName(mixed $name) 设置权限名称
+ * @method $this setDefaultMenuId(mixed $defaultMenuId) 设置默认菜单ID
+ * @method $this setSystem(mixed $system) 设置是否系统权限
+ * @method $this setRule(mixed $rule) 设置权限规则ID集合，英文逗号分割，左右要有逗号
+ * @method $this setStatus(mixed $status) 设置是否启用
+ * @method $this setSort(mixed $sort) 设置排序
  */
-class AdminGroupField extends Field
+class AdminGroupField extends Field implements FieldSceneValidateInterface, FieldObtainDataInterface
 {
     /**
      * ID
@@ -38,28 +49,35 @@ class AdminGroupField extends Field
     public $parentId;
     
     /**
-     * 权限名称
+     * 角色名称
      * @var string
+     * @busy-validate require#请输入:attribute
      */
     public $name;
     
     /**
-     * 权限规则ID集合，英文逗号分割，左右要有逗号
-     * @var string|array
+     * 默认菜单
+     * @var int
+     * @busy-validate require#请选择:attribute
+     * @busy-validate gt:0#请选择:attribute
      */
-    public $rule;
+    public $defaultMenuId;
     
     /**
      * 是否系统权限
-     * @var int
+     * @var bool
      */
     public $system;
     
     /**
-     * 默认菜单
-     * @var string
+     * 角色权限
+     * @var array
+     * @busy-validate require#请选择:attribute
+     * @busy-validate array
+     * @busy-validate min:1#请至少选择:rule个:attribute
+     * @busy-array "," true
      */
-    public $defaultMenuId;
+    public $rule;
     
     /**
      * 是否启用
@@ -75,98 +93,56 @@ class AdminGroupField extends Field
     
     
     /**
-     * 设置
-     * @param int $id
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
      */
-    public function setId($id) : self
+    public function onSceneValidate(Model $model, Validate $validate, string $name)
     {
-        $this->id = floatval($id);
-        if ($this->id < 1) {
-            throw new VerifyException('缺少参数', 'id');
+        switch ($name) {
+            case AdminGroup::SCENE_CREATE:
+                $this->setId(0);
+                $this->retain($validate, [
+                    $this::name(),
+                    $this::rule(),
+                    $this::defaultMenuId(),
+                    $this::status()
+                ]);
+                
+                return true;
+            case AdminGroup::SCENE_UPDATE:
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::name(),
+                    $this::rule(),
+                    $this::defaultMenuId(),
+                    $this::status()
+                ]);
+                
+                return true;
         }
         
-        return $this;
+        return false;
     }
     
     
     /**
-     * 设置权限名称
-     * @param string $name
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
+     * @throws
      */
-    public function setName($name) : self
+    public function onObtainData(string $field, string $property, array $attrs, $value)
     {
-        $this->name = trim($name);
-        if (!$this->name) {
-            throw new VerifyException('请输入角色名称', 'name');
+        if ($field == $this::rule()) {
+            $idList  = SystemMenu::init()->getIdList();
+            $newRule = [];
+            foreach ($value as $id) {
+                if (!isset($idList[$id])) {
+                    continue;
+                }
+                $newRule[] = $id;
+            }
+            
+            return $newRule;
         }
         
-        return $this;
-    }
-    
-    
-    /**
-     * 设置权限规则
-     * @param array $rule
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setRule(array $rule) : self
-    {
-        $rule = array_map('intval', $rule);
-        $rule = FilterHelper::trimArray($rule);
-        if (!$rule) {
-            throw new VerifyException('请选择角色权限', 'rule');
-        }
-        
-        $this->rule = "," . implode(',', $rule) . ",";
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置父角色组
-     * @param int $parentId
-     * @return $this
-     */
-    public function setParentId($parentId) : self
-    {
-        $this->parentId = intval($parentId);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置默认面板
-     * @param string $defaultMenuId
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setDefaultMenuId($defaultMenuId) : self
-    {
-        $this->defaultMenuId = intval($defaultMenuId);
-        if (!$this->defaultMenuId) {
-            throw new VerifyException('请选择默认菜单', 'default_menu_id');
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置状态
-     * @param int $status
-     * @return $this
-     */
-    public function setStatus($status) : self
-    {
-        $this->status = TransHelper::toBool($status);
-        
-        return $this;
+        return $value;
     }
 }

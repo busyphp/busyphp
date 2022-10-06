@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
@@ -62,7 +63,7 @@ class GroupController extends InsideController
      * @throws DbException
      * @throws DataNotFoundException
      */
-    public function index()
+    public function index() : Response
     {
         // 角色列表数据
         if ($this->pluginTable) {
@@ -95,7 +96,7 @@ class GroupController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    public function add()
+    public function add() : Response
     {
         // 添加
         if ($this->isPost()) {
@@ -105,7 +106,7 @@ class GroupController extends InsideController
             $insert->setDefaultMenuId($this->post('default_menu_id/d'));
             $insert->setRule($this->hashToId($this->post('rule/a')));
             $insert->setStatus($this->post('status/b'));
-            $this->model->createGroup($insert);
+            $this->model->createInfo($insert);
             $this->log()->record(self::LOG_INSERT, '添加管理角色');
             
             return $this->success('添加成功');
@@ -133,7 +134,7 @@ class GroupController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    public function edit()
+    public function edit() : Response
     {
         // 修改
         if ($this->isPost()) {
@@ -144,7 +145,7 @@ class GroupController extends InsideController
             $update->setDefaultMenuId($this->post('default_menu_id/d'));
             $update->setRule($this->hashToId($this->post('rule/a', [])));
             $update->setStatus($this->post('status/b'));
-            $this->model->updateGroup($update);
+            $this->model->updateInfo($update);
             $this->log()->record(self::LOG_UPDATE, '修改管理角色');
             
             return $this->success('修改成功');
@@ -168,7 +169,7 @@ class GroupController extends InsideController
     
     /**
      * Hash转ID集合
-     * @param $rule
+     * @param array $rule
      * @return mixed
      * @throws DataNotFoundException
      * @throws DbException
@@ -191,7 +192,7 @@ class GroupController extends InsideController
     
     /**
      * 权限列表
-     * @param AdminGroupInfo $info
+     * @param AdminGroupInfo|null $info
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
@@ -284,7 +285,7 @@ class GroupController extends InsideController
      * 删除管理角色
      * @throws Throwable
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的角色') as $id) {
             $this->model->deleteInfo($id);
@@ -301,7 +302,7 @@ class GroupController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    public function change_status()
+    public function change_status() : Response
     {
         $status = $this->get('status/b');
         $this->model->changeStatus($this->get('id/d'), $status);
@@ -315,7 +316,7 @@ class GroupController extends InsideController
      * 排序
      * @throws DbException
      */
-    public function sort()
+    public function sort() : Response
     {
         $this->model->setSort($this->param('sort/list'));
         $this->log()->record(self::LOG_UPDATE, '排序管理角色');
