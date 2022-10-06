@@ -12,6 +12,7 @@ declare (strict_types = 1);
 
 namespace think;
 
+use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
 use Closure;
 use think\exception\ValidateException;
@@ -339,7 +340,7 @@ class Validate
      * 设置验证规则的默认提示信息
      * @access public
      * @param string|array $type 验证规则类型名称或者数组
-     * @param string       $msg  验证提示信息
+     * @param string|null  $msg  验证提示信息
      * @return void
      */
     public function setTypeMsg($type, string $msg = null): void
@@ -354,19 +355,26 @@ class Validate
     /**
      * 设置提示信息
      * @access public
-     * @param array|\BusyPHP\model\Entity[] $message 错误信息
-     * @return Validate
+     * @param array|\BusyPHP\model\Entity|string $name 消息名称
+     * @param string                             $message 消息内容
+     * @return $this
      */
-    public function message(array $message)
+    public function message($name, string $message = '')
     {
-        foreach ($message as $k => $v) {
-            if ($k instanceof \BusyPHP\model\Entity) {
-                $k           = $k->name() . '.' . $k->value();
-                $message[$k] = $v;
+        if (is_array($name)) {
+            $this->message = array_merge($this->message, $name);
+        } else {
+            if ($name instanceof \BusyPHP\model\Entity) {
+                if ($value = $name->value()) {
+                    $name = $name->name() . '.' . $value;
+                } else {
+                    $name = $name->name();
+                }
             }
+    
+            $this->message[$name] = $message;
         }
-        $this->message = array_merge($this->message, $message);
-
+        
         return $this;
     }
 
@@ -424,12 +432,12 @@ class Validate
     /**
      * 指定需要验证的字段列表
      * @access public
-     * @param array|\BusyPHP\model\Entity[] $fields 字段名
+     * @param array|\BusyPHP\model\Entity[]|string|\BusyPHP\model\Entity $fields 字段名
      * @return $this
      */
-    public function only(array $fields)
+    public function only(...$fields)
     {
-        $this->only = array_map([StringHelper::class, 'cast'], $fields);
+        $this->only = array_map([StringHelper::class, 'cast'], ArrayHelper::flat($fields));
 
         return $this;
     }
@@ -468,23 +476,50 @@ class Validate
      * 追加某个字段的验证规则
      * @access public
      * @param string|array|\BusyPHP\model\Entity $field 字段名
-     * @param mixed        $rule  验证规则
+     * @param mixed        $rule  规则名称或验证规则
+     * @param mixed        $content  规则内容
+     * @param mixed        $message  消息内容，支持:attribute变量
      * @return $this
      */
-    public function append($field, $rule = null)
+    public function append($field, $rule = null, $content = null, string $message = '')
     {
         if (is_array($field)) {
             foreach ($field as $key => $rule) {
                 $this->append($key, $rule);
             }
         } else {
-            if (is_string($rule)) {
+            $field = StringHelper::cast($field);
+            
+            // 单条规则追加
+            if (is_string($rule) && $content) {
+                if ($message) {
+                    $this->message($field . '.' . $rule, $message);
+                }
+                
+                $rule = [$rule => $content];
+            }
+            
+            // elseif
+            // 规则切割
+            elseif (is_string($rule)) {
                 $rule = explode('|', $rule);
-            } elseif ($rule instanceof ValidateRule) {
+            }
+            
+            // elseif
+            // ValidateRule
+            elseif ($rule instanceof ValidateRule) {
                 $rule = $rule->getRule();
             }
-
-            $this->append[StringHelper::cast($field)] = $rule;
+            
+            // 如果是闭包，直接覆盖
+            $appended = $this->append[$field] ?? [];
+            if ($appended instanceof Closure || $rule instanceof Closure) {
+                $this->append[$field] = $rule;
+                
+                return $this;
+            }
+            
+            $this->append[$field] = $rule + $appended;
         }
 
         return $this;
@@ -1638,23 +1673,27 @@ class Validate
         if (is_array($rule)) {
             $rule = implode(',', $rule);
         }
-
-        if (is_scalar($rule) && false !== strpos($msg, ':')) {
-            // 变量替换
-            if (is_string($rule) && strpos($rule, ',')) {
-                $array = array_pad(explode(',', $rule), 3, '');
+    
+        if (false !== strpos($msg, ':')) {
+            if (is_scalar($rule)) {
+                // 变量替换
+                if (is_string($rule) && strpos($rule, ',')) {
+                    $array = array_pad(explode(',', $rule), 3, '');
+                } else {
+                    $array = array_pad([], 3, '');
+                }
+        
+                $msg = str_replace(
+                    [':attribute', ':1', ':2', ':3'],
+                    [$title, $array[0], $array[1], $array[2]],
+                    $msg
+                );
+        
+                if (strpos($msg, ':rule')) {
+                    $msg = str_replace(':rule', (string) $rule, $msg);
+                }
             } else {
-                $array = array_pad([], 3, '');
-            }
-
-            $msg = str_replace(
-                [':attribute', ':1', ':2', ':3'],
-                [$title, $array[0], $array[1], $array[2]],
-                $msg
-            );
-
-            if (strpos($msg, ':rule')) {
-                $msg = str_replace(':rule', (string) $rule, $msg);
+                $msg = str_replace(':attribute', $title, $msg);
             }
         }
 
