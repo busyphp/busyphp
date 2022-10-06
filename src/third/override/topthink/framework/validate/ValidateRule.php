@@ -71,6 +71,7 @@ namespace think\validate;
  * @method ValidateRule requireCallback(mixed $rule, string $msg = '') static 通过回调方法验证某个字段是否必须
  * @method ValidateRule requireWith(mixed $rule, string $msg = '') static 验证某个字段有值的情况下必须
  * @method ValidateRule must(mixed $rule = null, string $msg = '') static 必须验证
+ * @method ValidateRule closure(callable $rule = null, string $msg = '') static 自定义回调验证
  */
 class ValidateRule
 {
