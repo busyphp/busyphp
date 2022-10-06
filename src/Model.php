@@ -62,11 +62,11 @@ abstract class Model extends Query
     // +----------------------------------------------------
     // + 常用场景名称
     // +----------------------------------------------------
-    /** @var string 验证场景-创建信息 */
-    public const SCENE_ADD = 'create';
+    /** @var string 操作场景-创建信息 */
+    public const SCENE_CREATE = 'create';
     
-    /** @var string 验证场景-更新信息 */
-    public const SCENE_EDIT = 'update';
+    /** @var string 操作场景-更新信息 */
+    public const SCENE_UPDATE = 'update';
     
     //+--------------------------------------
     //| 数据库回调常量

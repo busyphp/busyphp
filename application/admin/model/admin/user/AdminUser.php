@@ -104,7 +104,7 @@ class AdminUser extends Model
         $prepare = $this->trigger(new AdminUserEventCreatePrepare($this, $data), true);
         
         return $this->transaction(function() use ($data, $prepare) {
-            $this->validate($data, self::SCENE_ADD);
+            $this->validate($data, self::SCENE_CREATE);
             $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
             $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->addData($data))));
             
@@ -119,7 +119,7 @@ class AdminUser extends Model
      * @param string         $scene 场景
      * @throws Throwable
      */
-    public function updateInfo(AdminUserField $data, string $scene = self::SCENE_EDIT) : AdminUserInfo
+    public function updateInfo(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserInfo
     {
         $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $scene), true);
         

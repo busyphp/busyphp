@@ -248,7 +248,7 @@ class AdminUserField extends Field implements FieldSceneValidateInterface, Field
         
         switch ($name) {
             // 添加场景
-            case AdminUser::SCENE_ADD:
+            case AdminUser::SCENE_CREATE:
                 $validate->append($this::username(), ValidateRule::unique($model));
                 $this->retain($validate, [
                     $this::groupIds(),
@@ -267,7 +267,7 @@ class AdminUserField extends Field implements FieldSceneValidateInterface, Field
                 return true;
             
             // 修改
-            case AdminUser::SCENE_EDIT:
+            case AdminUser::SCENE_UPDATE:
                 $this->retain($validate, [
                     $this::id(),
                     $this::groupIds(),
