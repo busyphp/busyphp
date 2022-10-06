@@ -179,6 +179,12 @@ class Validate
      * @var array
      */
     protected $only = [];
+    
+    /**
+     * 排序的字段
+     * @var array
+     */
+    protected $sort = [];
 
     /**
      * 场景需要移除的验证规则
@@ -441,6 +447,18 @@ class Validate
 
         return $this;
     }
+    
+    
+    /**
+     * 指定要参与排序的字段列表
+     * @return $this
+     */
+    public function sort(...$fields)
+    {
+        $this->sort = array_map([StringHelper::class, 'cast'], ArrayHelper::flat($fields));
+    
+        return $this;
+    }
 
     /**
      * 移除某个字段的验证规则
@@ -551,8 +569,20 @@ class Validate
                 unset($this->append[$key]);
             }
         }
-
+    
+        // 排序
+        $sortRules = [];
+        foreach ($this->sort as $field) {
+            if (isset($rules[$field])) {
+                $sortRules[$field] = $rules[$field];
+                unset($rules[$field]);
+            }
+        }
         foreach ($rules as $key => $rule) {
+            $sortRules[$key] = $rule;
+        }
+
+        foreach ($sortRules as $key => $rule) {
             // field => 'rule1|rule2...' field => ['rule1','rule2',...]
             if (strpos($key, '|')) {
                 // 字段|描述 用于指定属性名称
