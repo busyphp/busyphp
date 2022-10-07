@@ -52,7 +52,7 @@ class SystemFileClassInfo extends SystemFileClassField
     
     protected function onParseAfter()
     {
-        $this->typeName = SystemFile::getTypes($this->type);
+        $this->typeName = SystemFile::getClass()::getTypes($this->type);
         $this->isFile   = $this->type == SystemFile::FILE_TYPE_FILE;
         $this->isImage  = $this->type == SystemFile::FILE_TYPE_IMAGE;
         $this->isVideo  = $this->type == SystemFile::FILE_TYPE_VIDEO;

@@ -39,10 +39,9 @@ class SystemFileChunksInfo extends SystemFileChunksField
     
     protected function onParseAfter() : void
     {
-        $this->id               = (int) $this->id;
         $this->formatCreateTime = TransHelper::date($this->createTime);
-        $this->dirname          = SystemFileChunks::buildDir($this->fragmentId);
-        $this->basename         = SystemFileChunks::buildName($this->number);
+        $this->dirname          = SystemFileChunks::getClass()::buildDir($this->fragmentId);
+        $this->basename         = SystemFileChunks::getClass()::buildName($this->number);
         $this->path             = $this->dirname . '/' . $this->basename;
     }
 }

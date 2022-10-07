@@ -3,12 +3,9 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
-use BusyPHP\App;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
-use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\FileHelper;
@@ -16,10 +13,9 @@ use BusyPHP\helper\StringHelper;
 use BusyPHP\image\parameter\FormatParameter;
 use BusyPHP\image\parameter\ProcessParameter;
 use BusyPHP\model;
+use BusyPHP\model\Entity;
 use BusyPHP\upload\Driver;
 use BusyPHP\upload\front\Local;
-use Exception;
-use League\Flysystem\FileNotFoundException;
 use RangeException;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
@@ -29,6 +25,7 @@ use think\facade\Filesystem;
 use think\facade\Request;
 use think\File;
 use think\file\UploadedFile;
+use think\Log;
 use Throwable;
 
 /**
@@ -36,11 +33,15 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-05-30 下午7:38 SystemFile.php busy^life $
- * @method SystemFileInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemFileInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemFileInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemFileInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemFileInfo[] selectList()
- * @method SystemFileInfo[] buildListWithField(array $values, $key = null, $field = null) : array
- * @method static SystemFile getClass()
+ * @method SystemFileInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method SystemFileInfo|null findInfoByHash(string $hash, string $notFoundMessage = null)
+ * @method SystemFileInfo|null findInfoByPath(string $path, string $notFoundMessage = null)
+ * @method SystemFileInfo|null findInfoByUrlHash(string $urlHash, string $notFoundMessage = null)
+ * @method SystemFileInfo|null findInfoByUrl(string $url, string $notFoundMessage = null)
+ * @method static string|SystemFile getClass()
  */
 class SystemFile extends Model
 {
@@ -65,7 +66,7 @@ class SystemFile extends Model
     /** 临时附件前缀 */
     const MARK_VALUE_TMP_PREFIX = 'temp_';
     
-    protected $dataNotFoundMessage = '文件数据不存在';
+    protected $dataNotFoundMessage = '文件不存在';
     
     protected $findInfoFilter      = 'intval';
     
@@ -82,172 +83,7 @@ class SystemFile extends Model
     
     
     /**
-     * 添加文件
-     * @param SystemFileField $insert
-     * @return int
-     * @throws DbException
-     */
-    public function insertFile(SystemFileField $insert) : int
-    {
-        $list      = SystemFileClass::init()->getList();
-        $classInfo = $list[$insert->classType] ?? null;
-        if (!$classInfo) {
-            throw new VerifyException('文件分类不能为空', 'class_type');
-        }
-        
-        $insert->id         = null;
-        $insert->createTime = time();
-        $insert->urlHash    = md5($insert->url);
-        $insert->extension  = strtolower($insert->extension);
-        $insert->client     = App::getInstance()->runningInConsole() ? AppHelper::CLI_CLIENT_KEY : App::getInstance()
-            ->getDirName();
-        $insert->type       = $classInfo->type;
-        
-        return (int) $this->addData($insert);
-    }
-    
-    
-    /**
-     * 通过文件分类和业务值更新业务值
-     * @param string $classType 文件分类
-     * @param mixed  $classValue 文件业务值
-     * @param mixed  $newValue 新文件分类值
-     * @return int
-     * @throws DbException
-     */
-    public function updateValueByClass(string $classType, $classValue, $newValue) : int
-    {
-        return $this->whereClass($classType, trim($classValue))
-            ->setField(SystemFileField::classValue(), trim($newValue));
-    }
-    
-    
-    /**
-     * 通过文件ID更新业务值
-     * @param int    $id 文件ID
-     * @param string $newValue 新文件分类值
-     * @return int
-     * @throws DbException
-     */
-    public function updateValueById($id, $newValue) : int
-    {
-        return $this->whereEntity(SystemFileField::id(floatval($id)))
-            ->setField(SystemFileField::classValue(), trim($newValue));
-    }
-    
-    
-    /**
-     * 查询分类条件
-     * @param string $classType 文件分类
-     * @param string $classValue 文件业务参数
-     * @return $this
-     */
-    public function whereClass(string $classType, $classValue = null) : self
-    {
-        $this->whereEntity(SystemFileField::classType(trim($classType)));
-        
-        if ($classValue !== null) {
-            $classValue = trim($classValue);
-            $this->whereEntity(SystemFileField::classValue($classValue));
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 已上传完成的文件
-     * @return $this
-     */
-    public function whereComplete() : self
-    {
-        $this->whereEntity(SystemFileField::pending(0));
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 删除附件
-     * @param int $data
-     * @return int
-     * @throws VerifyException
-     * @throws Exception
-     */
-    public function deleteInfo($data) : int
-    {
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo(intval($data));
-            
-            // 删除文件
-            if (!static::deleteFile($info)) {
-                throw new FileException("文件删除失败: {$info->path}");
-            }
-            
-            // 删除数据
-            $res = parent::deleteInfo($info->id);
-            
-            $this->commit();
-            
-            return $res;
-        } catch (Exception $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
-    }
-    
-    
-    /**
-     * 通过文件url删除
-     * @param string $url 附件地址
-     * @return int
-     * @throws DbException
-     * @throws VerifyException
-     * @throws Exception
-     */
-    public function deleteByUrl(string $url) : int
-    {
-        $url = trim($url);
-        
-        return $this->deleteInfo($this->whereEntity(SystemFileField::urlHash(md5($url)))
-            ->failException(true)
-            ->findInfo()->id);
-    }
-    
-    
-    /**
-     * 通过文件分类删除
-     * @param string $classType 标识类型
-     * @param string $classValue 标识值
-     * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws VerifyException
-     * @throws Exception
-     */
-    public function deleteByClass($classType, $classValue = null) : int
-    {
-        return $this->deleteInfo($this->whereClass($classType, $classValue)->failException(true)->findInfo()->id);
-    }
-    
-    
-    /**
-     * 通过Hash获取文件信息
-     * @param string $hash
-     * @return SystemFileInfo
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function findInfoByHash(string $hash) : ?SystemFileInfo
-    {
-        return $this->whereEntity(SystemFileField::hash($hash))->findInfo();
-    }
-    
-    
-    /**
-     * 获取附件类型
+     * 获取附件分类
      * @param string|null $var
      * @return array|mixed
      */
@@ -265,21 +101,6 @@ class SystemFile extends Model
     public static function createTempClassValue($value = null) : string
     {
         return self::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . StringHelper::random(32));
-    }
-    
-    
-    /**
-     * 通过信息删除文件
-     * @param SystemFileInfo $info
-     * @return bool
-     */
-    public static function deleteFile(SystemFileInfo $info) : bool
-    {
-        try {
-            return Filesystem::disk($info->disk)->delete($info->path);
-        } catch (FileNotFoundException $e) {
-            return true;
-        }
     }
     
     
@@ -342,6 +163,143 @@ class SystemFile extends Model
     
     
     /**
+     * 添加文件
+     * @param SystemFileField $data
+     * @return SystemFileInfo
+     * @throws DbException
+     */
+    public function createInfo(SystemFileField $data) : SystemFileInfo
+    {
+        return $this->getInfo($this->validate($data, self::SCENE_CREATE)->addData());
+    }
+    
+    
+    /**
+     * 通过文件分类和业务值更新业务值
+     * @param string $classType 文件分类
+     * @param mixed  $classValue 文件业务值
+     * @param mixed  $newValue 新文件分类值
+     * @return int
+     * @throws DbException
+     */
+    public function updateValueByClass(string $classType, string $classValue, string $newValue) : int
+    {
+        return $this
+            ->whereClass($classType, trim($classValue))
+            ->setField(SystemFileField::classValue(), trim($newValue));
+    }
+    
+    
+    /**
+     * 通过文件ID更新业务值
+     * @param int    $id 文件ID
+     * @param string $newValue 新文件分类值
+     * @return int
+     * @throws DbException
+     */
+    public function updateValueById(int $id, string $newValue) : int
+    {
+        return $this
+            ->whereEntity(SystemFileField::id($id))
+            ->setField(SystemFileField::classValue(), trim($newValue));
+    }
+    
+    
+    /**
+     * 查询分类条件
+     * @param string      $classType 文件分类
+     * @param string|null $classValue 文件业务参数
+     * @return $this
+     */
+    public function whereClass(string $classType, string $classValue = null) : self
+    {
+        $this->whereEntity(SystemFileField::classType(trim($classType)));
+        
+        if (!is_null($classValue)) {
+            $classValue = trim($classValue);
+            $this->whereEntity(SystemFileField::classValue($classValue));
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 已上传完成的文件
+     * @return $this
+     */
+    public function whereComplete() : self
+    {
+        $this->whereEntity(SystemFileField::pending(0));
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 删除附件
+     * @param int $data
+     * @return int
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws Throwable
+     */
+    public function deleteInfo($data) : int
+    {
+        $id = (int) $data;
+        
+        return $this->transaction(function() use ($id) {
+            $info = $this->lock(true)->getInfo($id);
+            
+            // 删除文件
+            try {
+                $info->filesystem()->delete($info->path);
+            } catch (Throwable $e) {
+                $this->log($e, Log::ERROR);
+            }
+            
+            // 删除数据
+            return parent::deleteInfo($info->id);
+        });
+    }
+    
+    
+    /**
+     * 通过文件url删除
+     * @param string $url 附件地址
+     * @return int
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws Throwable
+     */
+    public function deleteByUrl(string $url) : int
+    {
+        $id = $this->whereEntity(SystemFileField::urlHash(md5(trim($url))))
+            ->failException(true)
+            ->findInfo()->id;
+        
+        return $this->deleteInfo($id);
+    }
+    
+    
+    /**
+     * 通过文件分类删除
+     * @param string      $classType 标识类型
+     * @param string|null $classValue 标识值
+     * @return int
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws Throwable
+     */
+    public function deleteByClass(string $classType, string $classValue = null) : int
+    {
+        $id = $this->whereClass($classType, $classValue)->failException(true)->findInfo()->id;
+        
+        return $this->deleteInfo($id);
+    }
+    
+    
+    /**
      * 上传文件
      * @param SystemFileUploadParameter $parameter
      * @return SystemFileInfo
@@ -356,7 +314,7 @@ class SystemFile extends Model
             $parameter->getParameter(),
             $filesystem,
             function($file, $extension) use ($parameter) {
-                return self::createFilename(
+                return static::createFilename(
                     $parameter->getClassType(),
                     $parameter->getClassValue(),
                     $parameter->getUserId(),
@@ -383,22 +341,22 @@ class SystemFile extends Model
             }
             
             // 插入到数据库
-            $data             = SystemFileField::init();
-            $data->name       = $result->getBasename();
-            $data->url        = $filesystem->url($result->getPath());
-            $data->size       = $result->getFilesize();
-            $data->mimeType   = $result->getMimetype();
-            $data->hash       = $result->getMd5();
-            $data->width      = $result->getWidth();
-            $data->height     = $result->getHeight();
-            $data->path       = $result->getPath();
-            $data->userId     = $parameter->getUserId();
-            $data->classValue = $parameter->getClassValue();
-            $data->classType  = $parameter->getClassType();
-            $data->extension  = $extension;
-            $data->disk       = $disk;
+            $data = SystemFileField::init();
+            $data->setName($result->getBasename());
+            $data->setUrl($filesystem->url($result->getPath()));
+            $data->setSize($result->getFilesize());
+            $data->setMimeType($result->getMimetype());
+            $data->setHash($result->getMd5());
+            $data->setWidth($result->getWidth());
+            $data->setHeight($result->getHeight());
+            $data->setPath($result->getPath());
+            $data->setUserId($parameter->getUserId());
+            $data->setClassValue($parameter->getClassValue());
+            $data->setClassType($parameter->getClassType());
+            $data->setExtension($extension);
+            $data->setDisk($disk);
             
-            return $this->getInfo($this->insertFile($data));
+            return $this->createInfo($data);
         } catch (Throwable $e) {
             // 删除文件
             $filesystem->delete($result->getPath());
@@ -444,13 +402,13 @@ class SystemFile extends Model
         
         // 秒传
         if ($fast) {
-            $data             = SystemFileField::copyData($info, SystemFileField::id());
-            $data->userId     = $userId;
-            $data->classType  = $classType;
-            $data->classValue = $classValue;
-            $data->name       = $filename;
-            $data->fast       = true;
-            $data->pending    = false;
+            $data = SystemFileField::copyData($info, SystemFileField::id());
+            $data->setUserId($userId);
+            $data->setClassType($classType);
+            $data->setClassValue($classValue);
+            $data->setName($filename);
+            $data->setFast(true);
+            $data->setPending(false);
         } else {
             $extension = pathinfo($filename, PATHINFO_EXTENSION);
             FileHelper::checkExtension($setting->getAllowExtensions($classType), $extension);
@@ -459,22 +417,22 @@ class SystemFile extends Model
                 FileHelper::checkMimetype($setting->getMimeType($classType), $mimetype);
             }
             
-            $data             = SystemFileField::init();
-            $data->name       = $filename;
-            $data->hash       = $md5;
-            $data->extension  = $extension;
-            $data->userId     = $userId;
-            $data->classType  = $classType;
-            $data->classValue = $classValue;
-            $data->mimeType   = $mimetype;
-            $data->size       = $filesize;
-            $data->disk       = $disk;
-            $data->path       = $path ?: self::createFilename($classType, $classValue, $userId, $filename, $extension);
-            $data->url        = $filesystem->url($data->path);
-            $data->fast       = false;
-            $data->pending    = true;
+            $data = SystemFileField::init();
+            $data->setName($filename);
+            $data->setHash($md5);
+            $data->setExtension($extension);
+            $data->setUserId($userId);
+            $data->setClassType($classType);
+            $data->setClassValue($classValue);
+            $data->setMimeType($mimetype);
+            $data->setSize($filesize);
+            $data->setDisk($disk);
+            $data->setPath($path ?: static::createFilename($classType, $classValue, $userId, $filename, $extension));
+            $data->setUrl($filesystem->url($data->path));
+            $data->setFast(false);
+            $data->setPending(true);
         }
-        $fileId = $this->insertFile($data);
+        $info = $this->createInfo($data);
         
         // 启用分块上传
         $uploadId = '';
@@ -484,7 +442,7 @@ class SystemFile extends Model
         }
         
         return new SystemFilePrepareUploadResult(
-            $this->getInfo($fileId),
+            $info,
             $uploadId,
             $filesystem->front()->getUrl(Request::isSsl())
         );
@@ -513,25 +471,25 @@ class SystemFile extends Model
             $mimetype = $result['mimetype'] ?? '';
             
             FileHelper::checkFilesize($setting->getMaxSize($info->classType), $filesize);
-            FileHelper::checkMimetype($setting->getAllowExtensions($info->classType), $mimetype);
+            FileHelper::checkMimetype($setting->getMimeType($info->classType), $mimetype);
             
             // 组装更新参数
-            $data           = SystemFileField::init();
-            $data->pending  = false;
-            $data->width    = $result['width'] ?? 0;
-            $data->height   = $result['height'] ?? 0;
-            $data->mimeType = $mimetype;
-            $data->size     = $filesize;
+            $data = SystemFileField::init();
+            $data->setPending(false);
+            $data->setWidth($result['width'] ?? 0);
+            $data->setHeight($result['height'] ?? 0);
+            $data->setMimeType($mimetype);
+            $data->setSize($filesize);
             
             // 处理图片
             $imageStyle = StorageSetting::init()->getImageStyle($info->classType, $info->disk);
             if (in_array($info->extension, array_keys(FormatParameter::getFormats())) && $imageStyle !== '') {
                 $imageParams = new ProcessParameter($info->path);
                 $imageParams->style($imageStyle);
-                $imageResult  = $filesystem->image()->save($imageParams);
-                $data->width  = $imageResult->getWidth();
-                $data->height = $imageResult->getHeight();
-                $data->size   = $imageResult->getSize();
+                $imageResult = $filesystem->image()->save($imageParams);
+                $data->setWidth($imageResult->getWidth());
+                $data->setHeight($imageResult->getHeight());
+                $data->setSize($imageResult->getSize());
             }
             
             $this->whereEntity(SystemFileField::id($info->id))->saveData($data);

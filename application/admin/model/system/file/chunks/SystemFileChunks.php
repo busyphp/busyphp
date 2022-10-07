@@ -21,6 +21,7 @@ use Throwable;
  * @method SystemFileChunksInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemFileChunksInfo[] selectList()
  * @method SystemFileChunksInfo[] buildListWithField(array $values, $key = null, $field = null)
+ * @method static string|SystemFileChunks getClass()
  */
 class SystemFileChunks extends Model
 {
@@ -29,6 +30,15 @@ class SystemFileChunks extends Model
     protected $dataNotFoundMessage = '碎片不存在';
     
     protected $findInfoFilter      = 'intval';
+    
+    
+    /**
+     * @inheritDoc
+     */
+    protected static function defineClass() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -50,8 +60,8 @@ class SystemFileChunks extends Model
         
         // 将文件移动至分块目录
         $tmp  = StorageSetting::init()->getRuntimeFileSystem();
-        $dir  = self::buildDir($fragmentId);
-        $file = FileHelper::convertUploadToFile($data)->move($tmp->path($dir), self::buildName($number));
+        $dir  = $this::buildDir($fragmentId);
+        $file = FileHelper::convertUploadToFile($data)->move($tmp->path($dir), $this::buildName($number));
         $size = $file->getSize();
         
         $fragmentModel = SystemFileFragment::init();
@@ -60,22 +70,26 @@ class SystemFileChunks extends Model
             $fragmentInfo = $fragmentModel->lock(true)->getInfo($fragmentId);
             
             // 插入块记录
-            $data             = SystemFileChunksField::init();
-            $data->fragmentId = $fragmentId;
-            $data->number     = $number;
-            $data->createTime = time();
-            $data->size       = $size;
-            $data->id         = self::buildId($fragmentId, $number);
-            $this->addData($data, true);
+            $data = SystemFileChunksField::init();
+            $data->setFragmentId($fragmentId);
+            $data->setNumber($number);
+            $data->setCreateTime(time());
+            $data->setSize($size);
+            $data->setId($this::buildId($fragmentId, $number));
+            $this->replace(true)->addData($data);
             
             // 更新碎片总表
-            $fragmentData         = SystemFileFragmentField::init();
-            $fragmentData->number = $this
-                ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
-                ->count();
-            $fragmentData->size   = $this
-                ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
-                ->sum(SystemFileChunksField::size());
+            $fragmentData = SystemFileFragmentField::init();
+            $fragmentData->setNumber(
+                $this
+                    ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
+                    ->count()
+            );
+            $fragmentData->setSize(
+                $this
+                    ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
+                    ->sum(SystemFileChunksField::size())
+            );
             $fragmentModel->whereEntity(SystemFileFragmentField::id($fragmentInfo->id))->saveData($fragmentData);
             
             $this->commit();
@@ -98,7 +112,7 @@ class SystemFileChunks extends Model
      */
     public static function buildDir(int $fragmentId) : string
     {
-        return "parts/$fragmentId";
+        return sprintf("parts/%s", $fragmentId);
     }
     
     
@@ -109,7 +123,7 @@ class SystemFileChunks extends Model
      */
     public static function buildName(int $number) : string
     {
-        return "$number.part";
+        return sprintf("%s.part", $number);
     }
     
     

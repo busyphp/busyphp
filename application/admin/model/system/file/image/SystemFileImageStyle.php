@@ -22,6 +22,7 @@ use think\filesystem\Driver as FilesystemDriver;
  * @method SystemFileImageStyleInfo|null findInfo(string $id = null, string $notFoundMessage = null)
  * @method SystemFileImageStyleInfo[] selectList()
  * @method SystemFileImageStyleInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static string|SystemFileImageStyle getClass()
  */
 class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterface
 {
@@ -30,6 +31,15 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
     protected $dataNotFoundMessage = '图片样式不存在';
     
     protected $findInfoFilter      = 'trim';
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
     
     
     /**

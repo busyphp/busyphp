@@ -22,6 +22,7 @@ use Throwable;
  * @method SystemFileFragmentInfo findInfo($data = null, $notFoundMessage = null)
  * @method SystemFileFragmentInfo[] selectList()
  * @method SystemFileFragmentInfo[] buildListWithField(array $values, $key = null, $field = null)
+ * @method static string|SystemFileFragment getClass()
  */
 class SystemFileFragment extends Model
 {
@@ -30,6 +31,15 @@ class SystemFileFragment extends Model
     protected $dataNotFoundMessage = '碎片不存在';
     
     protected $findInfoFilter      = 'intval';
+    
+    
+    /**
+     * @inheritDoc
+     */
+    protected static function defineClass() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -53,11 +63,11 @@ class SystemFileFragment extends Model
             throw new VerifyException('碎片名称格式有误', 'path');
         }
         
-        $data             = SystemFileFragmentField::init();
-        $data->userId     = $userId;
-        $data->fileId     = $fileId;
-        $data->path       = $path;
-        $data->createTime = time();
+        $data = SystemFileFragmentField::init();
+        $data->setUserId($userId);
+        $data->setFileId($fileId);
+        $data->setPath($path);
+        $data->setCreateTime(time());
         
         return (int) $this->addData($data);
     }
@@ -77,7 +87,7 @@ class SystemFileFragment extends Model
         $this->startTrans();
         try {
             $info = $this->lock(true)->getInfo($data);
-            $dir  = SystemFileChunks::buildDir($info->id);
+            $dir  = SystemFileChunks::getClass()::buildDir($info->id);
             if (!StorageSetting::init()->getRuntimeFileSystem()->deleteDir($dir)) {
                 throw new FileException("删除碎片失败: $dir");
             }

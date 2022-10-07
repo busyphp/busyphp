@@ -21,7 +21,7 @@ use Throwable;
  * @method SystemFileClassInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemFileClassInfo[] selectList()
  * @method SystemFileClassInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method static SystemFileClass getClass()
+ * @method static string|SystemFileClass getClass()
  */
 class SystemFileClass extends Model
 {
@@ -128,7 +128,7 @@ class SystemFileClass extends Model
         }
         foreach ($array as $type => $list) {
             $value    = sprintf("type:%s", $type);
-            $name     = SystemFile::getTypes($type);
+            $name     = SystemFile::getClass()::getTypes($type);
             $selected = '';
             if ($selectedValue == $value) {
                 $selected = ' selected';

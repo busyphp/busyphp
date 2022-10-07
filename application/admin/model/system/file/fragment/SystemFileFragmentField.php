@@ -10,14 +10,22 @@ use BusyPHP\model\Field;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/8 9:15 PM SystemFileFragmentField.php $
- * @method static Entity id($op = null, $value = null) ID
- * @method static Entity userId($op = null, $value = null) 用户ID
- * @method static Entity fileId($op = null, $value = null) 附件ID
- * @method static Entity path($op = null, $value = null) 碎片名称
- * @method static Entity createTime($op = null, $value = null) 创建时间
- * @method static Entity number($op = null, $value = null) 分块数
- * @method static Entity size($op = null, $value = null) 碎片大小
- * @method static Entity merging($op = null, $value = null) 是否正在合并中
+ * @method static Entity id(mixed $op = null, mixed $condition = null) ID
+ * @method static Entity userId(mixed $op = null, mixed $condition = null) 用户ID
+ * @method static Entity fileId(mixed $op = null, mixed $condition = null) 附件ID
+ * @method static Entity path(mixed $op = null, mixed $condition = null) 碎片名称
+ * @method static Entity createTime(mixed $op = null, mixed $condition = null) 创建时间
+ * @method static Entity number(mixed $op = null, mixed $condition = null) 分块数
+ * @method static Entity size(mixed $op = null, mixed $condition = null) 碎片大小
+ * @method static Entity merging(mixed $op = null, mixed $condition = null) 是否正在合并中
+ * @method $this setId(mixed $id) 设置ID
+ * @method $this setUserId(mixed $userId) 设置用户ID
+ * @method $this setFileId(mixed $fileId) 设置附件ID
+ * @method $this setPath(mixed $path) 设置碎片名称
+ * @method $this setCreateTime(mixed $createTime) 设置创建时间
+ * @method $this setNumber(mixed $number) 设置分块数
+ * @method $this setSize(mixed $size) 设置碎片大小
+ * @method $this setMerging(mixed $merging) 设置是否正在合并中
  */
 class SystemFileFragmentField extends Field
 {
@@ -65,7 +73,7 @@ class SystemFileFragmentField extends Field
     
     /**
      * 是否正在合并中
-     * @var int
+     * @var bool
      */
     public $merging;
 }

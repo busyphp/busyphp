@@ -10,6 +10,8 @@ use BusyPHP\helper\TransHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\facade\Filesystem;
+use think\filesystem\Driver;
 
 /**
  * 附件模型信息结构
@@ -25,8 +27,6 @@ use think\db\exception\DbException;
  * @method static Entity filename($op = null, $value = null) 附件名称;
  * @method static Entity classInfo($op = null, $value = null) 分类信息;
  * @method static Entity className($op = null, $value = null) 分类名称;
- * @property bool|int $fast
- * @property bool|int $pending
  */
 class SystemFileInfo extends SystemFileField
 {
@@ -96,7 +96,7 @@ class SystemFileInfo extends SystemFileField
             $fileClassList = SystemFileClass::init()->getList();
         }
         
-        $this->typeName         = SystemFile::getTypes((string) $this->type);
+        $this->typeName         = SystemFile::getClass()::getTypes($this->type);
         $this->classInfo        = $fileClassList[$this->classType] ?? null;
         $this->className        = $this->classInfo->name ?? '';
         $this->formatCreateTime = TransHelper::date($this->createTime);
@@ -107,7 +107,14 @@ class SystemFileInfo extends SystemFileField
         $this->formatSize = "$this->sizeNum $this->sizeUnit";
         $this->filename   = pathinfo($this->url, PATHINFO_BASENAME);
         $this->clientName = AppHelper::getName($this->client);
-        $this->pending    = $this->pending > 0;
-        $this->fast       = $this->fast > 0;
+    }
+    
+    
+    /**
+     * @return Driver
+     */
+    public function filesystem() : Driver
+    {
+        return Filesystem::disk($this->disk);
     }
 }

@@ -333,7 +333,7 @@ class ManagerController extends InsideController
         
         // 分类列表
         $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
-        $this->assign('type', SystemFile::getTypes());
+        $this->assign('type', SystemFile::getClass()::getTypes());
         $this->assign('info', StorageSetting::init()->get());
         $this->assignNav();
         
