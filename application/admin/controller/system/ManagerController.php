@@ -211,10 +211,7 @@ class ManagerController extends InsideController
     public function image_style_edit() : Response
     {
         if ($this->isPost()) {
-            $data = SystemFileImageStyleField::init();
-            $data->setId($this->post('id/s', 'trim'));
-            $data->setContent($this->post('content/a'));
-            Filesystem::disk($this->disk)->image()->updateStyle($data->id, $data->content);
+            Filesystem::disk($this->disk)->image()->updateStyle($this->post('id/s', 'trim'), $this->post('content/a'));
             
             $this->log()->record(self::LOG_INSERT, '修改图片样式');
             

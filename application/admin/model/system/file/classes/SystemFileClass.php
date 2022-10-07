@@ -198,6 +198,7 @@ class SystemFileClass extends Model
     
     /**
      * @inheritDoc
+     * @throws
      */
     protected function onChanged($method, $id, $options)
     {
@@ -207,6 +208,7 @@ class SystemFileClass extends Model
     
     /**
      * @inheritDoc
+     * @throws
      */
     public function onSaveAll()
     {

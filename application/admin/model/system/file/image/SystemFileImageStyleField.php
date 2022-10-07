@@ -2,68 +2,51 @@
 
 namespace BusyPHP\app\admin\model\system\file\image;
 
-use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\RegexHelper;
-use BusyPHP\helper\StringHelper;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
+use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * SystemImageStyleField
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/15 11:33 AM SystemFileImageStyleField.php $
- * @method static Entity id($op = null, $value = null) 样式名
- * @method static Entity content($op = null, $value = null) 样式内容
+ * @method static Entity id(mixed $op = null, mixed $condition = null) 样式名
+ * @method static Entity content(mixed $op = null, mixed $condition = null) 样式内容
+ * @method $this setId(mixed $id) 设置样式名
+ * @method $this setContent(mixed $content) 设置样式内容
  */
-class SystemFileImageStyleField extends Field
+class SystemFileImageStyleField extends Field implements ModelSceneValidateInterface
 {
     /**
      * 样式名
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-filter trim
      */
     public $id;
     
     /**
-     * 样式内容
-     * @var string
+     * 处理能力
+     * @var array
+     * @busy-array json
+     * @busy-validate require#请选择:attribute
+     * @busy-validate array
      */
     public $content;
     
     
     /**
-     * 设置ID
-     * @param string $id
+     * @inheritDoc
      */
-    public function setId(string $id)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
     {
-        $this->id = trim($id);
-        if (!$this->id) {
-            throw new VerifyException('样式名不能为空', 'id');
-        }
-        
-        if (!RegexHelper::account($this->id)) {
-            throw new VerifyException('样式名格式有误，只能包含英文、数字、下划线', 'id');
-        }
-        
-        // 只能是英文开头
-        $this->id = StringHelper::snake($this->id);
-        if (!RegexHelper::english(substr($this->id, 0, 1))) {
-            throw new VerifyException('样式名不能为数字或下划线开头', 'id');
-        }
-    }
-    
-    
-    /**
-     * 设置样式内容
-     * @param array $content
-     */
-    public function setContent(array $content)
-    {
-        if (!$content) {
-            throw new VerifyException('样式内容不能为空', 'content');
-        }
-        
-        $this->content = $content;
+        $validate->append(
+            $this::id(),
+            ValidateRule::regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', ':attribute必须是英文数字下划线组合，且必须是英文开头')
+        );
     }
 }

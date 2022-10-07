@@ -3,11 +3,11 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\image;
 
-use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\image\driver\Local;
 use BusyPHP\image\driver\local\LocalImageStyleManagerInterface;
 use BusyPHP\image\result\ImageStyleResult;
 use BusyPHP\Model;
+use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Filesystem;
@@ -18,10 +18,10 @@ use think\filesystem\Driver as FilesystemDriver;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/15 11:33 AM SystemFileImageStyle.php $
- * @method SystemFileImageStyleInfo getInfo($data, $notFoundMessage = null)
- * @method SystemFileImageStyleInfo findInfo($data = null, $notFoundMessage = null)
+ * @method SystemFileImageStyleInfo getInfo(string $id, string $notFoundMessage = null)
+ * @method SystemFileImageStyleInfo|null findInfo(string $id = null, string $notFoundMessage = null)
  * @method SystemFileImageStyleInfo[] selectList()
- * @method SystemFileImageStyleInfo[] buildListWithField(array $values, $key = null, $field = null)
+ * @method SystemFileImageStyleInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
  */
 class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterface
 {
@@ -41,12 +41,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      */
     protected function createStyle(SystemFileImageStyleField $data) : string
     {
-        if (!$data->id) {
-            throw new ParamInvalidException('$data->id');
-        }
-        
-        $data->content = json_encode($data->content, JSON_UNESCAPED_UNICODE);
-        $this->addData($data, true);
+        $this->validate($data, self::SCENE_CREATE)->replace(true)->addData();
         
         return $data->id;
     }
@@ -134,9 +129,9 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      */
     public function createImageStyle(string $name, array $content) : void
     {
-        $data          = SystemFileImageStyleField::init();
-        $data->id      = $name;
-        $data->content = $content;
+        $data = SystemFileImageStyleField::init();
+        $data->setId($name);
+        $data->setContent($content);
         $this->createStyle($data);
     }
     
