@@ -61,15 +61,27 @@ class AppHelper
     
     /**
      * 获取客户端名称
-     * @param string $clientDir
+     * @param string $client
      * @return string
      */
-    public static function getName(string $clientDir) : string
+    public static function getName(string $client) : string
     {
         if (!isset($appList)) {
             $appList = ArrayHelper::listByKey(static::getList(), 'dir');
         }
         
-        return $clientDir == self::CLI_CLIENT_KEY ? self::CLI_CLIENT_NAME : ($appList[$clientDir]['name'] ?? $clientDir);
+        return $client == self::CLI_CLIENT_KEY ? self::CLI_CLIENT_NAME : ($appList[$client]['name'] ?? $client);
+    }
+    
+    
+    /**
+     * 获取客户端标识
+     * @return string
+     */
+    public static function getClient() : string
+    {
+        $app = App::getInstance();
+        
+        return $app->runningInConsole() ? self::CLI_CLIENT_KEY : $app->getDirName();
     }
 }
