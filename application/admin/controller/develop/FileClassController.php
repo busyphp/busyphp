@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
@@ -11,10 +12,10 @@ use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
-use Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 开发模式-系统附件分类管理
@@ -48,7 +49,7 @@ class FileClassController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         if ($this->pluginTable) {
             $this->pluginTable->setHandler(new class extends TableHandler {
@@ -78,15 +79,10 @@ class FileClassController extends InsideController
      * @return Response
      * @throws DbException
      */
-    public function add()
+    public function add() : Response
     {
         if ($this->isPost()) {
-            $insert = SystemFileClassField::init();
-            $insert->setName($this->post('name/s'));
-            $insert->setVar($this->post('var/s'));
-            $insert->setType($this->post('type/s'));
-            $insert->setSystem($this->post('system/b'));
-            $this->model->insertData($insert);
+            $this->model->createInfo(SystemFileClassField::parse($this->post()));
             $this->log()->record(self::LOG_INSERT, '增加文件分类');
             
             return $this->success('添加成功');
@@ -106,18 +102,12 @@ class FileClassController extends InsideController
      * @return Response
      * @throws DbException
      * @throws DataNotFoundException
-     * @throws Exception
+     * @throws Throwable
      */
-    public function edit()
+    public function edit() : Response
     {
         if ($this->isPost()) {
-            $update = SystemFileClassField::init();
-            $update->setId($this->post('id/d'));
-            $update->setName($this->post('name/s'));
-            $update->setVar($this->post('var/s'));
-            $update->setType($this->post('type/s'));
-            $update->setSystem($this->post('system/b'));
-            $this->model->updateData($update);
+            $this->model->updateInfo(SystemFileClassField::parse($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改文件分类');
             
             return $this->success('修改成功');
@@ -135,7 +125,7 @@ class FileClassController extends InsideController
      * 定义排序
      * @throws DbException
      */
-    public function sort()
+    public function sort() : Response
     {
         $this->model->setSort($this->param('sort/list', 'intval'));
         $this->log()->record(self::LOG_DELETE, '排序文件分类');
@@ -148,7 +138,7 @@ class FileClassController extends InsideController
      * 删除
      * @throws DbException
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的文件分类', 'intval') as $id) {
             $this->model->deleteInfo($id);

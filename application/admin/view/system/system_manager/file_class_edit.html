@@ -4,10 +4,10 @@
     <div class="form-horizontal">
         <input type="hidden" name="id" value="{$info.id|default='0'}"/>
         <div class="form-group">
-            <label class="col-sm-2 control-label">上传类型限制</label>
+            <label class="col-sm-2 control-label">上传格式限制</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="extensions" value="{$info.extensions|default=''}" placeholder="请输入允许的上传类型"/>
-                <span class="help-block">设置上传类型限制，多个用英文逗号隔开，如：jpg,png。留空则使用系统默认设置</span>
+                <input type="text" class="form-control" name="extensions" value="{$info.extensions|default=''}" placeholder="请输入允许的上传格式"/>
+                <span class="help-block">设置上传格式限制，多个用英文逗号隔开，如：jpg,png。留空则使用系统默认设置</span>
             </div>
         </div>
         <div class="form-group">

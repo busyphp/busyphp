@@ -40,6 +40,7 @@ use Throwable;
  * @method SystemFileInfo getInfo($data, $notFoundMessage = null)
  * @method SystemFileInfo[] selectList()
  * @method SystemFileInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method static SystemFile getClass()
  */
 class SystemFile extends Model
 {
@@ -69,6 +70,15 @@ class SystemFile extends Model
     protected $findInfoFilter      = 'intval';
     
     protected $bindParseClass      = SystemFileInfo::class;
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -238,10 +248,10 @@ class SystemFile extends Model
     
     /**
      * 获取附件类型
-     * @param string $var
+     * @param string|null $var
      * @return array|mixed
      */
-    public static function getTypes($var = null)
+    public static function getTypes(string $var = null)
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FILE_TYPE_', ClassHelper::ATTR_NAME), $var);
     }

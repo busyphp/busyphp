@@ -33,6 +33,8 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
     /**
      * ID
      * @var int
+     * @busy-validate require
+     * @busy-validate gt:0
      */
     public $id;
     

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
@@ -24,7 +25,6 @@ use BusyPHP\image\parameter\UrlParameter;
 use BusyPHP\image\result\ImageStyleResult;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
-use Exception;
 use ReflectionException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -298,21 +298,14 @@ class ManagerController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
-     * @throws Exception
+     * @throws Throwable
      */
     public function file_class() : Response
     {
         // 分类设置
         if ($this->isPost()) {
-            $data = SystemFileClassField::init();
-            $data->setId($this->post('id/d'));
-            $data->setExtensions($this->post('extensions/s', 'trim'));
-            $data->setMaxSize($this->post('max_size/d'));
-            $data->setMimetype($this->post('mimetype/s', 'trim'));
-            $data->setStyle($this->post('style/a'));
-            SystemFileClass::init()->updateData($data);
-            
+            SystemFileClass::init()
+                ->updateInfo(SystemFileClassField::parse($this->post()), SystemFileClass::SCENE_USER_SET);
             $this->log()->record(self::LOG_UPDATE, '分类上传设置');
             $this->updateCache();
             

@@ -3,24 +3,25 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
-use Exception;
+use BusyPHP\model\Entity;
+use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use Throwable;
 
 /**
  * 附件分类模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:56 SystemFileClass.php $
- * @method SystemFileClassInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemFileClassInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemFileClassInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemFileClassInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemFileClassInfo[] selectList()
- * @method SystemFileClassInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method SystemFileClassInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static SystemFileClass getClass()
  */
 class SystemFileClass extends Model
 {
@@ -30,71 +31,43 @@ class SystemFileClass extends Model
     
     protected $bindParseClass      = SystemFileClassInfo::class;
     
+    /** @var string 操作场景-用户设置 */
+    public const SCENE_USER_SET = 'user_set';
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
+    
     
     /**
      * 添加分类
-     * @param SystemFileClassField $insert
+     * @param SystemFileClassField $data
      * @return int
      * @throws DbException
-     * @throws VerifyException
      */
-    public function insertData($insert)
+    public function createInfo(SystemFileClassField $data) : int
     {
-        $this->checkRepeat($insert->var);
-        
-        return $this->addData($insert);
+        return (int) $this->validate($data, self::SCENE_CREATE)->addData();
     }
     
     
     /**
      * 修改分类
-     * @param SystemFileClassField $update
-     * @throws ParamInvalidException
-     * @throws Exception
+     * @param SystemFileClassField $data
+     * @param string               $scene
+     * @throws Throwable
      */
-    public function updateData($update)
+    public function updateInfo(SystemFileClassField $data, string $scene = self::SCENE_UPDATE)
     {
-        if ($update->id < 1) {
-            throw new ParamInvalidException('id');
-        }
-        
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($update->id);
-            if ($info->system) {
-                $update->system = null;
-                $update->var    = $info->var;
-                $update->type   = $info->type;
-            }
-            
-            $this->checkRepeat($update->var, $update->id);
-            $this->saveData($update);
-            
-            $this->commit();
-        } catch (Exception $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
-    }
-    
-    
-    /**
-     * 查重
-     * @param string $var
-     * @param int    $id
-     * @throws VerifyException
-     */
-    protected function checkRepeat($var, $id = 0)
-    {
-        $this->whereEntity(SystemFileClassField::var($var));
-        if ($id > 0) {
-            $this->whereEntity(SystemFileClassField::id('<>', $id));
-        }
-        
-        if ($this->count() > 0) {
-            throw new VerifyException('该文件分类标识已存在', 'var');
-        }
+        $this->transaction(function() use ($data, $scene) {
+            $info = $this->lock(true)->getInfo($data->id);
+            $this->validate($data, $scene, $info)->saveData();
+        });
     }
     
     
@@ -102,17 +75,20 @@ class SystemFileClass extends Model
      * 删除分类
      * @param int $data
      * @return int
-     * @throws VerifyException
-     * @throws DbException
+     * @throws Throwable
      */
     public function deleteInfo($data) : int
     {
-        $info = $this->getInfo($data);
-        if ($info->system) {
-            throw new VerifyException('系统分类禁止删除');
-        }
+        $id = (int) $data;
         
-        return parent::deleteInfo($info->id);
+        return $this->transaction(function() use ($id) {
+            $info = $this->getInfo($id);
+            if ($info->system) {
+                throw new RuntimeException('系统分类禁止删除');
+            }
+            
+            return parent::deleteInfo($info->id);
+        });
     }
     
     
@@ -148,18 +124,18 @@ class SystemFileClass extends Model
                 $defaultText = '请选择分类';
             }
             
-            $options = '<option value="' . $defaultValue . '">' . $defaultText . '</option>';
+            $options = sprintf("<option value=\"%s\">%s</option>", $defaultValue, $defaultText);
         }
         foreach ($array as $type => $list) {
-            $value    = "type:{$type}";
+            $value    = sprintf("type:%s", $type);
             $name     = SystemFile::getTypes($type);
             $selected = '';
             if ($selectedValue == $value) {
                 $selected = ' selected';
             }
             
-            $options .= '<optgroup label="' . $name . '">';
-            $options .= '<option value="' . $value . '"' . $selected . '>所有' . $name . '</option>';
+            $options .= sprintf("<optgroup label=\"%s\">", $name);
+            $options .= sprintf("<option value=\"%s\"%s>所有%s</option>", $value, $selected, $name);
             
             /** @var SystemFileClassInfo $item */
             foreach ($list as $item) {
@@ -167,7 +143,7 @@ class SystemFileClass extends Model
                 if ($item->var == $selectedValue) {
                     $itemSelected = ' selected';
                 }
-                $options .= '<option value="' . $item->var . '"' . $itemSelected . '>' . $item->name . '</option>';
+                $options .= sprintf("<option value=\"%s\"%s>%s</option>", $item->var, $itemSelected, $item->name);
             }
             
             $options .= '</optgroup>';
@@ -184,7 +160,7 @@ class SystemFileClass extends Model
      * @throws DbException
      * @throws DataNotFoundException
      */
-    public function getList($must = false)
+    public function getList($must = false) : array
     {
         $list = $this->getCache('list');
         if (!$list || $must) {
@@ -221,11 +197,7 @@ class SystemFileClass extends Model
     
     
     /**
-     * @param string $method
-     * @param        $id
-     * @param array  $options
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @inheritDoc
      */
     protected function onChanged($method, $id, $options)
     {
@@ -234,8 +206,7 @@ class SystemFileClass extends Model
     
     
     /**
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @inheritDoc
      */
     public function onSaveAll()
     {
