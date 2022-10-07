@@ -7,7 +7,6 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyle;
-use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyleField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\plugin\table\TableHandler;
@@ -184,10 +183,7 @@ class ManagerController extends InsideController
     public function image_style_add() : Response
     {
         if ($this->isPost()) {
-            $data = SystemFileImageStyleField::init();
-            $data->setId($this->post('id/s', 'trim'));
-            $data->setContent($this->post('content/a'));
-            Filesystem::disk($this->disk)->image()->createStyle($data->id, $data->content);
+            Filesystem::disk($this->disk)->image()->createStyle($this->post('id/s', 'trim'), $this->post('content/a'));
             
             $this->log()->record(self::LOG_INSERT, '添加图片样式');
             
