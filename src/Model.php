@@ -1986,15 +1986,15 @@ abstract class Model extends Query
      */
     public function transaction(callable $callback, bool $disabled = false, string $alias = '')
     {
-        $this->startTrans();
+        $this->startTrans($disabled, $alias);
         try {
             $result = call_user_func_array($callback, [$this]);
             
-            $this->commit();
+            $this->commit($disabled, $alias);
             
             return $result;
         } catch (Throwable $e) {
-            $this->rollback();
+            $this->rollback($disabled, $alias);
             
             throw $e;
         }
