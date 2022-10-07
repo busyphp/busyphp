@@ -27,7 +27,7 @@ class StringHelper extends Str
             $name = [$name => $value];
         }
         
-        return preg_replace_callback('/\{@(.*?)\}/', function($array) use ($name) {
+        return preg_replace_callback('/{@(.*?)}/', function($array) use ($name) {
             return $name[$array[1]] ?? '';
         }, $content);
     }
@@ -119,7 +119,7 @@ class StringHelper extends Str
      */
     public static function uuid() : string
     {
-        $charId = md5(uniqid(mt_rand(), true));
+        $charId = md5(uniqid((string) mt_rand(), true));
         $hyphen = chr(45);
         
         return substr($charId, 0, 8) . $hyphen . substr($charId, 8, 4) . $hyphen . substr($charId, 12, 4) . $hyphen . substr($charId, 16, 4) . $hyphen . substr($charId, 20, 12);
