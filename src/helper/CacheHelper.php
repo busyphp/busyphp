@@ -37,9 +37,9 @@ class CacheHelper
      * @param string                                  $name 缓存名称
      * @param mixed                                   $value 缓存内容
      * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
-     * @return bool
+     * @return mixed
      */
-    public static function remember($tag, string $name, $value, $expire = null) : bool
+    public static function remember($tag, string $name, $value, $expire = null)
     {
         $tag = static::tag($tag);
         
