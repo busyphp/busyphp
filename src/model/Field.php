@@ -674,6 +674,53 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
+     * 获取数据验证器
+     * @return Validate
+     */
+    public static function getValidate() : Validate
+    {
+        $names    = [];
+        $rules    = [];
+        $messages = [];
+        foreach (static::getPropertyAttrs() as $property => $attr) {
+            $names[$property] = $attr[ClassHelper::ATTR_NAME];
+            
+            // 解析验证规则
+            $validateList = array_filter((array) ($attr[self::ATTR_VALIDATE] ?? []));
+            if (!$validateList) {
+                continue;
+            }
+            
+            $rules[$property] = [];
+            foreach ($validateList as $item) {
+                // 格式: 规则1:配置#错误消息|规则2:配置#错误消息
+                // 示例: min:3#密码不能少于三个字符|max:20#密码长度不能超过20个字符
+                $item = explode('|', $item);
+                [$rule, $msg] = ArrayHelper::split('#', $item[0], 2);
+                $rule = trim($rule);
+                $msg  = trim($msg);
+                if (!$rule) {
+                    continue;
+                }
+                $rules[$property][] = $rule;
+                
+                // 错误消息
+                $rule = false !== strpos($rule, ':') ? trim(explode(':', $rule)[0]) : $rule;
+                if ('' !== $msg && $rule) {
+                    $messages[$property . '.' . $rule] = $msg;
+                }
+            }
+        }
+        
+        $validate = new Validate();
+        $validate->rule($rules, $names);
+        $validate->message($messages);
+        
+        return $validate;
+    }
+    
+    
+    /**
      * 设置join别名，用完一定要清理 {@see Field::clearJoinAlias()}
      * @param string $alias
      */
