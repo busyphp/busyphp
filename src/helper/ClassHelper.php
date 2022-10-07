@@ -130,14 +130,11 @@ class ClassHelper
      */
     public static function getConstAttrs($objectOrClass, string $prefix = '', $attrsOrMapKey = [], $mapKey = null, string $memoryCacheKey = '') : array
     {
-        $classname = md5(
-            self::getAbsoluteClassname($objectOrClass) .
-            serialize($attrsOrMapKey) .
-            $memoryCacheKey
-        );
+        $classname = self::getAbsoluteClassname($objectOrClass);
+        $key       = md5($classname . serialize($attrsOrMapKey) . $memoryCacheKey);
         
-        if (isset(self::$constAttrs[$classname])) {
-            return self::$constAttrs[$classname];
+        if (isset(self::$constAttrs[$key])) {
+            return self::$constAttrs[$key];
         }
         
         if (is_string($attrsOrMapKey) && $attrsOrMapKey) {
@@ -153,16 +150,16 @@ class ClassHelper
                 continue;
             }
             
-            $key = $constant->getName();
-            if ($prefix && 0 !== strpos($key, $prefix)) {
+            $name = $constant->getName();
+            if ($prefix && 0 !== strpos($name, $prefix)) {
                 continue;
             }
             
             $value        = $constant->getValue();
-            $list[$value] = static::extractDocAttrs($class, $key, $value, $constant->getDocComment(), $attrsOrMapKey, $mapKey);
+            $list[$value] = static::extractDocAttrs($class, $name, $value, $constant->getDocComment(), $attrsOrMapKey, $mapKey);
         }
         
-        return self::$constAttrs[$classname] = $list;
+        return self::$constAttrs[$key] = $list;
     }
     
     
