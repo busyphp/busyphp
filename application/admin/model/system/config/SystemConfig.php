@@ -22,6 +22,8 @@ use Throwable;
  * @method SystemConfigInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemConfigInfo[] selectList()
  * @method SystemConfigInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method SystemConfigInfo getInfoByType(string $type, string $notFoundMessage = null)
+ * @method SystemConfigInfo|null findInfoByType(string $type, string $notFoundMessage = null)
  * @method static SystemConfig getClass()
  */
 class SystemConfig extends Model
@@ -118,20 +120,20 @@ class SystemConfig extends Model
      */
     public function get($key, $must = false)
     {
-        $cache = $this->getCache($key);
-        if (!$cache || $must) {
+        $info = $this->getCache($key);
+        if (!$info || $must) {
             try {
-                $cache = $this->whereEntity(SystemConfigField::type($key))->failException(true)->findInfo();
+                $info = $this->getInfoByType($key);
             } catch (Throwable $e) {
                 $this->deleteCache($key);
                 
-                throw new RuntimeException(sprintf('Configuration "%s" does not exist', $key));
+                throw new RuntimeException(sprintf('config "%s" does not exist', $key));
             }
             
-            $this->setCache($key, $cache);
+            $this->setCache($key, $info);
         }
         
-        return $cache->content;
+        return $info->content;
     }
     
     

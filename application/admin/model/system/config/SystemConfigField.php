@@ -63,13 +63,13 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
      * 系统配置
      * @var bool
      */
-    public $system = false;
+    public $system;
     
     /**
      * 是否加入全局配置
      * @var bool
      */
-    public $append = false;
+    public $append;
     
     
     /**
@@ -82,6 +82,10 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
             $this::type(),
             ValidateRule::regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', ':attribute必须是英文数字下划线组合，且必须是英文开头')->unique($model)
         );
+        
+        if ($data instanceof SystemConfigInfo && $data->system) {
+            $this->setSystem(true);
+        }
         
         if ($name == SystemConfig::SCENE_CREATE) {
             $this->setId(0);
@@ -96,9 +100,10 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
             
             return true;
         } elseif ($name == SystemConfig::SCENE_UPDATE) {
-            if ($data->system) {
-                $this->setSystem(true);
+            if (!$this->append) {
+                $this->setAppend(false);
             }
+            
             $this->retain($validate, [
                 $this::id(),
                 $this::name(),
