@@ -76,9 +76,6 @@ class SystemMenuInfo extends SystemMenuField
         $this->routePath  = Str::snake($this->path);
         $this->hash       = md5($this->routePath);
         $this->parentHash = $this->parentPath ? md5(Str::snake($this->parentPath)) : '';
-        $this->hide       = $this->hide > 0;
-        $this->disabled   = $this->disabled > 0;
-        $this->system     = $this->system > 0;
         $this->paramList  = FilterHelper::trimArray(explode(',', $this->params) ?: []);
         
         if (0 === strpos($this->path, '#')) {

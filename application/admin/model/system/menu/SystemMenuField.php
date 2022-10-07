@@ -3,95 +3,120 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\menu;
 
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
+use BusyPHP\interfaces\FieldSetValueInterface;
+use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\TransHelper;
+use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * 后台菜单模型字段
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-06-06 下午5:27 SystemMenu.php busy^life $
- * @method static Entity id($op = null, $value = null) ID
- * @method static Entity name($op = null, $value = null) 名称
- * @method static Entity path($op = null, $value = null) 路由地址
- * @method static Entity parentPath($op = null, $value = null) 上级路由
- * @method static Entity topPath($op = null, $value = null) 顶级菜单默认访问路由地址
- * @method static Entity params($op = null, $value = null) 附加参数
- * @method static Entity icon($op = null, $value = null) 图标
- * @method static Entity target($op = null, $value = null) 打开方式
- * @method static Entity hide($op = null, $value = null) 是否隐藏
- * @method static Entity disabled($op = null, $value = null) 是否禁用
- * @method static Entity system($op = null, $value = null) 是否系统菜单
- * @method static Entity sort($op = null, $value = null) 自定义排序
+ * @method static Entity id(mixed $op = null, mixed $condition = null) ID
+ * @method static Entity name(mixed $op = null, mixed $condition = null) 名称
+ * @method static Entity path(mixed $op = null, mixed $condition = null) 路由地址
+ * @method static Entity parentPath(mixed $op = null, mixed $condition = null) 上级路由
+ * @method static Entity topPath(mixed $op = null, mixed $condition = null) 顶级菜单默认访问路由地址
+ * @method static Entity params(mixed $op = null, mixed $condition = null) 附加参数
+ * @method static Entity icon(mixed $op = null, mixed $condition = null) 图标
+ * @method static Entity target(mixed $op = null, mixed $condition = null) 打开方式
+ * @method static Entity hide(mixed $op = null, mixed $condition = null) 是否隐藏
+ * @method static Entity disabled(mixed $op = null, mixed $condition = null) 是否禁用
+ * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统菜单
+ * @method static Entity sort(mixed $op = null, mixed $condition = null) 自定义排序
+ * @method $this setId(mixed $id) 设置ID
+ * @method $this setName(mixed $name) 设置名称
+ * @method $this setPath(mixed $path) 设置路由地址
+ * @method $this setParentPath(mixed $parentPath) 设置上级路由
+ * @method $this setTopPath(mixed $topPath) 设置顶级菜单默认访问路由地址
+ * @method $this setParams(mixed $params) 设置附加参数
+ * @method $this setIcon(mixed $icon) 设置图标
+ * @method $this setTarget(mixed $target) 设置打开方式
+ * @method $this setHide(mixed $hide) 设置是否隐藏
+ * @method $this setDisabled(mixed $disabled) 设置是否禁用
+ * @method $this setSystem(mixed $system) 设置是否系统菜单
+ * @method $this setSort(mixed $sort) 设置自定义排序
  */
-class SystemMenuField extends Field
+class SystemMenuField extends Field implements ModelSceneValidateInterface, FieldSetValueInterface
 {
     /**
      * ID
      * @var int
+     * @busy-validate require
+     * @busy-validate gt:0
      */
     public $id;
     
     /**
-     * 名称
+     * 菜单名称
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-filter trim
      */
     public $name;
     
     /**
-     * 路由地址
+     * 菜单链接
      * @var string
+     * @busy-validate require#请输入:attribute
+     * @busy-filter trim
      */
     public $path;
     
     /**
-     * 上级路由
+     * 上级菜单
      * @var string
+     * @busy-filter trim
      */
     public $parentPath;
     
     /**
-     * 顶级菜单默认访问路由地址
+     * 访问链接
      * @var string
+     * @busy-filter trim
      */
     public $topPath;
     
     /**
      * 附加参数
      * @var string
+     * @busy-filter trim
      */
     public $params;
     
     /**
      * 图标
      * @var string
+     * @busy-filter trim
      */
     public $icon;
     
     /**
      * 打开方式
      * @var string
+     * @busy-filter trim
      */
     public $target;
     
     /**
      * 是否隐藏
-     * @var int
+     * @var bool
      */
     public $hide;
     
     /**
      * 是否禁用
-     * @var int
+     * @var bool
      */
     public $disabled;
     
     /**
      * 是否系统菜单
-     * @var int
+     * @var bool
      */
     public $system;
     
@@ -103,148 +128,96 @@ class SystemMenuField extends Field
     
     
     /**
-     * 设置ID
-     * @param int $id
-     * @return $this
-     * @throws ParamInvalidException
+     * @inheritDoc
      */
-    public function setId($id)
+    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
     {
-        $this->id = intval($id);
-        if ($this->id < 1) {
-            throw new ParamInvalidException('id');
+        $validate
+            ->append(
+                $this::target(),
+                ValidateRule::init()->in(array_keys(SystemMenu::getClass()::getTargets()), '请选择有效的:attribute')
+            )
+            ->append(
+                $this::path(),
+                ValidateRule::init()->unique($model)
+            )
+            ->append(
+                $this::topPath(),
+                ValidateRule::init()->closure(function($value) {
+                    if (0 === strpos($value, '#') || false !== strpos($value, '://')) {
+                        return false;
+                    }
+                    
+                    
+                    return true;
+                }, ':attribute不能是锚连接或外部连接')->closure(function($value) use ($model) {
+                    if (!$value) {
+                        return true;
+                    }
+                    
+                    if (!$model->whereEntity($this::path($value))->find()) {
+                        return false;
+                    }
+                    
+                    return true;
+                }, ':attribute必须是已定义的菜单链接'));
+        
+        if ($name == SystemMenu::SCENE_CREATE) {
+            $this->setId(0);
+            $this->retain($validate, [
+                $this::parentPath(),
+                $this::name(),
+                $this::icon(),
+                $this::path(),
+                $this::params(),
+                $this::target(),
+                $this::hide(),
+                $this::disabled(),
+                $this::topPath()
+            ]);
+            
+            return true;
+        } elseif ($name == SystemMenu::SCENE_AUTO_CREATE) {
+            $this->setId(0);
+            $this->setHide(true);
+            $this->retain($validate, [
+                $this::parentPath(),
+                $this::name(),
+                $this::path(),
+                $this::hide(),
+            ]);
+            
+            return true;
+        } elseif ($name == SystemMenu::SCENE_UPDATE) {
+            $this->retain($validate, [
+                $this::id(),
+                $this::parentPath(),
+                $this::name(),
+                $this::icon(),
+                $this::path(),
+                $this::params(),
+                $this::target(),
+                $this::hide(),
+                $this::disabled(),
+                $this::topPath()
+            ]);
+            
+            return true;
         }
         
-        return $this;
+        return false;
     }
     
     
     /**
-     * 设置名称
-     * @param string $name
-     * @return $this
-     * @throws VerifyException
+     * @inheritDoc
      */
-    public function setName(string $name)
+    public function onSetValue(string $field, string $property, array $attrs, $value)
     {
-        $this->name = trim($name);
-        if (!$this->name) {
-            throw new VerifyException('请输入菜单名称', 'name');
+        if ($field == $this::path()) {
+            return ltrim($value, '/');
         }
         
-        return $this;
-    }
-    
-    
-    /**
-     * 设置路由地址
-     * @param string $path
-     * @return $this
-     * @throws VerifyException
-     */
-    public function setPath(string $path)
-    {
-        $this->path = trim($path);
-        $this->path = ltrim($path, '/');
-        if (!$this->path) {
-            throw new VerifyException('请输入菜单链接', 'path');
-        }
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置上级路由
-     * @param string $parentPath
-     * @return $this
-     */
-    public function setParentPath(string $parentPath)
-    {
-        $this->parentPath = trim($parentPath);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置顶级菜单默认访问链接
-     * @param string $topPath
-     */
-    public function setTopPath(string $topPath) : void
-    {
-        $topPath = trim($topPath);
-        if ($topPath) {
-            if (0 === strpos($topPath, '#') || false !== strpos($topPath, '://')) {
-                throw new VerifyException('顶级菜单访问链接不能是锚连接或外部连接');
-            }
-        }
-        
-        $this->topPath = $topPath;
-    }
-    
-    
-    /**
-     * 设置附加参数
-     * @param string $params
-     * @return $this
-     */
-    public function setParams(string $params)
-    {
-        $this->params = trim($params);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置图标
-     * @param string $icon
-     * @return $this
-     */
-    public function setIcon(string $icon)
-    {
-        $this->icon = trim($icon);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置打开方式
-     * @param string $target
-     * @return $this
-     */
-    public function setTarget(string $target)
-    {
-        $this->target = trim($target);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否隐藏
-     * @param int $hide
-     * @return $this
-     */
-    public function setHide($hide)
-    {
-        $this->hide = TransHelper::toBool($hide);
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否禁用
-     * @param int $disabled
-     * @return $this
-     */
-    public function setDisabled($disabled)
-    {
-        $this->disabled = TransHelper::toBool($disabled);
-        
-        return $this;
+        return $value;
     }
 }

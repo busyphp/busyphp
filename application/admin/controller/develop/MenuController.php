@@ -6,15 +6,15 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\app\admin\plugin\TablePlugin;
-use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\Model;
 use BusyPHP\model\Map;
-use Exception;
+use RangeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
  * 开发模式-后台菜单管理
@@ -48,7 +48,7 @@ class MenuController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function index()
+    public function index() : Response
     {
         if ($this->pluginTable) {
             $this->pluginTable->sortField = '';
@@ -77,24 +77,12 @@ class MenuController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws VerifyException
-     * @throws Exception
+     * @throws Throwable
      */
-    public function add()
+    public function add() : Response
     {
         if ($this->isPost()) {
-            $data = SystemMenuField::init();
-            $data->setParentPath($this->post('parent_path/s'));
-            $data->setName($this->post('name/s'));
-            $data->setIcon($this->post('icon/s'));
-            $data->setPath($this->post('path/s'));
-            $data->setParams($this->post('params/s'));
-            $data->setTarget($this->post('target/s'));
-            $data->setHide(!$this->post('show/d'));
-            $data->setDisabled(!$this->post('enable/d'));
-            $data->setTopPath($this->post('top_path/s'));
-            
-            $this->model->createMenu($data, $this->post('auto/a'), $this->post('auto_suffix/s'));
+            $this->model->createInfo(SystemMenuField::parse($this->post()), $this->post('auto/a'), $this->post('auto_suffix/s'));
             $this->updateCache();
             $this->log()->record(self::LOG_INSERT, '添加系统菜单');
             
@@ -109,7 +97,7 @@ class MenuController extends InsideController
         }
         
         $this->assign('parent_options', $this->model->getTreeOptions($parentPath));
-        $this->assign('target_list', SystemMenu::getTargets());
+        $this->assign('target_list', $this->model::getTargets());
         $this->assign('info', [
             'target'   => '',
             'hide'     => 0,
@@ -126,26 +114,12 @@ class MenuController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws VerifyException
-     * @throws ParamInvalidException
-     * @throws Exception
+     * @throws Throwable
      */
-    public function edit()
+    public function edit() : Response
     {
         if ($this->isPost()) {
-            $data = SystemMenuField::init();
-            $data->setId($this->post('id/d'));
-            $data->setParentPath($this->post('parent_path/s'));
-            $data->setName($this->post('name/s'));
-            $data->setIcon($this->post('icon/s'));
-            $data->setPath($this->post('path/s'));
-            $data->setParams($this->post('params/s'));
-            $data->setTarget($this->post('target/s'));
-            $data->setHide(!$this->post('show/d'));
-            $data->setDisabled(!$this->post('enable/d'));
-            $data->setTopPath($this->post('top_path/s'));
-            
-            $this->model->updateMenu($data);
+            $this->model->updateInfo(SystemMenuField::parse($this->post()));
             $this->updateCache();
             $this->log()->record(self::LOG_UPDATE, '修改系统菜单');
             
@@ -154,7 +128,7 @@ class MenuController extends InsideController
             $info = $this->model->getInfo($this->get('id/d'));
             
             $this->assign('parent_options', $this->model->getTreeOptions($info->parentPath));
-            $this->assign('target_list', SystemMenu::getTargets());
+            $this->assign('target_list', $this->model::getTargets());
             $this->assign('info', $info);
             
             return $this->display('add');
@@ -168,7 +142,7 @@ class MenuController extends InsideController
      * @throws DbException
      * @throws VerifyException
      */
-    public function set_attr()
+    public function set_attr() : Response
     {
         $type   = $this->get('type/s', 'trim');
         $id     = $this->get('id/d');
@@ -182,7 +156,7 @@ class MenuController extends InsideController
                 $this->model->setHide($id, !$status);
             break;
             default:
-                throw new VerifyException('未知类型');
+                throw new RangeException('未知类型');
         }
         
         $this->updateCache();
@@ -196,7 +170,7 @@ class MenuController extends InsideController
      * 排序
      * @throws DbException
      */
-    public function sort()
+    public function sort() : Response
     {
         $this->model->setSort($this->param('sort/list'));
         $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
@@ -208,9 +182,9 @@ class MenuController extends InsideController
     
     /**
      * 删除
-     * @throws Exception
+     * @throws Throwable
      */
-    public function delete()
+    public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的菜单') as $id) {
             $this->model->deleteInfo($id);

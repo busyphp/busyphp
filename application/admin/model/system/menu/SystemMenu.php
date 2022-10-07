@@ -6,24 +6,25 @@ namespace BusyPHP\app\admin\model\system\menu;
 use BusyPHP\App;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
-use Exception;
+use BusyPHP\model\Entity;
+use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use Throwable;
 
 /**
  * 后台菜单模型
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/28 下午2:45 下午 SystemMenu.php $
- * @method SystemMenuInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemMenuInfo getInfo($data, $notFoundMessage = null)
+ * @method SystemMenuInfo getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemMenuInfo|null findInfo(int $id = null, string $notFoundMessage = null)
  * @method SystemMenuInfo[] selectList()
- * @method SystemMenuInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method SystemMenuInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
+ * @method static string|SystemMenu getClass()
  */
 class SystemMenu extends Model
 {
@@ -39,6 +40,9 @@ class SystemMenu extends Model
     /** @var string Iframe窗口 */
     const TARGET_IFRAME = 'iframe';
     
+    /** @var string 操作场景-自动创建子菜单 */
+    public const SCENE_AUTO_CREATE = 'auto_create';
+    
     /** @var bool 开发模式 */
     const DEBUG = false;
     
@@ -47,6 +51,39 @@ class SystemMenu extends Model
     protected $findInfoFilter      = 'intval';
     
     protected $bindParseClass      = SystemMenuInfo::class;
+    
+    /**
+     * @var string[]
+     */
+    protected $autoCreateMap = [
+        'add'    => '添加',
+        'edit'   => '修改',
+        'delete' => '删除',
+        'sort'   => '排序',
+        'export' => '导出',
+        'import' => '导入',
+        'detail' => '查看',
+    ];
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final protected static function defineClass() : string
+    {
+        return self::class;
+    }
+    
+    
+    /**
+     * 获取打开方式
+     * @param string|null $var
+     * @return array|string
+     */
+    public static function getTargets(string $var = null)
+    {
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TARGET_', ClassHelper::ATTR_NAME), $var);
+    }
     
     
     /**
@@ -58,10 +95,12 @@ class SystemMenu extends Model
      * @param bool   $hide 是否隐藏
      * @param int    $sort 排序
      * @param string $params GET参数
-     * @return array
-     * @throws Exception
+     * @return int[]
+     * @throws Throwable
+     * @deprecated 未来某个版本会删除
+     * @see SystemMenu::createInfo()
      */
-    public function addMenu(string $path, string $name, string $parentPath = '', string $icon = '', bool $hide = false, int $sort = 50, string $params = '')
+    public function addMenu(string $path, string $name, string $parentPath = '', string $icon = '', bool $hide = false, int $sort = 50, string $params = '') : array
     {
         $data = SystemMenuField::init();
         $data->setParentPath($parentPath);
@@ -70,9 +109,9 @@ class SystemMenu extends Model
         $data->setPath($path);
         $data->setParams($params);
         $data->setHide($hide);
-        $data->sort = $sort;
+        $data->setSort($sort);
         
-        return $this->createMenu($data, [], '', true);
+        return $this->createInfo($data, [], '', true);
     }
     
     
@@ -82,117 +121,64 @@ class SystemMenu extends Model
      * @param array           $auto 自动构建的菜单
      * @param string          $autoSuffix 自动创建菜单的后缀
      * @param bool            $disabledTrans 是否禁用事物
-     * @return array 增加成功的ID集合
-     * @throws Exception
+     * @return int[] 增加成功的ID集合
+     * @throws Throwable
      */
-    public function createMenu(SystemMenuField $data, array $auto = [], string $autoSuffix = '', $disabledTrans = false)
+    public function createInfo(SystemMenuField $data, array $auto = [], string $autoSuffix = '', $disabledTrans = false) : array
     {
         $autoSuffix = trim($autoSuffix);
-        $this->startTrans($disabledTrans);
-        try {
-            $this->checkData($data);
+        
+        return $this->transaction(function() use ($data, $auto, $autoSuffix) {
             $ids   = [];
-            $ids[] = $this->addData($data);
+            $ids[] = (int) $this->validate($data, self::SCENE_CREATE)->addData();
             
             // 自动创建
             if ($auto) {
                 if (false !== strpos($data->path, '#') || false !== strpos($data->path, '://')) {
-                    throw new VerifyException('分组和外部连接不支持自动创建');
+                    throw new RuntimeException('分组和外部连接不支持自动创建');
                 }
                 
                 $parentPath = $data->path;
                 $paths      = explode('/', $parentPath);
                 array_pop($paths);
                 $path = implode('/', $paths) . '/';
-                $map  = [
-                    'add'    => '添加',
-                    'edit'   => '修改',
-                    'delete' => '删除',
-                    'sort'   => '排序',
-                    'export' => '导出',
-                    'import' => '导入',
-                    'detail' => '查看',
-                ];
                 
                 foreach ($auto as $item) {
-                    $data->path       = $path . $item;
-                    $data->name       = $map[$item] . $autoSuffix;
-                    $data->hide       = true;
-                    $data->parentPath = $parentPath;
-                    $data->icon       = '';
-                    $ids[]            = $this->addData($data);
+                    if (!isset($this->autoCreateMap[$item])) {
+                        continue;
+                    }
+                    
+                    $data->setPath($path . $item);
+                    $data->setName($this->autoCreateMap[$item] . $autoSuffix);
+                    $data->setHide(true);
+                    $data->setParentPath($parentPath);
+                    $ids[] = (int) $this->validate($data, self::SCENE_AUTO_CREATE)->addData($data);
                 }
             }
             
-            $this->commit($disabledTrans);
-            
             return $ids;
-        } catch (Exception $e) {
-            $this->rollback($disabledTrans);
-            
-            throw $e;
-        }
+        }, $disabledTrans);
     }
     
     
     /**
      * 修改菜单
      * @param SystemMenuField $data
-     * @throws Exception
+     * @throws Throwable
      */
-    public function updateMenu(SystemMenuField $data)
+    public function updateInfo(SystemMenuField $data)
     {
-        if ($data->id < 1) {
-            throw new ParamInvalidException('id');
-        }
-        
-        $this->startTrans();
-        try {
+        $this->transaction(function() use ($data) {
             $info = $this->lock(true)->getInfo($data->id);
-            if ($info->system) {
-                $data->system = true;
-            }
             
-            $this->checkData($data, $data->id);
+            $this->validate($data, self::SCENE_UPDATE, $info)->data([]);
             
             // 更新子菜单关系
             $this->whereEntity(SystemMenuField::parentPath($info->path))
                 ->setField(SystemMenuField::parentPath(), $data->path);
             
-            $this->whereEntity(SystemMenuField::id($data->id))->saveData($data);
-            
-            $this->commit();
-        } catch (Exception $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
-    }
-    
-    
-    /**
-     * 菜单数据校验
-     * @param SystemMenuField $data 菜单数据
-     * @param int             $id 菜单ID
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    protected function checkData(SystemMenuField $data, $id = 0)
-    {
-        $this->whereEntity(SystemMenuField::path($data->path));
-        if ($id > 0) {
-            $this->whereEntity(SystemMenuField::id('<>', $id));
-        }
-        
-        if ($this->findInfo()) {
-            throw new VerifyException('该菜单连接已存在', 'path');
-        }
-        
-        if ($data->topPath) {
-            if (!$this->whereEntity(SystemMenuField::path($data->topPath))->findInfo()) {
-                throw new VerifyException('顶级菜单访问链接不存在', 'top_path');
-            }
-        }
+            $this->saveData($data);
+        });
     }
     
     
@@ -201,40 +187,25 @@ class SystemMenu extends Model
      * @param int  $data 菜单ID
      * @param bool $disabledTrans 是否禁用事物
      * @return int
-     * @throws Exception
+     * @throws Throwable
      */
     public function deleteInfo($data, bool $disabledTrans = false) : int
     {
-        $this->startTrans($disabledTrans);
-        try {
-            $info = $this->lock(true)->findInfo($data);
-            if (!$info) {
-                $result = 0;
-                goto commit;
-            }
+        $id = (int) $data;
+        
+        return $this->transaction(function() use ($id) {
+            $info = $this->lock(true)->getInfo($id);
             
-            // 系统菜单不能删除
             if ($info->system) {
-                throw new VerifyException('系统菜单禁止删除');
+                throw new RuntimeException('系统菜单禁止删除');
             }
             
             // 删除子菜单
-            $childIds = array_keys(ArrayHelper::listByKey($this->getAllChildList($info->path), SystemMenuField::id()->name()));
-            if ($childIds) {
-                $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
-            }
+            $childIds   = array_column($this->getAllChildList($info->path), SystemFileField::id()->name());
+            $childIds[] = $info->id;
             
-            $result = parent::deleteInfo($info->id);
-            
-            commit:
-            $this->commit($disabledTrans);
-            
-            return $result;
-        } catch (Exception $e) {
-            $this->rollback($disabledTrans);
-            
-            throw $e;
-        }
+            return $this->whereEntity(SystemMenuField::id('in', $childIds))->delete();
+        }, $disabledTrans);
     }
     
     
@@ -243,7 +214,7 @@ class SystemMenu extends Model
      * @param string $path 菜单路径
      * @param bool   $disabledTrans 是否禁用事物
      * @return int
-     * @throws Exception
+     * @throws Throwable
      */
     public function deleteByPath(string $path, bool $disabledTrans = false) : int
     {
@@ -617,23 +588,12 @@ class SystemMenu extends Model
     
     
     /**
-     * 获取打开方式
-     * @param string $var
-     * @return array|string
-     */
-    public static function getTargets($var = null)
-    {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TARGET_', ClassHelper::ATTR_NAME), $var);
-    }
-    
-    
-    /**
      * 设置是否禁用
      * @param int  $id
      * @param bool $status
      * @throws DbException
      */
-    public function setDisabled($id, $status)
+    public function setDisabled(int $id, bool $status)
     {
         $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::disabled(), $status ? 1 : 0);
     }
@@ -645,7 +605,7 @@ class SystemMenu extends Model
      * @param bool $status
      * @throws DbException
      */
-    public function setHide($id, $status)
+    public function setHide(int $id, bool $status)
     {
         $this->whereEntity(SystemFileField::id(intval($id)))->setField(SystemMenuField::hide(), $status ? 1 : 0);
     }
@@ -660,7 +620,7 @@ class SystemMenu extends Model
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getTreeOptions($selectedPath = '', $list = [], $space = '')
+    public function getTreeOptions($selectedPath = '', $list = [], $space = '') : string
     {
         $push = '├';
         if (!$list) {

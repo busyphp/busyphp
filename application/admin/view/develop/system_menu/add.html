@@ -1,5 +1,10 @@
 <extend name="@admin:layout"/>
 <block name="content">
+    <?php
+    
+    use BusyPHP\app\admin\model\system\menu\SystemMenu;
+    
+    ?>
     <div class="form-horizontal">
         <input type="hidden" name="id" value="{$info.id|default=''}"/>
         <div class="form-group">
@@ -31,7 +36,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label required">菜单链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class;?>" data-text-field="path" value="{$info.path|default=''}"/>
+                <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-model="<?=SystemMenu::getClass();?>" data-text-field="path" value="{$info.path|default=''}"/>
                 <span class="help-block">设置菜单链接，如：<code>user/index</code>，外部链接必须填写<code>https://</code>或<code>http://</code>前缀</span>
             </div>
         </div>
@@ -57,10 +62,10 @@
             <label class="col-sm-2 control-label">其它设置</label>
             <div class="col-sm-9">
                 <div class="radio no-padding">
-                    <input type="checkbox" class="switch" name="show" value="1" <?=is_checked(!$info['hide'])?> data-toggle="busy-checkbox" title="显示,隐藏"/>
-                    <input type="checkbox" class="switch" name="enable" value="1" <?=is_checked(!$info['disabled'])?> data-toggle="busy-checkbox" title="正常,禁用"/>
+                    <input type="checkbox" class="switch" name="hide" value="1" <?=is_checked(!$info['hide'])?> data-toggle="busy-checkbox" title="显示,隐藏"/>
+                    <input type="checkbox" class="switch success" name="disabled" value="1" <?=is_checked(!$info['disabled'])?> data-toggle="busy-checkbox" title="启用,禁用"/>
                 </div>
-                <span class="help-block"><code>隐藏</code>的菜单不在菜单栏显示，但会做为权限以及其它功能使用。<br/><code>禁用</code>后菜单将无法正常使用。</span>
+                <span class="help-block"><code>隐藏</code>的菜单不在菜单栏显示，但会做为权限节点调用。<br/><code>禁用</code>后菜单将无法正常使用。</span>
             </div>
         </div>
         <eq name="url.action" value="add">
@@ -90,7 +95,7 @@
         <div class="form-group no-margin-bottom" id="topPath">
             <label class="col-sm-2 control-label">访问链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="top_path" placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class;?>" data-text-field="path" value="{$info.top_path|default=''}"/>
+                <input class="form-control" name="top_path" placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-model="<?=SystemMenu::getClass();?>" data-text-field="path" value="{$info.top_path|default=''}"/>
                 <span class="help-block">设置顶级菜单访问链接，设置后点击顶级菜单将默认访问到该链接中</span>
             </div>
         </div>
