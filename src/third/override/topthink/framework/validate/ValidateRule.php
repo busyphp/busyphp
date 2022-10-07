@@ -84,6 +84,19 @@ class ValidateRule
     // 验证提示信息
     protected $message = [];
     
+    // 自定义回调下标
+    protected $closureIndex = 0;
+    
+    
+    /**
+     * 快速实例化
+     * @return static
+     */
+    public static function init() : self
+    {
+        return new static();
+    }
+    
     
     /**
      * 添加验证因子
@@ -95,6 +108,11 @@ class ValidateRule
      */
     protected function addItem(string $name, $rule = null, string $msg = '')
     {
+        if ($name === 'closure') {
+            $this->closureIndex++;
+            $name .= $this->closureIndex;
+        }
+        
         if ($rule || 0 === $rule) {
             $this->rule[$name] = $rule;
         } else {
