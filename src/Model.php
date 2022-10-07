@@ -1060,61 +1060,39 @@ abstract class Model extends Query
      * 数据校验
      * @param array|Field|Validate|string $data 要验证的数据或验证器
      * @param string|Validate|Field|null  $validate 验证器、验证器类名、验证场景名称
-     * @param mixed                       $scene 验证场景或场景数据
+     * @param mixed                       $sceneName 验证场景或场景数据
      * @param mixed                       $sceneData 场景数据
      * @return $this
      */
-    public function validate($data, $validate = null, $scene = null, $sceneData = null)
+    public function validate($data, $validate = null, $sceneName = null, $sceneData = null)
     {
         $field = null;
-        switch (true) {
-            // data 为 Field 的类或对象
-            case is_subclass_of($data, Field::class) || $data instanceof Field:
-                $field     = $data;
-                $sceneData = $scene;
-                $scene     = $validate;
-                $validate  = null;
-                $data      = [];
-            break;
-            
-            // data 为 Validate 对象
-            case is_subclass_of($data, Validate::class) || $data instanceof Validate:
-                $sceneData = $scene;
-                $scene     = $validate;
-                $validate  = $data;
-                $data      = [];
-            break;
-            
-            // validate 为 Field 的类或对象
-            case $validate instanceof Field || is_subclass_of($validate, Field::class):
-                $field = $validate;
-            break;
-            
-            // validate 为 Validate 的类或对象
-            case $validate instanceof Validate || is_subclass_of($validate, Validate::class):
-                // Nothing
-            break;
-            
-            default:
-                throw new InvalidArgumentException('必须指定验证器');
+        if (is_array($data) && $validate) {
+            if (is_subclass_of($validate, Field::class)) {
+                $field    = $validate;
+                $validate = null;
+            } elseif (!is_subclass_of($validate, Validate::class) || !$validate instanceof Validate) {
+                throw new ClassNotExtendsException($validate, Validate::class);
+            }
+        } elseif (is_subclass_of($data, Field::class)) {
+            $field     = $data;
+            $sceneData = $sceneName;
+            $sceneName = $validate;
+            $validate  = null;
+            $data      = [];
+        } elseif (is_subclass_of($data, Validate::class) || $data instanceof Validate) {
+            $sceneData = $sceneName;
+            $sceneName = $validate;
+            $validate  = $data;
+            $data      = [];
+        } else {
+            throw new InvalidArgumentException('The $validate cannot be empty');
         }
-        
-        // 数据非Array检测
-        if ($data && !is_array($data)) {
-            throw new InvalidArgumentException('验证的数据必须为数组');
-        }
-        
-        // 合并数据
         $data = array_merge($this->options['data'] ?? [], $data);
         
-        // 解析参与验证的数据
-        // 如果是Field类进行验证，则将data转为字段标准值
-        $checkData = [];
-        $messages  = [];
-        $rules     = [];
-        $names     = [];
+        // 如果是Field验证，则将data转为字段标准值
         if ($field) {
-            // 合并data
+            // 将data合并到Field中
             if ($field instanceof Field) {
                 foreach ($data as $key => $value) {
                     $field[$key] = $value;
@@ -1122,74 +1100,42 @@ abstract class Model extends Query
             } else {
                 $field = $field::parse($data);
             }
-            
-            foreach ($field::getPropertyAttrs() as $property => $attr) {
-                $names[$property] = $attr[ClassHelper::ATTR_NAME];
-                if (null !== $value = ($field[$property] ?? null)) {
-                    $checkData[$property] = $value;
-                }
-                
-                // 解析验证规则
-                $validateRule = array_filter((array) ($attr[Field::ATTR_VALIDATE] ?? []));
-                if (!$validateRule) {
-                    continue;
-                }
-                
-                $rules[$property] = [];
-                foreach ($validateRule as $item) {
-                    // 格式: 规则1:配置#错误消息|规则2:配置#错误消息
-                    // 示例: min:3#密码不能少于三个字符|max:20#密码长度不能超过20个字符
-                    $item = explode('|', $item);
-                    [$rule, $msg] = ArrayHelper::split('#', $item[0], 2);
-                    $rule = trim($rule);
-                    $msg  = trim($msg);
-                    if (!$rule) {
-                        continue;
-                    }
-                    $rules[$property][] = $rule;
-                    
-                    // 错误消息
-                    $rule = false !== strpos($rule, ':') ? trim(explode(':', $rule)[0]) : $rule;
-                    if ('' !== $msg && $rule) {
-                        $messages[$property . '.' . $rule] = $msg;
-                    }
-                }
-            }
-        } else {
-            $checkData = $data;
+            $validate = $field::getValidate();
+        } elseif (is_string($validate)) {
+            $validate = new $validate();
         }
         
-        // 实例化数据验证类
-        $validate = is_string($validate) ? new $validate() : $validate;
-        $validate = $validate instanceof Validate ? $validate : new Validate();
-        $validate->setDb($this->manager);
-        $validate->failException(true);
-        $validate->message($messages);
-        $validate->rule($rules, $names);
-        
         // 场景验证
-        $state = true;
-        if ($scene !== '') {
-            $method = 'onScene' . StringHelper::studly($scene);
-            if ($field instanceof ModelSceneValidateInterface) {
-                if (false === $only = $field->onModelSceneValidate($this, $validate, $scene, $sceneData)) {
-                    $state = false;
-                } elseif (is_array($only)) {
-                    $field->retain($validate, ...$only);
-                }
-            } elseif (method_exists($field, $method)) {
-                if (false === $only = call_user_func_array([$field, $method], [$this, $validate, $scene, $sceneData])) {
-                    $state = false;
-                } elseif (is_array($only)) {
-                    $field->retain($validate, ...$only);
+        $needCheck = true;
+        if ($sceneName !== '' && $sceneName !== null) {
+            if ($field) {
+                if ($field instanceof ModelSceneValidateInterface) {
+                    $result = $field->onModelSceneValidate($this, $validate, $sceneName, $sceneData);
+                    if ($result === false) {
+                        $needCheck = false;
+                    } elseif (is_array($result)) {
+                        $field->retain($validate, ...$result);
+                    }
                 }
             } else {
-                $validate->scene($scene);
+                $validate->scene($sceneName);
             }
         }
         
         // 执行验证
-        if ($state) {
+        if ($needCheck) {
+            $checkData = $data;
+            if ($field) {
+                $checkData = [];
+                foreach ($field::getPropertyList() as $property) {
+                    if (null !== $value = ($field[$property] ?? null)) {
+                        $checkData[$property] = $value;
+                    }
+                }
+            }
+            
+            $validate->setDb($this->manager);
+            $validate->failException(true);
             $validate->check($checkData);
         }
         
