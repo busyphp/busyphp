@@ -178,6 +178,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     {
         $obj = static::init();
         foreach ($array as $name => $value) {
+            if (is_numeric($name)) {
+                continue;
+            }
+            
             if ($property = self::getPropertyName($name)) {
                 self::setPropertyValue($obj, $property, $value);
             } else {
