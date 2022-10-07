@@ -953,6 +953,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         unset($this->__private__options['limit_property']);
         unset($this->__private__options['limit_exclude']);
         unset($this->__private__options['use']);
+        
+        return $this;
     }
     
     
