@@ -51,7 +51,7 @@ class ModelHelper
         $fieldSetterList      = [];
         $fieldGetterList      = [];
         
-        
+        dump($model->getFields());
         foreach ($model->getFields() as $field) {
             $method  = StringHelper::studly($field['name']);
             $name    = StringHelper::camel($field['name']);
@@ -61,13 +61,21 @@ class ModelHelper
                 $pkType = $type;
             }
             
+            $property = <<<PHP
+/**
+ * %s
+ * @var %s
+ */
+%s $%s;
+PHP;
+            
             $getByList[]          = sprintf('@method array|null getBy%s(%s $%s)', $method, $type, $name);
             $getFieldByList[]     = sprintf('@method mixed getFieldBy%s(%s $%s, string|%s $field, mixed $default = null)', $method, $type, $name, $entityClass);
             $whereOrList[]        = sprintf('@method $this whereOr%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
             $whereList[]          = sprintf('@method $this where%s(mixed $op, mixed $condition = null, array $bind = [])', $method);
             $fieldStaticList[]    = sprintf('@method static %s %s(mixed $op = null, mixed $condition = null) %s', $entityClass, $name, $comment);
-            $fieldPublicList[]    = sprintf('/**%s * %s%s * @var %s%s */%spublic $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
-            $fieldProtectedList[] = sprintf('/**%s * %s%s * @var %s%s */%sprotected $%s;', PHP_EOL, $comment, PHP_EOL, $type, PHP_EOL, PHP_EOL, $name);
+            $fieldPublicList[]    = sprintf($property, $comment, $type, 'public', $name);
+            $fieldProtectedList[] = sprintf($property, $comment, $type, 'protected', $name);
             $fieldSetterList[]    = sprintf('@method $this set%s(mixed $%s) 设置%s', $method, $name, $comment);
             $fieldGetterList[]    = sprintf('@method $this get%s() 获取%s', $method, $comment);
             
@@ -130,10 +138,14 @@ class ModelHelper
             case 0 === stripos($type, 'mediumint'):
             case 0 === stripos($type, 'bigint'):
             case 0 === stripos($type, 'serial'):
+            case 0 === stripos($type, 'bit'):
                 return 'int';
+            case 0 === stripos($type, 'bool'):
+                return 'bool';
             case 0 === stripos($type, 'decimal'):
             case 0 === stripos($type, 'float'):
             case 0 === stripos($type, 'double'):
+            case 0 === stripos($type, 'numeric'):
                 return 'float';
             default:
                 return 'string';
