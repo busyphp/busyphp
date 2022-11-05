@@ -49,12 +49,22 @@ class Service extends \BusyPHP\Service
                     // 绑定错误处理程序
                     $this->app->bind(Handle::class, AdminHandle::class);
                     
+                    $config = $this->app->config->get();
+                    $view   = $config['view'] ?? [];
+                    
                     // 注入后台标签库
-                    $config                            = $this->app->config->get();
-                    $view                              = $config['view'] ?? [];
                     $taglibPreLoad                     = $view['taglib_pre_load'] ?? '';
                     $config['view']['taglib_pre_load'] = Ba::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
-                    $config['view']['template_detect'] = [$this, 'adminTemplateDetect'];
+                    
+                    // 模版侦测
+                    $templateDetect = $view['template_detect'] ?? [];
+                    
+                    // 解析到 application/admin/view 目录
+                    $templateDetect['@admin'] = function(string $template, array $config) {
+                        return __DIR__ . '/admin/view/' . ltrim(substr($template, 7), '/') . '.html';
+                    };
+                    
+                    $config['view']['template_detect'] = $templateDetect;
                     $config['view']['default_filter']  = '';
                     $this->app->config->set($config);
                 }
@@ -157,23 +167,5 @@ class Service extends \BusyPHP\Service
                 ]);
             }
         });
-    }
-    
-    
-    /**
-     * 侦测admin模板
-     * @param string $template
-     * @param array  $config
-     * @return string
-     */
-    public function adminTemplateDetect(string $template, array $config) : string
-    {
-        // @admin:
-        // 解析到 application/admin/view 目录
-        if (0 === strpos($template, '@admin:')) {
-            return __DIR__ . '/admin/view/' . ltrim(substr($template, 7), '/') . '.html';
-        }
-        
-        return '';
     }
 }

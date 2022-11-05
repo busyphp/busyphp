@@ -60,7 +60,7 @@ class Template
         'tpl_replace_string' => [],
         'tpl_var_identify'   => 'array', // .语法变量识别，array|object|'', 为空时自动识别
         'default_filter'     => 'htmlentities', // 默认过滤方法 用于普通标签输出
-        'template_detect'    => '', // 自定义模板侦测
+        'template_detect'    => [], // 自定义模板侦测
     ];
 
     /**
@@ -1237,9 +1237,12 @@ class Template
     {
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
             $state = false;
-            if (is_callable($detect = $this->config['template_detect'] ?? '')) {
-                $state = true;
-                $template = call_user_func_array($detect, [$template, $this->config]);
+            foreach ((array) $this->config['template_detect'] as $key => $item) {
+                if (is_callable($item) && 0 === stripos($template, $key)) {
+                    $template = call_user_func_array($item, [$template, $this->config]);
+                    $state = true;
+                    break;
+                }
             }
     
             if (($state && empty($template)) || !$state) {
