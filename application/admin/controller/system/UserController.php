@@ -132,7 +132,7 @@ class UserController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->createInfo(AdminUserField::parse($this->post()));
+            $this->model->create(AdminUserField::parse($this->post()));
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
             
             return $this->success('添加成功');
@@ -167,16 +167,7 @@ class UserController extends InsideController
                 throw new VerifyException('不能禁用自己');
             }
             
-            $update = AdminUserField::init();
-            $update->setId($id);
-            $update->setGroupIds($this->post('group_ids/a'));
-            $update->setDefaultGroupId($this->post('default_group_id/d'));
-            $update->setUsername($this->post('username/s', 'trim'));
-            $update->setPhone($this->post('phone/s', 'trim'));
-            $update->setEmail($this->post('email/s', 'trim'));
-            $update->setQq($this->post('qq/s', 'trim'));
-            $update->setChecked($checked);
-            $this->model->updateInfo($update);
+            $this->model->modify(AdminUserField::parse($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
             return $this->success('修改成功');
@@ -249,7 +240,7 @@ class UserController extends InsideController
     public function password() : Response
     {
         if ($this->isPost()) {
-            $this->model->updateInfo(AdminUserField::parse($this->post()), AdminUser::SCENE_PASSWORD);
+            $this->model->modify(AdminUserField::parse($this->post()), AdminUser::SCENE_PASSWORD);
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
             
             return $this->success('修改成功');
@@ -300,7 +291,7 @@ class UserController extends InsideController
     public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的用户') as $id) {
-            $this->model->deleteInfo($id);
+            $this->model->remove($id);
         }
         
         $this->log()->record(self::LOG_DELETE, '删除管理员');

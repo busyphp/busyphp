@@ -30,7 +30,7 @@ class UserController extends InsideController
     public function profile() : Response
     {
         if ($this->isPost()) {
-            AdminUser::init()->updateInfo(
+            AdminUser::init()->modify(
                 AdminUserField::parse($this->post())->setId($this->adminUserId),
                 AdminUser::SCENE_PROFILE
             );
@@ -64,7 +64,7 @@ class UserController extends InsideController
                 throw new VerifyException('登录密码输入错误', 'old_password');
             }
             
-            AdminUser::init()->updateInfo(
+            AdminUser::init()->modify(
                 AdminUserField::parse($this->post())->setId($this->adminUserId),
                 AdminUser::SCENE_PASSWORD
             );

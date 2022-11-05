@@ -99,7 +99,7 @@ class AdminUser extends Model
      * @return AdminUserInfo
      * @throws Throwable
      */
-    public function createInfo(AdminUserField $data) : AdminUserInfo
+    public function create(AdminUserField $data) : AdminUserInfo
     {
         $prepare = $this->trigger(new AdminUserEventCreatePrepare($this, $data), true);
         
@@ -119,7 +119,7 @@ class AdminUser extends Model
      * @param string         $scene 场景
      * @throws Throwable
      */
-    public function updateInfo(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserInfo
+    public function modify(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserInfo
     {
         $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $scene), true);
         
@@ -141,7 +141,7 @@ class AdminUser extends Model
      * @return int
      * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function remove($data) : int
     {
         $id      = (int) $data;
         $prepare = $this->trigger(new AdminUserEventDeletePrepare($this, $id), true);
@@ -153,7 +153,7 @@ class AdminUser extends Model
             }
             
             $this->trigger(new AdminUserEventDeleteBefore($this, $info->id, $info, $prepare));
-            $result = parent::deleteInfo($info->id);
+            $result = parent::remove($info->id);
             $this->trigger(new AdminUserEventDeleteAfter($this, $info->id, $info, $prepare));
             
             return $result;
@@ -240,7 +240,7 @@ class AdminUser extends Model
                 }
                 
                 $data->setId($info->id);
-                $this->updateInfo($data, self::SCENE_LOGIN_ERROR);
+                $this->modify($data, self::SCENE_LOGIN_ERROR);
             }
             
             throw new VerifyException($errorMsg, 'password_error');
@@ -310,7 +310,7 @@ class AdminUser extends Model
         $data->setErrorRelease(0);
         $data->setErrorTotal(0);
         $data->setErrorTime(0);
-        $this->updateInfo($data, self::SCENE_LOGIN_SUCCESS);
+        $this->modify($data, self::SCENE_LOGIN_SUCCESS);
         
         // 设置COOKIE
         $expire       = null;
@@ -350,7 +350,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->setChecked($checked);
-        $this->updateInfo($update, self::SCENE_CHECKED);
+        $this->modify($update, self::SCENE_CHECKED);
     }
     
     
@@ -365,7 +365,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->setTheme($theme);
-        $this->updateInfo($update, self::SCENE_THEME);
+        $this->modify($update, self::SCENE_THEME);
         $this->saveThemeToCookie($id, $update->theme);
     }
     
@@ -418,7 +418,7 @@ class AdminUser extends Model
         $update->setErrorTime(0);
         $update->setErrorTotal(0);
         
-        $this->updateInfo($update, self::SCENE_UNLOCK);
+        $this->modify($update, self::SCENE_UNLOCK);
     }
     
     
