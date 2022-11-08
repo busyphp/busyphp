@@ -171,13 +171,19 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 数据转对象
-     * @param array $array 数据
+     * @param array|static $data 数据
      * @return $this
      */
-    public static function parse(array $array) : self
+    public static function parse($data) : self
     {
+        if ($data instanceof static) {
+            $data->onParseAfter();
+            
+            return $data;
+        }
+        
         $obj = static::init();
-        foreach ($array as $name => $value) {
+        foreach ($data as $name => $value) {
             if (is_numeric($name)) {
                 continue;
             }
