@@ -78,6 +78,15 @@ class LinkagePickerPlugin
             
             $list = $this->extend ? $model->selectExtendList() : $model->selectList();
             $data = [];
+            
+            // 默认节点
+            if ($this->handler) {
+                $node = LinkageFlatItem::init();
+                if ($this->handler->defaultNode($node)) {
+                    $data[] = $node;
+                }
+            }
+            
             foreach ($list as $item) {
                 $node = LinkageFlatItem::init();
                 

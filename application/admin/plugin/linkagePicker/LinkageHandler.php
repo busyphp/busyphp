@@ -15,6 +15,17 @@ use BusyPHP\model\Field;
 abstract class LinkageHandler
 {
     /**
+     * 默认选项
+     * @param LinkageFlatItem $node
+     * @return bool
+     */
+    public function defaultNode(LinkageFlatItem $node) : bool
+    {
+        return false;
+    }
+    
+    
+    /**
      * 节点处理回调
      * @param Field|array     $item 数据项
      * @param LinkageFlatItem $node 节点项
