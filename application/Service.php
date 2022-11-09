@@ -3,6 +3,7 @@
 namespace BusyPHP\app;
 
 use BusyPHP\app\admin\controller\AdminHandle;
+use BusyPHP\app\admin\controller\common\ErrorController;
 use BusyPHP\app\admin\controller\common\IndexController;
 use BusyPHP\app\admin\controller\common\PassportController;
 use BusyPHP\app\admin\controller\develop\ComponentController;
@@ -50,22 +51,22 @@ class Service extends \BusyPHP\Service
                     $this->app->bind(Handle::class, AdminHandle::class);
                     
                     $config = $this->app->config->get();
-                    $view   = $config['view'] ?? [];
                     
                     // 注入后台标签库
-                    $taglibPreLoad                     = $view['taglib_pre_load'] ?? '';
+                    $taglibPreLoad                     = $config['view']['taglib_pre_load'] ?? '';
                     $config['view']['taglib_pre_load'] = Ba::class . ($taglibPreLoad ? ',' . $taglibPreLoad : '');
                     
                     // 模版侦测
-                    $templateDetect = $view['template_detect'] ?? [];
+                    $templateDetect = $config['view']['template_detect'] ?? [];
                     
                     // 解析到 application/admin/view 目录
                     $templateDetect['@admin'] = function(string $template, array $config) {
                         return __DIR__ . '/admin/view/' . ltrim(substr($template, 7), '/') . '.html';
                     };
                     
-                    $config['view']['template_detect'] = $templateDetect;
-                    $config['view']['default_filter']  = '';
+                    $config['view']['template_detect']   = $templateDetect;
+                    $config['view']['default_filter']    = '';
+                    $config['route']['empty_controller'] = ErrorController::class;
                     $this->app->config->set($config);
                 }
                 
