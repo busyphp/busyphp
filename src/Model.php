@@ -1611,6 +1611,8 @@ abstract class Model extends Query
      */
     public function setField($field, $value) : int
     {
+        $this->data([]);
+        
         return $this->update([
             Entity::parse($field) => $value
         ]);
