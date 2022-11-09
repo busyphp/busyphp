@@ -187,6 +187,8 @@ class Controller extends Dispatch
             return $this->app->make($class, [], true);
         } elseif ($emptyController && class_exists($emptyClass = $this->app->parseClass($controllerLayer, $emptyController . $suffix))) {
             return $this->app->make($emptyClass, [], true);
+        } elseif (class_exists($emptyController)) {
+            return $this->app->make($emptyController, [], true);
         }
 
         throw new ClassNotFoundException('class not exists:' . $class, $class);
