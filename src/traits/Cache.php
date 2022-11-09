@@ -57,4 +57,24 @@ trait Cache
     {
         return CacheHelper::clear(static::class);
     }
+    
+    
+    /**
+     * 获取缓存，如果不存在则通过回调写入
+     * @param string                                  $name 缓存名称
+     * @param callable():mixed                        $callback 设置回调
+     * @param bool                                    $force 是否强制获取
+     * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
+     * @return mixed
+     */
+    public function rememberCacheByCallback(string $name, callable $callback, bool $force = false, $expire = 600)
+    {
+        $data = $this->getCache($name);
+        if (!$data || $force) {
+            $data = call_user_func($callback);
+            $this->setCache($name, $data, $expire);
+        }
+        
+        return $data;
+    }
 }
