@@ -187,7 +187,7 @@ class TablePlugin
                     }
                 }
             } elseif ($this->word !== '' && $this->searchable) {
-                $model->where(function() use ($model) {
+                $model->where(function(Model $model) {
                     foreach ($this->searchable as $field) {
                         $model->whereLike($field, '%' . FilterHelper::searchWord($this->word) . '%', 'or');
                     }
