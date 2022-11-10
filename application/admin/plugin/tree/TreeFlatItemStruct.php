@@ -25,7 +25,8 @@ class TreeFlatItemStruct extends TreeItemStruct
      */
     public function setParent($parent) : self
     {
-        $this->parent = trim((string) $parent);
+        $parent       = (string) $parent;
+        $this->parent = $parent ?: $this->parent;
         
         return $this;
     }
