@@ -6,8 +6,8 @@ use BusyPHP\App;
 use BusyPHP\app\admin\plugin\linkagePicker\LinkageFlatItem;
 use BusyPHP\app\admin\plugin\linkagePicker\LinkageHandler;
 use BusyPHP\Model;
+use BusyPHP\model\Field;
 use BusyPHP\Request;
-use Closure;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -30,14 +30,19 @@ class LinkagePickerPlugin
     protected $handler;
     
     /**
-     * @var Closure|null
+     * @var callable|null
      */
     protected $queryHandler;
     
     /**
-     * @var Closure|null
+     * @var callable|null
      */
     protected $nodeHandler;
+    
+    /**
+     * @var callable|null
+     */
+    protected $defaultNodeHandler;
     
     /**
      * 是否查询扩展数据
@@ -85,6 +90,11 @@ class LinkagePickerPlugin
                 if ($this->handler->defaultNode($node)) {
                     $data[] = $node;
                 }
+            } elseif (is_callable($this->defaultNodeHandler)) {
+                $node = LinkageFlatItem::init();
+                if (call_user_func_array($this->defaultNodeHandler, [$node])) {
+                    $data[] = $node;
+                }
             }
             
             foreach ($list as $item) {
@@ -122,7 +132,7 @@ class LinkagePickerPlugin
     
     /**
      * 设置查询回调
-     * @param Closure $queryHandler <p>
+     * @param callable(Model):void $queryHandler <p>
      * 匿名函数包涵1个参数<br />
      * <b>{@see \BusyPHP\model\Model} $model 当前查询模型</b><br /><br />
      * 示例：<br />
@@ -134,7 +144,7 @@ class LinkagePickerPlugin
      * </p>
      * @return $this
      */
-    public function setQueryHandler(Closure $queryHandler) : self
+    public function setQueryHandler(callable $queryHandler) : self
     {
         $this->queryHandler = $queryHandler;
         
@@ -144,20 +154,25 @@ class LinkagePickerPlugin
     
     /**
      * 设置节点处理回调
-     * @param Closure $nodeHandler <p>
+     * @param callable(Field, LinkageFlatItem):void $nodeHandler <p>
      * 匿名函数包涵1个参数<br />
      * <b>{@see Field} $item 当前遍历的数据对象</b><br />
      * <b>{@see LinkageFlatItem} $node 返回的节点对象</b><br /><br />
      * 示例：<br />
-     * <pre>$this->setQueryCallback(function({@see Field}|array $item, {@see LinkageFlatItem} $node) {
+     * <pre>$this->setNodeHandler(function({@see Field}|array $item, {@see LinkageFlatItem} $node) {
      *      $node->setId($item->id);
      * });</pre>
      * </p>
+     * @param bool                                  $default 是否默认选项处理
      * @return $this
      */
-    public function setNodeHandler(Closure $nodeHandler) : self
+    public function setNodeHandler(callable $nodeHandler, bool $default = false) : self
     {
-        $this->nodeHandler = $nodeHandler;
+        if ($default) {
+            $this->defaultNodeHandler = $nodeHandler;
+        } else {
+            $this->nodeHandler = $nodeHandler;
+        }
         
         return $this;
     }
