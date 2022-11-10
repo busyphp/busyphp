@@ -350,15 +350,12 @@ abstract class Model extends Query
     
     
     /**
-     * 获取单例
-     * @param LoggerInterface|null $log 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
+     * 获取单例模型
      * @return static
      */
-    public static function instance(LoggerInterface $log = null, string $connect = '', bool $force = false)
+    public static function instance()
     {
-        return Container::getInstance()->make(static::class, [$log, $connect, $force], false);
+        return Container::getInstance()->make(static::class);
     }
     
     
