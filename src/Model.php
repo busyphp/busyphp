@@ -28,7 +28,6 @@ use think\db\exception\InvalidArgumentException;
 use think\db\Query;
 use think\db\Raw;
 use think\DbManager;
-use think\facade\Config;
 use think\helper\Str;
 use think\Log;
 use think\model\concern\TimeStamp;
@@ -44,8 +43,8 @@ use Throwable;
  * @method bool onBeforeUpdate() 更新前回调, 返回false阻止更新
  * @method bool onBeforeDelete() 删除前回调, 返回false阻止更新
  * @method void onChanged(string $method, mixed $id, array $options) 新增/更新/删除后回调
- * @method void onSaveAll() 批量更新回调
- * @method void onAddAll() 批量更新回调
+ * @method void onUpdateAll() 批量更新回调
+ * @method void onInsertAll() 批量更新回调
  * @method void onAfterWrite($id, array $options) 新增/更新完成后回调
  * @method void onAfterInsert($id, array $options) 新增完成后回调
  * @method void onAfterUpdate($id, array $options) 更新完成后回调
@@ -283,54 +282,19 @@ abstract class Model extends Query
      * 定义模型类名
      * @return class-string<Model>
      */
-    protected static function defineClass() : string
+    protected static function defineAbstract() : string
     {
-        return '';
-    }
-    
-    
-    /**
-     * 获取模型类名
-     * @return class-string<static>
-     */
-    public static function getClass() : string
-    {
-        if ($model = self::getDefine('model')) {
-            $define = static::defineClass();
-            if (!is_subclass_of($model, $define)) {
-                throw new ClassNotExtendsException($model, $define);
-            }
-            
-            return $model;
-        }
-        
         return static::class;
     }
     
     
     /**
-     * 获取模型配置
-     * @param string $name
-     * @param mixed  $default
-     * @return mixed
+     * 获取模型类名
+     * @return static|string
      */
-    public static function getDefine(string $name, $default = null)
+    public static function abstract() : string
     {
-        $class = static::defineClass();
-        if ($class && !is_subclass_of($class, self::class)) {
-            throw new ClassNotExtendsException($class, self::class);
-        }
-        
-        $config = Config::get('database.model.' . $class, null);
-        if (is_array($config)) {
-            return ArrayHelper::get($config, $name, $default);
-        }
-        
-        if ($name === 'model') {
-            return $config ?: $default;
-        }
-        
-        return $default;
+        return Container::getInstance()->getAlias(static::defineAbstract());
     }
     
     
@@ -343,7 +307,7 @@ abstract class Model extends Query
      */
     public static function init(LoggerInterface $log = null, string $connect = '', bool $force = false)
     {
-        $class = self::getClass();
+        $class = self::abstract();
         
         return new $class($log, $connect, $force);
     }
@@ -360,12 +324,7 @@ abstract class Model extends Query
     
     
     /**
-     * 解析静态一维数组数据
-     * @param array $array
-     * @param mixed $var
-     * @return array|mixed
-     * @deprecated
-     * @see ArrayHelper::getValueOrSelf()
+     * @deprecated 该方法已过期，请使用 {@see ArrayHelper::getValueOrSelf()}，未来某个版本会删除
      */
     public static function parseVars(array $array, $var = null)
     {
@@ -374,14 +333,7 @@ abstract class Model extends Query
     
     
     /**
-     * 解析类常量
-     * @param string|true $class 类，传入true则代表本类
-     * @param string      $prefix 常量前缀
-     * @param array       $annotations 其他注解
-     * @param mixed       $mapping 数据映射，指定字段名则获取的到数据就是 值 = 字段数据，指定回调则会将数据传入回调以返回为结果
-     * @return array
-     * @deprecated
-     * @see ClassHelper::getConstAttrs()
+     * @deprecated 该方法已过期，请使用 {@see ClassHelper::getConstAttrs()}，未来某个版本会删除
      */
     public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
     {
@@ -399,7 +351,7 @@ abstract class Model extends Query
     {
         // 当前模型名
         if (empty($this->name)) {
-            $this->name = basename(str_replace('\\', '/', static::class));
+            $this->name = basename(str_replace('\\', '/', static::defineAbstract()));
         }
         
         // 连接标识
@@ -575,7 +527,7 @@ abstract class Model extends Query
             case substr($lower, 0, 10) == 'getfieldby':
                 $name = Str::snake(substr($method, 10));
                 
-                return $this->where($name, '=', $args[0])->val($args[1], $args[2] ?? null);
+                return $this->where($name, '=', $args[0])->value($args[1], $args[2] ?? null);
             
             // getInfoByField
             case substr($lower, 0, 9) == 'getinfoby':
@@ -1020,7 +972,6 @@ abstract class Model extends Query
     
     /**
      * 查找记录
-     * @access public
      * @param mixed $data 数据
      * @return Collection
      * @throws DbException
@@ -1137,24 +1088,35 @@ abstract class Model extends Query
         }
         
         // 设置data
-        $this->data($field ? $field->obtain() : $data);
+        $this->data($field ?: $data);
         
         return $this;
     }
     
     
     /**
+     * 设置数据
+     * @param array|Field $data 数据
+     * @return $this
+     */
+    public function data($data)
+    {
+        return parent::data($this->parseData($data));
+    }
+    
+    
+    /**
      * 更新记录
-     * @param array $data 更新的数据
+     * @param array|Field $data 更新的数据
      * @return int
      * @throws DbException
      */
-    public function update(array $data = []) : int
+    public function update($data = []) : int
     {
         $this->triggerEvent('BeforeUpdate');
         
         try {
-            $result  = parent::update($data);
+            $result  = parent::update($this->parseData($data));
             $options = $this->options;
         } finally {
             $this->removeOption();
@@ -1168,17 +1130,17 @@ abstract class Model extends Query
     
     /**
      * 插入记录
-     * @param array   $data 数据
-     * @param boolean $getLastInsID 返回自增主键
+     * @param array|Field $data 数据
+     * @param boolean     $getLastInsID 返回自增主键
      * @return int|string
      * @throws DbException
      */
-    public function insert(array $data = [], bool $getLastInsID = false)
+    public function insert($data = [], bool $getLastInsID = true)
     {
         $this->triggerEvent('BeforeInsert');
         
         try {
-            $result  = parent::insert($data, $getLastInsID);
+            $result  = parent::insert($this->parseData($data), $getLastInsID);
             $options = $this->options;
         } finally {
             $this->removeOption();
@@ -1192,15 +1154,36 @@ abstract class Model extends Query
     
     /**
      * 批量插入记录
-     * @param array   $dataSet 数据集
-     * @param integer $limit 每次写入数据限制
+     * @param array|Field[] $dataSet 数据集
+     * @param integer       $limit 每次写入数据限制
      * @return int
      * @throws DbException
      */
     public function insertAll(array $dataSet = [], int $limit = 0) : int
     {
         try {
-            return parent::insertAll($dataSet, $limit);
+            foreach ($dataSet as $index => $item) {
+                $dataSet[$index] = $this->parseData($item);
+            }
+            
+            $result = parent::insertAll($dataSet, $limit);
+            
+            // 触发回调
+            if (method_exists($this, 'onInsertAll')) {
+                $this->ignoreException(function() {
+                    $this->onInsertAll();
+                });
+            }
+            
+            //
+            // 兼容onAddAll
+            elseif (method_exists($this, 'onAddAll')) {
+                $this->ignoreException(function() {
+                    $this->onAddAll();
+                });
+            }
+            
+            return $result;
         } finally {
             $this->removeOption();
         }
@@ -1210,9 +1193,6 @@ abstract class Model extends Query
     /**
      * 删除记录
      * @param mixed $data 表达式 true 表示强制删除
-     * <p><b>$this->delete(1)</b> 通过主键删除</p>
-     * <p><b>$this->delete([1,2,3])</b> 通过主键批量删除</p>
-     * <p><b>$this->delete(true)</b> 强制删除</p>
      * @return int
      * @throws DbException
      */
@@ -1235,8 +1215,8 @@ abstract class Model extends Query
     
     /**
      * 通过Select方式插入记录
-     * @param array  $fields 要插入的数据表字段名
-     * @param string $table 要插入的数据表名
+     * @param array|Field[] $fields 要插入的数据表字段名
+     * @param string        $table 要插入的数据表名
      * @return int
      * @throws DbException
      */
@@ -1254,6 +1234,7 @@ abstract class Model extends Query
      * 生成查询语句
      * @param bool $sub
      * @return string
+     * @throws DbException
      */
     public function buildSql(bool $sub = true) : string
     {
@@ -1267,12 +1248,12 @@ abstract class Model extends Query
     
     /**
      * 得到某个字段的值
-     * @param string $field 字段名
-     * @param mixed  $default 默认值
+     * @param string|Field $field 字段名
+     * @param mixed        $default 默认值
      * @return mixed
      * @throws DbException
      */
-    public function value(string $field, $default = null)
+    public function value($field, $default = null)
     {
         try {
             return parent::value(Entity::parse($field), $default);
@@ -1283,15 +1264,12 @@ abstract class Model extends Query
     
     
     /**
-     * 得到某个字段的值，{@see Model::value()} 别名
-     * @param Entity|string $field 字段名
-     * @param mixed         $default 默认值
-     * @return mixed
      * @throws DbException
+     * @deprecated 该方法已过期，请使用{@see Model::value()}，未来某个版本会删除
      */
     public function val($field, $default = null)
     {
-        return $this->value(Entity::parse($field), $default);
+        return $this->value($field, $default);
     }
     
     
@@ -1331,11 +1309,8 @@ abstract class Model extends Query
     
     
     /**
-     * 插入操作
-     * @param array|Field $data 数据
-     * @param bool        $replace 是否replace
-     * @return int|string
      * @throws DbException
+     * @deprecated 该方法已过期，请使用 {@see Model::insert()}
      */
     public function addData($data = [], bool $replace = false)
     {
@@ -1343,16 +1318,13 @@ abstract class Model extends Query
             $this->replace();
         }
         
-        return $this->insert($this->parseData($data), true);
+        return $this->insert($data, true);
     }
     
     
     /**
-     * 批量插入数据
-     * @param array $data 插入的数据集合
-     * @param bool  $replace 是否替换方式插入
-     * @return int 返回插入的条数
      * @throws DbException
+     * @deprecated 该方法已过期，请使用 {@see Model::insertAll()}
      */
     public function addAll(array $data = [], bool $replace = false) : int
     {
@@ -1360,39 +1332,24 @@ abstract class Model extends Query
             $this->replace();
         }
         
-        foreach ($data as $index => $item) {
-            $data[$index] = $this->parseData($item);
-        }
-        
-        $result = $this->insertAll($data);
-        
-        // 触发回调
-        if (method_exists($this, 'onAddAll')) {
-            $this->ignoreException(function() {
-                $this->onAddAll();
-            });
-        }
-        
-        return $result;
+        return $this->insertAll($data);
     }
     
     
     /**
-     * 保存数据
-     * @param array|Field $data
-     * @return int 0没有更新任何数据，大于0则代表更新的记录数
      * @throws DbException
+     * @deprecated 该方法已过期，请使用 {@see Model::update()}
      */
     public function saveData($data = []) : int
     {
-        return $this->update($this->parseData($data));
+        return $this->update($data);
     }
     
     
     /**
      * 批量更新数据
      * @param array  $data 更新的数据<pre>
-     * $this->saveAll([
+     * $this->updateAll([
      *     [
      *         'id'     => 1,       // 主键必选
      *         'name'   => 'test',  // 要更新的字段1
@@ -1402,10 +1359,9 @@ abstract class Model extends Query
      * </pre>
      * @param string $pk 依据$data中的哪个字段进行查询更新 如: id
      * @return int
-     * @throws InvalidArgumentException
      * @throws DbException
      */
-    public function saveAll(array $data, string $pk = '') : int
+    public function updateAll(array $data, string $pk = '') : int
     {
         $pk   = $pk ?: $this->getPk();
         $list = [];
@@ -1445,13 +1401,31 @@ abstract class Model extends Query
         $result = $this->execute(sprintf('UPDATE %s SET %s WHERE %s in (%s)', $this->getTable(), implode(',', $item), $pk, implode(',', $idIn)));
         
         // 触发回调
-        if (method_exists($this, 'onSaveAll')) {
+        if (method_exists($this, 'onUpdateAll')) {
+            $this->ignoreException(function() {
+                $this->onUpdateAll();
+            });
+        }
+        
+        //
+        // 兼容onSaveAll
+        elseif (method_exists($this, 'onSaveAll')) {
             $this->ignoreException(function() {
                 $this->onSaveAll();
             });
         }
         
         return $result;
+    }
+    
+    
+    /**
+     * @throws DbException
+     * @deprecated 该方法已过期，请使用 {@see Model::updateAll()}
+     */
+    public function saveAll(array $data, string $pk = '') : int
+    {
+        return $this->updateAll($data, $pk);
     }
     
     
@@ -1548,7 +1522,7 @@ abstract class Model extends Query
      * @param float|int     $step 增长值
      * @return $this
      */
-    public function increase($field, $step = 1)
+    public function inc($field, $step = 1)
     {
         if ($field instanceof Entity) {
             $value = $field->value();
@@ -1557,7 +1531,7 @@ abstract class Model extends Query
             }
         }
         
-        return $this->inc(Entity::parse($field), $step);
+        return parent::inc(Entity::parse($field), $step);
     }
     
     
@@ -1567,7 +1541,7 @@ abstract class Model extends Query
      * @param float|int     $step 减少值
      * @return $this
      */
-    public function decrease($field, $step = 1)
+    public function dec($field, $step = 1)
     {
         if ($field instanceof Entity) {
             $value = $field->value();
@@ -1576,39 +1550,27 @@ abstract class Model extends Query
             }
         }
         
-        return $this->dec(Entity::parse($field), $step);
+        return parent::dec(Entity::parse($field), $step);
     }
     
     
     /**
-     * 字段值增长
-     * @param string|Entity $field 字段名
-     * @param float|int     $step 增长值
-     * @return int
      * @throws DbException
-     * @deprecated 请使用 {@see Model::increase()}，未来某个版本会删除
+     * @deprecated 请使用 {@see Model::inc()}，未来某个版本会删除
      */
     public function setInc($field, $step = 1) : int
     {
-        $this->log('setInc 方法已过期，未来某个版本会删除，请使用 increase 方法', Log::WARNING, null, __METHOD__);
-        
-        return $this->increase($field, $step)->update();
+        return $this->inc($field, $step)->update();
     }
     
     
     /**
-     * 字段值减少
-     * @param string|Entity $field 字段名
-     * @param float|int     $step 减少值
-     * @return int
      * @throws DbException
-     * @deprecated 请使用 {@see Model::decrease()}，未来某个版本会删除
+     * @deprecated 请使用 {@see Model::dec()}，未来某个版本会删除
      */
     public function setDec($field, $step = 1) : int
     {
-        $this->log('setDec 方法已过期，未来某个版本会删除，请使用 decrease 方法', Log::WARNING, null, __METHOD__);
-        
-        return $this->decrease($field, $step)->update();
+        return $this->dec($field, $step)->update();
     }
     
     
@@ -1770,14 +1732,10 @@ abstract class Model extends Query
     
     
     /**
-     * 获取Join别名
-     * @return string
      * @deprecated 请使用 {@see Model::getAlias()}，未来某个版本会删除
      */
     public function getJoinAlias() : string
     {
-        $this->log('deleteInfo 方法已过期，未来某个版本会删除，请使用 remove 方法', Log::WARNING, null, __METHOD__);
-        
         return $this->getAlias();
     }
     
@@ -1831,9 +1789,7 @@ abstract class Model extends Query
     
     
     /**
-     * 模型字段实体条件
-     * @param mixed ...$entity
-     * @return static
+     * @deprecated 该方法已过期，请使用{@see Model::where()}，未来某个版本会删除
      */
     public function whereEntity(...$entity)
     {
@@ -1922,9 +1878,8 @@ abstract class Model extends Query
     /**
      * 指定having查询
      * @param string|Entity $having having
-     * @return $this
      */
-    public function have($having)
+    public function having($having)
     {
         return parent::having(Entity::parse($having));
     }
