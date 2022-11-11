@@ -84,4 +84,19 @@ class AppHelper
         
         return $app->runningInConsole() ? self::CLI_CLIENT_KEY : $app->getDirName();
     }
+    
+    
+    /**
+     * 剔除controller后缀
+     * @param string $value
+     * @return string
+     */
+    public static function trimController(string $value) : string
+    {
+        if (strtolower((string) substr($value, -10)) === 'controller') {
+            $value = substr($value, 0, -10);
+        }
+        
+        return StringHelper::snake($value);
+    }
 }
