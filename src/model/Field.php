@@ -40,25 +40,25 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     // + 注释属性
     // +----------------------------------------------------
     /** @var string 字段注释属性-定义 {@see Model::validate()} 的校验参数，支持多个，支持按"|"分割校验规则 */
-    public const ATTR_VALIDATE = 'busy-validate';
+    public const ATTR_VALIDATE = 'busy-field-validate';
     
     /** @var string 字段注释属性-定义真实字段名称，在数据库操作中生效 */
-    public const ATTR_FIELD = 'busy-field';
+    public const ATTR_FIELD = 'busy-field-name';
     
     /** @var string 字段注释属性-设置值时，使用的过滤方法，支持多个，支持按逗号分割过滤方法 */
-    public const ATTR_FILTER = 'busy-filter';
+    public const ATTR_FILTER = 'busy-field-filter';
     
     /** @var string 字段注释属性-设置值时如果是数组类型，定义数组的转换方式 */
-    public const ATTR_ARRAY = 'busy-array';
+    public const ATTR_ARRAY = 'busy-field-array';
     
     /** @var string 字段注释属性-设置值时是否不按照属性类型强制转换 */
-    public const ATTR_NO_CAST = 'busy-no-cast';
+    public const ATTR_NO_CAST = 'busy-field-no-cast';
     
     /** @var string 字段注释属性-使用 {@see Field::toArray()} 方法输出时，重命名该属性的名称 */
-    public const ATTR_RENAME = 'busy-rename';
+    public const ATTR_RENAME = 'busy-field-rename';
     
     /** @var string 字段注释属性-是否忽略该属性，使用 {@see Field::toArray()} {@see Field::obtain()} {@see Field::copyData()} 时有效，一般用于内部使用 */
-    public const ATTR_IGNORE = 'busy-ignore';
+    public const ATTR_IGNORE = 'busy-field-ignore';
     
     // +----------------------------------------------------
     // + 内部属性
@@ -430,12 +430,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     self::ATTR_FIELD    => ClassHelper::CAST_STRING,
                     self::ATTR_FILTER   => ClassHelper::CAST_STRING,
                     self::ATTR_VALIDATE => ClassHelper::CAST_STRING,
-                    self::ATTR_IGNORE   => ClassHelper::CAST_BOOL,
-                    self::ATTR_NO_CAST  => ClassHelper::CAST_BOOL,
                     self::ATTR_RENAME   => ClassHelper::CAST_STRING,
                     self::ATTR_ARRAY    => ClassHelper::CAST_STRING
                 ]);
                 
+                $attr[self::ATTR_NO_CAST]    = TransHelper::toBool(isset($attr[self::ATTR_NO_CAST]) ? ($attr[self::ATTR_NO_CAST] ?: true) : false);
+                $attr[self::ATTR_IGNORE]     = TransHelper::toBool(isset($attr[self::ATTR_IGNORE]) ? ($attr[self::ATTR_IGNORE] ?: true) : false);
                 $attr[self::DEFINE_PROPERTY] = $item;
                 $attr[self::DEFINE_ACCESS]   = $access;
                 $attr[self::ATTR_FIELD]      = $attr[self::ATTR_FIELD] ?: $snake;
@@ -939,26 +939,26 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 使用自定义注释属性输出，以执行 {@see Field::toArray()}
-     * @param string $attr 自定义属性，默认为 "@busy-use-safe"
+     * @param string $attr 自定义属性，默认为 "@busy-field-use-safe"
      * @return $this
      */
-    public function use(string $attr = 'safe') : self
+    public function plan(string $attr = 'safe') : self
     {
-        $this->__private__options['use'] = $attr ? 'busy-use-' . $attr : '';
+        $this->__private__options['plan'] = $attr ? 'busy-field-use-' . $attr : '';
         
         return $this;
     }
     
     
     /**
-     * 重置由 {@see Field::use()} {@see Field::retain()} {@see Field::exclude()} 设置的条件
+     * 重置由 {@see Field::plan()} {@see Field::retain()} {@see Field::exclude()} 设置的条件
      * @return $this
      */
     public function reset() : self
     {
         unset($this->__private__options['limit_property']);
         unset($this->__private__options['limit_exclude']);
-        unset($this->__private__options['use']);
+        unset($this->__private__options['plan']);
         
         return $this;
     }
@@ -1058,7 +1058,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public function toArray() : array
     {
-        $use           = $this->__private__options['use'] ?? null;
+        $plan          = $this->__private__options['plan'] ?? null;
         $limitProperty = $this->__private__options['limit_property'] ?? [];
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
         
@@ -1075,16 +1075,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         
         // 输出指定属性
-        $useMap = [];
-        if ($use) {
-            self::eachPropertyAttrs(function($field, ReflectionProperty $property, array $attrs) use ($use, &$useMap) {
-                if (!isset($attrs[$use])) {
+        $planMap = [];
+        if ($plan) {
+            self::eachPropertyAttrs(function($field, ReflectionProperty $property, array $attrs) use ($plan, &$planMap) {
+                if (!isset($attrs[$plan])) {
                     return;
                 }
                 
-                $name          = $property->getName();
-                $attrs[$use]   = is_array($attrs[$use]) ? end($attrs[$use]) : $attrs[$use];
-                $useMap[$name] = $attrs[$use] ?: self::getPropertyToRenameMap($name);
+                $name           = $property->getName();
+                $attrs[$plan]   = is_array($attrs[$plan]) ? end($attrs[$plan]) : $attrs[$plan];
+                $planMap[$name] = $attrs[$plan] ?: self::getPropertyToRenameMap($name);
             });
         }
         
@@ -1104,8 +1104,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 }
             }
             
-            if ($use) {
-                if ($name = $useMap[$property] ?? null) {
+            if ($plan) {
+                if ($name = $planMap[$property] ?? null) {
                     $array[$name] = $value;
                 }
             } else {
