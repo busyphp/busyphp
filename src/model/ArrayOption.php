@@ -75,13 +75,43 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     
     /**
      * 获取值
-     * @param string $key 键，支持.下级访问
-     * @param mixed  $default 默认值
+     * @param string                     $key 键，支持.下级访问
+     * @param mixed                      $default 默认值
+     * @param callable|string|callable[] $filter 数据过滤方法
      * @return mixed
      */
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null, $filter = null)
     {
-        return ArrayHelper::get($this->options, $key, $default);
+        $value = ArrayHelper::get($this->options, $key, $default);
+        
+        if ($filter) {
+            $filter = is_callable($filter) ? [$filter] : $filter;
+            $filter = is_string($filter) ? explode(',', $filter) : $filter;
+            foreach ($filter as $item) {
+                if (is_callable($item)) {
+                    $value = call_user_func($item, $value);
+                }
+            }
+        }
+        
+        return $value;
+    }
+    
+    
+    /**
+     * 获取值并删除
+     * @param string                     $key 键，支持.下级访问
+     * @param mixed                      $default 默认值
+     * @param callable|string|callable[] $filter 数据过滤方法
+     * @return mixed
+     */
+    public function pull(string $key, $default = null, $filter = null)
+    {
+        $value = $this->get($key, $default, $filter);
+        
+        ArrayHelper::forget($this->options, $key);
+        
+        return $value;
     }
     
     
