@@ -130,7 +130,7 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     
     /**
      * 如果条件满足就删除
-     * @param string $key
+     * @param string $key 键，支持.下级访问
      * @param mixed  $op 等式或条件
      * @param mixed  $condition 条件
      * @return $this
@@ -228,6 +228,147 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
         }
         
         return $this;
+    }
+    
+    
+    /**
+     * 等于给定值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfEqual(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? '===' : '==', $condition);
+    }
+    
+    
+    /**
+     * 值为空就删除
+     * @param string $key 键，支持.下级访问
+     * @return $this
+     */
+    public function deleteIfEmpty(string $key) : self
+    {
+        return $this->deleteIfNeed($key, '==', '');
+    }
+    
+    
+    /**
+     * 不等于给定值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfNotEqual(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? '!==' : '!=', $condition);
+    }
+    
+    
+    /**
+     * 大于某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $equal 是否大于等于
+     * @return $this
+     */
+    public function deleteIfGt(string $key, $condition, bool $equal = false) : self
+    {
+        return $this->deleteIfNeed($key, $equal ? '>=' : '>', $condition);
+    }
+    
+    
+    /**
+     * 小于某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $equal 是否大于等于
+     * @return $this
+     */
+    public function deleteIfLt(string $key, $condition, bool $equal = false) : self
+    {
+        return $this->deleteIfNeed($key, $equal ? '<=' : '<', $condition);
+    }
+    
+    
+    /**
+     * 包含某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfLike(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? 'like!' : 'like', $condition);
+    }
+    
+    
+    /**
+     * 不包含某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfNotLike(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? 'not like!' : 'not like', $condition);
+    }
+    
+    
+    /**
+     * 数组包含某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfIn(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? 'in!' : 'in', $condition);
+    }
+    
+    
+    /**
+     * 数组不包含某个值就删除
+     * @param string $key 键，支持.下级访问
+     * @param mixed  $condition 条件
+     * @param bool   $strict 是否严格检测
+     * @return $this
+     */
+    public function deleteIfNotIn(string $key, $condition, bool $strict = false) : self
+    {
+        return $this->deleteIfNeed($key, $strict ? 'not in!' : 'not in', $condition);
+    }
+    
+    
+    /**
+     * 在给定范围内就删除
+     * @param string    $key 键，支持.下级访问
+     * @param int|float $min 最小值
+     * @param int|float $max 最大值
+     * @return $this
+     */
+    public function deleteIfBetween(string $key, $min, $max) : self
+    {
+        return $this->deleteIfNeed($key, 'between', "$min,$max");
+    }
+    
+    
+    /**
+     * 不在给定范围内就删除
+     * @param string    $key 键，支持.下级访问
+     * @param int|float $min 最小值
+     * @param int|float $max 最大值
+     * @return $this
+     */
+    public function deleteIfNotBetween(string $key, $min, $max) : self
+    {
+        return $this->deleteIfNeed($key, 'not between', "$min,$max");
     }
     
     
