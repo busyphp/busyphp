@@ -109,9 +109,22 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     {
         $value = $this->get($key, $default, $filter);
         
-        ArrayHelper::forget($this->options, $key);
+        $this->delete($key);
         
         return $value;
+    }
+    
+    
+    /**
+     * 删除键
+     * @param ...$key
+     * @return $this
+     */
+    public function delete(...$key) : self
+    {
+        ArrayHelper::forget($this->options, $key);
+        
+        return $this;
     }
     
     
@@ -119,11 +132,24 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
      * 设置值
      * @param string $key 键，支持.下级访问
      * @param mixed  $value 值
-     * @return array
+     * @return $this
      */
-    public function set(string $key, $value) : array
+    public function set(string $key, $value) : self
     {
-        return ArrayHelper::set($this->options, $key, $value);
+        ArrayHelper::set($this->options, $key, $value);
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 检测指定键是否存在
+     * @param string $key 键，支持.下级访问
+     * @return bool
+     */
+    public function has(string $key) : bool
+    {
+        return ArrayHelper::has($this->options, $key);
     }
     
     
@@ -261,6 +287,17 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     public function getIterator() : iterable
     {
         return new ArrayIterator($this->options);
+    }
+    
+    
+    /**
+     * 生成 HTTP Query
+     * @param int $encodingType
+     * @return string
+     */
+    public function toHttpQuery(int $encodingType = PHP_QUERY_RFC3986) : string
+    {
+        return http_build_query($this->options, '', '&', $encodingType);
     }
     
     
