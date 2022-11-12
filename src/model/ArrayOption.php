@@ -116,13 +116,116 @@ class ArrayOption implements ArrayAccess, Countable, Jsonable, JsonSerializable,
     
     
     /**
-     * 删除键
+     * 删除
      * @param ...$key
      * @return $this
      */
     public function delete(...$key) : self
     {
         ArrayHelper::forget($this->options, $key);
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 如果条件满足就删除
+     * @param string $key
+     * @param mixed  $op 等式或条件
+     * @param mixed  $condition 条件
+     * @return $this
+     */
+    public function deleteIfNeed(string $key, $op, $condition) : self
+    {
+        if (!$this->has($key)) {
+            return $this;
+        }
+        
+        $value = $this->get($key);
+        if ($condition instanceof Closure) {
+            $condition = call_user_func($condition);
+        }
+        
+        switch (strtolower($op)) {
+            case '===':
+                $state = $value === $condition;
+            break;
+            case '>=':
+                $state = $value >= $condition;
+            break;
+            case '>':
+                $state = $value > $condition;
+            break;
+            case '<=':
+                $state = $value <= $condition;
+            break;
+            case '<':
+                $state = $value < $condition;
+            break;
+            case '!':
+            case '!=':
+            case '<>':
+                $state = $value != $condition;
+            break;
+            case '!==':
+                $state = $value !== $condition;
+            break;
+            // like
+            case 'like':
+                $state = is_string($value) && false !== stripos($value, $condition);
+            break;
+            // like strict
+            case 'like!':
+                $state = is_string($value) && false !== strpos($value, $condition);
+            break;
+            // not like
+            case '!like':
+            case 'not like':
+            case 'notlike':
+                $state = is_string($value) && false === stripos($value, $condition);
+            break;
+            // not like strict
+            case '!like!':
+            case 'not like!':
+            case 'notlike!':
+                $state = is_string($value) && false === strpos($value, $condition);
+            break;
+            // in
+            case 'in':
+                $state = is_array($value) && in_array($condition, $value);
+            break;
+            // in strict
+            case 'in!':
+                $state = is_array($value) && in_array($condition, $value, true);
+            break;
+            // not in
+            case '!in':
+            case 'not in':
+            case 'notin':
+                $state = is_array($value) && !in_array($condition, $value);
+            break;
+            // not in strict
+            case '!in!':
+            case 'notin!':
+            case 'not in!':
+                $state = is_array($value) && !in_array($condition, $value, true);
+            break;
+            // between
+            case 'between':
+                [$min, $max] = !is_array($condition) ? explode(',', (string) $condition) : $condition;
+                $state = is_scalar($value) && $value >= $min && $value <= $max;
+            break;
+            case 'not between':
+                [$min, $max] = !is_array($condition) ? explode(',', (string) $condition) : $condition;
+                $state = is_scalar($value) && ($value > $max || $value < $min);
+            break;
+            default:
+                $state = $value == $condition;
+        }
+        
+        if ($state) {
+            $this->delete($key);
+        }
         
         return $this;
     }
