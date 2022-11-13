@@ -16,6 +16,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/3/13 9:27 AM LinkagePickerPlugin.php $
+ * @deprecated 请使用 {@see LinkagePicker}，未来某个版本会删除
  */
 class LinkagePickerPlugin
 {
@@ -43,6 +44,11 @@ class LinkagePickerPlugin
      * @var callable|null
      */
     protected $defaultNodeHandler;
+    
+    /**
+     * @var callable|null
+     */
+    protected $listHandler;
     
     /**
      * 是否查询扩展数据
@@ -110,6 +116,12 @@ class LinkagePickerPlugin
                 $data[] = $node;
             }
             
+            if ($this->handler) {
+                $data = $this->handler->list($data);
+            } elseif (is_callable($this->listHandler)) {
+                $data = call_user_func_array($this->listHandler, [$data]);
+            }
+            
             return $this->result($data);
         }
         
@@ -173,6 +185,19 @@ class LinkagePickerPlugin
         } else {
             $this->nodeHandler = $nodeHandler;
         }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置节点数据处理回调
+     * @param callable(LinkageFlatItem[]):LinkageFlatItem[] $listHandler
+     * @return $this
+     */
+    public function setListHandler(callable $listHandler) : self
+    {
+        $this->listHandler = $listHandler;
         
         return $this;
     }

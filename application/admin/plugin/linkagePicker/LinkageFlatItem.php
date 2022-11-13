@@ -7,6 +7,7 @@ namespace BusyPHP\app\admin\plugin\linkagePicker;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/3/12 5:27 PM LinkageFlatItem.php $
+ * @deprecated
  */
 class LinkageFlatItem extends LinkageItem
 {
@@ -24,7 +25,7 @@ class LinkageFlatItem extends LinkageItem
      */
     public function setParent(string $parent) : self
     {
-        $this->parent = $parent;
+        $this->parent = $parent ?: $this->parent;
         
         return $this;
     }

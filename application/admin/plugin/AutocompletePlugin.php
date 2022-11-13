@@ -18,6 +18,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/8/30 下午下午5:23 AutocompletePlugin.php $
+ * @deprecated 请使用 {@see Autocomplete}，未来某个版本会删除
  */
 class AutocompletePlugin
 {

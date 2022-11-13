@@ -11,6 +11,7 @@ use BusyPHP\model\Field;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/3/13 9:24 AM LinkageHandler.php $
+ * @deprecated
  */
 abstract class LinkageHandler
 {
@@ -32,6 +33,17 @@ abstract class LinkageHandler
      */
     public function node($item, LinkageFlatItem $node) : void
     {
+    }
+    
+    
+    /**
+     * 节点列表处理回调
+     * @param LinkageFlatItem[] $list
+     * @return LinkageFlatItem[]
+     */
+    public function list($list) : array
+    {
+        return $list;
     }
     
     

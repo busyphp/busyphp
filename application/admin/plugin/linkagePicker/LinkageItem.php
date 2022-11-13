@@ -9,6 +9,7 @@ use BusyPHP\model\Map;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/3/12 5:16 PM LinkageItem.php $
+ * @deprecated
  */
 class LinkageItem extends Map
 {

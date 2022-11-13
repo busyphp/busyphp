@@ -12,6 +12,7 @@ use BusyPHP\model\Map;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/11/2 下午下午3:34 TableHandler.php $
+ * @deprecated
  */
 abstract class TableHandler extends BaseHandler
 {

@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\driver\Table;
 use BusyPHP\app\admin\plugin\table\TableHandler;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\helper\StringHelper;
@@ -20,6 +21,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/7 下午下午8:32 TablePlugin.php $
+ * @deprecated 请使用 {@see Table}，未来某个版本会删除
  */
 class TablePlugin
 {
