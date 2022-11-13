@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\driver\Tree;
 use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
 use BusyPHP\app\admin\plugin\tree\TreeHandler;
 use BusyPHP\Model;
@@ -17,6 +18,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/23 下午上午9:32 TreePlugin.php $
+ * @deprecated 已过期，请使用 {@see Tree}，未来某个版本会删除
  */
 class TreePlugin
 {

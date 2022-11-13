@@ -11,6 +11,7 @@ use stdClass;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/23 下午上午9:43 TreeItemStruct.php $
+ * @deprecated
  */
 abstract class TreeItemStruct extends Map
 {
