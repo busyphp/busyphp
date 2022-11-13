@@ -33,7 +33,7 @@ class ObjectOption implements Countable, Arrayable, Jsonable, JsonSerializable, 
      * 快速实例化
      * @return static
      */
-    public static function init() : self
+    public static function init()
     {
         return new static();
     }
