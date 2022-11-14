@@ -21,6 +21,9 @@ trait ModelTotal
     {
         $totalModel = clone $this->model;
         $totalModel->removeOption('order');
+        $totalModel->removeOption('limit');
+        $totalModel->removeOption('page');
+        $totalModel->removeOption('field');
         
         return $totalModel->count();
     }
