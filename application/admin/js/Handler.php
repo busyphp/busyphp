@@ -57,10 +57,11 @@ abstract class Handler
         }
         
         $this->prepare = true;
+        $app           = App::getInstance();
         $this->driver  = $driver;
-        $this->app     = $driver->app;
-        $this->request = $driver->request;
-        $this->model   = $driver->model;
+        $this->app     = $app;
+        $this->request = $app->request;
+        $this->model   = $driver->getModel();
         
         return $this;
     }

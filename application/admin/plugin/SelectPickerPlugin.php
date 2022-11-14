@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\driver\SelectPicker;
 use BusyPHP\app\admin\plugin\selectPicker\SelectPickerHandler;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
@@ -18,6 +19,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/8/30 下午下午1:55 SelectPickerPlugin.php $
+ * @deprecated 已过期，请使用 {@see SelectPicker}，未来某个版本会删除
  */
 class SelectPickerPlugin
 {

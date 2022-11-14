@@ -32,12 +32,12 @@ class TreeFlatNode extends TreeNode
     
     /**
      * 设置父节点ID
-     * @param string $parent
+     * @param mixed $parent
      * @return $this
      */
-    public function setParent(string $parent) : self
+    public function setParent($parent) : self
     {
-        $this->parent = $parent ?: '#';
+        $this->parent = (string) ($parent ?: '#');
         
         return $this;
     }

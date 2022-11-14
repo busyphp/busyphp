@@ -5,11 +5,11 @@ namespace BusyPHP\app\admin\js\driver;
 use BusyPHP\app\admin\js\Driver;
 use BusyPHP\app\admin\js\driver\linkagepicker\LinkagePickerFlatNode;
 use BusyPHP\app\admin\js\driver\linkagepicker\LinkagePickerHandler;
-use BusyPHP\Model;
+use BusyPHP\app\admin\js\traits\Lists;
+use BusyPHP\app\admin\js\traits\ModelOrder;
+use BusyPHP\app\admin\js\traits\ModelQuery;
+use BusyPHP\app\admin\js\traits\ModelSelect;
 use BusyPHP\model\Entity;
-use BusyPHP\model\Field;
-use Closure;
-use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -23,11 +23,10 @@ use think\db\exception\DbException;
  */
 class LinkagePicker extends Driver
 {
-    /**
-     * 是否查询扩展数据
-     * @var bool
-     */
-    protected $extend;
+    use ModelSelect;
+    use ModelOrder;
+    use ModelQuery;
+    use Lists;
     
     /**
      * 获取id的字段
@@ -53,30 +52,6 @@ class LinkagePicker extends Driver
      */
     protected $disabledField;
     
-    /**
-     * 数据集
-     * @var array|Collection|null
-     */
-    protected $list = null;
-    
-    /**
-     * 查询处理回调
-     * @var null|callable($model Model):void
-     */
-    protected $queryCallback;
-    
-    /**
-     * 数据集处理回调
-     * @var callable($list array|Collection):mixed
-     */
-    protected $listCallback;
-    
-    /**
-     * 数据集的Item处理回调
-     * @var callable($node LinkagePickerFlatNode, $item array|Field, $index int):mixed
-     */
-    protected $itemCallback;
-    
     
     public function __construct()
     {
@@ -86,71 +61,11 @@ class LinkagePicker extends Driver
         $this->parentField   = $this->request->param('parent_field/s', '', 'trim');   // TODO JS组件暂不支持
         $this->nameField     = $this->request->param('name_field/s', '', 'trim');     // TODO JS组件暂不支持
         $this->disabledField = $this->request->param('disabled_field/s', '', 'trim'); // TODO JS组件暂不支持
-        $this->extend        = $this->request->param('extend/b', false);
         
         $this->idField       = $this->idField ?: 'id';
         $this->parentField   = $this->parentField ?: 'parent_id';
         $this->nameField     = $this->nameField ?: 'name';
         $this->disabledField = $this->disabledField ?: 'disabled';
-    }
-    
-    
-    /**
-     * 指定数据集
-     * @param array|Collection|callable($node LinkagePickerFlatNode, $item array|Field, $index int):mixed                            $list 数据集或数据集的Item处理回调
-     * @param null|callable($node LinkagePickerFlatNode, $item array|Field, $index int):mixed|callable($list array|Collection):mixed $itemCallback 数据集的Item处理回调
-     * @param null|callable($list array|Collection):mixed                                                                            $listCallback 数据集处理回调
-     * @return $this
-     */
-    public function list($list, callable $itemCallback = null, callable $listCallback = null) : self
-    {
-        if ($list instanceof Closure) {
-            $listCallback = $itemCallback;
-            $itemCallback = $list;
-            $list         = null;
-        }
-        
-        $this->list         = $list;
-        $this->itemCallback = $itemCallback;
-        $this->listCallback = $listCallback;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 指定查询处理回调
-     * @param null|callable($model Model):void $callback 查询处理回调
-     * @return $this
-     */
-    public function query(callable $callback) : self
-    {
-        $this->queryCallback = $callback;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 设置是否查询扩展数据
-     * @param bool $extend
-     * @return $this
-     */
-    public function setExtend(bool $extend) : self
-    {
-        $this->extend = $extend;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 是否查询扩展数据
-     * @return bool
-     */
-    public function isExtend() : bool
-    {
-        return $this->extend;
     }
     
     
@@ -254,45 +169,25 @@ class LinkagePicker extends Driver
      */
     public function build() : ?array
     {
-        if ($this->handler) {
-            $this->handler->prepare($this);
-        }
+        $this->prepareHandler();
         
         if ($this->model && is_null($this->list)) {
             // 查询处理回调
-            if ($this->handler) {
-                $this->handler->query();
-            } elseif ($this->queryCallback) {
-                call_user_func_array($this->queryCallback, [$this->model]);
-            }
+            $this->modelQuery();
             
-            if ($this->extend) {
-                $this->list = $this->model->selectExtendList();
-            } else {
-                $this->list = $this->model->selectList();
-            }
+            $this->list = $this->modelOrder()->modelSelect();
         }
         
-        if (is_null($this->list)) {
+        // 数据集处理
+        if (!$this->handleList()) {
             return null;
-        }
-        
-        // 数据处理回调
-        $list = null;
-        if ($this->handler) {
-            $this->handler->list($this->list);
-        } elseif ($this->listCallback) {
-            $list = call_user_func_array($this->listCallback, [&$this->list]);
-        }
-        if (is_array($list) || $list instanceof Collection) {
-            $this->list = $list;
         }
         
         // 节点处理
         $index = 0;
         $data  = [];
         foreach ($this->list as $item) {
-            $node = LinkagePickerFlatNode::init();
+            $node = LinkagePickerFlatNode::init($item);
             
             // 节点处理回调
             $result = null;

@@ -26,11 +26,13 @@ class LinkagePickerHandler extends Handler
     
     
     /**
-     * @param $list
-     * @return void|mixed 返回处理后的数据(array)或数据集({@see Collection})，返回空则使用引用的$list
+     * 数据集处理回调
+     * @param array|Collection $list
+     * @return null|void|array|Collection 返回处理后的数据(array)或数据集({@see Collection})，返回空则使用引用的$list
      */
     public function list(&$list)
     {
+        return null;
     }
     
     
@@ -39,7 +41,7 @@ class LinkagePickerHandler extends Handler
      * @param LinkagePickerFlatNode $node 扁平节点对象
      * @param array|Field           $item 数据集的Item
      * @param int                   $index 下标
-     * @return void|false 如果返回false则删除该节点
+     * @return null|void|false 如果返回false则删除该节点
      */
     public function item(LinkagePickerFlatNode $node, $item, int $index)
     {
@@ -47,5 +49,7 @@ class LinkagePickerHandler extends Handler
         $node->setParent($item[$this->driver->getParentField()] ?? '');
         $node->setName($item[$this->driver->getNameField()] ?? '');
         $node->setDisabled($item[$this->driver->getDisabledField()] ?? false);
+        
+        return null;
     }
 }

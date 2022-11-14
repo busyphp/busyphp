@@ -36,6 +36,10 @@ class TreeDeepNode extends TreeNode
      */
     public function setChildren($children) : self
     {
+        if (!is_array($children)) {
+            $children = (bool) $children;
+        }
+        
         $this->children = $children;
         
         return $this;

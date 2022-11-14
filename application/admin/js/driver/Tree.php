@@ -7,11 +7,11 @@ use BusyPHP\app\admin\js\driver\tree\TreeDeepNode;
 use BusyPHP\app\admin\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\js\driver\tree\TreeHandler;
 use BusyPHP\app\admin\js\driver\tree\TreeNode;
-use BusyPHP\Model;
+use BusyPHP\app\admin\js\traits\Lists;
+use BusyPHP\app\admin\js\traits\ModelOrder;
+use BusyPHP\app\admin\js\traits\ModelQuery;
+use BusyPHP\app\admin\js\traits\ModelSelect;
 use BusyPHP\model\Entity;
-use BusyPHP\model\Field;
-use Closure;
-use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
@@ -25,11 +25,10 @@ use think\db\exception\DbException;
  */
 class Tree extends Driver
 {
-    /**
-     * 是否查询扩展数据
-     * @var bool
-     */
-    protected $extend;
+    use ModelSelect;
+    use ModelOrder;
+    use ModelQuery;
+    use Lists;
     
     /**
      * 获取id的字段
@@ -74,36 +73,6 @@ class Tree extends Driver
     protected $asyncParentId;
     
     /**
-     * 排序方式
-     * @var string
-     */
-    protected $order;
-    
-    /**
-     * 数据集
-     * @var array|Collection|null
-     */
-    protected $list = null;
-    
-    /**
-     * 查询处理回调
-     * @var null|callable($model Model):void
-     */
-    protected $queryCallback;
-    
-    /**
-     * 数据集处理回调
-     * @var callable($list array|Collection):mixed
-     */
-    protected $listCallback;
-    
-    /**
-     * 数据集的Item处理回调
-     * @var callable($node TreeNode, $item array|Field, $index int):mixed
-     */
-    protected $itemCallback;
-    
-    /**
      * 节点数据集后置处理回调
      * @var callable($list TreeNode[]):mixed
      */
@@ -119,53 +88,14 @@ class Tree extends Driver
         $this->nameField     = $this->request->param('name_field/s', '', 'trim');
         $this->disabledField = $this->request->param('disabled_field/s', '', 'trim');
         $this->iconField     = $this->request->param('icon_field/s', '', 'trim');
-        $this->extend        = $this->request->param('extend/b', false);
         $this->asyncNode     = $this->request->param('async_node/b', false);
         $this->asyncParentId = $this->request->param('async_parent_id/s', '', 'trim');
-        $this->order         = $this->request->param('order', '', 'trim');
         
         $this->idField       = $this->idField ?: 'id';
         $this->parentField   = $this->parentField ?: 'parent_id';
         $this->nameField     = $this->nameField ?: 'name';
         $this->disabledField = $this->disabledField ?: 'disabled';
         $this->iconField     = $this->iconField ?: 'icon';
-        $this->order         = $this->order ?: 'id DESC';
-    }
-    
-    
-    /**
-     * 指定数据集
-     * @param array|Collection|callable($node TreeNode, $item array|Field, $index int):mixed                            $list 数据集或数据集的Item处理回调
-     * @param null|callable($node TreeNode, $item array|Field, $index int):mixed|callable($list array|Collection):mixed $itemCallback 数据集的Item处理回调
-     * @param null|callable($list array|Collection):mixed                                                               $listCallback 数据集处理回调
-     * @return $this
-     */
-    public function list($list, callable $itemCallback = null, callable $listCallback = null) : self
-    {
-        if ($list instanceof Closure) {
-            $listCallback = $itemCallback;
-            $itemCallback = $list;
-            $list         = null;
-        }
-        
-        $this->list         = $list;
-        $this->itemCallback = $itemCallback;
-        $this->listCallback = $listCallback;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 指定查询处理回调
-     * @param null|callable($model Model):void $callback 查询处理回调
-     * @return $this
-     */
-    public function query(callable $callback) : self
-    {
-        $this->queryCallback = $callback;
-        
-        return $this;
     }
     
     
@@ -179,29 +109,6 @@ class Tree extends Driver
         $this->afterCallback = $after;
         
         return $this;
-    }
-    
-    
-    /**
-     * 设置是否查询扩展数据
-     * @param bool $extend
-     * @return $this
-     */
-    public function setExtend(bool $extend) : self
-    {
-        $this->extend = $extend;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 是否查询扩展数据
-     * @return bool
-     */
-    public function isExtend() : bool
-    {
-        return $this->extend;
     }
     
     
@@ -341,29 +248,6 @@ class Tree extends Driver
     
     
     /**
-     * 设置排序方式
-     * @param string $order
-     * @return $this
-     */
-    public function setOrder($order) : self
-    {
-        $this->order = $order;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 获取排序方式
-     * @return string
-     */
-    public function getOrder() : string
-    {
-        return $this->order;
-    }
-    
-    
-    /**
      * 构建JS组件数据
      * @return null|array
      * @throws DataNotFoundException
@@ -371,49 +255,25 @@ class Tree extends Driver
      */
     public function build() : ?array
     {
-        if ($this->handler) {
-            $this->handler->prepare($this);
-        }
+        $this->prepareHandler();
         
         if ($this->model && is_null($this->list)) {
             // 查询处理回调
-            $status = true;
-            if ($this->handler) {
-                $status = $this->handler->query();
-            } elseif ($this->queryCallback) {
-                $status = call_user_func_array($this->queryCallback, [$this->model]);
-            }
+            $query = $this->modelQuery();
             
             // 异步请求节点
-            if ($this->asyncNode && $status !== false) {
-                $this->model->where($this->parentField, $this->asyncParentId);
+            if ($this->asyncNode) {
+                if ($query !== false) {
+                    $this->model->where($this->parentField, $this->asyncParentId);
+                }
             }
             
-            // 自定义排序
-            if ($this->order !== '' && !$this->model->getOptions('order')) {
-                $this->model->order($this->order);
-            }
-            
-            if ($this->extend) {
-                $this->list = $this->model->selectExtendList();
-            } else {
-                $this->list = $this->model->selectList();
-            }
-        }
-        
-        if (is_null($this->list)) {
-            return null;
+            $this->list = $this->modelOrder()->modelSelect();
         }
         
         // 数据处理回调
-        $list = null;
-        if ($this->handler) {
-            $this->handler->list($this->list);
-        } elseif ($this->listCallback) {
-            $list = call_user_func_array($this->listCallback, [&$this->list]);
-        }
-        if (is_array($list) || $list instanceof Collection) {
-            $this->list = $list;
+        if (!$this->handleList()) {
+            return null;
         }
         
         // 节点处理
@@ -422,9 +282,9 @@ class Tree extends Driver
         foreach ($this->list as $item) {
             // 异步请求节点
             if ($this->asyncNode) {
-                $node = TreeDeepNode::init();
+                $node = TreeDeepNode::init($item);
             } else {
-                $node = TreeFlatNode::init();
+                $node = TreeFlatNode::init($item);
             }
             
             // 节点处理回调

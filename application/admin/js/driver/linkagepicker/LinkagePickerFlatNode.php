@@ -15,7 +15,7 @@ class LinkagePickerFlatNode extends LinkagePickerNode
      * 上级ID
      * @var string
      */
-    protected $parent = '';
+    public $parent = '';
     
     
     /**
@@ -30,12 +30,12 @@ class LinkagePickerFlatNode extends LinkagePickerNode
     
     /**
      * 设置上级节点ID
-     * @param string $parent
+     * @param mixed $parent
      * @return $this
      */
-    public function setParent(string $parent) : self
+    public function setParent($parent) : self
     {
-        $this->parent = $parent ?: '';
+        $this->parent = (string) ($parent ?: '');
         
         return $this;
     }

@@ -2,7 +2,7 @@
 
 namespace BusyPHP\app\admin\js\driver\tree;
 
-use BusyPHP\model\ObjectOption;
+use BusyPHP\app\admin\js\Node;
 use stdClass;
 
 /**
@@ -12,7 +12,7 @@ use stdClass;
  * @version $Id: 2022/11/13 13:06 TreeNode.php $
  * @see Tree
  */
-abstract class TreeNode extends ObjectOption
+abstract class TreeNode extends Node
 {
     /**
      * 节点ID
@@ -76,12 +76,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置节点ID
-     * @param string $id
+     * @param mixed $id
      * @return $this
      */
-    public function setId(string $id)
+    public function setId($id)
     {
-        $this->id = $id;
+        $this->id = (string) $id;
         
         return $this;
     }
@@ -99,12 +99,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置节点名称
-     * @param string $text
+     * @param mixed $text
      * @return $this
      */
-    public function setText(string $text)
+    public function setText($text)
     {
-        $this->text = $text;
+        $this->text = (string) $text;
         
         return $this;
     }
@@ -122,12 +122,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置节点图标
-     * @param string $icon
+     * @param mixed $icon
      * @return $this
      */
-    public function setIcon(string $icon)
+    public function setIcon($icon)
     {
-        $this->icon = $icon;
+        $this->icon = (string) $icon;
         
         return $this;
     }
@@ -145,12 +145,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置是否展开
-     * @param bool $opened
+     * @param mixed $opened
      * @return $this
      */
-    public function setOpened(bool $opened)
+    public function setOpened($opened)
     {
-        $this->state['opened'] = $opened;
+        $this->state['opened'] = (bool) $opened;
         
         return $this;
     }
@@ -168,12 +168,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置是否禁用
-     * @param bool $disabled
+     * @param mixed $disabled
      * @return $this
      */
-    public function setDisabled(bool $disabled)
+    public function setDisabled($disabled)
     {
-        $this->state['disabled'] = $disabled;
+        $this->state['disabled'] = (bool) $disabled;
         
         return $this;
     }
@@ -191,12 +191,12 @@ abstract class TreeNode extends ObjectOption
     
     /**
      * 设置是否选中
-     * @param bool $selected
+     * @param mixed $selected
      * @return $this
      */
-    public function setSelected(bool $selected)
+    public function setSelected($selected)
     {
-        $this->state['selected'] = $selected;
+        $this->state['selected'] = (bool) $selected;
         
         return $this;
     }

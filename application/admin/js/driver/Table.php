@@ -5,6 +5,9 @@ namespace BusyPHP\app\admin\js\driver;
 
 use BusyPHP\app\admin\js\Driver;
 use BusyPHP\app\admin\js\driver\table\TableHandler;
+use BusyPHP\app\admin\js\traits\Lists;
+use BusyPHP\app\admin\js\traits\ModelSelect;
+use BusyPHP\app\admin\js\traits\ModelTotal;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
 use BusyPHP\model\ArrayOption;
@@ -24,6 +27,10 @@ use think\db\exception\DbException;
  */
 class Table extends Driver
 {
+    use ModelSelect;
+    use ModelTotal;
+    use Lists;
+    
     /**
      * 排序字段
      * @var string
@@ -61,12 +68,6 @@ class Table extends Driver
     protected $word;
     
     /**
-     * 是否查询扩展数据
-     * @var bool
-     */
-    protected $extend;
-    
-    /**
      * 查询字段选项
      * @var ArrayOption
      */
@@ -85,22 +86,10 @@ class Table extends Driver
     protected $searchable;
     
     /**
-     * 数据集
-     * @var array|Collection|null
-     */
-    protected $list = null;
-    
-    /**
      * 字段处理回调
      * @var callable($model Model, $field string, $word string, $op string, $source string):mixed
      */
     protected $fieldCallback;
-    
-    /**
-     * 数据集处理回调
-     * @var callable($list array):array|void
-     */
-    protected $listCallback;
     
     /**
      * 查询处理回调
@@ -113,7 +102,6 @@ class Table extends Driver
     {
         parent::__construct();
         
-        $this->extend     = $this->request->param('extend/b', false);
         $this->limit      = $this->request->param('limit/d', 0);
         $this->offset     = $this->request->param('offset/d', 0);
         $this->word       = $this->request->param('word/s', '', 'trim');
@@ -143,18 +131,18 @@ class Table extends Driver
     /**
      * 指定数据集
      * @param array|Collection|callable($list array):array $list 数据集或处理回调
-     * @param null|callable($list array):array|void        $callback 处理回调
+     * @param null|callable($list array):array|void        $listCallback 处理回调
      * @return $this
      */
-    public function list($list, callable $callback = null) : self
+    public function list($list, callable $listCallback = null) : self
     {
         if ($list instanceof Closure) {
-            $callback = $list;
-            $list     = null;
+            $listCallback = $list;
+            $list         = null;
         }
         
         $this->list         = $list;
-        $this->listCallback = $callback;
+        $this->listCallback = $listCallback;
         
         return $this;
     }
@@ -214,29 +202,6 @@ class Table extends Driver
     public function isAccurate() : bool
     {
         return $this->accurate;
-    }
-    
-    
-    /**
-     * 设置是否查询扩展数据
-     * @param bool $extend
-     * @return $this
-     */
-    public function setExtend(bool $extend) : self
-    {
-        $this->extend = $extend;
-        
-        return $this;
-    }
-    
-    
-    /**
-     * 是否查询扩展数据
-     * @return bool
-     */
-    public function isExtend() : bool
-    {
-        return $this->extend;
     }
     
     
@@ -396,9 +361,7 @@ class Table extends Driver
     public function build() : ?array
     {
         $total = false;
-        if ($this->handler) {
-            $this->handler->prepare($this);
-        }
+        $this->prepareHandler();
         
         // 查询模型
         if ($this->model && is_null($this->list)) {
@@ -406,32 +369,17 @@ class Table extends Driver
             
             // 限制条数
             if ($this->limit > 0) {
-                $totalModel = clone $this->model;
-                $total      = $totalModel->count();
+                $total = $this->modelTotal();
                 $this->model->limit($this->offset, $this->limit);
             }
             
             // 查询扩展信息
-            if ($this->extend) {
-                $this->list = $this->model->selectExtendList();
-            } else {
-                $this->list = $this->model->selectList();
-            }
-        }
-        
-        if (is_null($this->list)) {
-            return null;
+            $this->list = $this->modelSelect();
         }
         
         // 数据集处理
-        $list = null;
-        if ($this->handler) {
-            $list = $this->handler->list($this->list);
-        } elseif ($this->listCallback) {
-            $list = call_user_func_array($this->listCallback, [&$this->list]);
-        }
-        if (is_array($list) || $list instanceof Collection) {
-            $this->list = $list;
+        if (!$this->handleList()) {
+            return null;
         }
         
         $total = $total === false ? count($this->list) : $total;
@@ -449,9 +397,7 @@ class Table extends Driver
      */
     public function buildCondition() : self
     {
-        if ($this->handler) {
-            $this->handler->prepare($this);
-        }
+        $this->prepareHandler();
         
         if (!$this->model) {
             return $this;
@@ -511,7 +457,7 @@ class Table extends Driver
         
         // 排序
         if ($this->orderField && $this->orderType && !$this->model->getOptions('order')) {
-            $this->model->order($this->castField($this->orderField), $this->orderType);
+            $this->model->order($this->orderField, $this->orderType);
         }
         
         return $this;
@@ -590,10 +536,6 @@ class Table extends Driver
             ]);
         }
         
-        if (!$field) {
-            return null;
-        }
-        
-        return $this->castField($field);
+        return $field;
     }
 }

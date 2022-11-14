@@ -43,10 +43,11 @@ abstract class TableHandler extends Handler
     
     /**
      * 数据集处理回调
-     * @param array|Collection $list
-     * @return mixed|void 返回处理后的数据(array)或数据集({@see Collection})，返回空则使用引用的$list
+     * @param array|Collection $list 要处理的数据集
+     * @return null|void|array|Collection 返回处理后的数据(array)或数据集({@see Collection})，返回空则使用引用的$list
      */
     public function list(&$list)
     {
+        return null;
     }
 }

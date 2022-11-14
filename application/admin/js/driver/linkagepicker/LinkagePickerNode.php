@@ -3,7 +3,7 @@
 namespace BusyPHP\app\admin\js\driver\linkagepicker;
 
 use BusyPHP\app\admin\js\driver\LinkagePicker;
-use BusyPHP\model\ObjectOption;
+use BusyPHP\app\admin\js\Node;
 
 /**
  * JS组件[busyAdmin.plugins.LinkagePicker] 节点基本类
@@ -12,25 +12,25 @@ use BusyPHP\model\ObjectOption;
  * @version $Id: 2022/11/13 10:59 LinkagePickerNode.php $
  * @see LinkagePicker
  */
-abstract class LinkagePickerNode extends ObjectOption
+abstract class LinkagePickerNode extends Node
 {
     /**
      * 节点ID
      * @var string
      */
-    protected $id = '';
+    public $id = '';
     
     /**
      * 节点名称
      * @var string
      */
-    protected $name = '';
+    public $name = '';
     
     /**
      * 是否禁用
      * @var bool
      */
-    protected $disabled = false;
+    public $disabled = false;
     
     
     /**
@@ -45,12 +45,12 @@ abstract class LinkagePickerNode extends ObjectOption
     
     /**
      * 设置节点ID
-     * @param string $id
+     * @param mixed $id
      * @return $this
      */
-    public function setId(string $id)
+    public function setId($id)
     {
-        $this->id = $id;
+        $this->id = (string) $id;
         
         return $this;
     }
@@ -68,12 +68,12 @@ abstract class LinkagePickerNode extends ObjectOption
     
     /**
      * 设置节点名称
-     * @param string $name
+     * @param mixed $name
      * @return $this
      */
-    public function setName(string $name)
+    public function setName($name)
     {
-        $this->name = $name;
+        $this->name = (string) $name;
         
         return $this;
     }
@@ -91,12 +91,12 @@ abstract class LinkagePickerNode extends ObjectOption
     
     /**
      * 设置是否禁用
-     * @param bool $disabled
+     * @param mixed $disabled
      * @return $this
      */
-    public function setDisabled(bool $disabled)
+    public function setDisabled($disabled)
     {
-        $this->disabled = $disabled;
+        $this->disabled = (bool) $disabled;
         
         return $this;
     }

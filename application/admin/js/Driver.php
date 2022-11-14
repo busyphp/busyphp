@@ -25,23 +25,17 @@ abstract class Driver
     /**
      * @var App
      */
-    public $app;
+    protected $app;
     
     /**
      * @var Request
      */
-    public $request;
+    protected $request;
     
     /**
      * @var Model|null
      */
-    public $model;
-    
-    /**
-     * 查询的字段是否强制转换为下划线+小写模式
-     * @var bool
-     */
-    protected $cast = true;
+    protected $model;
     
     /**
      * 处理回调
@@ -82,15 +76,12 @@ abstract class Driver
     
     
     /**
-     * 设置是否强制转换字段为下划线+小写
-     * @param bool $cast
-     * @return $this
+     * 获取查询模型
+     * @return Model|null
      */
-    public function cast(bool $cast)
+    public function getModel() : ?Model
     {
-        $this->cast = $cast;
-        
-        return $this;
+        return $this->model;
     }
     
     
@@ -104,6 +95,17 @@ abstract class Driver
         $this->handler = $handler;
         
         return $this;
+    }
+    
+    
+    /**
+     * 准备handler
+     */
+    protected function prepareHandler()
+    {
+        if ($this->handler) {
+            $this->handler->prepare($this);
+        }
     }
     
     
@@ -148,22 +150,6 @@ abstract class Driver
         }
         
         return Container::getInstance()->make($model, [], true);
-    }
-    
-    
-    /**
-     * 转换字段
-     * @param mixed $field
-     * @return mixed
-     */
-    protected function castField($field)
-    {
-        // 强制转换为小写
-        if ($field && is_string($field) && $this->cast) {
-            $field = StringHelper::snake($field);
-        }
-        
-        return $field;
     }
     
     
