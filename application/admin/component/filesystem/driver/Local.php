@@ -1,8 +1,8 @@
 <?php
 
-namespace BusyPHP\app\admin\filesystem\driver;
+namespace BusyPHP\app\admin\component\filesystem\driver;
 
-use BusyPHP\app\admin\filesystem\Driver;
+use BusyPHP\app\admin\component\filesystem\Driver;
 
 /**
  * 本次磁盘管理类

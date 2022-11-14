@@ -1,6 +1,6 @@
 <?php
 
-namespace BusyPHP\app\admin\filesystem;
+namespace BusyPHP\app\admin\component\filesystem;
 
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\ClassNotFoundException;
@@ -62,7 +62,7 @@ abstract class Driver
     {
         $class = Config::get(sprintf('filesystem.disks.%s.admin', $disk));
         if (!$class) {
-            $class = sprintf('\\BusyPHP\\app\\admin\\filesystem\\driver\\%s', ucfirst(Config::get(sprintf('filesystem.disks.%s.type', $disk))));
+            $class = sprintf('\\BusyPHP\\app\\admin\\component\\filesystem\\driver\\%s', ucfirst(Config::get(sprintf('filesystem.disks.%s.type', $disk))));
         }
         
         if (!class_exists($class)) {
