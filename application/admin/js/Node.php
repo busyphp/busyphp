@@ -1,8 +1,7 @@
 <?php
 
-namespace BusyPHP\app\admin\js\driver;
+namespace BusyPHP\app\admin\js;
 
-use BusyPHP\model\Field;
 use BusyPHP\model\ObjectOption;
 
 /**
@@ -13,12 +12,12 @@ use BusyPHP\model\ObjectOption;
  */
 abstract class Node extends ObjectOption
 {
-    /** @var array|Field */
+    /** @var mixed */
     public $source = [];
     
     
     /**
-     * @param array|Field $source 源数据
+     * @param mixed $source 源数据
      * @return static
      */
     public static function init($source = [])
@@ -32,18 +31,20 @@ abstract class Node extends ObjectOption
     
     /**
      * 设置源数据
-     * @param array|Field $source
+     * @param mixed $source
      * @return $this
      */
-    public function setSource($source) : self
+    public function setSource($source)
     {
         $this->source = $source;
+        
+        return $this;
     }
     
     
     /**
      * 获取源数据
-     * @return array|Field
+     * @return mixed
      */
     public function getSource()
     {
