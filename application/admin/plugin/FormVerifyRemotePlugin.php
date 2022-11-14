@@ -3,6 +3,7 @@
 namespace BusyPHP\app\admin\plugin;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\js\driver\FormVerifyRemote;
 use BusyPHP\Model;
 use BusyPHP\Request;
 use RuntimeException;
@@ -14,6 +15,7 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/3/16 9:04 PM FormVerifyRemotePlugin.php $
+ * @deprecated 请使用 {@see FormVerifyRemote}，未来某个版本会删除
  */
 class FormVerifyRemotePlugin
 {
