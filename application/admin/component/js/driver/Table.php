@@ -56,6 +56,12 @@ class Table extends Driver
     protected $limit;
     
     /**
+     * 是否启用最多查询，即$limit设置多少就最多查多少
+     * @var bool
+     */
+    protected $maxLimit = false;
+    
+    /**
      * 搜索的字段
      * @var string
      */
@@ -103,6 +109,7 @@ class Table extends Driver
         parent::__construct();
         
         $this->limit      = $this->request->param('limit/d', 0);
+        $this->maxLimit   = $this->request->param('max_limit/b', false);
         $this->offset     = $this->request->param('offset/d', 0);
         $this->word       = $this->request->param('word/s', '', 'trim');
         $this->field      = $this->request->param('field', '', 'trim');
@@ -275,15 +282,27 @@ class Table extends Driver
     
     
     /**
-     * 设置查询限制条数，设为0则不限
-     * @param int $limit
+     * 设置查询限制条数
+     * @param int  $limit 每页查询条数，0为全部
+     * @param bool $max 是否启用最多查询，即$limit设置多少就最多查多少
      * @return $this
      */
-    public function setLimit(int $limit) : self
+    public function setLimit(int $limit, bool $max = false) : self
     {
-        $this->limit = $limit;
+        $this->limit    = $limit;
+        $this->maxLimit = $max;
         
         return $this;
+    }
+    
+    
+    /**
+     * 是否启用最多查询，即$limit设置多少就最多查多少
+     * @return bool
+     */
+    public function isMaxLimit() : bool
+    {
+        return $this->maxLimit;
     }
     
     
@@ -369,8 +388,12 @@ class Table extends Driver
             
             // 限制条数
             if ($this->limit > 0) {
-                $total = $this->modelTotal();
-                $this->model->limit($this->offset, $this->limit);
+                if ($this->maxLimit) {
+                    $this->model->limit($this->limit);
+                } else {
+                    $total = $this->modelTotal();
+                    $this->model->limit($this->offset, $this->limit);
+                }
             }
             
             // 查询扩展信息
