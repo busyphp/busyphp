@@ -41,7 +41,12 @@ trait ModelOrder
                 }
                 $data[$field] = $type;
             }
-            $this->order = $data;
+            
+            if (!$data) {
+                $this->order = 'id DESC';
+            } else {
+                $this->order = $data;
+            }
         }
         
         return $this->order;
