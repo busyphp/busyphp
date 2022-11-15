@@ -133,18 +133,11 @@ abstract class Driver
     
     /**
      * 获取模型
-     * @param string      $key 模型参数名称，默认为 model
-     * @param string|null $method 获取方式，默认用 {@see Request::param()} 获取
      * @return Model|null
      */
-    protected function obtainModel(string $key = '', string $method = null) : ?Model
+    protected function obtainModel() : ?Model
     {
-        $method = $method ?: 'param';
-        if (!method_exists($this->request, $method)) {
-            return null;
-        }
-        
-        $model = call_user_func_array([$this->request, $method], [sprintf('%s/s', $key ?: 'model'), '', 'trim']);
+        $model = $this->request->param('model/s', '', 'trim');
         if (!$model || !class_exists($model) || !is_subclass_of($model, Model::class)) {
             return null;
         }
@@ -174,10 +167,10 @@ abstract class Driver
     
     
     /**
-     * 获取单例
+     * 实例化驱动
      * @return static
      */
-    public static function getInstance() : self
+    public static function init() : self
     {
         return Container::getInstance()->make(static::class);
     }
@@ -187,13 +180,24 @@ abstract class Driver
      * 如果是该JS组件发起的请求，则获取该JS组件的单例
      * @return static|null
      */
-    public static function getInstanceIfRequest() : ?self
+    public static function initIfRequest() : ?self
     {
         if (static::isRequest()) {
-            return static::getInstance();
+            return static::init();
         }
         
         return null;
+    }
+    
+    
+    /**
+     * 是否支持自动响应
+     * @return bool
+     * @internal
+     */
+    protected static function isSupportAutoResponse() : bool
+    {
+        return App::getInstance()->request->param('model/s', '', 'trim') !== '';
     }
     
     
@@ -213,6 +217,11 @@ abstract class Driver
         }
         
         if (!class_exists($name) || !is_subclass_of($name, Driver::class)) {
+            return;
+        }
+        
+        // 是否支持自动响应
+        if (!$name::isSupportAutoResponse()) {
             return;
         }
         
