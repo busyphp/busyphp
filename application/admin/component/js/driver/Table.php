@@ -169,13 +169,13 @@ class Table extends Driver
      */
     public function field($field, callable $callback = null) : self
     {
-        if ($callback) {
+        if ($field instanceof Closure) {
+            $this->fieldCallback = $field;
+        } else {
             $this->fieldCallback = $callback;
             if ($field) {
-                $this->field = (string) $this->field;
+                $this->field = (string) $field;
             }
-        } elseif ($field instanceof Closure) {
-            $this->fieldCallback = $field;
         }
         
         return $this;
