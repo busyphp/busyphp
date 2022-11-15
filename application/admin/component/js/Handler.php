@@ -22,7 +22,7 @@ abstract class Handler
     
     /**
      * 组件驱动
-     * @var Driver
+     * @var mixed
      */
     protected $driver;
     
@@ -47,21 +47,26 @@ abstract class Handler
     
     /**
      * 预备参数
-     * @param Driver $driver
+     * @param mixed      $driver
+     * @param Model|null $model
      * @return $this
      */
-    public function prepare(Driver $driver) : self
+    public function prepare($driver, Model $model = null) : self
     {
         if ($this->prepare) {
             return $this;
         }
-        
         $this->prepare = true;
+        
         $app           = App::getInstance();
-        $this->driver  = $driver;
         $this->app     = $app;
         $this->request = $app->request;
-        $this->model   = $driver->getModel();
+        
+        if ($driver instanceof Driver) {
+            $this->model = $driver->getModel();
+        } else {
+            $this->model = $model;
+        }
         
         return $this;
     }
