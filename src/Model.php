@@ -25,6 +25,7 @@ use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\InvalidArgumentException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\db\Raw;
 use think\DbManager;
@@ -80,10 +81,10 @@ abstract class Model extends Query
     public const CHANGED_DELETE = 'delete';
     
     /**
-     * {@see Model::findInfo()} {@see Model::getInfo()} 方法参数过滤器
+     * {@see Model::find()} 方法参数过滤器
      * @var string|callable|Closure
      */
-    protected $findInfoFilter = 'trim';
+    protected $findFilter = 'trim';
     
     /**
      * {@see Model::remove()} 方法参数过滤器
@@ -567,29 +568,6 @@ abstract class Model extends Query
     
     
     /**
-     * 过滤findInfo参数
-     * @param $data
-     * @return mixed
-     */
-    private function filterFindInfoData($data)
-    {
-        if (is_null($data)) {
-            return null;
-        }
-        
-        if (!$this->findInfoFilter) {
-            return $data;
-        }
-        
-        if (is_callable($this->findInfoFilter)) {
-            return call_user_func_array($this->findInfoFilter, [$data]);
-        }
-        
-        return $data;
-    }
-    
-    
-    /**
      * 将数据解析成Field对象
      * @param array $info
      * @return array|Field
@@ -712,26 +690,16 @@ abstract class Model extends Query
     
     /**
      * 获取单条信息
-     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
-     * @param string $notFoundMessage 数据为空异常消息
+     * @param mixed $data 主键数据，支持字符、数值、数字索引数组
      * @return array|Field|null
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function findInfo($data = null, $notFoundMessage = null)
+    public function findInfo($data = null)
     {
-        try {
-            $info = $this->find($this->filterFindInfoData($data));
-            if (!$info) {
-                return null;
-            }
-        } catch (DataNotFoundException $e) {
-            $notFoundMessage = $notFoundMessage ?: $this->dataNotFoundMessage;
-            if ($notFoundMessage) {
-                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
-            }
-            
-            throw $e;
+        $info = $this->find($data);
+        if (!$info) {
+            return null;
         }
         
         return $this->toField($info);
@@ -740,26 +708,16 @@ abstract class Model extends Query
     
     /**
      * 获取单条包含关联数据的信息
-     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
-     * @param string $notFoundMessage 数据为空异常消息
+     * @param mixed $data 主键数据，支持字符、数值、数字索引数组
      * @return array|Field|null
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function findExtendInfo($data = null, $notFoundMessage = null)
+    public function findExtendInfo($data = null)
     {
-        try {
-            $info = $this->find($this->filterFindInfoData($data));
-            if (!$info) {
-                return null;
-            }
-        } catch (DataNotFoundException $e) {
-            $notFoundMessage = $notFoundMessage ?: $this->dataNotFoundMessage;
-            if ($notFoundMessage) {
-                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
-            }
-            
-            throw $e;
+        $info = $this->find($data);
+        if (!$info) {
+            return null;
         }
         
         return $this->toExtendField($info);
@@ -776,7 +734,7 @@ abstract class Model extends Query
      */
     public function getInfo($data, $notFoundMessage = null)
     {
-        return $this->failException(true)->findInfo($data ?? '', $notFoundMessage);
+        return $this->failException(true, $notFoundMessage)->findInfo($data ?? '');
     }
     
     
@@ -790,7 +748,7 @@ abstract class Model extends Query
      */
     public function getExtendInfo($data, $notFoundMessage = null)
     {
-        return $this->failException(true)->findExtendInfo($data ?? '', $notFoundMessage);
+        return $this->failException(true, $notFoundMessage)->findExtendInfo($data ?? '');
     }
     
     
@@ -895,6 +853,46 @@ abstract class Model extends Query
     
     
     /**
+     * 设置查询数据不存在是否抛出异常
+     * @param bool        $fail 是否抛出异常
+     * @param string|null $notFoundMessage 错误消息
+     * @return $this
+     */
+    public function failException(bool $fail = true, string $notFoundMessage = null)
+    {
+        $this->options['fail']         = $fail;
+        $this->options['fail_message'] = $notFoundMessage;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 查询失败 抛出异常
+     * @throws ModelNotFoundException
+     * @throws DataNotFoundException
+     */
+    protected function throwNotFound() : void
+    {
+        $message  = $this->options['fail_message'] ?? '';
+        $bySelect = $this->options['by_select'] ?? false;
+        if ($bySelect) {
+            $message = $message ?: $this->listNotFoundMessage;
+        } else {
+            $message = $message ?: $this->dataNotFoundMessage;
+        }
+        
+        if (!empty($this->model)) {
+            $class = get_class($this->model);
+            throw new ModelNotFoundException($message ?: 'model data Not Found:' . $class, $class, $this->options);
+        }
+        
+        $table = $this->getTable();
+        throw new DataNotFoundException($message ?: 'table data not Found:' . $table, $table, $this->options);
+    }
+    
+    
+    /**
      * 记录日志
      * @param mixed        $content 日志内容
      * @param string|array $level 日志级别
@@ -980,6 +978,8 @@ abstract class Model extends Query
     public function select($data = null) : Collection
     {
         try {
+            $this->options['by_select'] = true;
+            
             return parent::select($data);
         } finally {
             $this->removeOption();
@@ -997,6 +997,10 @@ abstract class Model extends Query
     public function find($data = null)
     {
         try {
+            if (!is_null($data) && $this->findFilter && is_callable($this->findFilter)) {
+                $data = call_user_func($this->findFilter, $data);
+            }
+            
             return parent::find($data);
         } finally {
             $this->removeOption();
@@ -1106,6 +1110,18 @@ abstract class Model extends Query
     
     
     /**
+     * 保存记录 自动判断insert或者update
+     * @param array|Field $data 数据
+     * @param bool        $forceInsert 是否强制insert
+     * @return int|string
+     */
+    public function save($data = [], bool $forceInsert = false)
+    {
+        return parent::save($this->parseData($data), $forceInsert);
+    }
+    
+    
+    /**
      * 更新记录
      * @param array|Field $data 更新的数据
      * @return int
@@ -1113,10 +1129,18 @@ abstract class Model extends Query
      */
     public function update($data = []) : int
     {
-        $this->triggerEvent('BeforeUpdate');
-        
         try {
-            $result  = parent::update($this->parseData($data));
+            $this->triggerEvent('BeforeUpdate');
+            $data = array_merge($this->options['data'] ?? [], $this->parseData($data));
+            
+            // 自动写入更新时间
+            if ($data && $this->autoWriteTimestamp && $this->updateTime) {
+                $data[$this->updateTime] = $this->autoWriteTimestamp();
+            }
+            
+            $this->options['data'] = $data;
+            
+            $result  = parent::update();
             $options = $this->options;
         } finally {
             $this->removeOption();
@@ -1137,10 +1161,18 @@ abstract class Model extends Query
      */
     public function insert($data = [], bool $getLastInsID = true)
     {
-        $this->triggerEvent('BeforeInsert');
-        
         try {
-            $result  = parent::insert($this->parseData($data), $getLastInsID);
+            $this->triggerEvent('BeforeInsert');
+            $data = array_merge($this->options['data'] ?? [], $this->parseData($data));
+            
+            // 自动写入增加时间
+            if ($data && $this->autoWriteTimestamp && $this->createTime) {
+                $data[$this->createTime] = $this->autoWriteTimestamp();
+            }
+            
+            $this->options['data'] = $data;
+            
+            $result  = parent::insert([], $getLastInsID);
             $options = $this->options;
         } finally {
             $this->removeOption();
@@ -1149,6 +1181,18 @@ abstract class Model extends Query
         $this->parseOnChanged(self::CHANGED_INSERT, $options);
         
         return $result;
+    }
+    
+    
+    /**
+     * 插入记录并获取自增ID
+     * @param array|Field $data 数据
+     * @return int|string
+     * @throws DbException
+     */
+    public function insertGetId($data)
+    {
+        return $this->insert($data, true);
     }
     
     
@@ -1198,9 +1242,8 @@ abstract class Model extends Query
      */
     public function delete($data = null) : int
     {
-        $this->triggerEvent('BeforeDelete');
-        
         try {
+            $this->triggerEvent('BeforeDelete');
             $result  = parent::delete($data);
             $options = $this->options;
         } finally {
@@ -1599,16 +1642,7 @@ abstract class Model extends Query
      */
     public function selectList() : array
     {
-        try {
-            return $this->toFieldList($this->select());
-        } catch (DataNotFoundException $e) {
-            $notFoundMessage = $this->listNotFoundMessage ?: $this->dataNotFoundMessage;
-            if ($notFoundMessage) {
-                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
-            }
-            
-            throw $e;
-        }
+        return $this->toFieldList($this->select());
     }
     
     
@@ -1616,25 +1650,15 @@ abstract class Model extends Query
      * 查询自定义解析类解析后的数据
      * @template U
      * @param class-string<U> $parse 解析器
-     * @param string          $notFoundMessage 数据为空提示
      * @return array<U>
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function selectParse(string $parse, $notFoundMessage = null) : array
+    public function selectParse(string $parse) : array
     {
-        try {
-            $this->useBindParseClass = $parse;
-            
-            return $this->toFieldList($this->select());
-        } catch (DataNotFoundException $e) {
-            $notFoundMessage = $notFoundMessage ?: ($this->listNotFoundMessage ?: $this->dataNotFoundMessage);
-            if ($notFoundMessage) {
-                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
-            }
-            
-            throw $e;
-        }
+        $this->useBindParseClass = $parse;
+        
+        return $this->toFieldList($this->select());
     }
     
     
@@ -1646,16 +1670,7 @@ abstract class Model extends Query
      */
     public function selectExtendList() : array
     {
-        try {
-            return $this->toExtendFieldList($this->select());
-        } catch (DataNotFoundException $e) {
-            $notFoundMessage = $this->listNotFoundMessage ?: $this->dataNotFoundMessage;
-            if ($notFoundMessage) {
-                throw new DataNotFoundException($notFoundMessage, $e->getTable(), $e->getData()['Database Config']);
-            }
-            
-            throw $e;
-        }
+        return $this->toExtendFieldList($this->select());
     }
     
     
