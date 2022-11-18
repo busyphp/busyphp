@@ -5,6 +5,7 @@ namespace BusyPHP;
 
 use think\Exception;
 use think\exception\ValidateException;
+use think\facade\Route;
 use think\Response;
 use think\response\Json;
 use think\response\Jsonp;
@@ -83,18 +84,7 @@ abstract class Controller
         $this->app     = $app;
         $this->request = $this->app->request;
         $this->view    = Response::create('', 'view', 200);
-        
-        // 控制器初始化
-        $this->initializeBefore();
         $this->initialize();
-    }
-    
-    
-    /**
-     * 初始化控制基本事物前
-     */
-    protected function initializeBefore()
-    {
     }
     
     
@@ -149,7 +139,7 @@ abstract class Controller
      * @param string|array $name 变量名称或批量数组
      * @param mixed        $value 变量值
      */
-    protected function assign($name, $value)
+    protected function assign($name, $value = null)
     {
         if (is_array($name)) {
             $this->view->assign($name);
@@ -204,7 +194,7 @@ abstract class Controller
                 $this->request->getWebUrl(),
                 $this->request->getAppUrl(),
                 $this->request->url(),
-                (string) url(),
+                (string) Route::buildUrl(),
                 $this->request->getRoutePath(),
                 $this->request->getAssetsUrl(),
                 $this->request->domain(),
@@ -217,13 +207,15 @@ abstract class Controller
     
     /**
      * 获取输出页面内容
-     * @param string $template 指定要调用的模板文件, 默认为空 由系统自动定位模板文件
-     * @param string $content 模板输出内容
+     * @param string $template 指定要调用的模板文件 默认为空 由系统自动定位模板文件
+     * @param string $charset 输出编码
+     * @param string $contentType 输出类型
+     * @param string $content 输出内容
      * @return string
      */
-    protected function fetch($template = '', $content = '') : string
+    protected function fetch($template = '', $charset = 'utf-8', $contentType = '', $content = '') : string
     {
-        return $this->display($template, 'utf-8', '', $content)->getContent();
+        return $this->display($template, $charset, $contentType, $content)->getContent();
     }
     
     
@@ -342,7 +334,7 @@ abstract class Controller
                     $url = (string) $url;
                 }
                 
-                return redirect($url, $code);
+                return Response::create($url, 'redirect', $code);
             
             default:
                 throw new Exception('未定义方法:' . $name);
