@@ -283,11 +283,15 @@ class TransHelper
      */
     public static function base64encodeUrl(string $string) : string
     {
-        $string = base64_encode(trim($string));
+        if ($string === '') {
+            return '';
+        }
+        
+        $string = base64_encode($string);
         $string = str_replace('+', '_', $string);
         $string = str_replace('/', '-', $string);
         
-        return str_replace('=', '', $string);
+        return (string) str_replace('=', '', $string);
     }
     
     
@@ -298,11 +302,14 @@ class TransHelper
      */
     public static function base64decodeUrl(string $string) : string
     {
-        $string = trim($string);
+        if ($string === '') {
+            return '';
+        }
+        
         $string = str_replace('_', '+', $string);
         $string = str_replace('-', '/', $string);
         
-        return base64_decode($string);
+        return (string) base64_decode($string);
     }
     
     
