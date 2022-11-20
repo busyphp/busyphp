@@ -286,7 +286,6 @@ class Tree extends Driver
         // 节点处理
         $index = 0;
         $data  = [];
-        trace($this->asyncNode ? "OK" : "NO");
         foreach ($this->list as $item) {
             // 异步请求节点
             if ($this->asyncNode) {
