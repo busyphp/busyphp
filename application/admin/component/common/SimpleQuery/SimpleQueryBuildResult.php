@@ -1,12 +1,12 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\common\simplequery;
+namespace BusyPHP\app\admin\component\common\SimpleQuery;
 
 use ArrayAccess;
 use BusyPHP\App;
 use BusyPHP\app\admin\component\common\Pager;
-use BusyPHP\app\admin\component\common\simplequery;
+use BusyPHP\app\admin\component\common\SimpleQuery;
 use InvalidArgumentException;
 use think\Collection;
 use think\Container;

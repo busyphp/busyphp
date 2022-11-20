@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\common;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\component\common\simplequery\SimpleQueryHandler;
-use BusyPHP\app\admin\component\common\simplequery\SimpleQueryBuildResult;
+use BusyPHP\app\admin\component\common\SimpleQuery\SimpleQueryHandler;
+use BusyPHP\app\admin\component\common\SimpleQuery\SimpleQueryBuildResult;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FilterHelper;
