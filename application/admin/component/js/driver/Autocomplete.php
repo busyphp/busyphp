@@ -37,12 +37,6 @@ class Autocomplete extends Driver
     protected $textField;
     
     /**
-     * 排序方式
-     * @var array
-     */
-    protected $order;
-    
-    /**
      * 搜索关键词或默认值
      * @var string
      */
