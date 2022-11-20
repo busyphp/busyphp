@@ -33,12 +33,11 @@
 | data-name-space | string | `否` | `/` | 名称分隔符 |
 | data-id-space | string | `否` | `,` | ID分隔符 |
 | data-name-path | boolean | `否` | `true` | 名称是否显示全路径 |
-| Ajax加载:title | | | | |
-| data-url | string | `否` | - | 设置远程加载的URL |
-| data-method | string | `否` | `get` | 设置AJAX请求方式 |
-| data-params | object,Function | `否` | - | 设置AJAX的附加参数 |
-| Model加载:title | | | | |
-| data-model | string | `否` | - | 设置自动获取数据的模型类名称 |
+| 异步加载:title | | | | |
+| data-url | string | `否` | - | 设置异步请求的URL |
+| data-method | string | `否` | `get` | 设置请求方式，支持`get`, `post` |
+| data-params | object,Function | `否` | - | 请求的参数，支持闭包 |
+| data-model | string | `否` | - | 设置自动获取数据的模型类名称，与 `data-url` 互斥 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
 | data-model-id-field | string | `否` | `id` | 取模型数据`ID`的字段 |
 | data-model-name-field | string | `否` | `name` | 取模型数据`名称`的字段 |
