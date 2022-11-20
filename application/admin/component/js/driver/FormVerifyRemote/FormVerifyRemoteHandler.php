@@ -1,9 +1,9 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\js\driver\formverifyremote;
+namespace BusyPHP\app\admin\component\js\driver\FormVerifyRemote;
 
-use BusyPHP\app\admin\component\js\driver\formverifyremote;
+use BusyPHP\app\admin\component\js\driver\FormVerifyRemote;
 use BusyPHP\app\admin\component\js\Handler;
 
 /**

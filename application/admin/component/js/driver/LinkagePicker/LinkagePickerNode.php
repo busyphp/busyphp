@@ -1,9 +1,9 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\js\driver\linkagepicker;
+namespace BusyPHP\app\admin\component\js\driver\LinkagePicker;
 
-use BusyPHP\app\admin\component\js\driver\linkagepicker;
+use BusyPHP\app\admin\component\js\driver\LinkagePicker;
 use BusyPHP\app\admin\component\js\Node;
 
 /**

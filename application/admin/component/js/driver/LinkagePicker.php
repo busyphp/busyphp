@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\js\driver;
 
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\js\driver\linkagepicker\LinkagePickerFlatNode;
-use BusyPHP\app\admin\component\js\driver\linkagepicker\LinkagePickerHandler;
+use BusyPHP\app\admin\component\js\driver\LinkagePicker\LinkagePickerFlatNode;
+use BusyPHP\app\admin\component\js\driver\LinkagePicker\LinkagePickerHandler;
 use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;

@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\js\driver;
 
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\js\driver\selectpicker\SelectPickerHandler;
-use BusyPHP\app\admin\component\js\driver\selectpicker\SelectPickerNode;
+use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerHandler;
+use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerNode;
 use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;

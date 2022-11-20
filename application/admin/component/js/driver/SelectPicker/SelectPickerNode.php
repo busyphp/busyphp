@@ -1,9 +1,9 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\js\driver\selectpicker;
+namespace BusyPHP\app\admin\component\js\driver\SelectPicker;
 
-use BusyPHP\app\admin\component\js\driver\selectpicker;
+use BusyPHP\app\admin\component\js\driver\SelectPicker;
 use BusyPHP\app\admin\component\js\Node;
 
 /**
