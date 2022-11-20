@@ -30,9 +30,9 @@
 | data-delay | number | `否` | `250` | 异步加载延迟毫秒 |
 | data-model | string | `否` | - | 设置自动获取选项的模型类名称 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
-| data-text-field | string | `否` | `name` | 取模型数据的text值字段 |
-| data-limit | string | `否` | `name` | 模型数据最大展示条数，0为不限 |
-| data-order | string | `否` | `id DESC` | 模型数据排序方式，多个用英文逗号隔开 |
+| data-model-text-field | string | `否` | `name` | 取模型数据的text值字段 |
+| data-model-limit | string | `否` | `name` | 模型数据最大展示条数，0为不限 |
+| data-model-order | string | `否` | `id DESC` | 模型数据排序方式，多个用英文逗号隔开 |
 | data-search-min | number | `否` | 1 | 设置自动提示最少需要输入多少个字符，0为不限 |
 
 ### 使用示例
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <textarea id="demo1" class="hide">
+    <template id="demo1" class="hide">
 请输入关键词 a,b进行测试
 <input type="text"
        class="form-control"
@@ -58,9 +58,9 @@
        data-toggle="busy-autocomplete"
        data-search-min="1"
        data-list='["Action","Blue", "As", "Close", "Bold"]'/>
-    </textarea>
+    </template>
 
-    <textarea id="demo2" class="hide">
+    <template id="demo2" class="hide">
 该示例读取的系统日志，请输入日志标题关键词进行测试，如：登录，删除
 <input type="text"
        class="form-control"
@@ -68,6 +68,6 @@
        data-toggle="busy-autocomplete"
        data-search-min="1"
        data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>"
-       data-text-field="<?=\BusyPHP\app\admin\model\system\logs\SystemLogsField::name();?>"/>
-    </textarea>
+       data-model-text-field="<?=\BusyPHP\app\admin\model\system\logs\SystemLogsField::name();?>"/>
+    </template>
 </block>
