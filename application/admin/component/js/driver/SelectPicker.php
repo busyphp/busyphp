@@ -86,12 +86,12 @@ class SelectPicker extends Driver
         $this->length    = $this->request->param('length/d', 0);
         $this->idField   = $this->request->param('id_field/s', '', 'trim');
         $this->textField = $this->request->param('text_field/s', '', 'trim');
-        $this->word      = $this->request->param('word');
+        $this->word      = $this->request->param('word', '');
         
         $this->idField   = $this->idField ?: 'id';
         $this->textField = $this->textField ?: 'name';
         $this->length    = $this->length < 0 ? 20 : $this->length;
-        $this->word      = is_array($this->word) ? FilterHelper::trimArray($this->word) : trim($this->word);
+        $this->word      = is_array($this->word) ? FilterHelper::trimArray($this->word) : trim((string) $this->word);
         $this->page      = max($this->page, 1);
     }
     
