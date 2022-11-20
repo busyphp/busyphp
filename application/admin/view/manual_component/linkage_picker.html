@@ -24,15 +24,27 @@
 | - | :-: | :--: | :-: | - |
 | 基本属性:title | | | | |
 | data-list | [object] | `否` | null | 设置数据，参考`list数据结构` |
-| data-id-field | string | `否` | `id` | 数据ID字段名 |
-| data-name-field | string | `否` | `id` | 数据名称字段名 |
-| data-child-field | string | `否` | `child` | 数据下级数据字段名 |
-| data-parent-field | string | `否` | `parent` | 数据上级关系字段名 |
+| data-id-field | string | `否` | `id` | 取数据`ID`的字段名 |
+| data-name-field | string | `否` | `name` | 取数据`名称`的字段名 |
+| data-child-field | string | `否` | `child` | 取数据`下级数据`的字段名 |
+| data-parent-field | string | `否` | `parent` | 取数据`上级ID`的字段名 |
 | data-strict | boolean | `否` | `true` | 是否严格检测节点路径，false则不检测，允许单选任意节点 |
 | data-clear | boolean | `否` | `false` | 是否显示清空按钮 |
 | data-name-space | string | `否` | `/` | 名称分隔符 |
 | data-id-space | string | `否` | `,` | ID分隔符 |
 | data-name-path | boolean | `否` | `true` | 名称是否显示全路径 |
+| Ajax加载:title | | | | |
+| data-url | string | `否` | - | 设置远程加载的URL |
+| data-method | string | `否` | `get` | 设置AJAX请求方式 |
+| data-params | object,Function | `否` | - | 设置AJAX的附加参数 |
+| Model加载:title | | | | |
+| data-model | string | `否` | - | 设置自动获取数据的模型类名称 |
+| data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
+| data-model-id-field | string | `否` | `id` | 取模型数据`ID`的字段 |
+| data-model-name-field | string | `否` | `name` | 取模型数据`名称`的字段 |
+| data-model-parent-field | string | `否` | `parent_id` | 取模型数据`上级ID`的字段 |
+| data-model-disabled-field | string | `否` | `disabled` |取模型数据`是否禁用`的字段 |
+| data-model-order | string | `否` | null | 设置模型数据排序方式，多个用英文逗号分割，如：`id DESC` |
 
 ### 使用示例
 
@@ -89,12 +101,25 @@
     </script>
 
     <script id="demo3" type="text/html">
+        <p><b>指定URL</b></p>
         <input type="text"
                class="form-control"
                value=""
                placeholder="请选择"
                data-toggle="busy-linkage-picker"
                data-url="__SELF__"
+               data-clear="true"/>
+        <hr />
+        <p><b>使用model</b></p>
+        <input type="text"
+               class="form-control"
+               value=""
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class?>"
+               data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::hash()?>"
+               data-model-name-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::name()?>"
+               data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::parentHash()?>"
                data-clear="true"/>
     </script>
 
