@@ -26,7 +26,9 @@
 | data-type | string | `是` | `ajax` | 初始化组件属性，支持：`html`,`ajax` |
 | data-height | number,string,DOM,jQueryElement | 否 | - | 设置表高度或高度计算依赖节点，设置后表头和表尾将固定，设置`auto`则自动计算高度 |
 | data-no-data-text | string | 否 | - | 设置无数据提示内容 |
-| data-route | boolean | 否 | `false` | 是否启用路由管理，启用后可以通过URL复原表单 |
+| data-route | boolean | 否 | `false` | 是否启用路由管理，启用后可以通过URL复原表格 |
+| 异步加载:title |  |  |  |  |
+| data-url | string | `否` | - | 设置异步请求的URL |
 | data-model | string | `否` | - | 设置自动获取数据的模型类名称 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
 | data-state | string,boolean | `否` | `false` | 是否记录表格内状态，设为`string`为记录状态的参数名称，防止和其它表格冲突。默认为当前URL |
