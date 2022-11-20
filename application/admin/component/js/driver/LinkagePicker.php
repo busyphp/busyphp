@@ -64,10 +64,10 @@ class LinkagePicker extends Driver
     {
         parent::__construct();
         
-        $this->idField       = $this->request->param('id_field/s', '', 'trim');       // TODO JS组件暂不支持
-        $this->parentField   = $this->request->param('parent_field/s', '', 'trim');   // TODO JS组件暂不支持
-        $this->nameField     = $this->request->param('name_field/s', '', 'trim');     // TODO JS组件暂不支持
-        $this->disabledField = $this->request->param('disabled_field/s', '', 'trim'); // TODO JS组件暂不支持
+        $this->idField       = $this->request->param('id_field/s', '', 'trim');
+        $this->parentField   = $this->request->param('parent_field/s', '', 'trim');
+        $this->nameField     = $this->request->param('name_field/s', '', 'trim');
+        $this->disabledField = $this->request->param('disabled_field/s', '', 'trim');
         
         $this->idField       = $this->idField ?: 'id';
         $this->parentField   = $this->parentField ?: 'parent_id';
