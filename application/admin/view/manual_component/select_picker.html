@@ -33,17 +33,18 @@
 | data-disabled | boolean | `否` | `false` | 是否禁用该组件 |
 | data-max | number | `否` | 0 | 多选情况下，最大允许选择数，0为不限制 |
 | data-value | string,[string] | `否` | null | 设置默认选中项，多选模式传数组，单选模式传字符 |
+| data-selected-template | string,function | `否` | null | 自定义选中项模板 |
+| data-option-template | string,function | `否` | null | 自定义选项模板 |
+| 异步加载:title |  |  |  |  |
 | data-url | boolean,string | `否` | `false` | 是否启用异步数据选项，设置字符串URL则从该地址获取，否则从当前网址获取 |
 | data-params | object,Function | `否` | - | 自定义请求参数，支持闭包 |
 | data-delay | number | `否` | `250` | 异步加载延迟毫秒 |
-| data-model | string | `否` | - | 设置自动获取选项的模型类名称 |
+| data-length | string | `否` | `name` | 数据每页展示条数，0为不限，会缓存该结果 |
+| data-model | string | `否` | - | 设置自动获取选项的模型类名称，与`data-url`互斥 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
-| data-id-field | string | `否` | `id` | 取模型数据的id值字段 |
-| data-text-field | string | `否` | `name` | 取模型数据的text值字段 |
-| data-length | string | `否` | `name` | 模型数据每页展示条数，0为不限，会缓存该结果 |
-| data-order | string | `否` | `id DESC` | 模型数据排序方式，多个用英文逗号隔开 |
-| data-selected-template | string,function | `否` | null | 自定义选中项模板 |
-| data-option-template | string,function | `否` | null | 自定义选项模板 |
+| data-model-id-field | string | `否` | `id` | 取模型数据`ID`的字段 |
+| data-model-text-field | string | `否` | `name` | 取模型数据`名称`的字段 |
+| data-model-order | string | `否` | `id DESC` | 设置模型数据排序方式，多个用英文逗号分割，如：`id DESC` |
 | Select2配置:title |  |  |  |  |
 | data-select2-tags | boolean | `否` | `false` | 是否为tags模式，该模式下，输入的tag不存则可以创建 |
 | data-select2-tags-space | [string] | `否` | `null` | 设置tag分割字符，默认为回车 |
@@ -219,8 +220,8 @@
             <select class="form-control"
                     data-toggle="busy-select-picker"
                     data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-                    data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-                    data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
+                    data-model-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
+                    data-model-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
                     data-length="0"
                     data-value='avatar'
                     data-placeholder="请选择">
@@ -233,8 +234,8 @@
             <select class="form-control"
                     data-toggle="busy-select-picker"
                     data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-                    data-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-                    data-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
+                    data-model-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
+                    data-model-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
                     data-order="id desc,var desc"
                     data-value='["avatar","banner"]'
                     data-placeholder="请选择"
