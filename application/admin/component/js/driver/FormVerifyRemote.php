@@ -1,8 +1,10 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\component\js\driver;
 
 use BusyPHP\app\admin\component\js\Driver;
+use BusyPHP\app\admin\component\js\driver\FormVerifyRemote\FormVerifyRemoteHandler;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\model\Entity;
 use RuntimeException;
@@ -14,6 +16,8 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/11/14 10:38 FormVerifyRemote.php $
+ * @property FormVerifyRemoteHandler $handler
+ * @method FormVerifyRemote handler(FormVerifyRemoteHandler $handler)
  */
 class FormVerifyRemote extends Driver
 {
@@ -48,6 +52,12 @@ class FormVerifyRemote extends Driver
      * @var string
      */
     protected $errorMessage;
+    
+    
+    final protected static function defineAbstract() : string
+    {
+        return self::class;
+    }
     
     
     public function __construct()

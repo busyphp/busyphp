@@ -104,6 +104,12 @@ class Table extends Driver
     protected $queryCallback;
     
     
+    final protected static function defineAbstract() : string
+    {
+        return self::class;
+    }
+    
+    
     public function __construct()
     {
         parent::__construct();

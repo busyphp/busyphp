@@ -1,8 +1,9 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\component\common\simplequery;
 
-use BusyPHP\app\admin\component\common\SimpleQuery;
+use BusyPHP\app\admin\component\common\simplequery;
 use BusyPHP\app\admin\component\js\driver\table\TableHandler;
 
 /**

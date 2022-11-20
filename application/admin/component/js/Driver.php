@@ -162,7 +162,7 @@ abstract class Driver
      */
     public static function isRequest() : bool
     {
-        return static::getRequestName() === basename(str_replace('\\', '/', static::class));
+        return static::getRequestName() === basename(str_replace('\\', '/', static::defineAbstract()));
     }
     
     
@@ -170,9 +170,29 @@ abstract class Driver
      * 实例化驱动
      * @return static
      */
-    public static function init() : self
+    final public static function init() : self
     {
-        return Container::getInstance()->make(static::class);
+        return Container::getInstance()->make(static::defineAbstract());
+    }
+    
+    
+    /**
+     * 定义类接口
+     * @return string
+     */
+    protected static function defineAbstract() : string
+    {
+        return static::class;
+    }
+    
+    
+    /**
+     * 获取类接口
+     * @return string|static
+     */
+    public static function abstract() : string
+    {
+        return Container::getInstance()->getAlias(static::defineAbstract());
     }
     
     
@@ -183,7 +203,7 @@ abstract class Driver
     public static function initIfRequest() : ?self
     {
         if (static::isRequest()) {
-            return static::init();
+            return self::init();
         }
         
         return null;

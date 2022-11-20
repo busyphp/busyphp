@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\component\js\driver;
 
@@ -52,6 +53,12 @@ class Autocomplete extends Driver
      * @var int
      */
     protected $limit;
+    
+    
+    final protected static function defineAbstract() : string
+    {
+        return self::class;
+    }
     
     
     public function __construct()
