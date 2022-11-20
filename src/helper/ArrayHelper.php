@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
+use ArrayAccess;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Map;
 use think\Collection;
@@ -364,5 +365,24 @@ class ArrayHelper extends Arr
         }
         
         return $list;
+    }
+    
+    
+    /**
+     * 向上递归获取上级集合
+     * @param array<mixed,array|ArrayAccess> $list $key为下标的列表
+     * @param array|ArrayAccess              $item 数据项
+     * @param string                         $key 主键
+     * @param string                         $parentKey 上级主键
+     * @param array                          $gather 赋值
+     * @return void
+     */
+    public static function upwardRecursion(array $list, $item, string $key = 'id', string $parentKey = 'parent_id', array &$gather = [])
+    {
+        if (isset($list[$item[$parentKey]])) {
+            $newItem  = $list[$item[$parentKey]];
+            $gather[] = $newItem[$key];
+            static::upwardRecursion($list, $newItem, $key, $parentKey, $gather);
+        }
     }
 }
