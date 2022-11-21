@@ -1846,6 +1846,132 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
+    public function whereNull($field, string $logic = 'AND')
+    {
+        return parent::whereNull(Entity::parse($field), $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereNotNull($field, string $logic = 'AND')
+    {
+        return parent::whereNotNull(Entity::parse($field), $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereIn($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereIn(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereNotIn($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereNotIn(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereLike($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereLike(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereNotLike($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereNotLike(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereBetween($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereBetween(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereNotBetween($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereNotBetween(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereFindInSet($field, $condition, string $logic = 'AND')
+    {
+        return parent::whereFindInSet(Entity::parse($field), $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereColumn($field1, string $operator, $field2 = null, string $logic = 'AND')
+    {
+        return parent::whereColumn(Entity::parse($field1), $operator, Entity::parse($field2), $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function useSoftDelete($field, $condition = null)
+    {
+        return parent::useSoftDelete(Entity::parse($field), $condition);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereExp($field, string $where, array $bind = [], string $logic = 'AND')
+    {
+        return parent::whereExp(Entity::parse($field), $where, $bind, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function whereFieldRaw($field, $op, $condition = null, string $logic = 'AND')
+    {
+        return parent::whereFieldRaw(Entity::parse($field), $op, $condition, $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function removeWhereField($field, string $logic = 'AND')
+    {
+        return parent::removeWhereField(Entity::parse($field), $logic);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
     public function join($join, string $condition = null, string $type = 'INNER', array $bind = [])
     {
         if ($join instanceof Model) {
