@@ -965,6 +965,17 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
+     * 复制为新实例
+     * @param Entity|string ...$excludes 排除字段
+     * @return $this
+     */
+    public function copy(...$excludes) : self
+    {
+        return static::copyData($this, ...$excludes);
+    }
+    
+    
+    /**
      * 获取数据，以执行 {@see Db::insert()} {@see Db::update()} {@see Db::save()} {@see Db::data()}
      * @return array
      */
