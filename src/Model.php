@@ -1391,7 +1391,7 @@ abstract class Model extends Query
     
     /**
      * 批量更新数据
-     * @param array  $data 更新的数据<pre>
+     * @param array         $data 更新的数据<pre>
      * $this->updateAll([
      *     [
      *         'id'     => 1,       // 主键必选
@@ -1400,24 +1400,24 @@ abstract class Model extends Query
      *     ]
      * ]);
      * </pre>
-     * @param string $pk 依据$data中的哪个字段进行查询更新 如: id
+     * @param string|Entity $pk 依据$data中的哪个字段进行查询更新 如: id
      * @return int
      * @throws DbException
      */
-    public function updateAll(array $data, string $pk = '') : int
+    public function updateAll(array $data, $pk = '') : int
     {
         $pk   = $pk ?: $this->getPk();
         $list = [];
         $idIn = [];
         foreach ($data as $values) {
             $values = $this->parseData($values);
-            $idIn[] = sprintf("'%s'", $values[$pk]);
-            foreach ($values as $i => $value) {
+            $idIn[] = "'$values[$pk]'";
+            foreach ($values as $field => $value) {
                 if ($value instanceof Raw) {
                     $value = $value->getValue();
                 }
                 
-                $list[$i][$values[$pk]] = $value;
+                $list[$field][$values[$pk]] = $value;
             }
         }
         
@@ -1425,20 +1425,23 @@ abstract class Model extends Query
             throw new InvalidArgumentException('Primary key field must be set');
         }
         
+        if (!$list) {
+            return 0;
+        }
         
         $item = [];
         foreach ($list as $key => $values) {
-            $item[$key] = sprintf("%s = CASE %s ", $key, $pk) . PHP_EOL;
-            foreach ($values as $i => $value) {
+            $item[$key] = "$key = CASE $pk " . PHP_EOL;
+            foreach ($values as $field => $value) {
                 if (is_array($value) && $value[0] == 'exp') {
                     $value = $value[1];
                 } else {
                     $value = "'$value'";
                 }
                 
-                $item[$key] .= sprintf("WHEN '%s' THEN %s ", $i, $value) . PHP_EOL;
+                $item[$key] .= "WHEN '$field' THEN $value " . PHP_EOL;
             }
-            $item[$key] .= ' END ' . PHP_EOL;
+            $item[$key] .= 'END ' . PHP_EOL;
         }
         
         $result = $this->execute(sprintf('UPDATE %s SET %s WHERE %s in (%s)', $this->getTable(), implode(',', $item), $pk, implode(',', $idIn)));
