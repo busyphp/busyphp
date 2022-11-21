@@ -534,23 +534,23 @@ abstract class Model extends Query
             case substr($lower, 0, 9) == 'getinfoby':
                 $name = Str::snake(substr($method, 9));
                 
-                return $this->where($name, '=', $args[0])->failException(true)->findInfo(null, $args[1] ?? null);
+                return $this->where($name, '=', $args[0])->failException(true, $args[1] ?? null)->findInfo();
             
             // findInfoByField
             case substr($lower, 0, 10) == 'findinfoby':
                 $name = Str::snake(substr($method, 10));
                 
-                return $this->where($name, '=', $args[0])->findInfo(null, $args[1] ?? null);
+                return $this->where($name, '=', $args[0])->findInfo();
             // getExtendInfoByField
             case substr($lower, 0, 15) == 'getextendinfoby':
                 $name = Str::snake(substr($method, 15));
                 
-                return $this->where($name, '=', $args[0])->failException(true)->findExtendInfo(null, $args[1] ?? null);
+                return $this->where($name, '=', $args[0])->failException(true, $args[1] ?? null)->findExtendInfo();
             // findExtendInfoByField
             case substr($lower, 0, 16) == 'findextendinfoby':
                 $name = Str::snake(substr($method, 16));
                 
-                return $this->where($name, '=', $args[0])->findExtendInfo(null, $args[1] ?? null);
+                return $this->where($name, '=', $args[0])->findExtendInfo();
         }
         
         return parent::__call($method, $args);

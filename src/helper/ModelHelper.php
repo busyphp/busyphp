@@ -80,25 +80,25 @@ PHP;
             
             if ($bindParseClass) {
                 $getInfoByList[]  = sprintf('@method %s getInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseClass, $method, $type, $name);
-                $findInfoByList[] = sprintf('@method %s|null findInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseClass, $method, $type, $name);
+                $findInfoByList[] = sprintf('@method %s|null findInfoBy%s(%s $%s)', $bindParseClass, $method, $type, $name);
             }
             
             if ($bindParseExtendClass) {
                 $getExtendInfoByList[]  = sprintf('@method %s getExtendInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseExtendClass, $method, $type, $name);
-                $findExtendInfoByList[] = sprintf('@method %s|null findExtendInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseExtendClass, $method, $type, $name);
+                $findExtendInfoByList[] = sprintf('@method %s|null findExtendInfoBy%s(%s $%s)', $bindParseExtendClass, $method, $type, $name);
             }
         }
         
         $commonList = [];
         if ($bindParseClass) {
             $commonList[] = sprintf('@method %s getInfo(%s $%s, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
-            $commonList[] = sprintf('@method %s|null findInfo(%s $%s = null, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
+            $commonList[] = sprintf('@method %s|null findInfo(%s $%s = null)', $bindParseClass, $pkType, $pk);
             $commonList[] = sprintf('@method %s[] selectList()', $bindParseClass);
             $commonList[] = sprintf('@method %s[] buildListWithField(array $values, string|%s $key = null, string|%s $field = null)', $bindParseClass, $entityClass, $entityClass);
         }
         if ($bindParseExtendClass) {
             $commonList[] = sprintf('@method %s getExtendInfo(%s $%s, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
-            $commonList[] = sprintf('@method %s|null findExtendInfo(%s $%s = null, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
+            $commonList[] = sprintf('@method %s|null findExtendInfo(%s $%s = null)', $bindParseClass, $pkType, $pk);
             $commonList[] = sprintf('@method %s[] selectExtendList()', $bindParseExtendClass);
             $commonList[] = sprintf('@method %s[] buildExtendListWithField(array $values, string|%s $key = null, string|%s $field = null)', $bindParseExtendClass, $entityClass, $entityClass);
         }
