@@ -32,9 +32,9 @@ class ModelHelper
             $model = new $model();
         }
         
-        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseClass'));
-        $bindParseExtendClass = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseExtendClass'));
-        $entityClass          = ClassHelper::getAbsoluteClassname(Entity::class);
+        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseClass'), true);
+        $bindParseExtendClass = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseExtendClass'), true);
+        $entityClass          = ClassHelper::getAbsoluteClassname(Entity::class, true);
         $pk                   = $model->getPk();
         $pkType               = 'mixed';
         $getByList            = [];
@@ -51,7 +51,6 @@ class ModelHelper
         $fieldSetterList      = [];
         $fieldGetterList      = [];
         
-        dump($model->getFields());
         foreach ($model->getFields() as $field) {
             $method  = StringHelper::studly($field['name']);
             $name    = StringHelper::camel($field['name']);

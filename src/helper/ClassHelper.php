@@ -145,8 +145,7 @@ class ClassHelper
         $list  = [];
         $class = self::getReflectionClass($objectOrClass);
         foreach ($class->getReflectionConstants() as $constant) {
-            $constantClass = self::getAbsoluteClassname($constant->getDeclaringClass()->getName());
-            if ($constantClass != $classname) {
+            if ($constant->getDeclaringClass()->getName() != $classname) {
                 continue;
             }
             
@@ -335,7 +334,7 @@ class ClassHelper
             $name = static::extractClassnameByTraits($classname, $class, $member);
         }
         
-        return self::getAbsoluteClassname($name);
+        return self::getAbsoluteClassname($name, true);
     }
     
     
@@ -479,19 +478,23 @@ class ClassHelper
     
     /**
      * 获取完整类名称
-     * @param string|null $classname
+     * @param string|null $classname 类名
+     * @param bool        $real 是否返回全路径名
      * @return string|null
      */
-    public static function getAbsoluteClassname($classname) : ?string
+    public static function getAbsoluteClassname($classname, bool $real = false) : ?string
     {
         if (!$classname) {
-            return $classname;
+            return null;
         }
+        
         if (is_object($classname)) {
             $classname = get_class($classname);
         }
         
-        return '\\' . ltrim($classname, '\\');
+        $classname = ltrim($classname, '\\');
+        
+        return $real ? '\\' . $classname : $classname;
     }
     
     
