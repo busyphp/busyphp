@@ -3,7 +3,6 @@
 namespace BusyPHP\helper;
 
 use BusyPHP\exception\HttpRequestException;
-use BusyPHP\helper\TransHelper;
 use CURLFile;
 use DomainException;
 use think\exception\FileException;
@@ -15,6 +14,7 @@ use think\exception\InvalidArgumentException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/21 下午上午10:11 HttpHelper.php $
+ * @deprecated 已过期，请使用 {@see \GuzzleHttp\Client}
  */
 class HttpHelper
 {
