@@ -11,6 +11,7 @@ use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\app\admin\component\js\traits\ModelSelect;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -23,7 +24,7 @@ use think\db\exception\DbException;
  * @property AutocompleteHandler $handler
  * @method Autocomplete handler(AutocompleteHandler $handler)
  */
-class Autocomplete extends Driver
+class Autocomplete extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelOrder;
@@ -49,7 +50,7 @@ class Autocomplete extends Driver
     protected $limit;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }

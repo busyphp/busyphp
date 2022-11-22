@@ -9,7 +9,9 @@ use BusyPHP\app\admin\model\admin\message\AdminMessage;
 use BusyPHP\app\admin\model\admin\message\AdminMessageField;
 use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\helper\TransHelper;
-use think\Container;
+use BusyPHP\interfaces\ContainerInterface;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInstance;
 use Throwable;
 
 /**
@@ -18,12 +20,24 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午12:18 下午 Notice.php $
  */
-class Notice
+class Notice implements ContainerInterface
 {
+    use ContainerDefine;
+    use ContainerInstance;
+    
     /**
      * @var App
      */
     protected $app;
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
     
     
     public function __construct(App $app)
@@ -137,15 +151,5 @@ class Notice
     public function isEnable() : bool
     {
         return (bool) $this->app->config->get('app.admin.notice', false);
-    }
-    
-    
-    /**
-     * 获取单例
-     * @return static
-     */
-    public static function getInstance()
-    {
-        return Container::getInstance()->make(self::class);
     }
 }

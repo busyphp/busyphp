@@ -9,25 +9,30 @@ use BusyPHP\app\admin\component\common\SimpleQuery\SimpleQueryBuildResult;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\ArrayOption;
 use BusyPHP\model\Entity;
 use BusyPHP\Request;
+use BusyPHP\traits\ContainerDefine;
 use Closure;
 use think\Collection;
+use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Paginator;
 
 /**
- * 简单快捷的数据查询器
+ * 常规数据查询
+ * 支持配合JS [busyAdmin.plugins.SearchBar] 组件
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/11/15 19:56 SimpleQuery.php $
  */
-class SimpleQuery
+class SimpleQuery implements ContainerInterface
 {
     use ModelOrder;
+    use ContainerDefine;
     
     /**
      * @var Request
@@ -124,6 +129,15 @@ class SimpleQuery
     protected $paginator;
     
     
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
+    
+    
     public function __construct(Model $model)
     {
         $this->model   = $model;
@@ -150,7 +164,7 @@ class SimpleQuery
      * @param SimpleQueryHandler $handler
      * @return $this
      */
-    public function handler(SimpleQueryHandler $handler)
+    public function handler(SimpleQueryHandler $handler) : self
     {
         $this->handler = $handler;
         
@@ -197,7 +211,7 @@ class SimpleQuery
      * @param callable($list array|Collection):mixed $callback 数据集处理回调
      * @return $this
      */
-    public function list(callable $callback)
+    public function list(callable $callback) : self
     {
         $this->listCallback = $callback;
         
@@ -487,6 +501,6 @@ class SimpleQuery
      */
     public static function init(Model $model)
     {
-        return new static($model);
+        return Container::getInstance()->make(self::class, [$model], true);
     }
 }

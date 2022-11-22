@@ -13,7 +13,9 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\TransHelper;
-use think\Container;
+use BusyPHP\interfaces\ContainerInterface;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInstance;
 
 /**
  * 后台待办类
@@ -21,8 +23,11 @@ use think\Container;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午12:18 下午 Todo.php $
  */
-class Todo
+class Todo implements ContainerInterface
 {
+    use ContainerDefine;
+    use ContainerInstance;
+    
     /**
      * 非常紧急
      * @var int
@@ -55,6 +60,16 @@ class Todo
      * @var App
      */
     protected $app;
+    
+    
+    /**
+     * 定义容器接口
+     * @return string
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -189,15 +204,5 @@ class Todo
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'LEVEL_', [
             'style' => 'string'
         ]), $val);
-    }
-    
-    
-    /**
-     * 获取单例
-     * @return static
-     */
-    public static function getInstance()
-    {
-        return Container::getInstance()->make(self::class);
     }
 }

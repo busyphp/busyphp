@@ -9,6 +9,7 @@ use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelSelect;
 use BusyPHP\app\admin\component\js\traits\ModelTotal;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\ArrayOption;
 use BusyPHP\model\Entity;
@@ -25,7 +26,7 @@ use think\db\exception\DbException;
  * @property TableHandler $handler
  * @method Table handler(TableHandler $handler)
  */
-class Table extends Driver
+class Table extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelTotal;
@@ -104,7 +105,7 @@ class Table extends Driver
     protected $queryCallback;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }

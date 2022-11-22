@@ -9,6 +9,8 @@ use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\Model;
 use BusyPHP\Request;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInit;
 use RuntimeException;
 use think\Container;
 use think\exception\HttpResponseException;
@@ -22,6 +24,9 @@ use think\Response;
  */
 abstract class Driver
 {
+    use ContainerDefine;
+    use ContainerInit;
+    
     /**
      * @var App
      */
@@ -162,37 +167,7 @@ abstract class Driver
      */
     public static function isRequest() : bool
     {
-        return static::getRequestName() === basename(str_replace('\\', '/', static::defineAbstract()));
-    }
-    
-    
-    /**
-     * 实例化驱动
-     * @return static
-     */
-    final public static function init() : self
-    {
-        return Container::getInstance()->make(static::defineAbstract());
-    }
-    
-    
-    /**
-     * 定义类接口
-     * @return string
-     */
-    protected static function defineAbstract() : string
-    {
-        return static::class;
-    }
-    
-    
-    /**
-     * 获取类接口
-     * @return string|static
-     */
-    public static function abstract() : string
-    {
-        return Container::getInstance()->getAlias(static::defineAbstract());
+        return static::getRequestName() === basename(str_replace('\\', '/', self::getDefineContainer()));
     }
     
     

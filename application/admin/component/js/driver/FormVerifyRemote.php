@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\component\js\driver;
 use BusyPHP\app\admin\component\js\Driver;
 use BusyPHP\app\admin\component\js\driver\FormVerifyRemote\FormVerifyRemoteHandler;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
@@ -19,7 +20,7 @@ use think\db\exception\DbException;
  * @property FormVerifyRemoteHandler $handler
  * @method FormVerifyRemote handler(FormVerifyRemoteHandler $handler)
  */
-class FormVerifyRemote extends Driver
+class FormVerifyRemote extends Driver implements ContainerInterface
 {
     use ModelQuery;
     
@@ -54,7 +55,7 @@ class FormVerifyRemote extends Driver
     protected $errorMessage;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }

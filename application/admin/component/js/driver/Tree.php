@@ -12,6 +12,7 @@ use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\app\admin\component\js\traits\ModelSelect;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -24,7 +25,7 @@ use think\db\exception\DbException;
  * @property TreeHandler $handler
  * @method Tree handler(TreeHandler $handler)
  */
-class Tree extends Driver
+class Tree extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelOrder;
@@ -80,7 +81,7 @@ class Tree extends Driver
     protected $afterCallback;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }

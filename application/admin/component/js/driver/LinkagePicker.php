@@ -10,6 +10,7 @@ use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\app\admin\component\js\traits\ModelSelect;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -22,7 +23,7 @@ use think\db\exception\DbException;
  * @property LinkagePickerHandler $handler
  * @method LinkagePicker handler(LinkagePickerHandler $handler)
  */
-class LinkagePicker extends Driver
+class LinkagePicker extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelOrder;
@@ -54,7 +55,7 @@ class LinkagePicker extends Driver
     protected $disabledField;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }

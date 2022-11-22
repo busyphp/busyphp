@@ -12,6 +12,7 @@ use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\app\admin\component\js\traits\ModelSelect;
 use BusyPHP\app\admin\component\js\traits\ModelTotal;
 use BusyPHP\helper\FilterHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
@@ -26,7 +27,7 @@ use think\db\exception\DbException;
  * @property callable($node SelectPickerNode, $item mixed, $group bool, $index int):mixed $itemCallback
  * @method SelectPicker handler(SelectPickerHandler $handler)
  */
-class SelectPicker extends Driver
+class SelectPicker extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelOrder;
@@ -71,7 +72,7 @@ class SelectPicker extends Driver
     public $word;
     
     
-    final protected static function defineAbstract() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
