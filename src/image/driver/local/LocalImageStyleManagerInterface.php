@@ -49,7 +49,6 @@ interface LocalImageStyleManagerInterface
      * 更新图片样式
      * @param string $name 图片样式
      * @param array  $content 样式规则
-     * @return void
      */
     public function updateImageStyle(string $name, array $content);
 }
