@@ -2,6 +2,7 @@
 
 namespace BusyPHP\traits;
 
+use BusyPHP\interfaces\ContainerInterface;
 use think\Container as ThinkContainer;
 
 /**
@@ -19,32 +20,6 @@ trait Container
     
     
     /**
-     * 定义容器接口
-     * @return class-string<static>
-     */
-    protected static function defineContainer() : string
-    {
-        if (!isset(self::$defineMap[static::class])) {
-            $selfClass   = self::class;
-            $parentClass = get_parent_class(static::class);
-            $trueClass   = static::class;
-            do {
-                if ($parentClass == $selfClass) {
-                    break;
-                }
-                $trueClass   = $parentClass;
-                $parentClass = get_parent_class($parentClass);
-            } while (true);
-            
-            
-            self::$defineMap[static::class] = $trueClass;
-        }
-        
-        return self::$defineMap[static::class];
-    }
-    
-    
-    /**
      * 实例化容器
      * @param array $vars 参数
      * @param bool  $newInstance 是否单例
@@ -52,7 +27,7 @@ trait Container
      */
     final protected static function makeContainer(array $vars = [], bool $newInstance = false) : self
     {
-        return ThinkContainer::getInstance()->make(static::defineContainer(), $vars, $newInstance);
+        return ThinkContainer::getInstance()->make(self::getDefineContainer(), $vars, $newInstance);
     }
     
     
@@ -62,7 +37,7 @@ trait Container
      */
     final public static function class() : string
     {
-        return ThinkContainer::getInstance()->getAlias(static::defineContainer());
+        return ThinkContainer::getInstance()->getAlias(self::getDefineContainer());
     }
     
     
@@ -72,7 +47,26 @@ trait Container
      */
     final public static function getDefineContainer() : string
     {
-        return static::defineContainer();
+        if (!isset(self::$defineMap[static::class])) {
+            if (is_subclass_of(static::class, ContainerInterface::class)) {
+                $trueClass = static::defineContainer();
+            } else {
+                $selfClass   = self::class;
+                $parentClass = get_parent_class(static::class);
+                $trueClass   = static::class;
+                do {
+                    if ($parentClass == $selfClass) {
+                        break;
+                    }
+                    $trueClass   = $parentClass;
+                    $parentClass = get_parent_class($parentClass);
+                } while (true);
+            }
+            
+            self::$defineMap[static::class] = $trueClass;
+        }
+        
+        return self::$defineMap[static::class];
     }
     
     
