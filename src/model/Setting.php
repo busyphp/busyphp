@@ -104,7 +104,7 @@ abstract class Setting
     protected function getKey() : string
     {
         if (!$this->key) {
-            $name = basename(str_replace('\\', '/', self::defineContainer()));
+            $name = basename(str_replace('\\', '/', self::getDefineContainer()));
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
