@@ -6,34 +6,28 @@ namespace BusyPHP\model;
 use BusyPHP\App;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
+use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
+use BusyPHP\traits\Container;
 use Closure;
 use Psr\Log\LoggerInterface;
 use think\db\exception\DbException;
 
 /**
- * Config基本类
+ * Setting基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/27 下午上午10:22 Setting.php $
  */
 abstract class Setting
 {
+    use Container;
+    
     /**
      * 服务注入
      * @var Closure[]
      */
     protected static $maker = [];
-    
-    /**
-     * @var Setting[]
-     */
-    private static $inits = [];
-    
-    /**
-     * @var SystemConfig
-     */
-    private static $manager;
     
     /**
      * @var string 键名
@@ -63,42 +57,35 @@ abstract class Setting
     
     
     /**
-     * 快速实例化
+     * 获取实例
      * @param LoggerInterface|null $logger 日志接口
      * @param string               $connect 连接标识
      * @param bool                 $force 是否强制重连
-     * @return $this
+     * @return static
      */
-    public static function init(LoggerInterface $logger = null, string $connect = '', bool $force = false) : self
+    public static function init(LoggerInterface $logger = null, string $connect = '', bool $force = false)
     {
-        if (!isset(self::$inits[static::class])) {
-            self::$inits[static::class] = new static($logger, $connect, $force);
+        $vars = [$connect, $force];
+        if ($logger) {
+            $vars = [$logger, $connect, $force];
         }
         
-        return self::$inits[static::class];
+        return self::makeContainer($vars, true);
     }
     
     
     /**
+     * 构造函数
      * @param LoggerInterface|null $logger 日志接口
      * @param string               $connect 连接标识
      * @param bool                 $force 是否强制重连
      */
-    protected function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false)
+    public function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false)
     {
-        $this->app = App::getInstance();
+        $this->app   = App::getInstance();
+        $this->model = SystemConfig::init($logger, $connect, $force);
         
-        if (!isset(self::$manager)) {
-            self::$manager = SystemConfig::init();
-        }
-        
-        if ($logger || $connect !== '' || $force) {
-            $this->model = SystemConfig::init($logger, $connect, $force);
-        } else {
-            $this->model = self::$manager;
-        }
-        
-        if (!$this->key) {
+        if (is_null($this->key) || $this->key === '') {
             $this->getKey();
         }
         
@@ -117,7 +104,7 @@ abstract class Setting
     protected function getKey() : string
     {
         if (!$this->key) {
-            $name = basename(str_replace('\\', '/', static::class));
+            $name = basename(str_replace('\\', '/', self::defineContainer()));
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
@@ -142,19 +129,18 @@ abstract class Setting
     
     /**
      * 获取数据
-     * @param string $name 数据名称
-     * @param mixed  $default 默认值
+     * @param string|null $name 数据名称
+     * @param mixed       $default 默认值
      * @return mixed
      */
-    final public function get(string $name = '', $default = null)
+    final public function get(string $name = null, $default = null)
     {
         $data = $this->parseGet($this->model->get($this->key));
-        
-        if (!$name) {
+        if (is_null($name)) {
             return $data;
         }
         
-        return $data[$name] ?? $default;
+        return ArrayHelper::get($data, $name, $default);
     }
     
     
