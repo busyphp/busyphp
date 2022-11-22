@@ -13,12 +13,34 @@ use think\Container as ThinkContainer;
 trait Container
 {
     /**
+     * @var array<string,string>
+     */
+    private static $defineMap = [];
+    
+    
+    /**
      * 定义容器接口
      * @return class-string<static>
      */
     protected static function defineContainer() : string
     {
-        return static::class;
+        if (!isset(self::$defineMap[static::class])) {
+            $selfClass   = self::class;
+            $parentClass = get_parent_class(static::class);
+            $trueClass   = static::class;
+            do {
+                if ($parentClass == $selfClass) {
+                    break;
+                }
+                $trueClass   = $parentClass;
+                $parentClass = get_parent_class($parentClass);
+            } while (true);
+            
+            
+            self::$defineMap[static::class] = $trueClass;
+        }
+        
+        return self::$defineMap[static::class];
     }
     
     
