@@ -15,6 +15,8 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\model\traits\Event;
 use BusyPHP\traits\Cache;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInstance;
 use Closure;
 use PDOStatement;
 use Psr\Log\LoggerInterface;
@@ -58,7 +60,8 @@ abstract class Model extends Query
     use Cache;
     use Event;
     use TimeStamp;
-    use traits\Container;
+    use ContainerDefine;
+    use ContainerInstance;
     
     // +----------------------------------------------------
     // + 常用场景名称

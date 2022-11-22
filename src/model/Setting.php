@@ -8,7 +8,8 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\traits\Container;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInstance;
 use Closure;
 use Psr\Log\LoggerInterface;
 use think\db\exception\DbException;
@@ -21,7 +22,8 @@ use think\db\exception\DbException;
  */
 abstract class Setting
 {
-    use Container;
+    use ContainerDefine;
+    use ContainerInstance;
     
     /**
      * 服务注入

@@ -3,15 +3,15 @@
 namespace BusyPHP\traits;
 
 use BusyPHP\interfaces\ContainerInterface;
-use think\Container as ThinkContainer;
+use think\Container;
 
 /**
- * 容器特征类
+ * 容器定义特征类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/11/22 19:16 Container.php $
+ * @version $Id: 2022/11/22 19:16 ContainerDefine.php $
  */
-trait Container
+trait ContainerDefine
 {
     /**
      * @var array<string,string>
@@ -27,7 +27,7 @@ trait Container
      */
     final protected static function makeContainer(array $vars = [], bool $newInstance = false) : self
     {
-        return ThinkContainer::getInstance()->make(self::getDefineContainer(), $vars, $newInstance);
+        return Container::getInstance()->make(self::getDefineContainer(), $vars, $newInstance);
     }
     
     
@@ -37,7 +37,7 @@ trait Container
      */
     final public static function class() : string
     {
-        return ThinkContainer::getInstance()->getAlias(self::getDefineContainer());
+        return Container::getInstance()->getAlias(self::getDefineContainer());
     }
     
     
@@ -67,25 +67,5 @@ trait Container
         }
         
         return self::$defineMap[static::class];
-    }
-    
-    
-    /**
-     * 获取单例
-     * @return static
-     */
-    public static function instance()
-    {
-        return self::makeContainer();
-    }
-    
-    
-    /**
-     * 获取实例
-     * @return static
-     */
-    public static function init()
-    {
-        return self::makeContainer([], true);
     }
 }
