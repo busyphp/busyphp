@@ -58,6 +58,7 @@ abstract class Model extends Query
     use Cache;
     use Event;
     use TimeStamp;
+    use traits\Container;
     
     // +----------------------------------------------------
     // + 常用场景名称
@@ -280,26 +281,6 @@ abstract class Model extends Query
     
     
     /**
-     * 定义模型类名
-     * @return class-string<Model>
-     */
-    protected static function defineAbstract() : string
-    {
-        return static::class;
-    }
-    
-    
-    /**
-     * 获取模型类名
-     * @return static|string
-     */
-    public static function abstract() : string
-    {
-        return Container::getInstance()->getAlias(static::defineAbstract());
-    }
-    
-    
-    /**
      * 实例化一个模型
      * @param LoggerInterface|null $log 日志接口
      * @param string               $connect 连接标识
@@ -308,19 +289,12 @@ abstract class Model extends Query
      */
     public static function init(LoggerInterface $log = null, string $connect = '', bool $force = false)
     {
-        $class = self::abstract();
+        $vars = [$connect, $force];
+        if ($log) {
+            $vars = [$log, $connect, $force];
+        }
         
-        return new $class($log, $connect, $force);
-    }
-    
-    
-    /**
-     * 获取单例模型
-     * @return static
-     */
-    public static function instance()
-    {
-        return Container::getInstance()->make(static::class);
+        return self::makeContainer($vars, true);
     }
     
     
@@ -352,7 +326,7 @@ abstract class Model extends Query
     {
         // 当前模型名
         if (empty($this->name)) {
-            $this->name = basename(str_replace('\\', '/', static::defineAbstract()));
+            $this->name = basename(str_replace('\\', '/', self::getDefineContainer()));
         }
         
         // 连接标识
