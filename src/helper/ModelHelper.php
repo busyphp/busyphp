@@ -54,7 +54,8 @@ class ModelHelper
         foreach ($model->getFields() as $field) {
             $method  = StringHelper::studly($field['name']);
             $name    = StringHelper::camel($field['name']);
-            $type    = static::castFieldType($field['type']);
+            $type    = $model->getFieldType($field['name']);
+            $type    = in_array($type, ['date', 'datetime', 'timestamp']) ? 'string' : $type;
             $comment = ClassHelper::replaceMethodDocSpecialStr($field['comment'] ?: $field['name']);
             if ($field['name'] == $pk) {
                 $pkType = $type;
@@ -119,36 +120,6 @@ PHP;
             'field_setter'        => $fieldSetterList,
             'field_getter'        => $fieldGetterList,
         ];
-    }
-    
-    
-    /**
-     * 将mysql类型转为php类型
-     * @param $type
-     * @return string
-     */
-    public static function castFieldType($type) : string
-    {
-        $type = strtolower($type);
-        switch (true) {
-            case 0 === stripos($type, 'int'):
-            case 0 === stripos($type, 'tinyint'):
-            case 0 === stripos($type, 'smallint'):
-            case 0 === stripos($type, 'mediumint'):
-            case 0 === stripos($type, 'bigint'):
-            case 0 === stripos($type, 'serial'):
-            case 0 === stripos($type, 'bit'):
-                return 'int';
-            case 0 === stripos($type, 'bool'):
-                return 'bool';
-            case 0 === stripos($type, 'decimal'):
-            case 0 === stripos($type, 'float'):
-            case 0 === stripos($type, 'double'):
-            case 0 === stripos($type, 'numeric'):
-                return 'float';
-            default:
-                return 'string';
-        }
     }
     
     
