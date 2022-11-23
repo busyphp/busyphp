@@ -85,24 +85,22 @@ class Service extends ThinkService
             'bp:version' => VersionCommand::class,
         ]);
         
-        // 监听HttpRun
+        // 多应用支持
         $this->app->event->listen(HttpRun::class, function() {
             $this->app->middleware->add(MultipleApp::class);
-        });
+        }, true);
         
         // 添加路由中间件
-        $this->app->middleware->import([
-            function(Request $request, Closure $next) {
-                // 通过插件方式引入
-                if ($request->route(self::ROUTE_VAR_TYPE) === self::ROUTE_TYPE_PLUGIN) {
-                    $group = $request->route(self::ROUTE_VAR_GROUP);
-                    $request->setController(($group ? $group . '.' : '') . $request->route(self::ROUTE_VAR_CONTROL));
-                    $request->setAction($request->route(self::ROUTE_VAR_ACTION));
-                }
-                
-                return $next($request);
-            },
-            SessionInit::class
-        ], 'route');
+        $this->app->middleware->route(SessionInit::class);
+        $this->app->middleware->route(function(Request $request, Closure $next) {
+            // 通过插件方式引入
+            if ($request->route(self::ROUTE_VAR_TYPE) === self::ROUTE_TYPE_PLUGIN) {
+                $group = $request->route(self::ROUTE_VAR_GROUP);
+                $request->setController(($group ? $group . '.' : '') . $request->route(self::ROUTE_VAR_CONTROL));
+                $request->setAction($request->route(self::ROUTE_VAR_ACTION));
+            }
+            
+            return $next($request);
+        });
     }
 }
