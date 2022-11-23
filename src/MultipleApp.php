@@ -144,8 +144,7 @@ class MultipleApp
                     $appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
                     
                     if (!is_dir($appPath)) {
-                        $express = $this->app->config->get('app.app_express', true);
-                        if ($express) {
+                        if ($this->app->config->get('app.app_express', true)) {
                             $this->setApp($defaultApp);
                             
                             return true;
@@ -214,7 +213,7 @@ class MultipleApp
     /**
      * 加载应用文件
      * @param string $appName 应用名
-     * @return void
+     * @param string $appPath 应用路径
      */
     protected function loadApp(string $appName, string $appPath) : void
     {
