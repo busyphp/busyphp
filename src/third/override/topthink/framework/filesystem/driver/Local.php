@@ -91,6 +91,8 @@ class Local extends Driver
      */
     public function url(string $path) : string
     {
+        $path = str_replace('\\', '/', $path);
+        
         if (isset($this->config['url'])) {
             return $this->concatPathToUrl($this->config['url'], $path);
         }
