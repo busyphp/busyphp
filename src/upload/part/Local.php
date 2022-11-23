@@ -13,7 +13,8 @@ use BusyPHP\upload\parameter\PartInitParameter;
 use BusyPHP\upload\parameter\PartPutParameter;
 use GuzzleHttp\Psr7\Utils;
 use InvalidArgumentException;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\StorageAttributes;
 use LengthException;
 use RangeException;
 use ReflectionException;
@@ -107,7 +108,6 @@ class Local implements PartInterface
      * @return array
      * @return array{path: string, md5: string, basename: string, mimetype: string, filesize: int, width: int, height: int}
      * @throws Throwable
-     * @throws FileNotFoundException
      */
     public function complete(PartCompleteParameter $parameter) : array
     {
@@ -122,15 +122,18 @@ class Local implements PartInterface
             
             // 获取临时目录下的碎片
             $partList = [];
+            
+            /** @var StorageAttributes $item */
             foreach ($tmpDisk->listContents($this->tmpFile($config['tmpDir'], $config['uploadId'])) as $item) {
-                $number = intval($item['filename'] ?? 0);
-                if (($item['type'] ?? '') !== 'file' || ($item['basename'] ?? '') === 'config.json' || $number < 1) {
+                $number   = intval(pathinfo($item->path(), PATHINFO_FILENAME));
+                $basename = pathinfo($item->path(), PATHINFO_BASENAME);
+                if (!$item->isFile() || $basename === 'config.json' || $number < 1) {
                     continue;
                 }
                 
                 $partList[] = [
                     'number' => $number,
-                    'path'   => $item['path']
+                    'path'   => $item->path()
                 ];
             }
             
@@ -167,10 +170,8 @@ class Local implements PartInterface
                 }
                 
                 try {
-                    if (false === $body = $tmpDisk->read($item['path'])) {
-                        throw new FileNotFoundException($item['path']);
-                    }
-                } catch (FileNotFoundException $e) {
+                    $body = $tmpDisk->read($item['path']);
+                } catch (Throwable $e) {
                     throw new FileException(sprintf('读取碎片失败: %s', $item['number']));
                 }
                 
@@ -232,10 +233,11 @@ class Local implements PartInterface
     /**
      * 清理碎片
      * @param array $config
+     * @throws FilesystemException
      */
     protected function clear(array $config)
     {
-        $this->tmpDisk($config['tmpDisk'])->deleteDir($this->tmpFile($config['tmpDir'], $config['uploadId']));
+        $this->tmpDisk($config['tmpDisk'])->deleteDirectory($this->tmpFile($config['tmpDir'], $config['uploadId']));
     }
     
     

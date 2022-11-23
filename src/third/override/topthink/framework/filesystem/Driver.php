@@ -16,11 +16,10 @@ use BusyPHP\image\Driver as ImageDriver;
 use BusyPHP\upload\interfaces\FrontInterface;
 use BusyPHP\upload\interfaces\PartInterface;
 use Closure;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Adapter\AbstractAdapter;
-use League\Flysystem\Cached\CachedAdapter;
-use League\Flysystem\Cached\Storage\Memory as MemoryStore;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\UnableToSetVisibility;
+use League\Flysystem\UnableToWriteFile;
 use RuntimeException;
 use think\Cache;
 use think\File;
@@ -49,6 +48,9 @@ abstract class Driver
     /** @var FrontInterface */
     protected $frontDriver;
     
+    /** @var FilesystemAdapter */
+    protected $adapter;
+    
     /**
      * 配置参数
      * @var array
@@ -60,29 +62,16 @@ abstract class Driver
     {
         $this->cache      = $cache;
         $this->config     = array_merge($this->config, $config);
-        $this->filesystem = $this->createFilesystem($this->createAdapter());
-    }
-    
-    
-    protected function createCacheStore($config)
-    {
-        if (true === $config) {
-            return new MemoryStore;
-        }
-        
-        return new CacheStore(
-            $this->cache->store($config['store']),
-            $config['prefix'] ?? 'flysystem',
-            $config['expire'] ?? null
-        );
+        $this->adapter    = $this->createAdapter();
+        $this->filesystem = $this->createFilesystem($this->adapter);
     }
     
     
     /**
      * 创建文件驱动适配器
-     * @return AdapterInterface
+     * @return FilesystemAdapter
      */
-    abstract protected function createAdapter() : AdapterInterface;
+    abstract protected function createAdapter() : FilesystemAdapter;
     
     
     /**
@@ -108,18 +97,23 @@ abstract class Driver
     
     /**
      * 创建文件操作系统
-     * @param AdapterInterface $adapter
+     * @param FilesystemAdapter $adapter
      * @return Filesystem
      */
-    protected function createFilesystem(AdapterInterface $adapter) : Filesystem
+    protected function createFilesystem(FilesystemAdapter $adapter) : Filesystem
     {
-        if (!empty($this->config['cache'])) {
-            $adapter = new CachedAdapter($adapter, $this->createCacheStore($this->config['cache']));
-        }
-        
         $config = array_intersect_key($this->config, array_flip(['visibility', 'disable_asserts', 'url']));
         
         return new Filesystem($adapter, count($config) > 0 ? $config : null);
+    }
+    
+    
+    /**
+     * @return FilesystemAdapter
+     */
+    public function getAdapter() : FilesystemAdapter
+    {
+        return $this->adapter;
     }
     
     
@@ -130,12 +124,6 @@ abstract class Driver
      */
     public function path(string $path) : string
     {
-        $adapter = $this->filesystem->getAdapter();
-        
-        if ($adapter instanceof AbstractAdapter) {
-            return $adapter->applyPathPrefix($path);
-        }
-        
         return $path;
     }
     
@@ -190,13 +178,25 @@ abstract class Driver
         $stream = fopen($file->getRealPath(), 'r');
         $path   = trim($path . '/' . $name, '/');
         
-        $result = $this->putStream($path, $stream, $options);
+        $result = $this->put($path, $stream, $options);
         
         if (is_resource($stream)) {
             fclose($stream);
         }
         
         return $result ? $path : false;
+    }
+    
+    
+    protected function put(string $path, $contents, array $options = [])
+    {
+        try {
+            $this->writeStream($path, $contents, $options);
+        } catch (UnableToWriteFile | UnableToSetVisibility $e) {
+            return false;
+        }
+        
+        return true;
     }
     
     

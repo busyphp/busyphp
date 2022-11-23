@@ -9,7 +9,7 @@ use BusyPHP\upload\parameter\LocalParameter;
 use BusyPHP\upload\parameter\PartCompleteParameter;
 use BusyPHP\upload\parameter\PartInitParameter;
 use BusyPHP\upload\parameter\PartPutParameter;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FilesystemException;
 use think\file\UploadedFile;
 use think\filesystem\Driver;
 use Throwable;
@@ -97,7 +97,7 @@ class Local implements FrontInterface
     
     /**
      * @inheritDoc
-     * @throws FileNotFoundException
+     * @throws FilesystemException
      */
     public function doneUpload(string $path, string $uploadId, array $parts) : array
     {
@@ -106,8 +106,8 @@ class Local implements FrontInterface
             $filesize = $result['filesize'];
             $mimetype = $result['mimetype'];
         } else {
-            $filesize = $this->driver->getSize($path);
-            $mimetype = $this->driver->getMimetype($path);
+            $filesize = $this->driver->fileSize($path);
+            $mimetype = $this->driver->mimeType($path);
         }
         
         $width  = 0;

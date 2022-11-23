@@ -18,8 +18,13 @@ use BusyPHP\upload\front\Local as LocalFront;
 use BusyPHP\upload\interfaces\FrontInterface;
 use BusyPHP\upload\interfaces\PartInterface;
 use BusyPHP\upload\part\Local as LocalPart;
-use League\Flysystem\Adapter\Local as LocalAdapter;
-use League\Flysystem\AdapterInterface;
+use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\PathNormalizer;
+use League\Flysystem\PathPrefixer;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
+use League\Flysystem\Visibility;
+use League\Flysystem\WhitespacePathNormalizer;
 use think\filesystem\Driver;
 
 /**
@@ -38,24 +43,57 @@ class Local extends Driver
         'root' => '',
     ];
     
+    /**
+     * @var PathPrefixer
+     */
+    protected $prefixer;
+    
+    /**
+     * @var PathNormalizer
+     */
+    protected $normalizer;
+    
     
     /**
      * @inheritDoc
      */
-    protected function createAdapter() : AdapterInterface
+    protected function createAdapter() : FilesystemAdapter
     {
-        $permissions = $this->config['permissions'] ?? [];
+        $visibility = PortableVisibilityConverter::fromArray(
+            $this->config['permissions'] ?? [],
+            $this->config['visibility'] ?? Visibility::PRIVATE
+        );
         
         $links = ($this->config['links'] ?? null) === 'skip'
-            ? LocalAdapter::SKIP_LINKS
-            : LocalAdapter::DISALLOW_LINKS;
+            ? LocalFilesystemAdapter::SKIP_LINKS
+            : LocalFilesystemAdapter::DISALLOW_LINKS;
         
-        return new LocalAdapter(
+        return new LocalFilesystemAdapter(
             $this->config['root'],
-            LOCK_EX,
-            $links,
-            $permissions
+            $visibility,
+            $this->config['lock'] ?? LOCK_EX,
+            $links
         );
+    }
+    
+    
+    protected function prefixer() : PathPrefixer
+    {
+        if (!$this->prefixer) {
+            $this->prefixer = new PathPrefixer($this->config['root'], DIRECTORY_SEPARATOR);
+        }
+        
+        return $this->prefixer;
+    }
+    
+    
+    protected function normalizer() : WhitespacePathNormalizer
+    {
+        if (!$this->normalizer) {
+            $this->normalizer = new WhitespacePathNormalizer();
+        }
+        
+        return $this->normalizer;
     }
     
     
@@ -91,12 +129,21 @@ class Local extends Driver
      */
     public function url(string $path) : string
     {
-        $path = str_replace('\\', '/', $path);
+        $path = $this->normalizer()->normalizePath($path);
         
         if (isset($this->config['url'])) {
             return $this->concatPathToUrl($this->config['url'], $path);
         }
         
         return parent::url($path);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function path(string $path) : string
+    {
+        return $this->prefixer()->prefixPath($path);
     }
 }

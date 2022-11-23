@@ -12,7 +12,6 @@ use BusyPHP\upload\parameter\PartCreateParameter;
 use BusyPHP\upload\parameter\PartPutParameter;
 use BusyPHP\upload\result\UploadResult;
 use InvalidArgumentException;
-use League\Flysystem\FileNotFoundException;
 use Throwable;
 
 /**
@@ -23,52 +22,6 @@ use Throwable;
  */
 class PartUpload extends Driver
 {
-    /**
-     * 上传处理
-     * @param mixed $data 上传的数据
-     * @return array [文件名称,文件对象,图像信息]
-     * @throws Throwable
-     */
-    /*protected function handle($data) : array
-    {
-        if ($this->uploadId < 1) {
-            throw new ParamInvalidException('$this->uploadId');
-        }
-        
-        // 合成碎片
-        if ($this->merge) {
-            if ($this->partTotal < 1) {
-                throw new ParamInvalidException('$this->partTotal');
-            }
-            
-            $fileId = SystemFileFragment::init()->merge($this->uploadId, $this->partTotal)->fileId;
-            $info   = SystemFile::init()->getInfo($fileId);
-            
-            // 校验
-            $file = new File($this->setting->getLocalFileSystem()->path($info->path));
-            $this->checkExtension($file->getExtension());
-            $this->checkFilesize($file->getSize());
-            $this->checkMimetype($file->getMime());
-            $imageInfo = $this->checkUploadImage($file->getPathname(), $file->getExtension());
-            
-            $result              = new HandleResult();
-            $result->width       = $imageInfo[0];
-            $result->height = $imageInfo[1];
-            $result->info        = $info;
-            
-            return $result;
-        }
-        
-        // 写入碎片
-        if ($this->partNumber < 1) {
-            throw new ParamInvalidException('$this->partNumber');
-        }
-        SystemFileChunks::init()->create($this->uploadId, $this->partNumber, $data);
-        
-        throw new PartUploadSuccessException();
-    }*/
-    
-    
     /**
      * 初始化分块上传，并返回 uploadId 用于后续上传
      * @param PartCreateParameter $parameter
@@ -121,7 +74,6 @@ class PartUpload extends Driver
      * 合并分块，别名{@see PartUpload::complete()}
      * @param PartCompleteParameter $parameter
      * @return UploadResult
-     * @throws FileNotFoundException
      * @throws Throwable
      */
     public function upload($parameter) : UploadResult
@@ -139,7 +91,6 @@ class PartUpload extends Driver
      * @param PartCompleteParameter $parameter
      * @return UploadResult
      * @throws Throwable
-     * @throws FileNotFoundException
      */
     public function complete(PartCompleteParameter $parameter) : UploadResult
     {

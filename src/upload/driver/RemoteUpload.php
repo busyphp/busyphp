@@ -12,7 +12,7 @@ use BusyPHP\upload\result\UploadResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use InvalidArgumentException;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FilesystemException;
 use ReflectionException;
 use think\Container;
 use think\facade\Filesystem;
@@ -31,9 +31,9 @@ class RemoteUpload extends Driver
      * 执行上传
      * @param RemoteParameter $parameter
      * @return UploadResult
-     * @throws FileNotFoundException
      * @throws GuzzleException
      * @throws ReflectionException
+     * @throws FilesystemException
      */
     public function upload($parameter) : UploadResult
     {
@@ -113,7 +113,7 @@ class RemoteUpload extends Driver
             [$width, $height] = FileHelper::checkImage($file->getPathname(), $extension);
             $path = $this->putFileToDisk($file);
         } finally {
-            if ($disk->has($tmp)) {
+            if ($disk->fileExists($tmp)) {
                 $disk->delete($tmp);
             }
         }
