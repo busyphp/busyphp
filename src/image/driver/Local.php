@@ -5,9 +5,9 @@ namespace BusyPHP\image\driver;
 
 use BusyPHP\exception\ClassNotImplementsException;
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\image\concern\ResponseConcern;
-use BusyPHP\image\concern\UploadWatermarkConcern;
 use BusyPHP\image\Driver;
 use BusyPHP\image\driver\local\LocalImageStyleManagerInterface;
 use BusyPHP\image\parameter\AutoOrientParameter;
@@ -47,6 +47,7 @@ use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Size;
 use think\Container;
+use think\exception\FileException;
 use think\facade\Route;
 use think\file\UploadedFile;
 use think\route\Url;
@@ -61,7 +62,6 @@ use Throwable;
  */
 class Local extends Driver
 {
-    use UploadWatermarkConcern;
     use ResponseConcern;
     
     /** @var string[] 位置映射 */
@@ -840,7 +840,10 @@ class Local extends Driver
      */
     public function uploadWatermark(UploadedFile $file) : string
     {
-        $this->checkUploadWatermark($file);
+        FileHelper::checkImage($file->getPathname(), $file->getOriginalExtension());
+        if (!in_array(strtolower($file->getOriginalExtension()), ['png', 'jpeg', 'jpg', 'gif'])) {
+            throw new FileException('仅支持png,jpeg,jpg,gif');
+        }
         
         $date = date('YmdHis');
         $path = "system/watermark/$date.png";
