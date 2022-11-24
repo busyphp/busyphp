@@ -29,9 +29,9 @@
 		"guzzlehttp/guzzle"         : "7.5.0",
 		"topthink/framework"        : "6.1.1",
 		"topthink/think-filesystem" : "2.0.0",
-		"topthink/think-orm"        : "2.0.52",
+		"topthink/think-orm"        : "2.0.54",
 		"topthink/think-view"       : "1.0.14",
-		"topthink/think-trace"      : "1.4",
+		"topthink/think-trace"      : "1.5",
 		"intervention/image"        : "2.7.2",
 		"bacon/bacon-qr-code"       : "2.0.7",
 		"php-di/phpdoc-reader"      : "^2.2"
