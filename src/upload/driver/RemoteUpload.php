@@ -93,7 +93,7 @@ class RemoteUpload extends Driver
             StringHelper::uuid(),
             microtime()
         ])), $extension);
-        $disk->put($tmp, '');
+        $disk->write($tmp, '');
         
         // 下载文件至临时文件
         try {

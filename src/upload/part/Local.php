@@ -73,7 +73,7 @@ class Local implements PartInterface
      * 上传分块
      * @param PartPutParameter $parameter
      * @return array
-     * @throws ReflectionException
+     * @throws FilesystemException
      */
     public function put(PartPutParameter $parameter) : array
     {
@@ -88,7 +88,7 @@ class Local implements PartInterface
             $size = $file->getSize();
             $file->move($info['dirname'], $info['basename']);
         } else {
-            $tmpDisk->put($tmpPath, $file = (string) $file);
+            $tmpDisk->write($tmpPath, $file = (string) $file);
             $md5  = md5($file);
             $size = strlen($file);
         }
@@ -153,7 +153,7 @@ class Local implements PartInterface
             // 向临时目录创建一个空文件
             $completePath = $this->tmpFile($config['tmpDir'], $config['uploadId'], 'complete.file');
             $completeFile = new File($tmpDisk->path($completePath), false);
-            $tmpDisk->put($completePath, '');
+            $tmpDisk->write($completePath, '');
             
             // 打开文件将碎片写入
             $parts    = ArrayHelper::listByKey($parts, 'part_number');

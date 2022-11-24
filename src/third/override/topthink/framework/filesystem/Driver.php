@@ -18,6 +18,7 @@ use BusyPHP\upload\interfaces\PartInterface;
 use Closure;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\FilesystemException;
 use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use RuntimeException;
@@ -188,11 +189,18 @@ abstract class Driver
     }
     
     
-    protected function put(string $path, $contents, array $options = [])
+    /**
+     * 保存stream到文件
+     * @param string   $path 路径
+     * @param resource $contents stream
+     * @param array    $options 参数
+     * @return bool
+     */
+    protected function put(string $path, $contents, array $options = []) : bool
     {
         try {
             $this->writeStream($path, $contents, $options);
-        } catch (UnableToWriteFile | UnableToSetVisibility $e) {
+        } catch (UnableToWriteFile | UnableToSetVisibility | FilesystemException $e) {
             return false;
         }
         

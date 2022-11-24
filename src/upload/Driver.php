@@ -9,6 +9,7 @@ use BusyPHP\upload\interfaces\BindDriverParameterInterface;
 use BusyPHP\upload\result\UploadResult;
 use Closure;
 use InvalidArgumentException;
+use League\Flysystem\FilesystemException;
 use LogicException;
 use ReflectionException;
 use think\Container;
@@ -179,13 +180,12 @@ abstract class Driver
      * @param string $extension 文件扩展名
      * @param string $path 文件相对路径
      * @return string
+     * @throws FilesystemException
      */
     protected function putContentToDisk(string $content, string $extension, string $path = '') : string
     {
         $path = $path === '' ? $this->buildPath($content, $extension) : $path;
-        if (!$this->disk->put($path, $content)) {
-            throw new FileException("文件写入失败: $path");
-        }
+        $this->disk->write($path, $content);
         
         return $path;
     }
