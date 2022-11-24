@@ -4,15 +4,16 @@ declare(strict_types = 1);
 namespace BusyPHP\model;
 
 use BusyPHP\App;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\app\admin\model\system\config\SystemConfig;
+use BusyPHP\exception\ClassNotFoundException;
+use BusyPHP\exception\ClassNotImplementsException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
+use BusyPHP\interfaces\SettingInterface;
 use BusyPHP\traits\ContainerDefine;
 use BusyPHP\traits\ContainerInstance;
 use Closure;
 use Psr\Log\LoggerInterface;
-use think\db\exception\DbException;
+use think\Container;
 
 /**
  * Setting基本类
@@ -25,16 +26,12 @@ abstract class Setting
     use ContainerDefine;
     use ContainerInstance;
     
-    /**
-     * 服务注入
-     * @var Closure[]
-     */
-    protected static $maker = [];
     
     /**
-     * @var string 键名
+     * 数据名称
+     * @var string
      */
-    protected $key = '';
+    protected $name = '';
     
     /**
      * @var App
@@ -42,9 +39,22 @@ abstract class Setting
     protected $app;
     
     /**
-     * @var SystemConfig
+     * 数据管理类对象
+     * @var SettingInterface
      */
-    protected $model;
+    protected $driver;
+    
+    /**
+     * 数据管理类
+     * @var class-string<SettingInterface>
+     */
+    protected static $manager = '\BusyPHP\app\admin\model\system\config\SystemConfig';
+    
+    /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
     
     
     /**
@@ -55,6 +65,16 @@ abstract class Setting
     public static function maker(Closure $maker)
     {
         static::$maker[] = $maker;
+    }
+    
+    
+    /**
+     * 设置数据管理类
+     * @param class-string<SettingInterface> $manager
+     */
+    public static function setManager(string $manager)
+    {
+        static::$manager = $manager;
     }
     
     
@@ -84,13 +104,29 @@ abstract class Setting
      */
     public function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false)
     {
-        $this->app   = App::getInstance();
-        $this->model = SystemConfig::init($logger, $connect, $force);
+        $this->app = App::getInstance();
         
-        if (is_null($this->key) || $this->key === '') {
-            $this->getKey();
+        // 获取数据名称
+        if (is_null($this->name) || $this->name === '') {
+            $this->getName();
         }
         
+        // 实例化数据管理类
+        $manager = static::$manager;
+        if (!class_exists($manager)) {
+            throw new ClassNotFoundException($manager);
+        }
+        
+        if (!is_subclass_of($manager, SettingInterface::class)) {
+            throw new ClassNotImplementsException($manager, SettingInterface::class);
+        }
+        $vars = [$connect, $force];
+        if ($logger) {
+            $vars = [$logger, $connect, $force];
+        }
+        $this->driver = Container::getInstance()->make($manager, $vars, true);
+        
+        // 执行服务注入
         if (!empty(static::$maker)) {
             foreach (static::$maker as $maker) {
                 call_user_func($maker, $this);
@@ -103,29 +139,27 @@ abstract class Setting
      * 获取键名
      * @return string
      */
-    protected function getKey() : string
+    protected function getName() : string
     {
-        if (!$this->key) {
+        if (!$this->name) {
             $name = basename(str_replace('\\', '/', self::getDefineContainer()));
             if (strtolower(substr($name, -7)) === 'setting') {
                 $name = substr($name, 0, -7);
             }
-            $this->key = StringHelper::snake($name);
+            $this->name = StringHelper::snake($name);
         }
         
-        return $this->key;
+        return $this->name;
     }
     
     
     /**
      * 设置数据
      * @param array $data
-     * @throws DbException
-     * @throws ParamInvalidException
      */
     final public function set(array $data)
     {
-        $this->model->setKey($this->key, $this->parseSet($data));
+        $this->driver->setSettingData($this->name, $data);
     }
     
     
@@ -137,7 +171,7 @@ abstract class Setting
      */
     final public function get(string $name = null, $default = null)
     {
-        $data = $this->parseGet($this->model->get($this->key));
+        $data = $this->parseGet($this->driver->getSettingData($this->name));
         if (is_null($name)) {
             return $data;
         }
