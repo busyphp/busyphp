@@ -3,8 +3,6 @@ declare(strict_types = 1);
 
 namespace BusyPHP\file;
 
-use BusyPHP\App;
-use BusyPHP\app\admin\setting\CaptchaSetting;
 use BusyPHP\exception\VerifyException;
 use think\facade\Session;
 use think\Response;
@@ -132,79 +130,6 @@ class Captcha
      * @var int
      */
     private $color;
-    
-    /**
-     * @var CaptchaSetting
-     */
-    private $setting;
-    
-    
-    /**
-     * Captcha constructor.
-     * @param string $app 客户端
-     */
-    public function __construct(string $app = '')
-    {
-        $this->setting = CaptchaSetting::init();
-        $this->setting->setClient($app ?: App::getInstance()->getDirName());
-        $this->curve($this->setting->isCurve());
-        $this->noise($this->setting->isNoise());
-        $this->bgImage($this->setting->isBgImage());
-        $this->length($this->setting->getLength());
-        $this->expire($this->setting->getExpireMinute() * 60);
-        $this->fontSize($this->setting->getFontSize());
-        $this->token($this->setting->getToken());
-        
-        // 背景颜色
-        $bgColor = $this->setting->getBgColor();
-        if ($bgColor) {
-            $this->bgColor($bgColor);
-        }
-        
-        // 验证码类型
-        switch ($this->setting->getType()) {
-            // 纯英文
-            case 1:
-                $this->chars('abcdefhijkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXY');
-            break;
-            // 纯数字
-            case 2:
-                $this->chars('0123456789');
-            break;
-            // 中文
-            case 3:
-                $this->zh(true);
-            break;
-        }
-        
-        // 验证码字符
-        $code = $this->setting->getCode();
-        if ($code) {
-            if ($this->zh) {
-                $this->zhChars($code);
-            } else {
-                $this->chars($code);
-            }
-        }
-        
-        // 验证码字体
-        $font = $this->setting->getFont();
-        if ($font) {
-            if (0 === strpos($font, 'zh_')) {
-                $path = __DIR__ . DIRECTORY_SEPARATOR . 'captcha' . DIRECTORY_SEPARATOR . 'zhttfs' . DIRECTORY_SEPARATOR;
-                $this->fontFile($path . substr($font, 3) . '.ttf');
-            } else {
-                $path = __DIR__ . DIRECTORY_SEPARATOR . 'captcha' . DIRECTORY_SEPARATOR . 'ttfs' . DIRECTORY_SEPARATOR;
-                $this->fontFile($path . $font . '.ttf');
-            }
-        }
-        
-        // 自定义字体
-        $fontFile = $this->setting->getFontFile(true);
-        if ($fontFile) {
-            $this->fontFile($fontFile);
-        }
-    }
     
     
     /**
@@ -523,7 +448,7 @@ class Captcha
         $content = ob_get_clean();
         imagedestroy($this->resource);
         
-        return Response::create($content, 'html', 200)->header([
+        return Response::create($content)->header([
             'Content-Length' => strlen($content),
             'Cache-Control'  => 'private, max-age=0, no-store, no-cache, must-revalidate',
             'Pragma'         => 'no-cache',
@@ -546,13 +471,13 @@ class Captcha
         $py = 0;
         
         // 曲线前部分
-        $A   = mt_rand(1, intval($this->height / 2));                  // 振幅
+        $A   = mt_rand(1, intval($this->height / 2));                          // 振幅
         $b   = mt_rand(intval(-$this->height / 4), intval($this->height / 4)); // Y轴方向偏移量
         $f   = mt_rand(intval(-$this->height / 4), intval($this->height / 4)); // X轴方向偏移量
-        $T   = mt_rand($this->height, $this->width * 2);      // 周期
+        $T   = mt_rand($this->height, $this->width * 2);                       // 周期
         $w   = (2 * M_PI) / $T;
-        $px1 = 0;  // 曲线横坐标起始位置
-        $px2 = mt_rand(intval($this->width / 2), intval($this->width * 0.8)); // 曲线横坐标结束位置
+        $px1 = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // 曲线横坐标起始位置
+        $px2 = mt_rand(intval($this->width / 2), intval($this->width * 0.8));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // 曲线横坐标结束位置
         
         for ($px = $px1; $px <= $px2; $px = $px + 1) {
             if ($w != 0) {
@@ -568,9 +493,9 @@ class Captcha
         }
         
         // 曲线后部分
-        $A   = mt_rand(1, intval($this->height / 2)); // 振幅
-        $f   = mt_rand(intval(-$this->height / 4), intval($this->height / 4)); // X轴方向偏移量
-        $T   = mt_rand($this->height, $this->width * 2); // 周期
+        $A   = mt_rand(1, intval($this->height / 2));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // 振幅
+        $f   = mt_rand(intval(-$this->height / 4), intval($this->height / 4));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // X轴方向偏移量
+        $T   = mt_rand($this->height, $this->width * 2);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // 周期
         $w   = (2 * M_PI) / $T;
         $b   = $py - $A * sin($w * $px + $f) - $this->height / 2;
         $px1 = $px2;
