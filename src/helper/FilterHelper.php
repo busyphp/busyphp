@@ -16,6 +16,7 @@ class FilterHelper
      * @param int|float $number
      * @param int|float $default 默认最小值
      * @return int|float
+     * @deprecated 请使用 {@see max()}
      */
     public static function min($number, $default = 0)
     {
@@ -28,6 +29,7 @@ class FilterHelper
      * @param int|float $number
      * @param int|float $default 默认最大值
      * @return int|float
+     * @deprecated 请使用 {@see min()}
      */
     public static function max($number, $default = 0)
     {
