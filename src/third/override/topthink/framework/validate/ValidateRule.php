@@ -171,6 +171,17 @@ class ValidateRule
     }
     
     
+    /**
+     * 是否英文数字下划线组合，且必须是英文开头
+     * @param string $msg
+     * @return $this
+     */
+    public function isFristAlphaNumDash(string $msg = '')
+    {
+        return $this->regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', $msg ?: ':attribute必须是英文数字下划线组合，且必须是英文开头');
+    }
+    
+    
     public function __call($method, $args)
     {
         return self::add($this, $method, $args);
