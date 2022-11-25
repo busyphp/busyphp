@@ -7,6 +7,8 @@ use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
 use BusyPHP\facade\Captcha;
 use BusyPHP\facade\QrCode;
+use BusyPHP\helper\FilesystemHelper;
+use BusyPHP\image\driver\Local;
 use Closure;
 use think\event\HttpRun;
 use think\middleware\SessionInit;
@@ -117,6 +119,16 @@ class Service extends ThinkService
             $route->rule('general/qrcode.<format>', function() {
                 return QrCode::http()->response();
             });
+            
+            // 动态图片路由
+            $route->rule('general/image/<path>', function() {
+                $path    = $this->app->request->param('path/s', '', 'trim');
+                $process = $this->app->request->param('process/s', '', 'trim');
+                
+                return FilesystemHelper::local()
+                    ->image()
+                    ->response(Local::convertProcessRuleToParameter($process, $path));
+            })->pattern(['path' => '.+']);
         });
     }
 }

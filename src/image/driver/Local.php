@@ -766,7 +766,7 @@ class Local extends Driver
      */
     public function url(UrlParameter $parameter) : Url
     {
-        return Route::buildUrl('/thumbs/' . $parameter->getOldPath(), [
+        return Route::buildUrl('/general/image/' . $parameter->getOldPath(), [
             'process' => self::convertParameterToProcessRule($parameter)
         ])->suffix(false);
     }
