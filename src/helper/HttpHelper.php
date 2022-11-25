@@ -2,6 +2,7 @@
 
 namespace BusyPHP\helper;
 
+use BusyPHP\exception\FileNotFoundException;
 use BusyPHP\exception\HttpRequestException;
 use CURLFile;
 use DomainException;
@@ -290,12 +291,12 @@ class HttpHelper
             }
         } else {
             if (!$filename) {
-                throw new FileException('附件路径不能为空');
+                throw new InvalidArgumentException('附件路径不能为空');
             }
             
             $filename = realpath(ltrim($filename, '@'));
             if (!is_file($filename)) {
-                throw new FileException("附件不存在: {$filename}");
+                throw new FileNotFoundException($filename);
             }
             
             if (version_compare(PHP_VERSION, '5.5.0', '<')) {
@@ -381,10 +382,6 @@ class HttpHelper
     /**
      * 执行请求
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public function request()
     {
@@ -529,10 +526,6 @@ class HttpHelper
      * @param string|array    $params POST参数
      * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function get($url, $params = [], $http = null)
     {
@@ -552,10 +545,6 @@ class HttpHelper
      * @param string|array    $params POST参数
      * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function post($url, $params = [], $http = null)
     {
@@ -582,10 +571,6 @@ class HttpHelper
      * @param string          $contentType 字符串类型
      * @param HttpHelper|null $http 指定实例化好的请求类
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function postString($url, $string = '', $contentType = '', $http = null)
     {
@@ -610,10 +595,6 @@ class HttpHelper
      * @param HttpHelper|null $http 指定实例化好的请求类
      * @param bool            $unescapedUnicode JSON遇到中文是否保留中文，针对$json为数组的时候有效，默认保留
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function postJSON($url, $json = '', $http = null, $unescapedUnicode = false)
     {
@@ -637,10 +618,6 @@ class HttpHelper
      * @param string|false    $root 根节点名称，默认为root,针对$xml为数组的时候有效
      * @param string|false    $encode XML ENCode 编码
      * @return string
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function postXML($url, $xml = '', $http = null, $root = 'root', $encode = 'utf-8')
     {
@@ -663,10 +640,6 @@ class HttpHelper
      * @param array      $params 附件参数
      * @param HttpHelper $http Http实例
      * @param int        $mode 文件夹权限
-     * @throws HttpRequestException
-     * @throws InvalidArgumentException
-     * @throws FileException
-     * @throws DomainException
      */
     public static function download($url, $filename, $params = [], $http = null, $mode = 0775)
     {

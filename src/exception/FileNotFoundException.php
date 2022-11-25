@@ -19,12 +19,25 @@ class FileNotFoundException extends RuntimeException implements NotFoundExceptio
      */
     protected $path;
     
+    /**
+     * @var string
+     */
+    protected $name;
     
-    public function __construct(string $path = '', $code = 0, Throwable $previous = null)
+    
+    /**
+     * 构造函数
+     * @param string         $path
+     * @param string         $name
+     * @param int            $code
+     * @param Throwable|null $previous
+     */
+    public function __construct(string $path = '', $name = '', int $code = 0, Throwable $previous = null)
     {
         $this->path = $path;
+        $this->name = $name;
         
-        parent::__construct(sprintf('The file "%s" does not exist', $path), $code, $previous);
+        parent::__construct(sprintf('%s "%s" does not exist', $name ?: 'The file', $path), $code, $previous);
     }
     
     

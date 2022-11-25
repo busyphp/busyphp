@@ -3,9 +3,9 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
+use BusyPHP\exception\FileNotFoundException;
 use DomainException;
 use RuntimeException;
-use think\exception\FileException;
 use think\exception\ValidateException;
 
 /**
@@ -24,9 +24,6 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2签名
      * @param string $name 证书标记名称
      * @return string
-     * @throws DomainException
-     * @throws FileException
-     * @throws RuntimeException
      */
     public static function sign(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, string $name = '') : string
     {
@@ -50,9 +47,6 @@ class RsaHelper
      * @param bool   $isFile 证书是否文件
      * @param bool   $rsa2 是否使用RSA2验证
      * @param string $name 证书标记名称
-     * @throws DomainException
-     * @throws FileException
-     * @throws ValidateException
      */
     public static function verify(string $value, string $sign, string $publicCert, bool $isFile = false, bool $rsa2 = false, $name = '')
     {
@@ -73,9 +67,6 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2加密
      * @param string $name 证书标记名称
      * @return string
-     * @throws DomainException
-     * @throws FileException
-     * @throws RuntimeException
      */
     public static function encryptPrivate(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
@@ -95,9 +86,6 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2加密
      * @param string $name 证书标记名称
      * @return string
-     * @throws DomainException
-     * @throws FileException
-     * @throws RuntimeException
      */
     public static function decryptPrivate(string $value, string $privateCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
@@ -117,9 +105,6 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2解密
      * @param string $name 证书标记名称
      * @return string
-     * @throws DomainException
-     * @throws FileException
-     * @throws RuntimeException
      */
     public static function encryptPublic(string $value, string $publicCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
@@ -139,9 +124,6 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2解密
      * @param string $name 证书标记名称
      * @return string
-     * @throws DomainException
-     * @throws FileException
-     * @throws RuntimeException
      */
     public static function decryptPublic(string $value, string $publicCert, bool $isFile = false, bool $rsa2 = false, $name = '') : string
     {
@@ -177,14 +159,12 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2
      * @param string $name 证书标记名称
      * @return resource
-     * @throws DomainException
-     * @throws FileException
      */
     public static function getPrivateCert(string $privateCert, bool $isFile = false, bool $rsa2 = false, string $name = '')
     {
         if ($isFile) {
             if (!is_file($privateCert)) {
-                throw new FileException("私钥证书不存在: {$privateCert}");
+                throw new FileNotFoundException($privateCert, '私钥证书');
             }
             $privateCert = (string) @file_get_contents($privateCert);
         }
@@ -205,14 +185,12 @@ class RsaHelper
      * @param bool   $rsa2 是否使用RSA2
      * @param string $name 证书标记名称
      * @return resource
-     * @throws DomainException
-     * @throws FileException
      */
     public static function getPublicCert(string $publicCert, bool $isFile = false, bool $rsa2 = false, string $name = '')
     {
         if ($isFile) {
             if (!is_file($publicCert)) {
-                throw new FileException("公钥证书不存在: {$publicCert}");
+                throw new FileNotFoundException($publicCert, '公钥证书');
             }
             $publicCert = (string) @file_get_contents($publicCert);
         }

@@ -4,12 +4,12 @@ declare(strict_types = 1);
 namespace BusyPHP\upload\driver;
 
 use BusyPHP\exception\ClassNotExtendsException;
+use BusyPHP\exception\FileNotFoundException;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\upload\Driver;
 use BusyPHP\upload\parameter\MoveParameter;
 use BusyPHP\upload\result\UploadResult;
 use ReflectionException;
-use think\exception\FileException;
 use think\File;
 use think\file\UploadedFile;
 
@@ -39,7 +39,7 @@ class MoveUpload extends Driver
         }
         
         if (!$file->isFile()) {
-            throw new FileException(sprintf('文件不存在: %s', $file->getPathname()));
+            throw new FileNotFoundException($file->getPathname());
         }
         
         if ($file instanceof UploadedFile) {

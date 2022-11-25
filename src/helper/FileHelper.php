@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
+use BusyPHP\exception\FileNotFoundException;
 use FilesystemIterator;
 use InvalidArgumentException;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
@@ -192,7 +193,7 @@ class FileHelper
     public static function getMimetypeByFile(string $path) : string
     {
         if (!is_file($path)) {
-            throw new FileException(sprintf('文件不存在: %s', $path));
+            throw new FileNotFoundException($path);
         }
         
         return static::mimeTypeDetector()->detectMimeTypeFromFile($path) ?: '';
