@@ -173,9 +173,9 @@ class StringHelper extends Str
     
     
     /**
-     * 将list中的成员强制转换为数组
+     * 将list中的成员强制转换为字符
      * @param array $array
-     * @return array
+     * @return string[]
      */
     public static function castList(array $array) : array
     {
@@ -197,5 +197,31 @@ class StringHelper extends Str
         }
         
         return (string) $value;
+    }
+    
+    
+    /**
+     * 格式化切割字符
+     * @param string       $value 要处理的字符
+     * @param bool         $array 是否输出数组
+     * @param string|array $explode 切割字符
+     * @param string       $implode 和并字符
+     * @return string[]|string
+     */
+    public static function formatSplit(string $value, bool $array = false, $explode = ',', string $implode = ', ')
+    {
+        $explode   = (array) $explode;
+        $separator = current($explode) ?: ',';
+        if ($explode) {
+            $value = str_replace($explode, $separator, $value);
+        }
+        
+        $value = FilterHelper::trimArray(explode($separator, $value));
+        
+        if ($array) {
+            return $value;
+        }
+        
+        return implode($implode, $value);
     }
 }
