@@ -159,7 +159,7 @@ abstract class Setting
      */
     final public function set(array $data)
     {
-        $this->driver->setSettingData($this->name, $data);
+        $this->driver->setSettingData($this->name, $this->parseSet($data));
     }
     
     
