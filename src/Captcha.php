@@ -1,11 +1,14 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\file;
+namespace BusyPHP;
 
 use BusyPHP\exception\VerifyException;
+use Closure;
+use think\facade\Route;
 use think\facade\Session;
 use think\Response;
+use think\route\Url;
 
 /**
  * 验证码类
@@ -124,20 +127,74 @@ class Captcha
     /**
      * @var resource
      */
-    private $resource;
+    protected $resource;
     
     /**
      * @var int
      */
-    private $color;
+    protected $color;
+    
+    /**
+     * 验证码标识
+     * @var string
+     */
+    protected $id;
+    
+    /**
+     * 服务注入
+     * @var Closure[]
+     */
+    protected static $maker = [];
+    
+    /**
+     * HTTP服务注入
+     * @var Closure[]
+     */
+    protected static $httpMaker = [];
+    
+    
+    /**
+     * 设置服务注入
+     * @param Closure $maker
+     */
+    public static function maker(Closure $maker)
+    {
+        static::$maker[] = $maker;
+    }
+    
+    
+    /**
+     * 设置HTTP响应服务注入
+     * @param Closure $maker
+     */
+    public static function httpMaker(Closure $maker)
+    {
+        static::$httpMaker[] = $maker;
+    }
+    
+    
+    /**
+     * 构造函数
+     */
+    public function __construct()
+    {
+        $this->app = App::getInstance();
+        
+        // 执行服务注入
+        if (!empty(static::$maker)) {
+            foreach (static::$maker as $maker) {
+                call_user_func($maker, $this);
+            }
+        }
+    }
     
     
     /**
      * 设置混淆码
      * @param string $token
-     * @return Captcha
+     * @return $this
      */
-    public function token(string $token) : Captcha
+    public function token(string $token) : self
     {
         $this->token = $token;
         
@@ -148,9 +205,9 @@ class Captcha
     /**
      * 设置英文数字字符
      * @param string $chars
-     * @return Captcha
+     * @return $this
      */
-    public function chars(string $chars) : Captcha
+    public function chars(string $chars) : self
     {
         $this->chars = $chars;
         
@@ -161,9 +218,9 @@ class Captcha
     /**
      * 设置中文字符
      * @param string $zhChars
-     * @return Captcha
+     * @return $this
      */
-    public function zhChars(string $zhChars) : Captcha
+    public function zhChars(string $zhChars) : self
     {
         $this->zhChars = $zhChars;
         
@@ -174,9 +231,9 @@ class Captcha
     /**
      * 设置过期时间
      * @param int $expire
-     * @return Captcha
+     * @return $this
      */
-    public function expire(int $expire) : Captcha
+    public function expire(int $expire) : self
     {
         $this->expire = $expire;
         
@@ -187,9 +244,9 @@ class Captcha
     /**
      * 设置是否使用中文字符
      * @param bool $zh
-     * @return Captcha
+     * @return $this
      */
-    public function zh(bool $zh) : Captcha
+    public function zh(bool $zh) : self
     {
         $this->zh = $zh;
         
@@ -200,9 +257,9 @@ class Captcha
     /**
      * 设置是否使用背景图
      * @param bool $bgImage
-     * @return Captcha
+     * @return $this
      */
-    public function bgImage(bool $bgImage) : Captcha
+    public function bgImage(bool $bgImage) : self
     {
         $this->bgImage = $bgImage;
         
@@ -213,9 +270,9 @@ class Captcha
     /**
      * 设置字体大小
      * @param int $fontSize
-     * @return Captcha
+     * @return $this
      */
-    public function fontSize(int $fontSize) : Captcha
+    public function fontSize(int $fontSize) : self
     {
         $this->fontSize = $fontSize;
         
@@ -226,9 +283,9 @@ class Captcha
     /**
      * 设置是否绘制线条
      * @param bool $curve
-     * @return Captcha
+     * @return $this
      */
-    public function curve(bool $curve) : Captcha
+    public function curve(bool $curve) : self
     {
         $this->curve = $curve;
         
@@ -239,9 +296,9 @@ class Captcha
     /**
      * 设置是否添加杂点
      * @param bool $noise
-     * @return Captcha
+     * @return $this
      */
-    public function noise(bool $noise) : Captcha
+    public function noise(bool $noise) : self
     {
         $this->noise = $noise;
         
@@ -252,9 +309,9 @@ class Captcha
     /**
      * 设置验证码高度
      * @param int $height
-     * @return Captcha
+     * @return $this
      */
-    public function height(int $height) : Captcha
+    public function height(int $height) : self
     {
         $this->height = $height;
         
@@ -265,9 +322,9 @@ class Captcha
     /**
      * 设置验证码宽度
      * @param int $width
-     * @return Captcha
+     * @return $this
      */
-    public function width(int $width) : Captcha
+    public function width(int $width) : self
     {
         $this->width = $width;
         
@@ -278,9 +335,9 @@ class Captcha
     /**
      * 设置验证码长度
      * @param int $length
-     * @return Captcha
+     * @return $this
      */
-    public function length(int $length) : Captcha
+    public function length(int $length) : self
     {
         $this->length = $length;
         
@@ -291,9 +348,9 @@ class Captcha
     /**
      * 设置验证码字体文件
      * @param string $fontFile
-     * @return Captcha
+     * @return $this
      */
-    public function fontFile(string $fontFile) : Captcha
+    public function fontFile(string $fontFile) : self
     {
         $this->fontFile = $fontFile;
         
@@ -304,9 +361,9 @@ class Captcha
     /**
      * 设置背景颜色
      * @param array $bg
-     * @return Captcha
+     * @return $this
      */
-    public function bg(array $bg) : Captcha
+    public function bg(array $bg) : self
     {
         $this->bg = $bg;
         
@@ -317,9 +374,9 @@ class Captcha
     /**
      * 设置背景颜色16进制格式
      * @param string $color
-     * @return Captcha
+     * @return $this
      */
-    public function bgColor(string $color) : Captcha
+    public function bgColor(string $color) : self
     {
         $color = ltrim($color, '#');
         $r     = hexdec(substr($color, 0, 2));
@@ -331,19 +388,35 @@ class Captcha
     
     
     /**
+     * 设置验证码标识
+     * @param string $id
+     * @return $this
+     */
+    public function id(string $id) : self
+    {
+        $this->id = $id;
+        
+        return $this;
+    }
+    
+    
+    /**
      * 校验验证码
      * @param string $code 用户验证码
-     * @param string $id 验证码标识
+     * @param bool   $errorReset 验证失败是否清理验证码
+     * @param bool   $successReset 验证成功是否清理验证码
      */
-    public function check(string $code, string $id = '')
+    public function check(string $code, $errorReset = false, $successReset = true)
     {
-        if (empty($code)) {
+        if ($code === '') {
             throw new VerifyException('请输入验证码', self::VERIFY_EMPTY_CODE);
         }
         
-        $key  = $this->hash($this->token) . $id;
+        $key  = $this->hash($this->token) . $this->id;
         $data = Session::get($key);
         if (empty($data)) {
+            $errorReset && Session::delete($key);
+            
             throw new VerifyException('验证码不正确', self::VERIFY_ERROR);
         }
         
@@ -353,35 +426,51 @@ class Captcha
             throw new VerifyException('验证码已过期', self::VERIFY_EXPIRE);
         }
         
-        if ($this->hash(strtoupper($code)) == $data['verify_code']) {
-            $this->reset && Session::delete($key);
+        if ($this->hash(strtoupper($code)) != $data['verify_code']) {
+            $errorReset && Session::delete($key);
             
-            return;
+            throw new VerifyException('验证码不正确', self::VERIFY_EXPIRE);
         }
         
-        throw new VerifyException('验证码不正确', self::VERIFY_EXPIRE);
+        $successReset && Session::delete($key);
     }
     
     
     /**
      * 清理验证码
-     * @param string $id 验证码标识
      */
-    public function clear(string $id = '')
+    public function clear()
     {
-        Session::delete($this->hash($this->token) . $id);
+        Session::delete($this->hash($this->token) . $this->id);
     }
     
     
     /**
-     * 输出验证码并把验证码的值保存的session中
-     * 验证码保存到session的格式为： array('verify_code' => '验证码值', 'verify_time' => '验证码创建时间');
-     * @access public
-     * @param string $id 要生成验证码的标识
+     * 浏览器响应
      * @return Response
      */
-    public function entry($id = '')
+    public function response() : Response
     {
+        $data = $this->build();
+        
+        return Response::create($data)->header([
+            'Content-Length' => strlen($data),
+            'Cache-Control'  => 'private, max-age=0, no-store, no-cache, must-revalidate',
+            'Pragma'         => 'no-cache',
+        ])->contentType('image/png');
+    }
+    
+    
+    /**
+     * 构建验证码数据并把验证码的值保存的session中
+     * 验证码保存到session的格式为： array('verify_code' => '验证码值', 'verify_time' => '验证码创建时间');
+     * @param bool $dataUri 是否输出 DATA-URI 数据
+     * @return string
+     */
+    public function build(bool $dataUri = false) : string
+    {
+        $id = $this->id;
+        
         // 宽高计算
         $this->width || $this->width = $this->length * $this->fontSize * 1.5 + $this->length * $this->fontSize / 2;
         $this->height || $this->height = $this->fontSize * 2.5;
@@ -445,14 +534,53 @@ class Captcha
         
         ob_start();
         imagepng($this->resource);
-        $content = ob_get_clean();
+        $content = (string) ob_get_clean();
         imagedestroy($this->resource);
         
-        return Response::create($content)->header([
-            'Content-Length' => strlen($content),
-            'Cache-Control'  => 'private, max-age=0, no-store, no-cache, must-revalidate',
-            'Pragma'         => 'no-cache',
-        ])->contentType('image/png');
+        return $dataUri ? ('data:image/png;base64,' . base64_encode($content)) : $content;
+    }
+    
+    
+    /**
+     * 生成URL，
+     * 支持前置方法 {@see Captcha::id()}->{@see Captcha::width()}->{@see Captcha::height()}
+     * @param string $appName 应用名称
+     * @return Url
+     */
+    public function url(string $appName = '') : Url
+    {
+        return Route::buildUrl('/general/captcha', [
+            'app'    => $appName ?: $this->app->getDirName(),
+            'width'  => $this->width,
+            'height' => $this->height,
+            'id'     => $this->id,
+        ])->suffix(false);
+    }
+    
+    
+    /**
+     * 通过HTTP响应
+     * @return $this
+     */
+    public function http() : self
+    {
+        $app = $this->app->request->param('app/s', '', 'trim');
+        $this->id($this->app->request->param('id/s', '', 'trim'));
+        if (0 < $width = $this->app->request->param('width/d', 0)) {
+            $this->width($width);
+        }
+        if (0 < $height = $this->app->request->param('height/d', 0)) {
+            $this->height($height);
+        }
+        
+        // 执行HTTP服务注入
+        if (!empty(static::$httpMaker)) {
+            foreach (static::$httpMaker as $maker) {
+                call_user_func($maker, $this, $app);
+            }
+        }
+        
+        return $this;
     }
     
     
@@ -466,7 +594,7 @@ class Captcha
      *      φ：决定波形与X轴位置关系或横向移动距离（左加右减）
      *      ω：决定周期（最小正周期T=2π/∣ω∣）
      */
-    private function drawCurve()
+    protected function drawCurve()
     {
         $py = 0;
         
@@ -517,11 +645,11 @@ class Captcha
      * 画杂点
      * 往图片上写不同颜色的字母或数字
      */
-    private function drawNoise()
+    protected function drawNoise()
     {
         $codeSet = '2345678abcdefhijkmnpqrstuvwxyz';
         for ($i = 0; $i < 10; $i++) {
-            $noiseColor = imagecolorallocate($this->resource, mt_rand(150, 225), mt_rand(150, 225), mt_rand(150, 225));
+            $noiseColor = (int) imagecolorallocate($this->resource, mt_rand(150, 225), mt_rand(150, 225), mt_rand(150, 225));
             for ($j = 0; $j < 5; $j++) {
                 imagestring($this->resource, 5, mt_rand(-10, $this->width), mt_rand(-10, $this->height), $codeSet[mt_rand(0, 29)], $noiseColor);
             }
@@ -533,10 +661,9 @@ class Captcha
      * 绘制背景图片
      * 注：如果验证码输出图片比较大，将占用比较多的系统资源
      */
-    private function drawBackground()
+    protected function drawBackground()
     {
-        $path   = __DIR__ . DIRECTORY_SEPARATOR . 'captcha' . DIRECTORY_SEPARATOR . 'bgs' . DIRECTORY_SEPARATOR;
-        $bgs    = glob("{$path}*.*");
+        $bgs    = glob(sprintf("%s*.*", __DIR__ . DIRECTORY_SEPARATOR . 'captcha' . DIRECTORY_SEPARATOR . 'bgs' . DIRECTORY_SEPARATOR));
         $bgFile = $bgs[array_rand($bgs)];
         
         [$width, $height] = getimagesize($bgFile);
@@ -551,7 +678,7 @@ class Captcha
      * @param string $str
      * @return string
      */
-    private function hash(string $str) : string
+    protected function hash(string $str) : string
     {
         $key = substr(md5($this->token), 5, 8);
         $str = substr(md5($str), 8, 10);
