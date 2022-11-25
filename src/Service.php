@@ -5,10 +5,13 @@ namespace BusyPHP;
 
 use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
+use BusyPHP\facade\Captcha;
+use BusyPHP\facade\QrCode;
 use Closure;
 use think\event\HttpRun;
 use think\middleware\SessionInit;
 use think\Paginator;
+use think\Route;
 use think\Service as ThinkService;
 
 /**
@@ -101,6 +104,19 @@ class Service extends ThinkService
             }
             
             return $next($request);
+        });
+        
+        // 注册路由
+        $this->registerRoutes(function(Route $route) {
+            // 验证码路由
+            $route->rule('general/captcha', function() {
+                return Captcha::http()->response();
+            });
+            
+            // 二维码路由
+            $route->rule('general/qrcode.<format>', function() {
+                return QrCode::http()->response();
+            });
         });
     }
 }
