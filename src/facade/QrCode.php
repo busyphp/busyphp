@@ -30,6 +30,39 @@ use think\route\Url;
  */
 class QrCode extends Facade
 {
+    // +----------------------------------------------------
+    // + 识别率级别
+    // +----------------------------------------------------
+    /** @var string 还原率7％ */
+    const LEVEL_LOW = \BusyPHP\QrCode::LEVEL_LOW;
+    
+    /** @var string 还原率15% */
+    const LEVEL_MEDIUM = \BusyPHP\QrCode::LEVEL_MEDIUM;
+    
+    /** @var string 还原率25% */
+    const LEVEL_QUARTILE = \BusyPHP\QrCode::LEVEL_QUARTILE;
+    
+    /** @var string 还原率30% */
+    const LEVEL_HIGH = \BusyPHP\QrCode::LEVEL_HIGH;
+    
+    // +----------------------------------------------------
+    // + 二维码格式
+    // +----------------------------------------------------
+    /** @var string PNG */
+    const FORMAT_PNG = \BusyPHP\QrCode::FORMAT_PNG;
+    
+    /** @var string SVG */
+    const FORMAT_SVG = \BusyPHP\QrCode::FORMAT_SVG;
+    
+    /** @var string BINARY */
+    const FORMAT_BINARY = \BusyPHP\QrCode::FORMAT_BINARY;
+    
+    /** @var string ESP */
+    const FORMAT_EPS = \BusyPHP\QrCode::FORMAT_EPS;
+    
+    /** @var string PDF */
+    const FORMAT_PDF = \BusyPHP\QrCode::FORMAT_PDF;
+    
     protected static $alwaysNewInstance = true;
     
     
