@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\helper;
 
 use ArrayAccess;
+use BusyPHP\model\ArrayOption;
 use BusyPHP\model\Entity;
-use BusyPHP\model\Map;
 use think\Collection;
 use think\helper\Arr;
 
@@ -295,16 +295,16 @@ class ArrayHelper extends Arr
      * 将一维数组转为二维数组
      * @param array $array 一维数组
      * @param int   $split 按每多少个数组分割
-     * @param bool  $map 是否返回Map对象，键为数字会删除
-     * @return array|Map
+     * @param bool  $toOption 是否返回 {@see ArrayOption} 对象，键为数字会删除
+     * @return array|ArrayOption
      */
-    public static function oneToTwo(array $array, int $split = 2, bool $map = true)
+    public static function oneToTwo(array $array, int $split = 2, bool $toOption = true)
     {
         $length = count($array);
         $arr    = [];
         for ($i = 0; $i < $length; $i += $split) {
             $key = $array[$i];
-            if (!is_scalar($key) || ($map && is_numeric($key)) || is_bool($key)) {
+            if (!is_scalar($key) || ($toOption && is_numeric($key)) || is_bool($key)) {
                 continue;
             }
             
@@ -318,7 +318,7 @@ class ArrayHelper extends Arr
             }
         }
         
-        return $map ? Map::init($arr) : $arr;
+        return $toOption ? ArrayOption::init($arr) : $arr;
     }
     
     
