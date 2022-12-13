@@ -60,7 +60,7 @@
 	},
 	"extra"        : {
 		"branch-alias" : {
-			"dev-busyphp6" : "6.0.x-dev"
+			"dev-busyphp6" : "7.0.x-dev"
 		},
 		"busyphp"      : {
 			"manager"     : {
