@@ -59,10 +59,7 @@
 		"preferred-install" : "dist"
 	},
 	"extra"        : {
-		"branch-alias" : {
-			"dev-busyphp7" : "7.0.x-dev"
-		},
-		"busyphp"      : {
+		"busyphp" : {
 			"manager"     : {
 				"name" : "BusyPHP"
 			},
