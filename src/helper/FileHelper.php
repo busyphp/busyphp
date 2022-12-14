@@ -566,7 +566,7 @@ class FileHelper
         $header  = [];
         $content = file_get_contents($filename);
         $etag    = sprintf('"%s"', md5(filemtime($filename) . $content));
-        if (str_replace('W/', '', Request::header('if-none-match')) == $etag) {
+        if (str_replace('W/', '', Request::header('if-none-match', '')) == $etag) {
             $content                  = null;
             $code                     = 304;
             $header['Content-Length'] = 0;
