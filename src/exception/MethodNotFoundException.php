@@ -18,31 +18,49 @@ class MethodNotFoundException extends RuntimeException implements NotFoundExcept
     /**
      * @var string
      */
-    protected $method;
+    protected string $method;
     
     /**
      * @var string
      */
-    protected $class;
+    protected string $class;
     
     
     /**
      * MethodNotFoundException constructor.
      * @param mixed          $class 类名
      * @param string         $method 方法名
-     * @param string         $message 消息
+     * @param bool           $static 是否静态方法
      * @param int            $code
      * @param Throwable|null $previous
      */
-    public function __construct($class, string $method, string $message = '', int $code = 0, Throwable $previous = null)
+    public function __construct($class, string $method, bool $static = false, int $code = 0, Throwable $previous = null)
     {
         if (is_object($class)) {
             $class = get_class($class);
         }
-        $this->class   = $class;
-        $this->message = $method;
-        $message       = (!empty($message) ? "{$message} " : '') . "method {$method} does not exist in {$class}";
-        
-        parent::__construct($message, $code, $previous);
+        $this->class  = $class;
+        $this->method = $method;
+        $prefix       = $static ? 'static ' : '';
+        $symbol       = $static ? '::' : '->';
+        parent::__construct($prefix . "method $class$symbol$method() does not exist", $code, $previous);
+    }
+    
+    
+    /**
+     * @return string
+     */
+    public function getClass() : mixed
+    {
+        return $this->class;
+    }
+    
+    
+    /**
+     * @return string
+     */
+    public function getMethod() : string
+    {
+        return $this->method;
     }
 }
