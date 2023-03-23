@@ -15,6 +15,7 @@
 `字段实体/SET字段方法` 请通过类标准注释块声明，以符合IDE提示、便于后期维护。可通过辅助类打印后复制到类注释块中。
 
 **示例**
+
 ```php
 // 通过辅助方法打印实体和Set方法复制到类注释块中
 \BusyPHP\helper\ModelHelper::printField(Goods::class);
@@ -51,197 +52,286 @@ class GoodsField extends \BusyPHP\model\Field {
 
 ## 注解实现
 
-由于`PHP8.0+`才支持注解，为了兼容`8.0`以下版本，目前仅支持使用标准注释块
+### 一、类`class`支持的注解
 
-### @var 字段类型声明
-
-通过属性标准注释块中的 `@var` 声明，声明后获取或设置值将会得到期望的数据类型
-
-注意：目前不支持联合类型
+#### 1. #[BindModel] 给字段结构类绑定模型注解
 
 ```php
-/**
- * 字段名称
- * @var int
- */
-public $id;
+#[\BusyPHP\model\annotation\field\BindModel(
+    model: \test\AdminGroup::class, // 指定该字段结构类所属的模型类
+    alias: '' // 指定模型别名，用于 join 查询的时候自动加别名
+)]
+class TestField extends \BusyPHP\model\Field {
+
+}
 ```
 
-### @busy-field-validate 字段验证
+#### 2. #[AutoTimestamp] 定义模型自动写入创建/更新时间注解
 
-在属性的标准注释块中声明 `@busy-field-validate`，支持多个，单个支持用`|`分割规则，支持自定义提示消息，请在规则后使用`#`号分割
+```php
+#[\BusyPHP\model\annotation\field\AutoTimestamp(
+    type: \BusyPHP\model\annotation\field\AutoTimestamp::TYPE_INT, // 定义自动写时间的字段类型，true为自动获取，支持：int, date, timestamp, datetime
+    format: 'Y-m-d H:i:s' // 定义字段输出格式
+)]
+class TestField extends \BusyPHP\model\Field {
+
+}
+```
+
+#### 3. #[SoftDelete] 定义模型启用软删除注解
+
+```php
+#[\BusyPHP\model\annotation\field\SoftDelete(
+    default: 0 // 定义删除字段的默认值
+)]
+class TestField extends \BusyPHP\model\Field {
+
+}
+```
+
+#### 4. #[ToArrayFormat] 定义适用于to*方法的索引键输出格式注解
+
+```php
+#[\BusyPHP\model\annotation\field\ToArrayFormat(
+    type: \BusyPHP\model\annotation\field\ToArrayFormat::TYPE_SNAKE
+)]
+class TestField extends \BusyPHP\model\Field {
+
+}
+```
+
+### 二、类属性支持的注解
+
+#### 1. #[Column] 定义字段的属性注解
+
+字段类型通过属性标准注释块中的 `@var` 声明，声明后获取或设置值将会得到期望的数据类型，注意：目前不支持联合类型
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var int
+     */
+    #[\BusyPHP\model\annotation\field\Column(
+        field: '', // 真实的字段名称，不设置取属性名称并转换为小写+下划线风格
+        primary: true, // 是否主键字段
+        type: \BusyPHP\model\annotation\field\Column::TYPE_INT, // 字段真实类型
+        title: '', // 字段名称，不设置自动获取标注注释块中的说明
+        readonly: true, // 该字段是否只读，只能新增不能修改
+        feature: \BusyPHP\model\annotation\field\Column::FEATURE_CREATE_TIME, // 设置字段特性以配合 #[AutoTimestamp] #[SoftDelete] 注解的功能
+    )] 
+    public $attr;
+}
+```
+
+#### 2. #[Validator] 定义数据校验注解
 
 使用 `\BusyPHP\Model::validate()` 进行自动校验
 
-可以配合接口类 `\BusyPHP\interfaces\FieldObtainDataInterface`、`\BusyPHP\interfaces\FieldSetValueInterface` 辅助校验。
+```php
+\BusyPHP\Model::validate()
+```
 
-**自定义提示消息支持的变量**：
+可以配合接口类 `\BusyPHP\interfaces\FieldGetModelDataInterface`、`\BusyPHP\interfaces\FieldSetValueInterface`
+、`\BusyPHP\interfaces\ModelValidateInterface` 辅助校验。
+
+```php
+class TestField extends \BusyPHP\model\Field implements \BusyPHP\interfaces\FieldGetModelDataInterface, \BusyPHP\interfaces\FieldSetValueInterface, \BusyPHP\interfaces\ModelValidateInterface {
+    /**
+     * 商品属性
+     * @var int
+     */
+    #[\BusyPHP\model\annotation\field\Validator(
+        name: \BusyPHP\model\annotation\field\Validator::REQUIRE,
+        msg: '请输入:attribute' 
+    )] 
+    #[\BusyPHP\model\annotation\field\Validator(
+        name: \BusyPHP\model\annotation\field\Validator::MIN,
+        rule: 1,
+        msg: ':attribute不能小于:1' 
+    )] 
+    #[\BusyPHP\model\annotation\field\Validator(
+        name: \BusyPHP\model\annotation\field\Validator::MAX,
+        rule: 100,
+        msg: ':attribute不能大于:1' 
+    )] 
+    public $attr;
+}
+```
+
+**参数`msg`支持的变量**：
+
 - `:attribute` 代表当前字段名称
 - `:rule` 代表规则名称
 - `:1` 范围中的第一个参数
 - `:2` 范围中的第二个参数
 - `:3` 范围中的第三个参数
 
-```php
-/**
- * 商品价格
- * @var float
- * @busy-field-validate require # :attribute不能为空
- * @busy-field-validate gt:0|lt:10
- */
-public $price;
-```
+#### 3. #[Ignore] 将属性标记为非字段注解
 
-### @busy-field-name 字段名
-
-开发过程中，由于系统升级等原因，可能会造成字段名称与属性名称不匹配，可以使用 `@busy-field-name` 对字段进行重命名，以保障升级迭代简洁、可靠。
-
-重命名后，执行 `insert`、`update` 等操作将使用该名称。但使用 `json_encode` 或 `toArray` 时依旧使用原字段名
+开发过程中，除了字段还需要很多自定义属性来补充数据，因此需要我们标记某个属性为非字段。
 
 ```php
-/**
- * 商品价格
- * @var float
- * @busy-field-name amount
- */
-public $price;
-```
-
-### @busy-field-filter 设置过滤
-
-使用 `SET方法`、`Field::parse()`、`Field::copyData()` 时将对字段按照设定的回调方法进行过滤，支持英文逗号分割过滤回调
-
-```php
-/**
- * 商品名称
- * @var string
- * @busy-field-filter trim
- */
-public $name;
-```
-
-### @busy-field-array 数组转字符串
-
-`Model::insert()` `Model::update()` 时设置的值为数组，则按照该规则强制转换
-
-**可选项**
-
-- `json` - 转为JSON字符串
-- `serialize` - 使用PHP`serialize`序列化
-- `"合并分隔符" 左右是否填充分隔符` - 如：`"," true` 将转换为 `,1,2,3,`
-
-```php
-/**
- * 商品分类
- * @var string
- * @busy-field-array "," true
- */
-public $cateIds;
-```
-
-### @busy-field-no-cast 不强制转换
-
-不强制转换该属性的值，即设置什么得到什么，适用于 `@var`、`@busy-field-array`的声明
-
-**可选项**
-
-- `true` - 不强制转换
-- `false` - 强制转换
-
-```php
-/**
- * 商品分类
- * @var string
- * @busy-field-no-cast
- */
-public $cateIds;
-```
-
-### @busy-field-rename 输出重命名
-
-对属性名进行重命名，使用 `Field::toArray()` 或 `json_encode()` 输出的键将为该名称
-
-```php
-/**
- * 商品分类
- * @var string
- * @busy-field-rename cate_list
- */
-public $cateIds;
-```
-
-### @busy-field-ignore 忽略属性
-
-使用 `Field::toArray()` `Field::obtain()` `Field::copyData()` 时被声明的属性将被丢弃
-
-**可选项**
-
-- `true` - 忽略
-- `false` - 不忽略
-
-```php
-/**
- * 商品分类
- * @var string
- * @busy-field-ignore
- */
-public $cateIds;
-```
-
-### @busy-field-plan-* 输出计划
-
-用 `Field::plan()` 定制输出计划，对 `Field::toArray()`、`json_encode` 的输出结构将只输出被定制的字段，默认为`@busy-field-use-safe` 
-
-**可选项**
-
-`对字段进行重命名`
-
-```php
-/**
- * 商品分类
- * @var string
- * @busy-field-plan-safe
- */
-public $id;
-
-/**
- * 商品分类
- * @var string
- * @busy-field-plan-safe title
- * @busy-field-plan-test 
- */
-public $name;
-
-/**
- * 商品价格
- * @var string
- * @busy-field-rename amount
- * @busy-field-plan-test 
- */
-public $price;
-
-// 只输出safe标记的属性，name会被转为title
-$info->plan()->toArray()
-
-// 只输出safe标记的属性，price会被转为amount
-$info->plan('test')->toArray()
-```
-
-## 声明信息结构类
-
-通常继承自模型字段类
-
-**示例**
-```php
-/**
- * 商品信息对象类
- */
-class GoodsInfo extends GoodsField {
+class TestField extends \BusyPHP\model\Field {
     /**
-     * 对数据进行解析
+     * 商品属性
+     * @var int
      */
-    protected function onParseAfter() {
-        // TODO
+    public $attr;
+    
+    /**
+     * 自定义属性
+     * @var string
+     */
+    #[\BusyPHP\model\annotation\field\Ignore] 
+    public $name;
+}
+```
+
+#### 4. #[Separate] 字符串自动分割注解
+
+使用 `setter方法`、`Field::parse()` 时有效
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var array
+     */
+    #[\BusyPHP\model\annotation\field\Separate(
+        separator: ',', // 将字符串切割为数组的分隔符
+        full: true, // 写入数据库的时候左右是否保留分隔符
+        unique: true, // 是否去重
+        filter: true, // 数据过滤，支持回调过滤，默认使用 array_filter 过滤
+    )] 
+    public $attr;
+}
+
+TestField::init()->setAttr('1,2,3,4') // attr = [1,2,3,4]
+TestField::init()->setAttr([1,2,3,4]) // attr = [1,2,3,4]
+```
+
+#### 5. #[Json] 自动JSON数据注解
+
+使用 `setter方法`、`Field::parse()` 时有效
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var array
+     */
+    #[\BusyPHP\model\annotation\field\Json(
+        default: '[]', // 默认值
+        flags: JSON_UNESCAPED_UNICODE
+    )] 
+    public $attr;
+}
+
+TestField::init()->setAttr('[1,2,3,4]') // attr = [1,2,3,4]
+TestField::init()->setAttr([1,2,3,4]) // attr = [1,2,3,4]
+```
+
+#### 6. #[Serialize] 自动序列化数据注解
+
+使用 `setter方法`、`Field::parse()` 时有效
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var array
+     */
+    #[\BusyPHP\model\annotation\field\Serialize] 
+    public $attr;
+}
+```
+
+#### 7. #[Filter] 数据过滤注解
+
+使用 `setter方法`、`Field::parse()` 时有效
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var string
+     */
+    #[\BusyPHP\model\annotation\field\Filter(
+        filter: 'trim', // 过滤方法，支持回调
+        args: '过滤方法参数1',
+        '过滤方法参数2...'
+    )] 
+    public $attr;
+}
+```
+
+#### 8. #[ValueBindField] 绑定指定字段值注解
+
+使用 `setter方法`、`Field::parse()` 时有效
+
+下面例子中为 attr 赋值后，formatAttr 将自动填充 attr 的值，配合 #[Filter] 注解，可以快速实现自定义属性值的呈现
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var int
+     */
+    public $attr;
+    
+    /**
+     * 格式化的商品属性 
+     * @var string 
+     */
+    #[\BusyPHP\model\annotation\field\Ignore]
+    #[\BusyPHP\model\annotation\field\ValueBindField(
+        field: [self::class, 'attr'], // 定义绑定的字段，支持字符串及回调
+    )] 
+    #[\BusyPHP\model\annotation\field\Filter(
+        filter: [self::class, 'filterFormatAttr']
+    )]
+    public $formatAttr;
+    
+    /**
+     * @param int $value
+     * @return string
+     */
+    public static function filterFormatAttr(int $value) {
+        $map = [1 => '白色', 2 => '黑色'];
+        
+        return $map[$value];
     }
+}
+```
+
+#### 9. #[ToArrayRename] 定义适用于to*方法对索引键重命名注解
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var string
+     */
+    #[\BusyPHP\model\annotation\field\ToArrayRename(
+        name: 'attr1', // 重命名名称
+        scene: 'api1' // 输出场景名称
+    )] 
+    public $attr;
+}
+```
+
+#### 10. #[ToArrayHidden] 定义适用于to*方法对索引键隐藏注解
+
+```php
+class TestField extends \BusyPHP\model\Field {
+    /**
+     * 商品属性
+     * @var string
+     */
+    #[\BusyPHP\model\annotation\field\ToArrayHidden(
+        scene: 'api1' // 输出场景名称
+    )] 
+    public $attr;
 }
 ```
