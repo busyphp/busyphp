@@ -16,15 +16,6 @@ use Psr\Log\LoggerInterface;
 interface SettingInterface
 {
     /**
-     * 构造函数
-     * @param LoggerInterface|null $logger 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
-     */
-    public function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false);
-    
-    
-    /**
      * 设置数据
      * @param string $name 数据名称
      * @param array  $data 数据内容

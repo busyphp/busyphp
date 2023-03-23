@@ -10,9 +10,9 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\interfaces\SettingInterface;
 use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInit;
 use BusyPHP\traits\ContainerInstance;
 use Closure;
-use Psr\Log\LoggerInterface;
 use think\Container;
 
 /**
@@ -25,6 +25,7 @@ abstract class Setting
 {
     use ContainerDefine;
     use ContainerInstance;
+    use ContainerInit;
     
     
     /**
@@ -79,30 +80,9 @@ abstract class Setting
     
     
     /**
-     * 获取实例
-     * @param LoggerInterface|null $logger 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
-     * @return static
-     */
-    public static function init(LoggerInterface $logger = null, string $connect = '', bool $force = false)
-    {
-        $vars = [$connect, $force];
-        if ($logger) {
-            $vars = [$logger, $connect, $force];
-        }
-        
-        return self::makeContainer($vars, true);
-    }
-    
-    
-    /**
      * 构造函数
-     * @param LoggerInterface|null $logger 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
      */
-    public function __construct(LoggerInterface $logger = null, string $connect = '', bool $force = false)
+    public function __construct()
     {
         $this->app = App::getInstance();
         
@@ -120,11 +100,7 @@ abstract class Setting
         if (!is_subclass_of($manager, SettingInterface::class)) {
             throw new ClassNotImplementsException($manager, SettingInterface::class);
         }
-        $vars = [$connect, $force];
-        if ($logger) {
-            $vars = [$logger, $connect, $force];
-        }
-        $this->driver = Container::getInstance()->make($manager, $vars, true);
+        $this->driver = Container::getInstance()->make($manager);
         
         // 执行服务注入
         if (!empty(static::$maker)) {
@@ -169,7 +145,7 @@ abstract class Setting
      * @param mixed       $default 默认值
      * @return mixed
      */
-    final public function get(string $name = null, $default = null)
+    final public function get(string $name = null, $default = null) : mixed
     {
         $data = $this->parseGet($this->driver->getSettingData($this->name));
         if (is_null($name)) {

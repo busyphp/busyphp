@@ -5,32 +5,29 @@ namespace BusyPHP;
 
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\MethodNotFoundException;
-use BusyPHP\helper\ClassHelper;
+use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\interfaces\ModelValidateInterface;
+use BusyPHP\model\annotation\relation\Relation;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use BusyPHP\helper\ArrayHelper;
-use BusyPHP\helper\FilterHelper;
+use BusyPHP\model\JoinClause;
 use BusyPHP\model\traits\Event;
 use BusyPHP\traits\Cache;
 use BusyPHP\traits\ContainerDefine;
 use BusyPHP\traits\ContainerInstance;
 use Closure;
 use PDOStatement;
-use Psr\Log\LoggerInterface;
+use RuntimeException;
 use think\Collection;
-use think\Container;
 use think\Db;
-use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\InvalidArgumentException;
 use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\db\Raw;
-use think\DbManager;
 use think\helper\Str;
 use think\Log;
 use think\model\concern\TimeStamp;
@@ -85,88 +82,64 @@ abstract class Model extends Query
     public const CHANGED_DELETE = 'delete';
     
     /**
-     * {@see Model::find()} 方法参数过滤器
-     * @var string|callable|Closure
+     * 指定字段结构类
+     * @var class-string<Field>|Field
      */
-    protected $findFilter = 'trim';
-    
-    /**
-     * {@see Model::remove()} 方法参数过滤器
-     * @var string|callable|Closure
-     */
-    protected $removeFilter = 'trim';
-    
-    /**
-     * 绑定通用信息解析类
-     * @var class-string<Field>
-     */
-    protected $bindParseClass;
-    
-    /**
-     * 绑定包含扩展信息的解析类
-     * @var class-string<Field>
-     */
-    protected $bindParseExtendClass;
-    
-    /**
-     * 自定义绑定信息解析类
-     * @var class-string<Field>
-     */
-    private $useBindParseClass;
+    protected string $fieldClass = '';
     
     /**
      * 单条信息不存在的错误消息
      * @var string
      */
-    protected $dataNotFoundMessage = '';
+    protected string $dataNotFoundMessage = '';
     
     /**
-     * 列表信息不存在错误消息
+     * 数据集信息不存在错误消息
      * @var string
      */
-    protected $listNotFoundMessage = '';
-    
-    /**
-     * 设置join别名
-     * @var string
-     */
-    protected $joinAlias = '';
-    
-    /**
-     * 当前数据表主键
-     * @var string
-     */
-    protected $pk = 'id';
+    protected string $listNotFoundMessage = '';
     
     /**
      * 数据表后缀
      * @var string
      */
-    protected $suffix = '';
+    protected string $suffix = '';
     
     /**
      * 当前模型的数据库连接标识
      * @var string
      */
-    protected $connect = '';
+    protected string $connect = '';
     
     /**
-     * 当前Db对象
-     * @var Db
+     * 只读字段
+     * @var array
      */
-    protected $manager;
+    protected array $readonly = [];
     
     /**
-     * 日志接口
-     * @var LoggerInterface
+     * 软删除字段
+     * @var string
      */
-    protected $logger = null;
+    protected string $softDeleteField = '';
+    
+    /**
+     * 软删除字段默认值
+     * @var int|null
+     */
+    protected ?int $softDeleteDefault = 0;
+    
+    /**
+     * 是否启用软删除机制
+     * @var bool
+     */
+    protected bool $softDelete = false;
     
     /**
      * Db对象
      * @var Db
      */
-    protected static $db;
+    protected static Db $db;
     
     /**
      * 容器对象的依赖注入方法
@@ -178,19 +151,13 @@ abstract class Model extends Query
      * 服务注入
      * @var Closure[]
      */
-    protected static $maker = [];
+    protected static array $maker = [];
     
     /**
      * 方法注入
      * @var Closure[][]
      */
-    protected static $macro = [];
-    
-    /**
-     * 数据对象解析注入
-     * @var Closure[]
-     */
-    protected static $bindParseClassHandle = [];
+    protected static array $macro = [];
     
     
     /**
@@ -220,22 +187,11 @@ abstract class Model extends Query
     
     
     /**
-     * 设置数据对象解析注入
-     * @param Closure $closure
-     * @return void
-     */
-    public static function bindParseClassHandle(Closure $closure)
-    {
-        static::$bindParseClassHandle[] = $closure;
-    }
-    
-    
-    /**
      * 设置Db对象
-     * @param DbManager $db Db对象
+     * @param Db $db Db对象
      * @return void
      */
-    public static function setDb(DbManager $db)
+    public static function setDb(Db $db)
     {
         static::$db = $db;
     }
@@ -255,77 +211,47 @@ abstract class Model extends Query
     
     /**
      * 切换后缀进行查询
-     * @param string               $suffix 切换的表后缀
-     * @param LoggerInterface|null $log 日志接口
-     * @param string               $connect 数据库连接标识
-     * @param bool                 $force 是否强制重连
+     * @param string $suffix 切换的表后缀
+     * @param string $connect 数据库连接标识
+     * @param bool   $force 是否强制重连
      * @return static
      */
-    public static function suffix(string $suffix, LoggerInterface $log = null, string $connect = '', bool $force = false)
+    public static function suffix(string $suffix, string $connect = '', bool $force = false) : static
     {
-        $model = new static($log, $connect, $force);
-        $model->setSuffix($suffix);
-        
-        return $model;
+        return self::init($connect, $force)->setSuffix($suffix);
     }
     
     
     /**
      * 切换数据库连接进行查询
-     * @param string               $connect 数据库连接标识
-     * @param LoggerInterface|null $log 日志接口
-     * @param bool                 $force 是否强制重连
+     * @param string $connect 数据库连接标识
+     * @param bool   $force 是否强制重连
      * @return static
      */
-    public static function connect(string $connect, LoggerInterface $log = null, bool $force = false)
+    public static function connect(string $connect, bool $force = false) : static
     {
-        return new static($log, $connect, $force);
+        return self::init($connect, $force);
     }
     
     
     /**
      * 实例化一个模型
-     * @param LoggerInterface|null $log 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
+     * @param string $connect 连接标识
+     * @param bool   $force 是否强制重连
      * @return static
      */
-    public static function init(LoggerInterface $log = null, string $connect = '', bool $force = false)
+    public static function init(string $connect = '', bool $force = false) : static
     {
-        $vars = [$connect, $force];
-        if ($log) {
-            $vars = [$log, $connect, $force];
-        }
-        
-        return self::makeContainer($vars, true);
-    }
-    
-    
-    /**
-     * @deprecated 该方法已过期，请使用 {@see ArrayHelper::getValueOrSelf()}，未来某个版本会删除
-     */
-    public static function parseVars(array $array, $var = null)
-    {
-        return ArrayHelper::getValueOrSelf($array, $var);
-    }
-    
-    
-    /**
-     * @deprecated 该方法已过期，请使用 {@see ClassHelper::getConstAttrs()}，未来某个版本会删除
-     */
-    public static function parseConst($class, string $prefix, array $annotations = [], $mapping = null) : array
-    {
-        return ClassHelper::getConstAttrs($class === true ? static::class : $class, $prefix, $annotations, $mapping);
+        return self::makeContainer([$connect, $force], true);
     }
     
     
     /**
      * 构架函数
-     * @param LoggerInterface|null $log 日志接口
-     * @param string               $connect 连接标识
-     * @param bool                 $force 是否强制重连
+     * @param string $connect 连接标识
+     * @param bool   $force 是否强制重连
      */
-    public function __construct(LoggerInterface $log = null, string $connect = '', bool $force = false)
+    public function __construct(string $connect = '', bool $force = false)
     {
         // 当前模型名
         if (empty($this->name)) {
@@ -337,21 +263,36 @@ abstract class Model extends Query
             $this->connect = $connect;
         }
         
-        // 指定日志接口
-        if ($log) {
-            $this->logger = $log;
-        }
-        
-        // 自定义日志接口
-        if ($this->logger) {
-            $this->manager = Container::getInstance()->make('db', [], true);
-            $this->manager->setLog($this->logger);
-        } else {
-            if (!$this->manager) {
-                $this->manager = static::$db;
+        // 初始化字段结构参数
+        $createTimeField = '';
+        $updateTimeField = '';
+        if ($this->fieldClass) {
+            if (!is_subclass_of($this->fieldClass, Field::class)) {
+                throw new ClassNotExtendsException($this->fieldClass, Field::class);
+            }
+            
+            $modelParams     = $this->fieldClass::getModelParams();
+            $createTimeField = $modelParams['create_time_field'];
+            $updateTimeField = $modelParams['update_time_field'];
+            $this->readonly  = $modelParams['readonly'];
+            $this->pk($modelParams['pk']);
+            $this->setFieldType($modelParams['type']);
+            
+            // 自动写入时间
+            if ($modelParams['auto_timestamp']) {
+                $this->isAutoWriteTimestamp($modelParams['auto_timestamp']);
+            }
+            if ($modelParams['date_format']) {
+                $this->setDateFormat($modelParams['date_format']);
+            }
+            
+            // 定义软删除
+            if ($modelParams['soft_delete']) {
+                $this->softDeleteField   = $modelParams['soft_delete_field'];
+                $this->softDeleteDefault = $modelParams['soft_delete_default'];
+                $this->softDelete        = true;
             }
         }
-        $this->pk($this->pk);
         
         // 执行服务注入
         if (!empty(static::$maker)) {
@@ -360,7 +301,29 @@ abstract class Model extends Query
             }
         }
         
-        parent::__construct($this->manager->connect($this->connect, $force));
+        // 自动写入时间
+        if ($createTimeField) {
+            $this->createTime = $createTimeField;
+        }
+        if ($updateTimeField) {
+            $this->updateTime = $updateTimeField;
+        }
+        
+        parent::__construct(static::$db->connect($this->connect, $force));
+    }
+    
+    
+    /**
+     * 获取绑定的字段结构类
+     * @return class-string<Field>|Field
+     */
+    public function getFieldClass() : mixed
+    {
+        if (!$this->fieldClass) {
+            throw new RuntimeException(sprintf('Field structure class is not set in the model "%s"', get_class($this)));
+        }
+        
+        return $this->fieldClass;
     }
     
     
@@ -368,9 +331,9 @@ abstract class Model extends Query
      * @inheritDoc
      * @return $this
      */
-    public function newQuery() : BaseQuery
+    public function newQuery() : static
     {
-        $query = new static($this->getLogger(), $this->getConnect());
+        $query = self::init($this->getConnect());
         
         if (isset($this->options['table'])) {
             $query->table($this->options['table']);
@@ -392,12 +355,11 @@ abstract class Model extends Query
     
     /**
      * 调用反射执行模型方法 支持参数绑定
-     * @access public
      * @param mixed $method
      * @param array $vars 参数
      * @return mixed
      */
-    public function invoke($method, array $vars = [])
+    public function invoke($method, array $vars = []) : mixed
     {
         if (static::$invoker) {
             $call = static::$invoker;
@@ -406,21 +368,6 @@ abstract class Model extends Query
         }
         
         return call_user_func_array($method instanceof Closure ? $method : [$this, $method], $vars);
-    }
-    
-    
-    /**
-     * @inheritDoc
-     */
-    public function getTable(string $name = '')
-    {
-        if (empty($name) && isset($this->options['table'])) {
-            return $this->options['table'];
-        }
-        
-        $name = $name ?: ($this->name . $this->suffix);
-        
-        return $this->prefix . Str::snake($name);
     }
     
     
@@ -438,7 +385,7 @@ abstract class Model extends Query
      * @param string $suffix 数据表后缀
      * @return $this
      */
-    public function setSuffix(string $suffix)
+    public function setSuffix(string $suffix) : static
     {
         $this->suffix = $suffix;
         
@@ -463,16 +410,6 @@ abstract class Model extends Query
     public function getConnect() : string
     {
         return $this->connect;
-    }
-    
-    
-    /**
-     * 获取日志接口
-     * @return LoggerInterface
-     */
-    public function getLogger() : ?LoggerInterface
-    {
-        return $this->logger;
     }
     
     
@@ -502,32 +439,22 @@ abstract class Model extends Query
                 return $this->lock($args[0] === true ? 'LOCK IN SHARE MODE' : false);
             
             // 根据某个字段获取记录的某个值
-            case substr($lower, 0, 10) == 'getfieldby':
+            case str_starts_with($lower, 'getfieldby'):
                 $name = Str::snake(substr($method, 10));
                 
                 return $this->where($name, '=', $args[0])->value($args[1], $args[2] ?? null);
             
             // getInfoByField
-            case substr($lower, 0, 9) == 'getinfoby':
+            case str_starts_with($lower, 'getinfoby'):
                 $name = Str::snake(substr($method, 9));
                 
                 return $this->where($name, '=', $args[0])->failException(true, $args[1] ?? null)->findInfo();
             
             // findInfoByField
-            case substr($lower, 0, 10) == 'findinfoby':
+            case str_starts_with($lower, 'findinfoby'):
                 $name = Str::snake(substr($method, 10));
                 
                 return $this->where($name, '=', $args[0])->findInfo();
-            // getExtendInfoByField
-            case substr($lower, 0, 15) == 'getextendinfoby':
-                $name = Str::snake(substr($method, 15));
-                
-                return $this->where($name, '=', $args[0])->failException(true, $args[1] ?? null)->findExtendInfo();
-            // findExtendInfoByField
-            case substr($lower, 0, 16) == 'findextendinfoby':
-                $name = Str::snake(substr($method, 16));
-                
-                return $this->where($name, '=', $args[0])->findExtendInfo();
         }
         
         return parent::__call($method, $args);
@@ -545,159 +472,76 @@ abstract class Model extends Query
     
     
     /**
+     * 查询是否载入关联信息
+     * @param bool $extend
+     * @return $this
+     */
+    public function extend(bool $extend = true) : static
+    {
+        $this->options['extend'] = $extend;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 将数据解析成Field对象集合
+     * @param array|Collection $list 数据集
+     * @param bool             $extend 是否解析关联数据
+     * @return T[]
+     */
+    public function resultSetToFields(array|Collection $list, bool $extend = false) : array
+    {
+        if ($list instanceof Collection) {
+            $list = $list->toArray();
+        }
+        
+        // 关联数据
+        $fieldClass = $this->getFieldClass();
+        if ($extend) {
+            /** @var Relation $vo */
+            foreach ($fieldClass::getModelParams()['relation'] as $vo) {
+                $vo->handle($this, $list);
+            }
+        }
+        
+        foreach ($list as &$vo) {
+            $vo = $fieldClass::parse($vo);
+        }
+        
+        $fieldClass::onParseList($this, $list, $extend);
+        
+        return $list;
+    }
+    
+    
+    /**
      * 将数据解析成Field对象
-     * @param array $info
-     * @return array|Field
+     * @param array $result 数据
+     * @param bool  $extend 是否解析关联数据
+     * @return T
      */
-    private function toField(array $info)
+    public function resultToField(array $result, bool $extend = false) : Field
     {
-        return $this->toFieldList([$info])[0];
-    }
-    
-    
-    /**
-     * 将数据解析成Field对象集合
-     * @param array|Collection $list
-     * @return array|Field[]
-     */
-    private function toFieldList($list)
-    {
-        if ($list instanceof Collection) {
-            $list = $list->toArray();
-        }
-        
-        // 自定义解析
-        if ($this->useBindParseClass && is_subclass_of($this->useBindParseClass, Field::class)) {
-            foreach ($list as $i => $r) {
-                $list[$i] = $this->useBindParseClass::parse($r);
-            }
-            
-            $list = $this->execBindParseClassHandle($this->useBindParseClass, $list);
-            
-            $this->useBindParseClass = null;
-            
-            return $list;
-        }
-        
-        if ($this->bindParseClass && is_subclass_of($this->bindParseClass, Field::class)) {
-            foreach ($list as $i => $r) {
-                $list[$i] = $this->bindParseClass::parse($r);
-            }
-            
-            $list = $this->execBindParseClassHandle($this->bindParseClass, $list);
-        }
-        
-        $this->onParseBindList($list);
-        
-        return $list;
-    }
-    
-    
-    /**
-     * 将数据解析成包含关联信息的Field对象
-     * @param array $info
-     * @return array|Field
-     */
-    private function toExtendField(array $info)
-    {
-        return $this->toExtendFieldList([$info])[0];
-    }
-    
-    
-    /**
-     * 将数据解析成Field对象集合
-     * @param array|Collection $list
-     * @return array|Field[]
-     */
-    private function toExtendFieldList($list)
-    {
-        if ($list instanceof Collection) {
-            $list = $list->toArray();
-        }
-        
-        if ($this->bindParseExtendClass && is_subclass_of($this->bindParseExtendClass, $this->bindParseClass) && is_subclass_of($this->bindParseExtendClass, Field::class)) {
-            foreach ($list as $i => $r) {
-                $list[$i] = $this->bindParseExtendClass::parse($r);
-            }
-            $list = $this->execBindParseClassHandle($this->bindParseExtendClass, $list);
-        }
-        
-        $this->onParseBindExtendList($list);
-        
-        return $list;
-    }
-    
-    
-    /**
-     * 执行数据对象解析注入
-     * @param class-string<Field> $class
-     * @param array               $list
-     * @return array
-     */
-    private function execBindParseClassHandle(string $class, array $list) : array
-    {
-        // 执行服务注入
-        if (!empty(static::$bindParseClassHandle)) {
-            foreach (static::$bindParseClassHandle as $handle) {
-                $list = call_user_func($handle, $this, $class, $list);
-            }
-        }
-        
-        return $list;
-    }
-    
-    
-    /**
-     * 解析通用信息
-     * @param array $list
-     */
-    protected function onParseBindList(array &$list)
-    {
-    }
-    
-    
-    /**
-     * 解析关联信息
-     * @param array $list
-     */
-    protected function onParseBindExtendList(array &$list)
-    {
+        return $this->resultSetToFields([$result], $extend)[0];
     }
     
     
     /**
      * 获取单条信息
      * @param mixed $data 主键数据，支持字符、数值、数字索引数组
-     * @return array|Field|null
+     * @return T|null
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function findInfo($data = null)
+    public function findInfo($data = null) : ?Field
     {
-        $info = $this->find($data);
-        if (!$info) {
+        $extend = $this->getOptions('extend') ?? false;
+        if (!$info = $this->find($data)) {
             return null;
         }
         
-        return $this->toField($info);
-    }
-    
-    
-    /**
-     * 获取单条包含关联数据的信息
-     * @param mixed $data 主键数据，支持字符、数值、数字索引数组
-     * @return array|Field|null
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function findExtendInfo($data = null)
-    {
-        $info = $this->find($data);
-        if (!$info) {
-            return null;
-        }
-        
-        return $this->toExtendField($info);
+        return $this->resultToField($info, $extend);
     }
     
     
@@ -705,27 +549,13 @@ abstract class Model extends Query
      * 强制获取单条信息
      * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
      * @param string $notFoundMessage 数据为空异常消息
-     * @return array|Field
+     * @return T
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function getInfo($data, $notFoundMessage = null)
+    public function getInfo($data, $notFoundMessage = null) : Field
     {
-        return $this->failException(true, $notFoundMessage)->findInfo($data ?? '');
-    }
-    
-    
-    /**
-     * 强制获取单条包含关联数据的信息
-     * @param mixed  $data 主键数据，支持字符、数值、数字索引数组
-     * @param string $notFoundMessage 数据为空异常消息
-     * @return array|Field
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function getExtendInfo($data, $notFoundMessage = null)
-    {
-        return $this->failException(true, $notFoundMessage)->findExtendInfo($data ?? '');
+        return $this->failException(true, $notFoundMessage)->findInfo($data);
     }
     
     
@@ -813,14 +643,14 @@ abstract class Model extends Query
      * @param string|null $tag 日志标签
      * @return mixed
      */
-    protected function ignoreException(callable $closure, string $tag = null)
+    protected function ignoreException(callable $closure, string $tag = null) : mixed
     {
         try {
             return call_user_func($closure);
         } catch (Throwable $e) {
             try {
                 $this->log($e, Log::WARNING, $tag);
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // 忽略错误
             }
             
@@ -835,7 +665,7 @@ abstract class Model extends Query
      * @param string|null $notFoundMessage 错误消息
      * @return $this
      */
-    public function failException(bool $fail = true, string $notFoundMessage = null)
+    public function failException(bool $fail = true, string $notFoundMessage = null) : static
     {
         $this->options['fail']         = $fail;
         $this->options['fail_message'] = $notFoundMessage;
@@ -878,7 +708,7 @@ abstract class Model extends Query
      */
     public function log($content, $level = Log::SQL, string $tag = null, string $method = null)
     {
-        $this->manager->log(LogHelper::format($content, $tag, $method), $level);
+        static::$db->log(LogHelper::format($content, $tag, $method), $level);
     }
     
     
@@ -967,17 +797,13 @@ abstract class Model extends Query
     /**
      * 查找单条记录
      * @param mixed $data 查询数据
-     * @return array|Model|null
+     * @return array|null
      * @throws DbException
      * @throws DataNotFoundException
      */
-    public function find($data = null)
+    public function find($data = null) : ?array
     {
         try {
-            if (!is_null($data) && $this->findFilter && is_callable($this->findFilter)) {
-                $data = call_user_func($this->findFilter, $data);
-            }
-            
             return parent::find($data);
         } finally {
             $this->removeOption();
@@ -993,7 +819,7 @@ abstract class Model extends Query
      * @param mixed                       $sceneData 场景数据
      * @return $this
      */
-    public function validate($data, $validate = null, $sceneName = null, $sceneData = null)
+    public function validate($data, $validate = null, $sceneName = null, $sceneData = null) : static
     {
         $field = null;
         if (is_array($data) && $validate) {
@@ -1038,8 +864,8 @@ abstract class Model extends Query
         $needCheck = true;
         if ($sceneName !== '' && $sceneName !== null) {
             if ($field) {
-                if ($field instanceof ModelSceneValidateInterface) {
-                    $result = $field->onModelSceneValidate($this, $validate, $sceneName, $sceneData);
+                if ($field instanceof ModelValidateInterface) {
+                    $result = $field->onModelValidate($this, $validate, $sceneName, $sceneData);
                     if ($result === false) {
                         $needCheck = false;
                     } elseif (is_array($result)) {
@@ -1063,7 +889,7 @@ abstract class Model extends Query
                 }
             }
             
-            $validate->setDb($this->manager);
+            $validate->setDb(static::$db);
             $validate->failException(true);
             $validate->check($checkData);
         }
@@ -1080,7 +906,7 @@ abstract class Model extends Query
      * @param array|Field $data 数据
      * @return $this
      */
-    public function data($data)
+    public function data($data) : static
     {
         return parent::data($this->parseData($data));
     }
@@ -1092,7 +918,7 @@ abstract class Model extends Query
      * @param bool        $forceInsert 是否强制insert
      * @return int|string
      */
-    public function save($data = [], bool $forceInsert = false)
+    public function save($data = [], bool $forceInsert = false) : int|string
     {
         return parent::save($this->parseData($data), $forceInsert);
     }
@@ -1104,18 +930,26 @@ abstract class Model extends Query
      * @return int
      * @throws DbException
      */
-    public function update($data = []) : int
+    public function update(array|Field $data = []) : int
     {
         try {
             $this->triggerEvent('BeforeUpdate');
             $data = array_merge($this->options['data'] ?? [], $this->parseData($data));
             
             // 自动写入更新时间
-            if ($data && $this->autoWriteTimestamp && $this->updateTime) {
+            if ($this->autoWriteTimestamp && $this->updateTime && !isset($data[$this->updateTime])) {
                 $data[$this->updateTime] = $this->autoWriteTimestamp();
             }
             
-            $this->options['data'] = $data;
+            // 只读字段不允许更新
+            foreach ($this->readonly as $field) {
+                if (array_key_exists($field, $data)) {
+                    unset($data[$field]);
+                }
+            }
+            
+            // 设置更新数据
+            $this->data($data);
             
             $result  = parent::update();
             $options = $this->options;
@@ -1132,22 +966,22 @@ abstract class Model extends Query
     /**
      * 插入记录
      * @param array|Field $data 数据
-     * @param boolean     $getLastInsID 返回自增主键
+     * @param bool        $getLastInsID 返回自增主键
      * @return int|string
      * @throws DbException
      */
-    public function insert($data = [], bool $getLastInsID = true)
+    public function insert(array|Field $data = [], bool $getLastInsID = true) : int|string
     {
         try {
             $this->triggerEvent('BeforeInsert');
             $data = array_merge($this->options['data'] ?? [], $this->parseData($data));
             
             // 自动写入增加时间
-            if ($data && $this->autoWriteTimestamp && $this->createTime) {
+            if ($this->autoWriteTimestamp && $this->createTime && !isset($data[$this->createTime])) {
                 $data[$this->createTime] = $this->autoWriteTimestamp();
             }
             
-            $this->options['data'] = $data;
+            $this->data($data);
             
             $result  = parent::insert([], $getLastInsID);
             $options = $this->options;
@@ -1167,7 +1001,7 @@ abstract class Model extends Query
      * @return int|string
      * @throws DbException
      */
-    public function insertGetId($data)
+    public function insertGetId(array|Field $data) : int|string
     {
         return $this->insert($data, true);
     }
@@ -1196,14 +1030,6 @@ abstract class Model extends Query
                 });
             }
             
-            //
-            // 兼容onAddAll
-            elseif (method_exists($this, 'onAddAll')) {
-                $this->ignoreException(function() {
-                    $this->onAddAll();
-                });
-            }
-            
             return $result;
         } finally {
             $this->removeOption();
@@ -1219,6 +1045,16 @@ abstract class Model extends Query
      */
     public function delete($data = null) : int
     {
+        // 定义软删除
+        if ($this->softDelete) {
+            $this->withTrashed();
+            
+            // 不强制删除
+            if (!isset($this->options['force']) || $this->options['force'] === false) {
+                $this->useSoftDelete($this->getSoftDeleteField(false), time());
+            }
+        }
+        
         try {
             $this->triggerEvent('BeforeDelete');
             $result  = parent::delete($data);
@@ -1273,7 +1109,7 @@ abstract class Model extends Query
      * @return mixed
      * @throws DbException
      */
-    public function value($field, $default = null)
+    public function value($field, $default = null) : mixed
     {
         try {
             return parent::value(Entity::parse($field), $default);
@@ -1284,26 +1120,16 @@ abstract class Model extends Query
     
     
     /**
-     * @throws DbException
-     * @deprecated 该方法已过期，请使用{@see Model::value()}，未来某个版本会删除
-     */
-    public function val($field, $default = null)
-    {
-        return $this->value($field, $default);
-    }
-    
-    
-    /**
      * 得到某个列的数组
-     * @param string $field 字段名 多个字段用逗号分隔
-     * @param string $key 索引
+     * @param array|string  $field 字段名 多个字段用逗号分隔
+     * @param string|Entity $key 索引
      * @return array
      * @throws DbException
      */
-    public function column($field, string $key = '') : array
+    public function column(mixed $field, string|Entity $key = '') : array
     {
         try {
-            return parent::column(Entity::parse($field), $key);
+            return parent::column(Entity::parse($field === true ? '*' : $field), Entity::parse($key));
         } finally {
             $this->removeOption();
         }
@@ -1329,44 +1155,6 @@ abstract class Model extends Query
     
     
     /**
-     * @throws DbException
-     * @deprecated 该方法已过期，请使用 {@see Model::insert()}
-     */
-    public function addData($data = [], bool $replace = false)
-    {
-        if ($replace) {
-            $this->replace();
-        }
-        
-        return $this->insert($data, true);
-    }
-    
-    
-    /**
-     * @throws DbException
-     * @deprecated 该方法已过期，请使用 {@see Model::insertAll()}
-     */
-    public function addAll(array $data = [], bool $replace = false) : int
-    {
-        if ($replace) {
-            $this->replace();
-        }
-        
-        return $this->insertAll($data);
-    }
-    
-    
-    /**
-     * @throws DbException
-     * @deprecated 该方法已过期，请使用 {@see Model::update()}
-     */
-    public function saveData($data = []) : int
-    {
-        return $this->update($data);
-    }
-    
-    
-    /**
      * 批量更新数据
      * @param array         $data 更新的数据<pre>
      * $this->updateAll([
@@ -1383,22 +1171,24 @@ abstract class Model extends Query
      */
     public function updateAll(array $data, $pk = '') : int
     {
-        $pk   = $pk ?: $this->getPk();
-        $list = [];
-        $idIn = [];
+        $pk    = $pk ?: $this->getPk();
+        $list  = [];
+        $range = [];
         foreach ($data as $values) {
-            $values = $this->parseData($values);
-            $idIn[] = "'$values[$pk]'";
+            $values  = $this->parseData($values);
+            $range[] = "'$values[$pk]'";
             foreach ($values as $field => $value) {
                 if ($value instanceof Raw) {
+                    $bind  = $value->getBind();
                     $value = $value->getValue();
+                    $this->bindParams($value, $bind);
                 }
                 
                 $list[$field][$values[$pk]] = $value;
             }
         }
         
-        if (!$idIn) {
+        if (!$range) {
             throw new InvalidArgumentException('Primary key field must be set');
         }
         
@@ -1421,7 +1211,7 @@ abstract class Model extends Query
             $item[$key] .= 'END ' . PHP_EOL;
         }
         
-        $result = $this->execute(sprintf('UPDATE %s SET %s WHERE %s in (%s)', $this->getTable(), implode(',', $item), $pk, implode(',', $idIn)));
+        $result = $this->execute(sprintf('UPDATE %s SET %s WHERE %s in (%s)', $this->getTable(), implode(',', $item), $pk, implode(',', $range)));
         
         // 触发回调
         if (method_exists($this, 'onUpdateAll')) {
@@ -1430,25 +1220,7 @@ abstract class Model extends Query
             });
         }
         
-        //
-        // 兼容onSaveAll
-        elseif (method_exists($this, 'onSaveAll')) {
-            $this->ignoreException(function() {
-                $this->onSaveAll();
-            });
-        }
-        
         return $result;
-    }
-    
-    
-    /**
-     * @throws DbException
-     * @deprecated 该方法已过期，请使用 {@see Model::updateAll()}
-     */
-    public function saveAll(array $data, string $pk = '') : int
-    {
-        return $this->updateAll($data, $pk);
     }
     
     
@@ -1480,75 +1252,15 @@ abstract class Model extends Query
     
     
     /**
-     * 删除信息
-     * @param mixed $data 表达式 true 表示强制删除
-     * <p><b>$this->remove(1)</b> 通过主键删除</p>
-     * <p><b>$this->remove([1,2,3])</b> 通过主键批量删除</p>
-     * <p><b>$this->remove('1,2,3')</b> 通过主键批量删除</p>
-     * @return int 返回删除的记录数
-     * @throws DbException
-     */
-    public function remove($data) : int
-    {
-        if (is_string($data) && false !== strpos($data, ',')) {
-            $data = explode(',', $data);
-        }
-        
-        $filter = function($data) {
-            if (is_null($data)) {
-                return null;
-            }
-            
-            if (!$this->removeFilter) {
-                return $data;
-            }
-            
-            if (is_callable($this->removeFilter)) {
-                return call_user_func_array($this->removeFilter, [$data]);
-            } elseif (is_string($this->removeFilter) && function_exists($this->removeFilter)) {
-                return call_user_func_array($this->removeFilter, [$data]);
-            }
-            
-            return $data;
-        };
-        
-        // 去重，去空
-        if (is_array($data)) {
-            $data = array_map($filter, $data);
-            $data = array_filter($data);
-            $data = array_unique($data);
-            $data = array_values($data);
-        } else {
-            $data = $filter($data);
-        }
-        
-        return $this->delete($data);
-    }
-    
-    
-    /**
-     * 删除信息
-     * @throws DbException
-     * @deprecated 未来某个版本将删除，请使用 {@see Model::remove()}
-     */
-    public function deleteInfo($data) : int
-    {
-        $this->log('deleteInfo 方法已过期，未来某个版本会删除，请使用 remove 方法', Log::WARNING, null, __METHOD__);
-        
-        return $this->remove($data);
-    }
-    
-    
-    /**
      * 字段值增长
      * @param string|Entity $field 字段名
      * @param float|int     $step 增长值
      * @return $this
      */
-    public function inc($field, $step = 1)
+    public function inc(string|Entity $field, float|int $step = 1) : static
     {
         if ($field instanceof Entity) {
-            $value = $field->value();
+            $value = $field->getValue();
             if (is_numeric($value) && $value > 1) {
                 $step = $value;
             }
@@ -1564,10 +1276,10 @@ abstract class Model extends Query
      * @param float|int     $step 减少值
      * @return $this
      */
-    public function dec($field, $step = 1)
+    public function dec(string|Entity $field, float|int $step = 1) : static
     {
         if ($field instanceof Entity) {
-            $value = $field->value();
+            $value = $field->getValue();
             if (is_numeric($value) && $value > 1) {
                 $step = $value;
             }
@@ -1578,33 +1290,13 @@ abstract class Model extends Query
     
     
     /**
-     * @throws DbException
-     * @deprecated 请使用 {@see Model::inc()}，未来某个版本会删除
-     */
-    public function setInc($field, $step = 1) : int
-    {
-        return $this->inc($field, $step)->update();
-    }
-    
-    
-    /**
-     * @throws DbException
-     * @deprecated 请使用 {@see Model::dec()}，未来某个版本会删除
-     */
-    public function setDec($field, $step = 1) : int
-    {
-        return $this->dec($field, $step)->update();
-    }
-    
-    
-    /**
      * 设置某个字段的值
      * @param string|Entity $field 字段名
      * @param mixed         $value 字段值
      * @return int
      * @throws DbException
      */
-    public function setField($field, $value) : int
+    public function setField(string|Entity $field, mixed $value) : int
     {
         $this->data([]);
         
@@ -1616,122 +1308,67 @@ abstract class Model extends Query
     
     /**
      * 查询解析后的数据
-     * @return array|Field[]
+     * @return T[]|Field[]
      * @throws DataNotFoundException
      * @throws DbException
      */
     public function selectList() : array
     {
-        return $this->toFieldList($this->select());
-    }
-    
-    
-    /**
-     * 查询自定义解析类解析后的数据
-     * @template U
-     * @param class-string<U> $parse 解析器
-     * @return array<U>
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function selectParse(string $parse) : array
-    {
-        $this->useBindParseClass = $parse;
+        $extend = $this->getOptions('extend') ?? false;
         
-        return $this->toFieldList($this->select());
-    }
-    
-    
-    /**
-     * 查询包含关联信息的Field对象集合
-     * @return array|Field[]
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function selectExtendList() : array
-    {
-        return $this->toExtendFieldList($this->select());
+        return $this->resultSetToFields($this->select(), $extend);
     }
     
     
     /**
      * 分批查询解析数据
-     * @param int                                $count 每一批查询多少条
-     * @param callable(Field[], Collection):bool $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
-     * @param string|array|Entity|Entity[]       $column 排序依据字段，默认是主键字段
-     * @param string                             $order 排序方式
+     * @param int                            $count 每一批查询多少条
+     * @param callable(T[], Collection):bool $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
+     * @param string|array|Entity|Entity[]   $column 排序依据字段，默认是主键字段
+     * @param string                         $order 排序方式
      * @return bool 处理回调方法是否全部处理成功
      * @throws DbException
      */
     public function chunkList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
     {
-        return parent::chunk($count, function(Collection $result) use ($callback) {
-            return call_user_func($callback, $this->toFieldList($result), $result);
+        $extend = $this->getOptions('extend') ?? false;
+        
+        return parent::chunk($count, function(Collection $result) use ($callback, $extend) {
+            return call_user_func($callback, $this->resultSetToFields($result, $extend), $result);
         }, Entity::parse($column), $order);
     }
     
     
     /**
-     * 分批查询扩展数据
-     * @param int                                $count 每一批查询多少条
-     * @param callable(Field[], Collection):bool $callback 处理回调方法，接受2个参数，$list 和 $result，返回false代表阻止继续执行
-     * @param string|array|Entity|Entity[]       $column 排序依据字段，默认是主键字段
-     * @param string                             $order 排序方式
-     * @return bool 处理回调方法是否全部处理成功
-     * @throws DbException
-     */
-    public function chunkExtendList(int $count, callable $callback, $column = null, string $order = 'asc') : bool
-    {
-        return parent::chunk($count, function(Collection $result) use ($callback) {
-            return call_user_func($callback, $this->toExtendFieldList($result), $result);
-        }, Entity::parse($column), $order);
-    }
-    
-    
-    /**
-     * 查询列表并用字段构建键
-     * @param array         $values in查询的值
-     * @param string|Entity $key 查询的字段，默认id
-     * @param string|Entity $field 构建的字段，默认id
-     * @return array
+     * 按索引键输出数据
+     * @param string|Entity $key 索引的字段，默认为 id
+     * @return T[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function buildListWithField(array $values, $key = null, $field = null) : array
+    public function indexList(string|Entity $key = 'id') : array
     {
-        $key    = Entity::parse($key ?: 'id');
-        $field  = Entity::parse($field ?: 'id');
-        $values = FilterHelper::trimArray($values);
-        
-        return ArrayHelper::listByKey($this->where($key, 'in', $values)->selectList(), $field);
+        return ArrayHelper::listByKey($this->selectList(), Entity::parse($key ?: 'id'));
     }
     
     
     /**
-     * 查询扩展列表并用字段构建键
-     * @param array         $values in查询的值
-     * @param string|Entity $key 查询的字段，默认id
-     * @param string|Entity $field 构建的字段，默认id
-     * @return array
+     * 使用IN查询并按索引键输出数据
+     * @param array         $range in查询的值
+     * @param string|Entity $key 索引的字段，默认为 id
+     * @param string|Entity $field in查询的字段，默认为 id
+     * @return T[]
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function buildExtendListWithField(array $values, $key = null, $field = null) : array
+    public function indexListIn(array $range, string|Entity $key = 'id', string|Entity $field = 'id') : array
     {
-        $key    = Entity::parse($key ?: 'id');
-        $field  = Entity::parse($field ?: 'id');
-        $values = FilterHelper::trimArray($values);
-        
-        return ArrayHelper::listByKey($this->where($key, 'in', $values)->selectExtendList(), $field);
-    }
-    
-    
-    /**
-     * @deprecated 请使用 {@see Model::getAlias()}，未来某个版本会删除
-     */
-    public function getJoinAlias() : string
-    {
-        return $this->getAlias();
+        $this->where(Entity::parse($field ?: 'id'), 'in', $range);
+        if ($this->fieldClass) {
+            return $this->indexList($key);
+        } else {
+            return $this->column(true, Entity::parse($key ?: 'id'));
+        }
     }
     
     
@@ -1741,10 +1378,7 @@ abstract class Model extends Query
      */
     public function getAlias() : string
     {
-        $alias = $this->options['alias'] ?? '';
-        $alias = $alias ?: $this->joinAlias;
-        
-        return $alias ?: $this->getName();
+        return ($this->options['alias'][$this->getTable()] ?? '') ?: ($this->fieldClass ? $this->fieldClass::getModelParams()['alias'] : $this->getName());
     }
     
     
@@ -1756,7 +1390,7 @@ abstract class Model extends Query
     protected function parseData($data = []) : array
     {
         if ($data instanceof Field) {
-            $data = $data->obtain();
+            $data = $data->getModelData();
         }
         
         $fields = $this->getTableFields();
@@ -1769,7 +1403,7 @@ abstract class Model extends Query
             }
             
             if ($value instanceof Entity) {
-                $value = new Raw($value->build() . $value->op() . $value->value());
+                $value = new Raw($value->field() . $value->getOp() . $value->getValue());
             } elseif (is_array($value) && count($value) == 2 && is_string($value[0]) && strtolower($value[0]) === 'exp') {
                 $value = new Raw($value[1]);
             } elseif (is_bool($value)) {
@@ -1784,49 +1418,42 @@ abstract class Model extends Query
     
     
     /**
-     * @deprecated 该方法已过期，请使用{@see Model::where()}，未来某个版本会删除
+     * @inheritDoc
      */
-    public function whereEntity(...$entity)
+    public function getTableFields($tableName = '') : array
     {
-        foreach ($entity as $item) {
-            if ($item instanceof Entity) {
-                $value = $item->value();
-                if ($value instanceof Entity) {
-                    $this->whereRaw(sprintf('`%s` %s `%s`', $item->build(), $item->op(), $value->build()));
-                } else {
-                    $this->where($item->build(), $item->op(), $item->value());
-                }
-            }
+        if ($this->fieldClass && !$tableName) {
+            return $this->fieldClass::getFieldList();
         }
         
-        return $this;
+        return parent::getTableFields($tableName);
     }
     
     
     /**
      * @inheritDoc
      */
-    protected function parseWhereExp(string $logic, $field, $op, $condition, array $param = [], bool $strict = false)
+    protected function parseWhereExp(string $logic, $field, $op, $condition, array $param = [], bool $strict = false) : static
     {
         if ($field instanceof Entity) {
-            $value = $field->value();
+            $value = $field->getValue();
             if ($value instanceof Entity) {
-                return $this->whereRaw(sprintf('`%s` %s `%s`', $field->build(), $field->op(), $value->build()));
+                return $this->whereRaw(sprintf('`%s` %s `%s`', $field->field(), $field->getOp(), $value->field()));
             }
             
-            $condition = $condition ?: $field->value();
-            $op        = $op ?: $field->op();
-            $field     = $field->build();
+            $condition = $condition ?: $field->getValue();
+            $op        = $op ?: $field->getOp();
+            $field     = $field->field();
         }
         
-        return parent::parseWhereExp($logic, Entity::parse($field), $op, $condition, $param, $strict);
+        return parent::parseWhereExp($logic, $field, $op, $condition, $param, $strict);
     }
     
     
     /**
      * @inheritDoc
      */
-    public function whereNull($field, string $logic = 'AND')
+    public function whereNull(string|Entity $field, string $logic = 'AND') : static
     {
         return parent::whereNull(Entity::parse($field), $logic);
     }
@@ -1835,7 +1462,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereNotNull($field, string $logic = 'AND')
+    public function whereNotNull(string|Entity $field, string $logic = 'AND') : static
     {
         return parent::whereNotNull(Entity::parse($field), $logic);
     }
@@ -1844,7 +1471,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereIn($field, $condition, string $logic = 'AND')
+    public function whereIn(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereIn(Entity::parse($field), $condition, $logic);
     }
@@ -1853,7 +1480,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereNotIn($field, $condition, string $logic = 'AND')
+    public function whereNotIn(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereNotIn(Entity::parse($field), $condition, $logic);
     }
@@ -1862,7 +1489,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereLike($field, $condition, string $logic = 'AND')
+    public function whereLike(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereLike(Entity::parse($field), $condition, $logic);
     }
@@ -1871,7 +1498,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereNotLike($field, $condition, string $logic = 'AND')
+    public function whereNotLike(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereNotLike(Entity::parse($field), $condition, $logic);
     }
@@ -1880,7 +1507,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereBetween($field, $condition, string $logic = 'AND')
+    public function whereBetween(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereBetween(Entity::parse($field), $condition, $logic);
     }
@@ -1889,7 +1516,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereNotBetween($field, $condition, string $logic = 'AND')
+    public function whereNotBetween(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereNotBetween(Entity::parse($field), $condition, $logic);
     }
@@ -1898,7 +1525,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereFindInSet($field, $condition, string $logic = 'AND')
+    public function whereFindInSet(string|Entity $field, $condition, string $logic = 'AND') : static
     {
         return parent::whereFindInSet(Entity::parse($field), $condition, $logic);
     }
@@ -1907,7 +1534,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereColumn($field1, string $operator, $field2 = null, string $logic = 'AND')
+    public function whereColumn(string|Entity $field1, string $operator, string|Entity $field2 = null, string $logic = 'AND') : static
     {
         return parent::whereColumn(Entity::parse($field1), $operator, Entity::parse($field2), $logic);
     }
@@ -1916,7 +1543,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function useSoftDelete($field, $condition = null)
+    public function useSoftDelete(string|Entity $field, $condition = null) : static
     {
         return parent::useSoftDelete(Entity::parse($field), $condition);
     }
@@ -1925,7 +1552,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereExp($field, string $where, array $bind = [], string $logic = 'AND')
+    public function whereExp(string|Entity $field, string $where, array $bind = [], string $logic = 'AND') : static
     {
         return parent::whereExp(Entity::parse($field), $where, $bind, $logic);
     }
@@ -1934,7 +1561,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function whereFieldRaw($field, $op, $condition = null, string $logic = 'AND')
+    public function whereFieldRaw(string|Entity $field, $op, $condition = null, string $logic = 'AND') : static
     {
         return parent::whereFieldRaw(Entity::parse($field), $op, $condition, $logic);
     }
@@ -1943,7 +1570,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function removeWhereField($field, string $logic = 'AND')
+    public function removeWhereField(string|Entity $field, string $logic = 'AND') : static
     {
         return parent::removeWhereField(Entity::parse($field), $logic);
     }
@@ -1952,17 +1579,26 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function join($join, string $condition = null, string $type = 'INNER', array $bind = [])
+    public function join($join, $condition = null, string $type = 'INNER', array $bind = []) : static
     {
         if ($join instanceof Model) {
             $model = $join;
             $join  = [$model->getTable() => $model->getAlias()];
-            $model->removeOption();
         } elseif (is_string($join) && is_subclass_of($join, Model::class)) {
-            /** @var Model $model */
-            $model = call_user_func([$join, 'init']);
+            $model = $join::init();
             $join  = [$model->getTable() => $model->getAlias()];
-            $model->removeOption();
+        }
+        
+        if ($condition instanceof Entity) {
+            $value = $condition->getValue();
+            if ($value instanceof Entity) {
+                $value = $value->field();
+            }
+            
+            $condition = $condition->field() . $condition->getOp() . $value;
+        } elseif ($condition instanceof Closure) {
+            $condition($clause = new JoinClause());
+            $condition = $clause->build();
         }
         
         return parent::join($join, $condition, $type, $bind);
@@ -1972,7 +1608,34 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function order($field, string $order = '')
+    public function leftJoin($join, $condition = null, array $bind = []) : static
+    {
+        return parent::leftJoin($join, $condition, $bind);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function rightJoin($join, $condition = null, array $bind = []) : static
+    {
+        return parent::rightJoin($join, $condition, $bind);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function fullJoin($join, $condition = null, array $bind = []) : static
+    {
+        return parent::fullJoin($join, $condition, $bind);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function order($field, string $order = '') : static
     {
         return parent::order(Entity::parse($field), $order);
     }
@@ -1981,7 +1644,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function field($field)
+    public function field($field) : static
     {
         return parent::field(Entity::parse($field));
     }
@@ -1990,7 +1653,7 @@ abstract class Model extends Query
     /**
      * @inheritDoc
      */
-    public function group($group)
+    public function group($group) : static
     {
         return parent::group(Entity::parse($group));
     }
@@ -2000,7 +1663,7 @@ abstract class Model extends Query
      * 指定having查询
      * @param string|Entity $having having
      */
-    public function having($having)
+    public function having($having) : static
     {
         return parent::having(Entity::parse($having));
     }
@@ -2030,7 +1693,7 @@ abstract class Model extends Query
      * @param bool          $split 是否分割传入的时间范围
      * @return $this
      */
-    public function whereTimeIntervalRange($field, $startOrTimeRange = 0, $endOrSpace = 0, bool $split = false)
+    public function whereTimeIntervalRange(string|Entity $field, string|int $startOrTimeRange = 0, string|int $endOrSpace = 0, bool $split = false) : static
     {
         $field = Entity::parse($field);
         if ($split && $endOrSpace) {
@@ -2076,7 +1739,7 @@ abstract class Model extends Query
      * @return mixed
      * @throws Throwable
      */
-    public function transaction(callable $callback, bool $disabled = false, string $alias = '')
+    public function transaction(callable $callback, bool $disabled = false, string $alias = '') : mixed
     {
         $this->startTrans($disabled, $alias);
         try {
@@ -2090,5 +1753,148 @@ abstract class Model extends Query
             
             throw $e;
         }
+    }
+    
+    
+    /**
+     * 获取软删除数据的查询条件
+     * @return array
+     */
+    protected function getWithTrashedExp() : array
+    {
+        return is_null($this->softDeleteDefault) ? ['notnull', ''] : ['<>', $this->softDeleteDefault];
+    }
+    
+    
+    /**
+     * 获取软删除字段
+     * @param bool $read 是否查询操作 写操作的时候会自动去掉表别名
+     * @return string
+     */
+    protected function getSoftDeleteField(bool $read = false) : string
+    {
+        $field = $this->softDeleteField ?: 'delete_time';
+        if (!str_contains($field, '.')) {
+            $field = '__TABLE__.' . $field;
+        }
+        
+        if (!$read && strpos($field, '.')) {
+            $array = explode('.', $field);
+            $field = array_pop($array);
+        }
+        
+        return $field;
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function parseOptions() : array
+    {
+        // 软删除
+        if ($this->softDelete && !isset($this->options['with_trashed']) && !isset($this->options['soft_delete'])) {
+            $this->withNoTrashed();
+        }
+        
+        // 移除强制删除标识
+        if (isset($this->options['force']) && is_bool($this->options['force'])) {
+            unset($this->options['force']);
+        }
+        
+        // join自动加别名
+        if (isset($this->options['join']) && $this->options['join']) {
+            $this->alias($this->getAlias());
+        }
+        
+        return parent::parseOptions();
+    }
+    
+    
+    /**
+     * 查询不包含软删除的数据
+     * @return $this
+     */
+    public function withNoTrashed() : static
+    {
+        if ($this->softDelete) {
+            $condition = is_null($this->softDeleteDefault) ? ['null', ''] : ['=', $this->softDeleteDefault];
+            $this->useSoftDelete($this->getSoftDeleteField(true), $condition);
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 查询包含软删除的数据
+     * @return $this
+     */
+    public function withTrashed() : static
+    {
+        if ($this->softDelete) {
+            $this->options['with_trashed'] = true;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 仅查询软删除的数据
+     * @return $this
+     */
+    public function onlyTrashed() : static
+    {
+        if ($this->softDelete) {
+            $this->useSoftDelete($this->getSoftDeleteField(true), $this->getWithTrashedExp());
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 恢复被软删除的数据
+     * @param mixed $data 表达式 true 表示强制删除
+     * @return int
+     * @throws DbException
+     */
+    public function restore($data) : int
+    {
+        if (!$this->softDelete) {
+            return 0;
+        }
+        
+        try {
+            // AR模式分析主键条件
+            if (!is_null($data) && true !== $data) {
+                $this->parsePkWhere($data);
+            }
+            
+            // 如果条件为空 不进行删除操作 除非设置 1=1
+            if (true !== $data && empty($this->options['where'])) {
+                throw new DbException('delete without condition');
+            }
+            
+            $this->options['data'] = [$this->getSoftDeleteField(false) => $this->softDeleteDefault];
+            
+            return $this->onlyTrashed()->connection->update($this);
+        } finally {
+            $this->removeOption();
+        }
+    }
+    
+    
+    /**
+     * 指定强制索引或强制删除(忽略软删除)
+     * @param string|bool $force 索引名称或强制删除
+     * @return $this
+     */
+    public function force(string|bool $force = true) : static
+    {
+        $this->options['force'] = $force;
+        
+        return $this;
     }
 }

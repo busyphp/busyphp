@@ -70,8 +70,9 @@ namespace think\validate;
  * @method ValidateRule requireIf(mixed $rule, string $msg = '') 验证某个字段等于某个值的时候必须
  * @method ValidateRule requireCallback(mixed $rule, string $msg = '') 通过回调方法验证某个字段是否必须
  * @method ValidateRule requireWith(mixed $rule, string $msg = '') 验证某个字段有值的情况下必须
+ * @method ValidateRule requireWithout(mixed $rule, string $msg = '') 验证某个字段没有值的情况下必须
  * @method ValidateRule must(mixed $rule = null, string $msg = '') 必须验证
- * @method ValidateRule closure(\Closure $rule, string $msg = '') 必须验证
+ * @method ValidateRule closure(\Closure $rule, string $msg = '') 自定义回调验证
  */
 class ValidateRule
 {
@@ -106,7 +107,7 @@ class ValidateRule
      * @param string $msg 提示信息
      * @return $this
      */
-    protected function addItem(string $name, $rule = null, string $msg = '')
+    public function addItem(string $name, $rule = null, string $msg = '')
     {
         if ($name === 'closure') {
             $this->closureIndex++;
@@ -176,7 +177,7 @@ class ValidateRule
      * @param string $msg
      * @return $this
      */
-    public function isFristAlphaNumDash(string $msg = '')
+    public function isFirstAlphaNumDash(string $msg = '')
     {
         return $this->regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', $msg ?: ':attribute必须是英文数字下划线组合，且必须是英文开头');
     }

@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\model;
 
-use Closure;
+use BusyPHP\helper\StringHelper;
 use think\db\Raw;
 
 /**
@@ -15,107 +15,119 @@ use think\db\Raw;
 class Entity
 {
     /**
-     * 服务注入
-     * @var Closure[]
-     */
-    protected static $maker = [];
-    
-    /**
      * 类属性名称
      * @var string
      */
-    private $name;
+    private string $name;
     
     /**
      * 字段名
      * @var string
      */
-    private $field;
+    private string $field;
     
     /**
-     * 查询值或更新值
+     * 是否虚拟字段
+     * @var bool
+     */
+    private bool $virtual;
+    
+    /**
+     * 数据表别名
      * @var string
      */
-    private $value;
+    private string $alias;
+    
+    /**
+     * 值
+     * @var mixed
+     */
+    private mixed $value = null;
     
     /**
      * 数据表名
      * @var string
      */
-    private $table = '';
+    private string $table = '';
     
     /**
      * 查询条件或更新条件
      * @var string
      */
-    private $op = '';
+    private string $op = '';
     
     /**
      * 查询字段表达式
      * @var string
      */
-    private $exp = '';
+    private string $exp = '';
     
     /**
      * value输出为Raw对象
      * @var bool
      */
-    private $raw = false;
+    private bool $raw = false;
     
     /**
      * 字段别名
      * @var string
      */
-    private $as = '';
-    
-    
-    /**
-     * 设置服务注入
-     * @param Closure $maker
-     * @return void
-     */
-    public static function maker(Closure $maker)
-    {
-        static::$maker[] = $maker;
-    }
-    
-    
-    /**
-     * 解析field
-     * @param mixed $field
-     * @return array|string
-     */
-    public static function parse($field)
-    {
-        if (is_array($field)) {
-            foreach ($field as $key => $item) {
-                if ($item instanceof Entity) {
-                    $field[$key] = $item->build();
-                }
-            }
-        } elseif ($field instanceof Entity) {
-            $field = $field->build();
-        }
-        
-        return $field;
-    }
+    private string $as = '';
     
     
     /**
      * Entity constructor.
      * @param string $name 类属性名称
      * @param string $field 字段名称
+     * @param string $alias 数据表别名
+     * @param bool   $virtual 是否虚拟字段
      */
-    public function __construct(string $name, string $field)
+    public function __construct(string $name, string $field, string $alias, bool $virtual = false)
     {
-        $this->name  = $name;
-        $this->field = $field;
-        
-        if (!empty(static::$maker)) {
-            foreach (static::$maker as $maker) {
-                call_user_func($maker, $this);
-            }
+        $this->name    = $name;
+        $this->field   = $field;
+        $this->virtual = $virtual;
+        $this->alias   = $alias;
+    }
+    
+    
+    /**
+     * 输出属性名称
+     * @param bool|string $table
+     * @return string|Entity
+     */
+    public function __invoke(bool|string $table = false) : string|self
+    {
+        if ($table) {
+            $this->table($table === true ? $this->alias : $table);
+            
+            return $this;
         }
+        
+        return $this->name;
+    }
+    
+    
+    /**
+     * 设置是否虚拟字段
+     * @param bool $virtual
+     * @return $this
+     */
+    public function virtual(bool $virtual) : self
+    {
+        $this->virtual = $virtual;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取是否虚拟字段
+     * @return bool
+     */
+    public function isVirtual() : bool
+    {
+        return $this->virtual;
     }
     
     
@@ -176,7 +188,7 @@ class Entity
      */
     public function field() : string
     {
-        return $this->field;
+        return $this->build();
     }
     
     
@@ -191,16 +203,12 @@ class Entity
     
     
     /**
-     * 设置或获取等式
-     * @param string|null $op 设为null则获取，否则设置
-     * @return $this|string
+     * 设置等式
+     * @param string $op
+     * @return $this
      */
-    public function op(string $op = null)
+    public function op(string $op) : self
     {
-        if (!$op) {
-            return $this->op;
-        }
-        
         $this->op = $op;
         
         return $this;
@@ -208,27 +216,43 @@ class Entity
     
     
     /**
-     * 设置或获取值
-     * @param mixed|null $value 传null则获取，否则设置
-     * @return Entity|Raw|string
+     * 获取等式
+     * @return string
      */
-    public function value($value = null)
+    public function getOp() : string
     {
-        if (is_null($value)) {
-            if ($this->raw && !$this->value instanceof Raw) {
-                return new Raw($this->value);
-            }
-            
-            return $this->value;
-        }
-        
-        if (is_bool($value)) {
-            $this->value = $value ? 1 : 0;
-        } else {
-            $this->value = $value;
-        }
+        return $this->op;
+    }
+    
+    
+    /**
+     * 设置值
+     * @param mixed $value
+     * @return $this
+     */
+    public function value($value) : self
+    {
+        $this->value = $value;
         
         return $this;
+    }
+    
+    
+    /**
+     * 获取值
+     * @return mixed
+     */
+    public function getValue() : mixed
+    {
+        if ($this->raw && !$this->value instanceof Raw && !is_null($this->value)) {
+            return new Raw($this->value);
+        }
+        
+        if (is_bool($this->value)) {
+            return $this->value ? 1 : 0;
+        }
+        
+        return $this->value;
     }
     
     
@@ -240,6 +264,11 @@ class Entity
     {
         $field = $this->field;
         
+        // 虚拟字段
+        if ($this->virtual) {
+            $field = StringHelper::snake($field);
+        }
+        
         // 表名
         if ($this->table) {
             $field = $this->table . '.' . $field;
@@ -247,7 +276,7 @@ class Entity
         
         // 表达式
         if ($this->exp) {
-            if (false !== strpos($this->exp, '%s')) {
+            if (str_contains($this->exp, '%s')) {
                 $field = sprintf($this->exp, $field);
             } else {
                 $field = sprintf('%s(%s)', $this->exp, $field);
@@ -275,11 +304,65 @@ class Entity
         $this->op    = '';
         $this->raw   = false;
         $this->value = null;
+        
+        return $this;
     }
     
     
     public function __toString()
     {
         return $this->build();
+    }
+    
+    
+    /**
+     * 解析field
+     * @param mixed $field
+     * @return array|string
+     */
+    public static function parse(mixed $field) : array|string
+    {
+        if (is_array($field)) {
+            foreach ($field as $key => $item) {
+                if ($item instanceof Entity) {
+                    $field[$key] = $item->field();
+                }
+            }
+        } elseif ($field instanceof Entity) {
+            $field = $field->field();
+        }
+        
+        return $field;
+    }
+    
+    
+    /**
+     * 获取属性名称
+     * @param string|Entity $value
+     * @return string
+     */
+    public static function cast(string|Entity $value) : string
+    {
+        if ($value instanceof Entity) {
+            return $value();
+        }
+        
+        return $value;
+    }
+    
+    
+    /**
+     * 尝试执行回调并返回对象
+     * @param mixed $callable
+     * @param mixed ...$vars
+     * @return static|null
+     */
+    public static function tryCallable(mixed $callable, ...$vars) : ?self
+    {
+        if (!is_array($callable) || !is_callable($callable) || !isset($callable[0]) || !is_subclass_of($callable[0], Field::class)) {
+            return null;
+        }
+        
+        return call_user_func($callable, ...$vars);
     }
 }
