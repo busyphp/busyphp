@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
@@ -21,9 +22,9 @@ class ErrorController extends AdminController
     public function __call($name, $arguments)
     {
         if ($this->isLogin()) {
-            return $this->display(__DIR__ . '/../../view/error.html');
+            return $this->display(__DIR__ . '/../../view/error.html')->code(404);
         } else {
-            return $this->display(__DIR__ . '/../../view/error_page.html');
+            return $this->display(__DIR__ . '/../../view/error_page.html')->code(404);
         }
     }
 }
