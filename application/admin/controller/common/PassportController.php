@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
@@ -9,7 +10,7 @@ use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\setting\AdminSetting;
-use BusyPHP\facade\CaptchaUrl;
+use BusyPHP\facade\Captcha;
 use RuntimeException;
 use think\facade\Session;
 use think\Response;
@@ -27,7 +28,7 @@ class PassportController extends InsideController
     const SESSION_VERIFY_STATUS_KEY = 'admin_login_need_verify';
     
     
-    public function initialize($checkLogin = false)
+    protected function initialize($checkLogin = false)
     {
         parent::initialize($checkLogin);
     }
@@ -46,63 +47,85 @@ class PassportController extends InsideController
      */
     public function login() : Response
     {
-        $needCheckVerify = Session::get(self::SESSION_VERIFY_STATUS_KEY) ?: false;
         if ($this->isPost()) {
-            $username  = $this->post('username/s', 'trim');
-            $password  = $this->post('password/s', 'trim');
-            $verify    = $this->post('verify/s', 'trim');
-            $saveLogin = $this->post('save_login/b');
-            
-            try {
-                $user = AdminUser::init()
-                    ->listen(AdminUserEventLoginPrepare::class, function() use ($verify, $needCheckVerify) {
-                        if ($needCheckVerify && AdminSetting::init()->isVerify()) {
-                            try {
-                                captcha_check($verify, 'admin_login');
-                            } catch (VerifyException $e) {
-                                throw new VerifyException($e->getMessage(), 'verify');
-                            }
-                        }
-                    })
-                    ->login($username, $password, $saveLogin);
-                
-                $this->adminUserId   = $user['id'];
-                $this->adminUsername = $user['username'];
-                $this->log()->filterParams(['password'])->record(self::LOG_DEFAULT, '登录成功');
-                
-                // 回跳地址
-                $redirectUrl = $this->request->getRedirectUrl($this->request->getAppUrl(), false);
-                $path        = parse_url($redirectUrl, PHP_URL_PATH);
-                if ($path) {
-                    $path = ltrim($path, '/');
-                    $path = explode('.', $path);
-                    array_pop($path);
-                    $path = implode('/', $path);
-                    if (in_array($path, ['admin/login', 'admin/out'])) {
-                        $redirectUrl = $this->request->getAppUrl();
-                    }
-                }
-                
-                Session::delete(self::SESSION_VERIFY_STATUS_KEY);
-                
-                return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
-            } catch (VerifyException $e) {
-                $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', $e->getMessage());
-                Session::set(self::SESSION_VERIFY_STATUS_KEY, true);
-                
-                switch ($e->getField()) {
-                    case 'disabled':
-                    case 'locked':
-                        throw new RuntimeException($e->getMessage(), -1);
-                }
-                
-                throw $e;
-            }
+            return $this->doLogin();
         }
         
-        $adminSetting  = AdminSetting::init();
-        $publicSetting = PublicSetting::init();
-        $loginBg       = $adminSetting->getLoginBg();
+        return $this->renderLogin();
+    }
+    
+    
+    /**
+     * 执行登录
+     * @return Response
+     * @throws Throwable
+     */
+    protected function doLogin() : Response
+    {
+        $needCheckVerify = Session::get(self::SESSION_VERIFY_STATUS_KEY) ?: false;
+        $username        = $this->post('username/s', 'trim');
+        $password        = $this->post('password/s', 'trim');
+        $verify          = $this->post('verify/s', 'trim');
+        $saveLogin       = $this->post('save_login/b');
+        
+        try {
+            $user = AdminUser::init()
+                ->listen(AdminUserEventLoginPrepare::class, function() use ($verify, $needCheckVerify) {
+                    if ($needCheckVerify && AdminSetting::instance()->isVerify()) {
+                        try {
+                            Captcha::id('admin_login')->check($verify, false, true);
+                        } catch (VerifyException $e) {
+                            throw new VerifyException($e->getMessage(), 'verify');
+                        }
+                    }
+                })
+                ->login($username, $password, $saveLogin);
+            
+            $this->adminUserId   = $user['id'];
+            $this->adminUsername = $user['username'];
+            $this->log()->filterParams(['password'])->record(self::LOG_DEFAULT, '登录成功');
+            
+            // 回跳地址
+            $redirectUrl = $this->request->getRedirectUrl($this->request->getAppUrl(), false);
+            $path        = parse_url($redirectUrl, PHP_URL_PATH);
+            if ($path) {
+                $path = ltrim($path, '/');
+                $path = explode('.', $path);
+                array_pop($path);
+                $path = implode('/', $path);
+                if (in_array($path, ['admin/login', 'admin/out'])) {
+                    $redirectUrl = $this->request->getAppUrl();
+                }
+            }
+            
+            Session::delete(self::SESSION_VERIFY_STATUS_KEY);
+            
+            return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
+        } catch (VerifyException $e) {
+            $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', $e->getMessage());
+            Session::set(self::SESSION_VERIFY_STATUS_KEY, true);
+            
+            switch ($e->getField()) {
+                case 'disabled':
+                case 'locked':
+                    throw new RuntimeException($e->getMessage(), -1);
+            }
+            
+            throw $e;
+        }
+    }
+    
+    
+    /**
+     * 渲染登录页面
+     * @return Response
+     */
+    protected function renderLogin() : Response
+    {
+        $needCheckVerify = Session::get(self::SESSION_VERIFY_STATUS_KEY) ?: false;
+        $adminSetting    = AdminSetting::instance();
+        $publicSetting   = PublicSetting::instance();
+        $loginBg         = $adminSetting->getLoginBg();
         if ($loginBg && is_file(App::urlToPath($loginBg))) {
             $bg = $loginBg;
         } else {
@@ -124,13 +147,13 @@ class PassportController extends InsideController
         $this->assign('save_login', $adminSetting->getSaveLogin() > 0);
         $this->assign('logo', $adminSetting->getLogoHorizontal());
         $this->assign('bg', $bg);
-        $this->assign('verify_url', CaptchaUrl::key('admin_login'));
+        $this->assign('verify_url', Captcha::id('admin_login')->url());
         $this->assign('copyright', $publicSetting->getCopyright());
         $this->assign('icp_no', $publicSetting->getIcpNo());
         $this->assign('police_no', $publicSetting->getPoliceNo());
         $this->setPageTitle('登录');
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
