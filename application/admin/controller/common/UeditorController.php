@@ -1,4 +1,5 @@
 <?php
+declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
@@ -15,7 +16,6 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
 use think\response\Json;
-use think\response\View;
 use Throwable;
 
 /**
@@ -26,9 +26,22 @@ use Throwable;
  */
 class UeditorController extends InsideController
 {
-    public function initialize($checkLogin = false)
+    protected function initialize($checkLogin = false)
     {
         parent::initialize($checkLogin);
+    }
+    
+    
+    protected function insideDisplay($template = '', $charset = 'utf-8', $contentType = '', $content = '', array $config = []) : Response
+    {
+        // 输出JS
+        if ($this->get('js/b')) {
+            $charset               = 'utf-8';
+            $contentType           = 'application/x-javascript';
+            $config['view_suffix'] = 'js';
+        }
+        
+        return parent::insideDisplay($template, $charset, $contentType, $content, $config);
     }
     
     
@@ -47,19 +60,6 @@ class UeditorController extends InsideController
     }
     
     
-    public function display($template = '', $charset = 'utf-8', $contentType = '', $content = '') : Response
-    {
-        // 是否输出JS
-        if ($this->get('js/b')) {
-            $charset     = 'utf-8';
-            $contentType = 'application/x-javascript';
-            $template    = $this->getTemplatePath() . $this->request->action() . '.js';
-        }
-        
-        return parent::display($template, $charset, $contentType, $content);
-    }
-    
-    
     /**
      * 插入图片
      * @return Response
@@ -68,12 +68,12 @@ class UeditorController extends InsideController
     public function insert_image() : Response
     {
         if ($this->isAjax()) {
-            return $this->json($this->upload());
+            return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
             
-            return $this->display();
+            return $this->insideDisplay();
         }
     }
     
@@ -86,12 +86,12 @@ class UeditorController extends InsideController
     public function insert_attachment() : Response
     {
         if ($this->isAjax()) {
-            return $this->json($this->upload());
+            return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
             
-            return $this->display();
+            return $this->insideDisplay();
         }
     }
     
@@ -104,12 +104,12 @@ class UeditorController extends InsideController
     public function insert_video() : Response
     {
         if ($this->isAjax()) {
-            return $this->json($this->upload());
+            return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             $this->assign('file_config', json_encode($this->getFileConfig()));
             
-            return $this->display();
+            return $this->insideDisplay();
         }
     }
     
@@ -120,11 +120,11 @@ class UeditorController extends InsideController
     public function scrawl() : Response
     {
         if ($this->isAjax()) {
-            return $this->json($this->upload(true));
+            return $this->doUpload(true);
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
             
-            return $this->display();
+            return $this->insideDisplay();
         }
     }
     
@@ -204,7 +204,7 @@ JS;
      * @param bool $isBase64
      * @return array
      */
-    private function upload(bool $isBase64 = false) : array
+    protected function doUpload(bool $isBase64 = false) : Response
     {
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
@@ -246,14 +246,14 @@ JS;
             $jsonData['trace'] = trace();
         }
         
-        return $jsonData;
+        return $this->json($jsonData);
     }
     
     
     /**
      * 配置
      */
-    private function serverConfig() : Json
+    protected function serverConfig() : Json
     {
         return $this->json([]);
     }
@@ -262,7 +262,7 @@ JS;
     /**
      * 上传远程图片
      */
-    private function serverRemote() : Json
+    protected function serverRemote() : Json
     {
         $jsonData          = [];
         $jsonData['state'] = 'SUCCESS';
@@ -317,11 +317,11 @@ JS;
     /**
      * 单图上传
      */
-    private function serverUpload() : Response
+    protected function serverUpload() : Response
     {
         $this->request->setParam('class_type', $this->param('class_image_type/s', 'trim'));
         
-        return $this->json($this->upload());
+        return $this->json($this->doUpload());
     }
     
     
@@ -331,10 +331,10 @@ JS;
      * @throws DataNotFoundException
      * @throws DbException
      */
-    private function getFileConfig() : array
+    protected function getFileConfig() : array
     {
-        $fileSet = StorageSetting::init();
-        $list    = SystemFileClass::init()->getList();
+        $fileSet = StorageSetting::instance();
+        $list    = SystemFileClass::instance()->getList();
         $array   = [];
         foreach ($list as $key => $value) {
             $array[$key] = [
