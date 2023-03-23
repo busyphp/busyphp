@@ -20,7 +20,7 @@ trait Cache
      * @param string $name 缓存名称
      * @return mixed
      */
-    public function getCache($name)
+    public function getCache($name) : mixed
     {
         return CacheHelper::get(static::class, $name);
     }
@@ -67,7 +67,7 @@ trait Cache
      * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
      * @return mixed
      */
-    public function rememberCacheByCallback(string $name, callable $callback, bool $force = false, $expire = 600)
+    public function rememberCacheByCallback(string $name, callable $callback, bool $force = false, $expire = 600) : mixed
     {
         $data = $this->getCache($name);
         if (!$data || $force) {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\traits;
 
@@ -25,7 +26,7 @@ trait ContainerDefine
      * @param bool  $newInstance 是否单例
      * @return static
      */
-    final protected static function makeContainer(array $vars = [], bool $newInstance = false) : self
+    final protected static function makeContainer(array $vars = [], bool $newInstance = false) : static
     {
         return Container::getInstance()->make(self::getDefineContainer(), $vars, $newInstance);
     }

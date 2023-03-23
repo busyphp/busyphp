@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\traits;
 
@@ -15,7 +16,7 @@ trait ContainerInit
      * 获取实例
      * @return static
      */
-    final public static function init()
+    final public static function init() : static
     {
         return self::makeContainer([], true);
     }
