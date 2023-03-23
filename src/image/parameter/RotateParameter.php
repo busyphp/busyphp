@@ -3,8 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\parameter;
 
-use BusyPHP\image\parameter\concern\ColorConcern;
-use BusyPHP\image\parameter\concern\RotateConcern;
+use BusyPHP\image\traits\Color;
+use BusyPHP\image\traits\Rotate;
 
 /**
  * 图片旋转参数模板
@@ -16,8 +16,8 @@ use BusyPHP\image\parameter\concern\RotateConcern;
  */
 class RotateParameter extends BaseParameter
 {
-    use RotateConcern;
-    use ColorConcern;
+    use Rotate;
+    use Color;
     
     protected static $parameterName = '旋转';
     

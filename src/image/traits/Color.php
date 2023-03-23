@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\image\parameter\concern;
+namespace BusyPHP\image\traits;
 
 use BusyPHP\image\parameter\BaseParameter;
 
@@ -9,9 +9,9 @@ use BusyPHP\image\parameter\BaseParameter;
  * 颜色
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/10 2:49 PM ColorConcern.php $
+ * @version $Id: 2022/9/10 2:49 PM Color.php $
  */
-trait ColorConcern
+trait Color
 {
     /** @var string */
     private $color = '';
@@ -30,9 +30,9 @@ trait ColorConcern
     /**
      * 设置颜色
      * @param string $color
-     * @return $this
+     * @return static
      */
-    public function setColor(string $color) : self
+    public function setColor(string $color) : static
     {
         $this->color = $color;
         

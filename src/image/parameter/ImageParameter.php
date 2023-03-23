@@ -4,10 +4,10 @@ declare(strict_types = 1);
 namespace BusyPHP\image\parameter;
 
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\image\parameter\concern\DxDyConcern;
-use BusyPHP\image\parameter\concern\GravityConcern;
-use BusyPHP\image\parameter\concern\OpacityConcern;
-use BusyPHP\image\parameter\concern\RotateConcern;
+use BusyPHP\image\traits\DxDy;
+use BusyPHP\image\traits\Gravity;
+use BusyPHP\image\traits\Opacity;
+use BusyPHP\image\traits\Rotate;
 
 /**
  * 图片处理系统添加图片模板
@@ -17,10 +17,10 @@ use BusyPHP\image\parameter\concern\RotateConcern;
  */
 class ImageParameter extends BaseParameter
 {
-    use DxDyConcern;
-    use RotateConcern;
-    use GravityConcern;
-    use OpacityConcern;
+    use DxDy;
+    use Rotate;
+    use Gravity;
+    use Opacity;
     
     protected static $parameterName = '图片水印';
     

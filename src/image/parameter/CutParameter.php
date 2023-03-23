@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\image\parameter;
 
 use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\image\parameter\concern\DxDyConcern;
-use BusyPHP\image\parameter\concern\WidthHeightConcern;
+use BusyPHP\image\traits\DxDy;
+use BusyPHP\image\traits\WidthHeight;
 
 /**
  * 普通裁剪参数模板
@@ -15,8 +15,8 @@ use BusyPHP\image\parameter\concern\WidthHeightConcern;
  */
 class CutParameter extends BaseParameter
 {
-    use WidthHeightConcern;
-    use DxDyConcern;
+    use WidthHeight;
+    use DxDy;
     
     protected static $parameterName = '普通裁剪';
     

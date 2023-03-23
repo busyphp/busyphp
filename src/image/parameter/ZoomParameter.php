@@ -6,19 +6,22 @@ namespace BusyPHP\image\parameter;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
-use BusyPHP\image\parameter\concern\ColorConcern;
-use BusyPHP\image\parameter\concern\WidthHeightConcern;
+use BusyPHP\image\traits\Color;
+use BusyPHP\image\traits\WidthHeight;
 
 /**
  * 缩放参数模板
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/10 2:44 PM ZoomParameter.php $
- * @method getColor() 获取填充颜色
- * @method setColor(string $color) 设置填充颜色
+ * @method string getColor() 获取填充颜色
+ * @method self setColor(string $color) 设置填充颜色
  */
 class ZoomParameter extends BaseParameter
 {
+    use WidthHeight;
+    use Color;
+    
     protected static $parameterName = '缩放';
     
     /** @var int 保持比例缩放 */
@@ -29,9 +32,6 @@ class ZoomParameter extends BaseParameter
     
     /** @var int 忽略比例缩放到指定尺寸 */
     const TYPE_LOSE = 2;
-    
-    use WidthHeightConcern;
-    use ColorConcern;
     
     /** @var bool */
     private $enlarge = false;

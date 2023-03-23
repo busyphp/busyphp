@@ -6,8 +6,7 @@ namespace BusyPHP\image;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\CacheHelper;
 use BusyPHP\image\parameter\BaseParameter;
-use BusyPHP\image\parameter\ProcessParameter;
-use BusyPHP\image\parameter\UrlParameter;
+use BusyPHP\Image;
 use BusyPHP\image\result\ExifResult;
 use BusyPHP\image\result\ImageStyleResult;
 use BusyPHP\image\result\InfoResult;
@@ -27,25 +26,6 @@ use think\route\Url;
  */
 abstract class Driver
 {
-    /**
-     * 配置参数
-     * @var array
-     */
-    protected $config = [];
-    
-    /**
-     * @var \think\filesystem\Driver
-     */
-    protected $driver;
-    
-    
-    public function __construct(\think\filesystem\Driver $driver, array $config)
-    {
-        $this->driver = $driver;
-        $this->config = array_merge($this->config, $config);
-    }
-    
-    
     /**
      * 获取支持的字体
      * @return array
@@ -69,34 +49,35 @@ abstract class Driver
     
     /**
      * 处理图片
-     * @param ProcessParameter $parameter
+     * @param Image $image Image
      * @return ProcessResult
      */
-    abstract public function process(ProcessParameter $parameter) : ProcessResult;
+    abstract public function process(Image $image) : ProcessResult;
     
     
     /**
      * 处理并保存
-     * @param ProcessParameter $parameter
+     * @param Image  $image Image
+     * @param string $destination 保存的图片路径，留空覆盖原图
      * @return SaveResult
      */
-    abstract public function save(ProcessParameter $parameter) : SaveResult;
+    abstract public function save(Image $image, string $destination = '') : SaveResult;
     
     
     /**
      * 处理并响应
-     * @param UrlParameter $parameter
+     * @param Image $image
      * @return Response
      */
-    abstract public function response(UrlParameter $parameter) : Response;
+    abstract public function response(Image $image) : Response;
     
     
     /**
      * 生成在线处理URL
-     * @param UrlParameter $parameter
+     * @param Image $image
      * @return Url
      */
-    abstract public function url(UrlParameter $parameter) : Url;
+    abstract public function url(Image $image) : Url;
     
     
     /**

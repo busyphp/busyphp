@@ -1,15 +1,15 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\image\parameter\concern;
+namespace BusyPHP\image\traits;
 
 /**
  * X轴Y轴偏移
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/10 2:43 PM DxDyConcern.php $
+ * @version $Id: 2022/9/10 2:43 PM DxDy.php $
  */
-trait DxDyConcern
+trait DxDy
 {
     /** @var int */
     private $dx = 0;
@@ -31,9 +31,9 @@ trait DxDyConcern
     /**
      * 设置X轴偏移
      * @param int $dx
-     * @return $this
+     * @return static
      */
-    public function setDx(int $dx) : self
+    public function setDx(int $dx) : static
     {
         $this->dx = $dx;
         
@@ -54,9 +54,9 @@ trait DxDyConcern
     /**
      * 设置Y轴偏移
      * @param int $dy
-     * @return $this
+     * @return static
      */
-    public function setDy(int $dy) : self
+    public function setDy(int $dy) : static
     {
         $this->dy = $dy;
         

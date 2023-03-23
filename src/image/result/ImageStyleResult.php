@@ -6,8 +6,7 @@ namespace BusyPHP\image\result;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\image\Driver as ImageDriver;
 use BusyPHP\image\parameter\BaseParameter;
-use BusyPHP\image\parameter\ProcessParameter;
-use BusyPHP\image\parameter\UrlParameter;
+use BusyPHP\Image;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use ReflectionException;
@@ -47,12 +46,12 @@ class ImageStyleResult extends Field
     
     
     /**
-     * 获取UrlParameter
-     * @return UrlParameter
+     * 获取新{@see Image}实例
+     * @return Image
      */
-    public function getUrlParameter() : UrlParameter
+    public function newImage() : Image
     {
-        return self::convertContentToUrlParameter($this->content);
+        return self::convertContentToImage($this->content);
     }
     
     
@@ -65,7 +64,7 @@ class ImageStyleResult extends Field
     public static function fillContent(array $content = []) : array
     {
         $array = [];
-        foreach (ProcessParameter::getParameterStruct() as $key => $item) {
+        foreach (Image::getParameterStruct() as $key => $item) {
             $item['status'] = $content[$key]['status'] ?? 0;
             $item['attr']   = array_merge($item['attr'], (array) ($content[$key]['attr'] ?? []));
             $array[$key]    = $item;
@@ -121,13 +120,13 @@ class ImageStyleResult extends Field
     
     
     /**
-     * 将 content 转为 UrlParameter
+     * 将 content 转为 {@see Image}
      * @param array $content
-     * @return UrlParameter
+     * @return Image
      */
-    public static function convertContentToUrlParameter(array $content) : UrlParameter
+    public static function convertContentToImage(array $content) : Image
     {
-        $process = new UrlParameter();
+        $image = Container::getInstance()->make(Image::class, [], true);
         foreach ($content as $key => $item) {
             if (($item['status'] ?? false)) {
                 $parameterClass = '\BusyPHP\image\parameter\\' . ucfirst(StringHelper::camel($key)) . 'Parameter';
@@ -146,24 +145,24 @@ class ImageStyleResult extends Field
                     }
                 }
                 
-                $process->add($parameter);
+                $image->add($parameter);
             }
         }
         
-        return $process;
+        return $image;
     }
     
     
     /**
-     * 将 ProcessParameter 转为 content
-     * @param ProcessParameter $parameter
+     * 将 {@see Image} 转为 content
+     * @param Image $image
      * @return array
      * @throws ReflectionException
      */
-    public static function convertParameterToContent(ProcessParameter $parameter) : array
+    public static function convertImageToContent(Image $image) : array
     {
         $array = [];
-        foreach ($parameter->getParameters() as $item) {
+        foreach ($image->getParameters() as $item) {
             $array[$item::getParameterKey()] = [
                 'status' => 1,
                 'attr'   => $item::getParameterAttrs($item)

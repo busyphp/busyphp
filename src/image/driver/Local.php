@@ -6,8 +6,9 @@ namespace BusyPHP\image\driver;
 use BusyPHP\exception\ClassNotImplementsException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FileHelper;
+use BusyPHP\helper\FilesystemHelper;
 use BusyPHP\helper\TransHelper;
-use BusyPHP\image\concern\ResponseConcern;
+use BusyPHP\image\traits\Response;
 use BusyPHP\image\Driver;
 use BusyPHP\image\driver\local\LocalImageStyleManagerInterface;
 use BusyPHP\image\parameter\AutoOrientParameter;
@@ -24,14 +25,13 @@ use BusyPHP\image\parameter\ImageParameter;
 use BusyPHP\image\parameter\InterlaceParameter;
 use BusyPHP\image\parameter\InvertParameter;
 use BusyPHP\image\parameter\PixelateParameter;
-use BusyPHP\image\parameter\ProcessParameter;
+use BusyPHP\Image;
 use BusyPHP\image\parameter\QualityParameter;
 use BusyPHP\image\parameter\RadiusParameter;
 use BusyPHP\image\parameter\RotateParameter;
 use BusyPHP\image\parameter\SharpenParameter;
 use BusyPHP\image\parameter\StripMetaParameter;
 use BusyPHP\image\parameter\TextParameter;
-use BusyPHP\image\parameter\UrlParameter;
 use BusyPHP\image\parameter\ZoomParameter;
 use BusyPHP\image\result\ExifResult;
 use BusyPHP\image\result\ImageStyleResult;
@@ -43,11 +43,12 @@ use Intervention\Image\AbstractFont;
 use Intervention\Image\Constraint;
 use Intervention\Image\Filters\FilterInterface;
 use Intervention\Image\Gd\Color;
-use Intervention\Image\Image;
+use Intervention\Image\Image as InterventionImage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Size;
 use think\Container;
 use think\exception\FileException;
+use think\facade\Request;
 use think\facade\Route;
 use think\file\UploadedFile;
 use think\route\Url;
@@ -62,7 +63,7 @@ use Throwable;
  */
 class Local extends Driver
 {
-    use ResponseConcern;
+    use Response;
     
     /** @var string[] 位置映射 */
     public static $gravityMap = [
@@ -83,10 +84,21 @@ class Local extends Driver
     /** @var LocalImageStyleManagerInterface */
     protected $style;
     
+    /** @var \think\filesystem\driver\Local */
+    protected $driver;
+    
+    /** @var array */
     protected $config = [
         'font_list'           => [],
         'image_style_manager' => ''
     ];
+    
+    
+    public function __construct(\think\filesystem\driver\Local $driver, array $config)
+    {
+        $this->driver = $driver;
+        $this->config = array_merge($this->config, $config);
+    }
     
     
     /**
@@ -136,11 +148,11 @@ class Local extends Driver
     
     /**
      * 实例Font对象
-     * @param Image  $image
-     * @param string $text
+     * @param InterventionImage $image
+     * @param string            $text
      * @return AbstractFont
      */
-    public static function instanceFont(Image $image, string $text = '') : AbstractFont
+    public static function instanceFont(InterventionImage $image, string $text = '') : AbstractFont
     {
         $fontClass = "\Intervention\Image\\{$image->getDriver()->getDriverName()}\Font";
         
@@ -179,19 +191,19 @@ class Local extends Driver
     
     /**
      * 处理图片
-     * @param ProcessParameter $parameter
-     * @return array{image: Image, quality:int|null, format: string|null}
+     * @param Image $image
+     * @return array{manager: InterventionImage, quality:int|null, format: string|null}
      */
-    protected function handle(ProcessParameter $parameter) : array
+    protected function handle(Image $image) : array
     {
-        $image     = $this->manager()->make($this->path($parameter->getOldPath()));
+        $manager   = $this->manager()->make($this->path($image->getPath()));
         $quality   = null;
         $format    = null;
         $stripMeta = false;
         
-        $parameters = $parameter->getParameters();
-        if ($style = $parameter->getStyle()) {
-            $parameters = $this->getStyleByCache($style)->getUrlParameter()->getParameters();
+        $parameters = $image->getParameters();
+        if ($style = $image->getStyle()) {
+            $parameters = $this->getStyleByCache($style)->newImage()->getParameters();
         }
         
         foreach ($parameters as $item) {
@@ -199,7 +211,7 @@ class Local extends Driver
             switch (true) {
                 // 等比例缩放
                 case $item instanceof ZoomParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var ZoomParameter
                          */
@@ -212,7 +224,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             switch ($this->parameter->getType()) {
                                 // 不保持比例
@@ -262,7 +274,7 @@ class Local extends Driver
                 break;
                 // 缩放裁剪
                 case $item instanceof CropParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var CropParameter
                          */
@@ -275,7 +287,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             switch ($this->parameter->getType()) {
                                 case CropParameter::TYPE_CUT:
@@ -298,7 +310,7 @@ class Local extends Driver
                 break;
                 // 圆角裁剪
                 case $item instanceof RadiusParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var RadiusParameter
                          */
@@ -311,7 +323,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             $radius = $this->parameter->getRadius();
                             if ($radius <= 0) {
@@ -330,7 +342,7 @@ class Local extends Driver
                 break;
                 // 旋转角度
                 case $item instanceof RotateParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var RotateParameter
                          */
@@ -343,7 +355,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->rotate(-$this->parameter->getRotate(), $this->parameter->getColor());
                         }
@@ -351,8 +363,8 @@ class Local extends Driver
                 break;
                 // 自动旋转
                 case $item instanceof AutoOrientParameter:
-                    $image->filter(new class implements FilterInterface {
-                        public function applyFilter(Image $image) : Image
+                    $manager->filter(new class implements FilterInterface {
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->orientate();
                         }
@@ -360,7 +372,7 @@ class Local extends Driver
                 break;
                 // 对比度
                 case $item instanceof ContrastParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var ContrastParameter
                          */
@@ -373,7 +385,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->contrast($this->parameter->getContrast());
                         }
@@ -381,7 +393,7 @@ class Local extends Driver
                 break;
                 // 锐化
                 case $item instanceof SharpenParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var SharpenParameter
                          */
@@ -394,7 +406,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->sharpen($this->parameter->getSharpen());
                         }
@@ -402,7 +414,7 @@ class Local extends Driver
                 break;
                 // 高斯模糊
                 case $item instanceof BlurParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var BlurParameter
                          */
@@ -415,7 +427,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->blur($this->parameter->getRadius());
                         }
@@ -423,7 +435,7 @@ class Local extends Driver
                 break;
                 // 亮度
                 case $item instanceof BrightParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var BrightParameter
                          */
@@ -436,7 +448,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->brightness($this->parameter->getBright());
                         }
@@ -444,8 +456,8 @@ class Local extends Driver
                 break;
                 // 灰度
                 case $item instanceof GrayscaleParameter:
-                    $image->filter(new class implements FilterInterface {
-                        public function applyFilter(Image $image) : Image
+                    $manager->filter(new class implements FilterInterface {
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->greyscale();
                         }
@@ -453,8 +465,8 @@ class Local extends Driver
                 break;
                 // 翻转颜色
                 case $item instanceof InvertParameter:
-                    $image->filter(new class implements FilterInterface {
-                        public function applyFilter(Image $image) : Image
+                    $manager->filter(new class implements FilterInterface {
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->invert();
                         }
@@ -464,16 +476,16 @@ class Local extends Driver
                 case $item instanceof FlipParameter:
                     switch ($item->getFlip()) {
                         case FlipParameter::FLIP_HORIZONTAL:
-                            $image->filter(new class implements FilterInterface {
-                                public function applyFilter(Image $image) : Image
+                            $manager->filter(new class implements FilterInterface {
+                                public function applyFilter(InterventionImage $image) : InterventionImage
                                 {
                                     return $image->flip('h');
                                 }
                             });
                         break;
                         case FlipParameter::FLIP_VERTICAL:
-                            $image->filter(new class implements FilterInterface {
-                                public function applyFilter(Image $image) : Image
+                            $manager->filter(new class implements FilterInterface {
+                                public function applyFilter(InterventionImage $image) : InterventionImage
                                 {
                                     return $image->flip('v');
                                 }
@@ -483,7 +495,7 @@ class Local extends Driver
                 break;
                 // 伽马校正
                 case $item instanceof GammaParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var GammaParameter
                          */
@@ -496,7 +508,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->gamma(round(($this->parameter->getGamma() / 100 * 1.5) + 0.8, 2));
                         }
@@ -504,7 +516,7 @@ class Local extends Driver
                 break;
                 // 像素化处理
                 case $item instanceof PixelateParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var PixelateParameter
                          */
@@ -517,7 +529,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             return $image->pixelate($this->parameter->getPixelate());
                         }
@@ -531,7 +543,7 @@ class Local extends Driver
                 break;
                 // 格式
                 case $item instanceof FormatParameter:
-                    if ($item->getFormat() && $item->getFormat() != $image->extension) {
+                    if ($item->getFormat() && $item->getFormat() != $manager->extension) {
                         $format = $item->getFormat();
                     }
                 break;
@@ -541,7 +553,7 @@ class Local extends Driver
                 break;
                 // 图片
                 case $item instanceof ImageParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var ImageParameter
                          */
@@ -554,7 +566,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             $water       = $image->getDriver()->init($this->parameter->getImage());
                             $width       = $image->width();
@@ -607,7 +619,7 @@ class Local extends Driver
                 break;
                 // 文字
                 case $item instanceof TextParameter:
-                    $image->filter(new class($item) implements FilterInterface {
+                    $manager->filter(new class($item) implements FilterInterface {
                         /**
                          * @var TextParameter
                          */
@@ -620,7 +632,7 @@ class Local extends Driver
                         }
                         
                         
-                        public function applyFilter(Image $image) : Image
+                        public function applyFilter(InterventionImage $image) : InterventionImage
                         {
                             $width    = $image->width();
                             $height   = $image->height();
@@ -696,11 +708,11 @@ class Local extends Driver
         
         // 删除元数据
         if ($stripMeta) {
-            $image->stripMeta();
+            $manager->stripMeta();
         }
         
         return [
-            'image'   => $image,
+            'manager' => $manager,
             'quality' => is_null($quality) ? 90 : $quality,
             'format'  => $format
         ];
@@ -709,26 +721,26 @@ class Local extends Driver
     
     /**
      * 处理图片
-     * @param ProcessParameter $parameter
+     * @param Image $image
      * @return ProcessResult
      */
-    public function process(ProcessParameter $parameter) : ProcessResult
+    public function process(Image $image) : ProcessResult
     {
-        $result  = $this->handle($parameter);
-        $image   = $result['image'];
+        $result  = $this->handle($image);
+        $manager = $result['manager'];
         $quality = $result['quality'];
         $format  = $result['format'];
-        $encoder = $image->encode($result['format'], $quality);
+        $encoder = $manager->encode($result['format'], $quality);
         $data    = $encoder->getEncoded();
         
         $processResult = new ProcessResult();
         $processResult->setData($data);
-        $processResult->setFormat(strtolower($format ?: pathinfo($parameter->getOldPath(), PATHINFO_EXTENSION)) ?: 'jpeg');
+        $processResult->setFormat(strtolower($format ?: pathinfo($image->getPath(), PATHINFO_EXTENSION)) ?: 'jpeg');
         $processResult->setMimetype(finfo_buffer(finfo_open(FILEINFO_MIME_TYPE), $data) ?: 'image/jpeg');
         $processResult->setWidth($encoder->getWidth());
         $processResult->setHeight($encoder->getHeight());
         $processResult->setFilesize(strlen($data));
-        $image->destroy();
+        $manager->destroy();
         
         return $processResult;
     }
@@ -736,24 +748,25 @@ class Local extends Driver
     
     /**
      * 处理并保存
-     * @param ProcessParameter $parameter
+     * @param Image  $image Image
+     * @param string $destination 保存的图片路径，留空覆盖原图
      * @return SaveResult
      */
-    public function save(ProcessParameter $parameter) : SaveResult
+    public function save(Image $image, string $destination = '') : SaveResult
     {
-        $result  = $this->handle($parameter);
-        $image   = $result['image'];
+        $result  = $this->handle($image);
+        $manager = $result['manager'];
         $quality = $result['quality'];
-        $image->save($this->path($parameter->getNewPath()), $quality, $result['format']);
+        $manager->save($this->path($destination ?: $image->getPath()), $quality, $result['format']);
         
         $saveResult = new SaveResult();
-        $saveResult->setFormat($image->extension);
-        $saveResult->setWidth($image->width());
-        $saveResult->setHeight($image->height());
-        $saveResult->setSize($image->filesize());
+        $saveResult->setFormat($manager->extension ?? '');
+        $saveResult->setWidth($manager->width());
+        $saveResult->setHeight($manager->height());
+        $saveResult->setSize($manager->filesize());
         $saveResult->setQuality($quality);
         
-        $image->destroy();
+        $manager->destroy();
         
         return $saveResult;
     }
@@ -761,13 +774,13 @@ class Local extends Driver
     
     /**
      * 生成在线处理URL
-     * @param UrlParameter $parameter
+     * @param Image $image
      * @return Url
      */
-    public function url(UrlParameter $parameter) : Url
+    public function url(Image $image) : Url
     {
-        return Route::buildUrl('/general/image/' . $parameter->getOldPath(), [
-            'process' => self::convertParameterToProcessRule($parameter)
+        return Route::buildUrl('/general/image/' . $image->getPath(), [
+            'process' => self::convertImageToProcessRule($image)
         ])->suffix(false);
     }
     
@@ -931,17 +944,16 @@ class Local extends Driver
     
     
     /**
-     * TODO 寻找一个合适的位置放置该方法
-     * 将 ProcessParameter 转为 本地处理规则
-     * @param ProcessParameter $parameter
+     * 将 {@see Image} 转为 本地处理规则
+     * @param Image $image
      * @return string
      */
-    public static function convertParameterToProcessRule(ProcessParameter $parameter) : string
+    public static function convertImageToProcessRule(Image $image) : string
     {
         $process = [];
         $format  = null;
         $strip   = false;
-        foreach ($parameter->getParameters() as $item) {
+        foreach ($image->getParameters() as $item) {
             switch (true) {
                 // 等比例缩放
                 case $item instanceof ZoomParameter:
@@ -1124,22 +1136,25 @@ class Local extends Driver
             }
         }
         
-        if ($parameter instanceof UrlParameter) {
-            if ($style = $parameter->getStyle()) {
-                $process['style'][] = [$style];
+        // 处理样式
+        if ('' !== $style = $image->getStyle()) {
+            $process            = [];
+            $process['style'][] = [$style];
+        }
+        
+        // 下载
+        if ($image->isDownload()) {
+            $args = [1];
+            if ($filename = $image->getFilename()) {
+                $filename = TransHelper::base64encodeUrl($filename);
+                $args[]   = "f/$filename";
             }
-            if ($parameter->isDownload()) {
-                $args = [1];
-                if ($filename = $parameter->getFilename()) {
-                    $filename = TransHelper::base64encodeUrl($filename);
-                    $args[]   = "f/$filename";
-                }
-                $process['down'][] = $args;
-            }
-            
-            if ($lifetime = $parameter->getLifetime() > 0) {
-                $process['cache'][] = $lifetime;
-            }
+            $process['down'][] = $args;
+        }
+        
+        // 缓存时间
+        if (0 < $lifetime = $image->getLifetime()) {
+            $process['cache'][] = $lifetime;
         }
         
         if ($strip) {
@@ -1161,16 +1176,28 @@ class Local extends Driver
     
     
     /**
-     * TODO 寻找一个合适的位置放置该方法
-     * 将 本地处理规则 转为 UrlParameter
+     * 解析HTTP参数
+     * @return Image
+     */
+    public static function http() : Image
+    {
+        return static::convertProcessRuleToImage(
+            Request::param('process/s', '', 'trim'),
+            Request::param('path/s', '', 'trim')
+        );
+    }
+    
+    
+    /**
+     * 将 本地处理规则 转为 {@see Image}
      * @param string $process 规则字符串
      * @param string $path 要处理的图片地址
-     * @return UrlParameter
+     * @return Image
      */
-    public static function convertProcessRuleToParameter(string $process, string $path = '') : UrlParameter
+    public static function convertProcessRuleToImage(string $process, string $path = '') : Image
     {
-        $parameter = new UrlParameter($path);
-        $process   = explode(',', trim($process)) ?: [];
+        $image   = Container::getInstance()->make(Image::class, [$path], true);
+        $process = explode(',', trim($process)) ?: [];
         foreach ($process as $item) {
             $item = trim($item);
             if (!$item) {
@@ -1194,15 +1221,15 @@ class Local extends Driver
                     switch ($map->get('t', 0, 'intval')) {
                         // 不保持比例
                         case ZoomParameter::TYPE_LOSE:
-                            $parameter->zoomLose($width, $height);
+                            $image->zoomLose($width, $height);
                         break;
                         // 缩放为指定宽高矩形内的最大图片
                         case ZoomParameter::TYPE_FILL:
-                            $parameter->zoomFill($width, $height, TransHelper::base64decodeUrl($map->get('c', '', 'trim')));
+                            $image->zoomFill($width, $height, TransHelper::base64decodeUrl($map->get('c', '', 'trim')));
                         break;
                         // 普通缩放
                         default:
-                            $parameter->zoom($width, $height, $map->get('e', 0, 'intval') > 0);
+                            $image->zoom($width, $height, $map->get('e', 0, 'intval') > 0);
                     }
                 break;
                 // 缩放裁剪
@@ -1213,10 +1240,10 @@ class Local extends Driver
                     $map    = ArrayHelper::oneToTwo($args);
                     switch ($map->get('t', 0, 'intval')) {
                         case CropParameter::TYPE_CUT:
-                            $parameter->cut($width, $height, $map->get('dx', 0, 'intval'), $map->get('dy', 0, 'intval'));
+                            $image->cut($width, $height, $map->get('dx', 0, 'intval'), $map->get('dy', 0, 'intval'));
                         break;
                         case CropParameter::TYPE_CROP:
-                            $parameter->crop($width, $height);
+                            $image->crop($width, $height);
                         break;
                     }
                 break;
@@ -1224,75 +1251,75 @@ class Local extends Driver
                 case 'radius':
                     [$rx, $ry] = ArrayHelper::split('x', $value, 2);
                     $map = ArrayHelper::oneToTwo($args);
-                    $parameter->radiusXY(intval($rx), intval($ry), $map->get('i', 0, 'intval') > 0);
+                    $image->radiusXY(intval($rx), intval($ry), $map->get('i', 0, 'intval') > 0);
                 break;
                 // 旋转角度
                 case 'rotate':
                     $map = ArrayHelper::oneToTwo($args);
-                    $parameter->rotate(intval($value), TransHelper::base64decodeUrl($map->get('c', '', 'trim')));
+                    $image->rotate(intval($value), TransHelper::base64decodeUrl($map->get('c', '', 'trim')));
                 break;
                 // 自动旋转
                 case 'orient':
-                    $parameter->autoOrient();
+                    $image->autoOrient();
                 break;
                 // 对比度
                 case 'contrast':
-                    $parameter->contrast(intval($value));
+                    $image->contrast(intval($value));
                 break;
                 // 锐化
                 case 'sharpen':
                     if (0 != $sharpen = intval($value)) {
-                        $parameter->sharpen($sharpen);
+                        $image->sharpen($sharpen);
                     }
                 break;
                 // 高斯模糊
                 case 'blur':
                     [$radius, $sigma] = ArrayHelper::split('x', $value, 2);
-                    $parameter->blur(intval($radius), intval($sigma));
+                    $image->blur(intval($radius), intval($sigma));
                 break;
                 // 亮度
                 case 'bright':
-                    $parameter->bright(intval($value));
+                    $image->bright(intval($value));
                 break;
                 // 灰度
                 case 'gray':
-                    $parameter->grayscale();
+                    $image->grayscale();
                 break;
                 // 颜色反转
                 case 'invert':
-                    $parameter->invert();
+                    $image->invert();
                 break;
                 // 图片反转
                 case 'flip':
                     switch (intval($value)) {
                         case 1:
-                            $parameter->flip(FlipParameter::FLIP_HORIZONTAL);
+                            $image->flip(FlipParameter::FLIP_HORIZONTAL);
                         break;
                         case 2:
-                            $parameter->flip(FlipParameter::FLIP_VERTICAL);
+                            $image->flip(FlipParameter::FLIP_VERTICAL);
                         break;
                     }
                 break;
                 // 伽马校正
                 case 'gamma':
-                    $parameter->gamma(intval($value));
+                    $image->gamma(intval($value));
                 break;
                 // 像素化
                 case 'pixel':
-                    $parameter->pixelate(intval($value));
+                    $image->pixelate(intval($value));
                 break;
                 // 质量
                 case 'quality':
                     $map = ArrayHelper::oneToTwo($args);
-                    $parameter->quality(intval($value), $map->get('t', 0, 'intval'));
+                    $image->quality(intval($value), $map->get('t', 0, 'intval'));
                 break;
                 // 格式
                 case 'format':
-                    $parameter->format($value);
+                    $image->format($value);
                 break;
                 // 移除元数据
                 case 'strip':
-                    $parameter->stripMeta();
+                    $image->stripMeta();
                 break;
                 // 水印
                 case 'water':
@@ -1300,10 +1327,10 @@ class Local extends Driver
                     if (count($args) >= 3) {
                         // 图片水印
                         if ($value == 1) {
-                            $image = trim(TransHelper::base64decodeUrl(array_shift($args)));
-                            if ($image) {
+                            $value = trim(TransHelper::base64decodeUrl(array_shift($args)));
+                            if ($value) {
                                 $map            = ArrayHelper::oneToTwo($args);
-                                $imageParameter = new ImageParameter($image);
+                                $imageParameter = new ImageParameter($value);
                                 $imageParameter->setDx($map->get('x', 0, 'intval'));
                                 $imageParameter->setDy($map->get('y', 0, 'intval'));
                                 if (0 < $rotate = $map->get('r', 0, 'intval')) {
@@ -1319,7 +1346,7 @@ class Local extends Driver
                                     $imageParameter->setOverspread(true);
                                 }
                                 
-                                $parameter->image($imageParameter);
+                                $image->image($imageParameter);
                             }
                         }
                         
@@ -1354,7 +1381,7 @@ class Local extends Driver
                                 if ($font = $map->get('t', '', 'trim')) {
                                     $textParameter->setFont(TransHelper::base64decodeUrl($font));
                                 }
-                                $parameter->text($textParameter);
+                                $image->text($textParameter);
                             }
                         }
                     }
@@ -1362,7 +1389,7 @@ class Local extends Driver
                 // 样式
                 case 'style':
                     if ($value) {
-                        $parameter->style($value);
+                        $image->style($value);
                     }
                 break;
                 // 下载
@@ -1370,18 +1397,20 @@ class Local extends Driver
                     if (intval($value) > 0) {
                         $map      = ArrayHelper::oneToTwo($args);
                         $filename = TransHelper::base64decodeUrl($map->get('f', '', 'trim'));
-                        $parameter->download($filename ?: '');
+                        $image->download($filename ?: '');
                     }
                 break;
                 // 缓存
                 case 'cache':
                     if (0 < $value = intval($value)) {
-                        $parameter->cache($value);
+                        $image->cache($value);
                     }
                 break;
             }
         }
         
-        return $parameter;
+        $image->disk(FilesystemHelper::public());
+        
+        return $image;
     }
 }

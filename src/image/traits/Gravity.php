@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\image\parameter\concern;
+namespace BusyPHP\image\traits;
 
 use BusyPHP\image\parameter\BaseParameter;
 
@@ -9,9 +9,9 @@ use BusyPHP\image\parameter\BaseParameter;
  * 位置
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/10 2:41 PM GravityConcern.php $
+ * @version $Id: 2022/9/10 2:41 PM Gravity.php $
  */
-trait GravityConcern
+trait Gravity
 {
     /** @var string */
     private $gravity = '';
@@ -30,9 +30,9 @@ trait GravityConcern
     /**
      * 设置位置
      * @param string $gravity
-     * @return $this
+     * @return static
      */
-    public function setGravity(string $gravity) : self
+    public function setGravity(string $gravity) : static
     {
         $this->gravity = $gravity;
         

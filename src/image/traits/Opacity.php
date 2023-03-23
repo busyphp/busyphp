@@ -1,15 +1,15 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\image\parameter\concern;
+namespace BusyPHP\image\traits;
 
 /**
  * 透明度
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/10 3:53 PM OpacityConcern.php $
+ * @version $Id: 2022/9/10 3:53 PM Opacity.php $
  */
-trait OpacityConcern
+trait Opacity
 {
     /** @var int */
     private $opacity = 100;
@@ -28,9 +28,9 @@ trait OpacityConcern
     /**
      * 设置透明度
      * @param int $opacity
-     * @return $this
+     * @return static
      */
-    public function setOpacity(int $opacity) : self
+    public function setOpacity(int $opacity) : static
     {
         $this->opacity = $opacity;
         

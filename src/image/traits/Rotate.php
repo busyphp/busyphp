@@ -1,15 +1,15 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\image\parameter\concern;
+namespace BusyPHP\image\traits;
 
 /**
  * 旋转角度
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/10 3:29 PM RotateConcern.php $
+ * @version $Id: 2022/9/10 3:29 PM Rotate.php $
  */
-trait RotateConcern
+trait Rotate
 {
     /** @var int */
     private $rotate = 0;
@@ -28,9 +28,9 @@ trait RotateConcern
     /**
      * 设置旋转角度，范围0-360
      * @param int $rotate
-     * @return $this
+     * @return static
      */
-    public function setRotate(int $rotate) : self
+    public function setRotate(int $rotate) : static
     {
         $this->rotate = $rotate;
         

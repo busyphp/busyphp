@@ -14,7 +14,7 @@ use think\Container;
  * 图片处理系统模板基本类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/9/9 7:37 PM ImageTemplate.php $
+ * @version $Id: 2022/9/9 7:37 PM BaseParameter.php $
  */
 abstract class BaseParameter
 {

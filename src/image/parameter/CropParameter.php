@@ -6,8 +6,8 @@ namespace BusyPHP\image\parameter;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
-use BusyPHP\image\parameter\concern\DxDyConcern;
-use BusyPHP\image\parameter\concern\WidthHeightConcern;
+use BusyPHP\image\traits\DxDy;
+use BusyPHP\image\traits\WidthHeight;
 
 /**
  * 缩放裁剪参数模板
@@ -17,8 +17,8 @@ use BusyPHP\image\parameter\concern\WidthHeightConcern;
  */
 class CropParameter extends BaseParameter
 {
-    use WidthHeightConcern;
-    use DxDyConcern;
+    use WidthHeight;
+    use DxDy;
     
     /** @var int 缩放裁剪 */
     const TYPE_CROP = 0;
