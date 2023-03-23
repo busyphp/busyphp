@@ -1,8 +1,13 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
+use BusyPHP\app\admin\annotation\MenuGroup;
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
 use BusyPHP\app\admin\controller\InsideController;
+use think\Response;
 
 /**
  * 基本元素
@@ -10,112 +15,134 @@ use BusyPHP\app\admin\controller\InsideController;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/2/28 下午9:01 下午 ElementController.php $
  */
+#[MenuRoute(path: 'manual_element', class: true)]
+#[MenuGroup(path: 'developer_manual_element', parent: '#developer_manual', icon: 'fa fa-wpforms')]
 class ElementController extends InsideController
 {
-    /**
-     * 按钮/按钮组
-     */
-    public function button()
+    protected function initialize($checkLogin = true)
     {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 徽章
-     */
-    public function badge()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 警告框
-     */
-    public function alert()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 进度条
-     */
-    public function progress()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 表单
-     */
-    public function form()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 面板
-     */
-    public function panel()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 选项卡
-     */
-    public function tabs()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 列表组
-     */
-    public function group_list()
-    {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 列表布局
-     */
-    public function list_item()
-    {
-        return $this->display();
+        $this->releaseDisabled();
+        
+        parent::initialize($checkLogin);
     }
     
     
     /**
      * 布局
      */
-    public function grid()
+    #[MenuNode(menu: true, icon: 'fa fa-th-large')]
+    public function grid() : Response
     {
-        return $this->display();
-    }
-    
-    
-    /**
-     * 表格
-     */
-    public function table()
-    {
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
     /**
      * 基本
      */
-    public function base()
+    #[MenuNode(menu: true, icon: 'fa fa-code')]
+    public function base() : Response
     {
-        return $this->display();
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 表单
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-list-alt')]
+    public function form() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 按钮/按钮组
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-flickr')]
+    public function button() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 徽章
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-circle')]
+    public function badge() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 警告框
+     */
+    #[MenuNode(menu: true, icon: 'bicon bicon-dialog')]
+    public function alert() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 进度条
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-tasks')]
+    public function progress() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 表格
+     */
+    #[MenuNode(menu: true, icon: 'bicon bicon-table')]
+    public function table() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 列表组
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-list-ul')]
+    public function group_list() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 选项卡
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-flag-o')]
+    public function tabs() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 面板
+     */
+    #[MenuNode(menu: true, icon: 'bicon bicon-dialog')]
+    public function panel() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 列表布局
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-list-alt')]
+    public function list_item() : Response
+    {
+        return $this->insideDisplay();
     }
 }
