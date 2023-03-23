@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\upload\driver;
 
 use BusyPHP\exception\ClassNotExtendsException;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\parameter\PartAbortParameter;
 use BusyPHP\upload\parameter\PartInitParameter;
 use BusyPHP\upload\parameter\PartCompleteParameter;
@@ -19,8 +19,9 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/21 下午上午12:53 PartUpload.php $
+ * @property PartCompleteParameter $parameter
  */
-class PartUpload extends Driver
+class PartUpload extends Upload
 {
     /**
      * 初始化分块上传，并返回 uploadId 用于后续上传
@@ -72,17 +73,16 @@ class PartUpload extends Driver
     
     /**
      * 合并分块，别名{@see PartUpload::complete()}
-     * @param PartCompleteParameter $parameter
      * @return UploadResult
      * @throws Throwable
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof PartCompleteParameter) {
-            throw new ClassNotExtendsException($parameter, PartCompleteParameter::class);
+        if (!$this->parameter instanceof PartCompleteParameter) {
+            throw new ClassNotExtendsException($this->parameter, PartCompleteParameter::class);
         }
         
-        return $this->complete($parameter);
+        return $this->complete($this->parameter);
     }
     
     

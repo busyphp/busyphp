@@ -2,7 +2,7 @@
 
 namespace BusyPHP\upload\interfaces;
 
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 
 /**
  * 上传参数模版接口类
@@ -14,7 +14,7 @@ interface BindDriverParameterInterface
 {
     /**
      * 获取上传驱动类
-     * @return class-string<Driver>
+     * @return class-string<Upload>
      */
     public function getDriver() : string;
 }

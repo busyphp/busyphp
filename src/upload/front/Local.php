@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\upload\front;
 
@@ -86,9 +87,8 @@ class Local implements FrontInterface
             
             return $result['etag'];
         } else {
-            $parameter = new LocalParameter($file);
-            $local     = new LocalUpload($this->driver, $path);
-            $result    = $local->upload($parameter);
+            $local  = new LocalUpload($this->driver, $path);
+            $result = $local->setParameter(new LocalParameter($file))->save();
             
             return $result->getMd5();
         }

@@ -6,42 +6,40 @@ namespace BusyPHP\upload\driver;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\parameter\RemoteParameter;
 use BusyPHP\upload\result\UploadResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use InvalidArgumentException;
 use League\Flysystem\FilesystemException;
-use ReflectionException;
 use think\Container;
 use think\facade\Filesystem;
 use think\File;
-use think\filesystem\Driver as FilesystemDriver;
+use think\filesystem\Driver;
 
 /**
  * 抓取远程文件上传类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/20 下午下午4:07 Remote.php $
+ * @property RemoteParameter $parameter
  */
-class RemoteUpload extends Driver
+class RemoteUpload extends Upload
 {
     /**
      * 执行上传
-     * @param RemoteParameter $parameter
      * @return UploadResult
-     * @throws GuzzleException
-     * @throws ReflectionException
      * @throws FilesystemException
+     * @throws GuzzleException
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof RemoteParameter) {
-            throw new ClassNotExtendsException($parameter, RemoteParameter::class);
+        if (!$this->parameter instanceof RemoteParameter) {
+            throw new ClassNotExtendsException($this->parameter, RemoteParameter::class);
         }
         
-        if (!$url = $parameter->getUrl()) {
+        if (!$url = $this->parameter->getUrl()) {
             throw new InvalidArgumentException('远程文件URL为空');
         }
         
@@ -59,8 +57,8 @@ class RemoteUpload extends Driver
         $mimetype  = FileHelper::getMimetypeByPath($path);
         
         // 发起一次head请求，获取文件名/长度/mimetype
-        $client      = new Client($parameter->getOptions());
-        $response    = $client->head($url, $parameter->getHeadOptions());
+        $client      = new Client($this->parameter->getOptions());
+        $response    = $client->head($url, $this->parameter->getHeadOptions());
         $mimetype    = $response->getHeaderLine('content-type') ?: $mimetype;
         $extension   = FileHelper::getExtensionByMimetype($mimetype) ?: $extension;
         $disposition = $response->getHeaderLine('content-disposition');
@@ -76,18 +74,18 @@ class RemoteUpload extends Driver
         }
         
         // 校验
-        $basename  = $parameter->getBasename($url, sprintf('%s.%s', $filename, $extension));
-        $mimetype  = $parameter->getMimetype($url, $mimetype, $basename);
+        $basename  = $this->parameter->getBasename($url, sprintf('%s.%s', $filename, $extension));
+        $mimetype  = $this->parameter->getMimetype($url, $mimetype, $basename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         $this->checkExtension($extension);
         $this->checkMimetype($mimetype);
         
         // 创建一个临时空文件
-        $disk = $parameter->getTmpDisk();
-        if (!$disk instanceof FilesystemDriver) {
+        $disk = $this->parameter->getTmpDisk();
+        if (!$disk instanceof Driver) {
             $disk = Filesystem::disk($disk ?: 'local');
         }
-        $dir = trim(trim($parameter->getTmpDir()), '/') ?: 'remotes';
+        $dir = trim(trim($this->parameter->getTmpDir()), '/') ?: 'remotes';
         $tmp = sprintf('%s/%s.%s', $dir, md5(implode(',', [
             $url,
             StringHelper::uuid(),
@@ -98,10 +96,10 @@ class RemoteUpload extends Driver
         // 下载文件至临时文件
         try {
             $file = new File($disk->path($tmp));
-            $client->get($url, array_merge($parameter->getGetOptions(), [
+            $client->get($url, array_merge($this->parameter->getGetOptions(), [
                 'sink'     => $file->getPathname(),
-                'progress' => function() use ($parameter) {
-                    if (is_callable($progress = $parameter->getProgress())) {
+                'progress' => function() {
+                    if (is_callable($progress = $this->parameter->getProgress())) {
                         Container::getInstance()->invokeFunction($progress, func_get_args());
                     }
                 }

@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\upload\parameter;
 
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\driver\Base64Upload;
 
 /**
@@ -27,7 +27,7 @@ class Base64Parameter extends ContentParameter
     
     /**
      * 获取上传驱动类
-     * @return class-string<Driver>
+     * @return class-string<Upload>
      */
     public function getDriver() : string
     {

@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\upload\parameter;
 
 use BusyPHP\upload\concern\BasenameMimetypeConcern;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\driver\LocalUpload;
 use BusyPHP\upload\interfaces\BindDriverParameterInterface;
 use think\File;
@@ -45,7 +45,7 @@ class LocalParameter implements BindDriverParameterInterface
     
     /**
      * 获取上传驱动类
-     * @return class-string<Driver>
+     * @return class-string<Upload>
      */
     public function getDriver() : string
     {

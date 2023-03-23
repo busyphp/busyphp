@@ -5,7 +5,7 @@ namespace BusyPHP\upload\driver;
 
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\parameter\LocalParameter;
 use BusyPHP\upload\result\UploadResult;
 use think\file\UploadedFile;
@@ -16,22 +16,22 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/20 下午下午4:06 LocalUpload.php $
+ * @property LocalParameter $parameter
  */
-class LocalUpload extends Driver
+class LocalUpload extends Upload
 {
     /**
      * 执行上传
-     * @param LocalParameter $parameter
      * @return UploadResult
      * @throws Throwable
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof LocalParameter) {
-            throw new ClassNotExtendsException($parameter, LocalParameter::class);
+        if (!$this->parameter instanceof LocalParameter) {
+            throw new ClassNotExtendsException($this->parameter, LocalParameter::class);
         }
         
-        $file = FileHelper::convertUploadToFile($parameter->getFile());
+        $file = FileHelper::convertUploadToFile($this->parameter->getFile());
         switch (true) {
             case $file instanceof UploadedFile:
                 $basename = $file->getOriginalName();
@@ -42,8 +42,8 @@ class LocalUpload extends Driver
                 $mimetype = $file->getMime();
         }
         
-        $basename  = $parameter->getBasename($file, $basename);
-        $mimetype  = $parameter->getMimetype($file, $mimetype, $basename);
+        $basename  = $this->parameter->getBasename($file, $basename);
+        $mimetype  = $this->parameter->getMimetype($file, $mimetype, $basename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         
         // 校验文件

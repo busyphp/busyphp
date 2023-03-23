@@ -7,27 +7,29 @@ use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\upload\parameter\Base64Parameter;
 use BusyPHP\upload\result\UploadResult;
 use InvalidArgumentException;
+use League\Flysystem\FilesystemException;
 
 /**
  * Base64上传驱动
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/19 2:25 PM Base64Upload.php $
+ * @property Base64Parameter $parameter
  */
 class Base64Upload extends ContentUpload
 {
     /**
      * 执行上传
-     * @param Base64Parameter $parameter
      * @return UploadResult
+     * @throws FilesystemException
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof Base64Parameter) {
-            throw new ClassNotExtendsException($parameter, Base64Parameter::class);
+        if (!$this->parameter instanceof Base64Parameter) {
+            throw new ClassNotExtendsException($this->parameter, Base64Parameter::class);
         }
         
-        if (!$data = $parameter->getData()) {
+        if (!$data = $this->parameter->getData()) {
             throw new InvalidArgumentException('无效的base64数据');
         }
         
@@ -43,6 +45,6 @@ class Base64Upload extends ContentUpload
             throw new InvalidArgumentException('无效的base64数据');
         }
         
-        return $this->deal($parameter, $data, '', '', $mimetype);
+        return $this->deal($this->parameter, $data, '', '', $mimetype);
     }
 }

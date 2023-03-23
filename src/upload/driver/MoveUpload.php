@@ -6,10 +6,10 @@ namespace BusyPHP\upload\driver;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\FileNotFoundException;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\parameter\MoveParameter;
 use BusyPHP\upload\result\UploadResult;
-use ReflectionException;
+use League\Flysystem\FilesystemException;
 use think\File;
 use think\file\UploadedFile;
 
@@ -18,22 +18,22 @@ use think\file\UploadedFile;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/22 下午上午10:54 MoveUpload.php $
+ * @property MoveParameter $parameter
  */
-class MoveUpload extends Driver
+class MoveUpload extends Upload
 {
     /**
      * 执行上传
-     * @param MoveParameter $parameter
      * @return UploadResult
-     * @throws ReflectionException
+     * @throws FilesystemException
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof MoveParameter) {
-            throw new ClassNotExtendsException($parameter, MoveParameter::class);
+        if (!$this->parameter instanceof MoveParameter) {
+            throw new ClassNotExtendsException($this->parameter, MoveParameter::class);
         }
         
-        $file = $parameter->getFile();
+        $file = $this->parameter->getFile();
         if (!$file instanceof File) {
             $file = new File($file, false);
         }
@@ -50,8 +50,8 @@ class MoveUpload extends Driver
             $basename = $file->getBasename();
         }
         
-        $basename  = $parameter->getBasename($file, $basename);
-        $mimetype  = $parameter->getMimetype($file, $mimetype, $basename);
+        $basename  = $this->parameter->getBasename($file, $basename);
+        $mimetype  = $this->parameter->getMimetype($file, $mimetype, $basename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         
         // 校验文件
@@ -62,7 +62,7 @@ class MoveUpload extends Driver
         $md5 = $file->md5();
         
         // 本地磁盘，且不保留源文件，直接移动，效率最高
-        if ($this->disk->isLocal() && !$parameter->isRetain()) {
+        if ($this->disk->isLocal() && !$this->parameter->isRetain()) {
             $info = pathinfo($this->disk->path($path = $this->buildPath($file, $extension)));
             $file->move($info['dirname'], $info['basename']);
         }
@@ -73,7 +73,7 @@ class MoveUpload extends Driver
             $path = $this->copyFileToDisk($file);
             
             // 不保留源文件
-            if (!$parameter->isRetain()) {
+            if (!$this->parameter->isRetain()) {
                 unlink($file->getRealPath());
             }
         }

@@ -5,36 +5,37 @@ namespace BusyPHP\upload\driver;
 
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\parameter\ContentParameter;
 use BusyPHP\upload\result\UploadResult;
 use InvalidArgumentException;
-
+use League\Flysystem\FilesystemException;
 
 /**
  * 文件内容上传
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/20 2:33 PM ContentUpload.php $
+ * @property ContentParameter $parameter
  */
-class ContentUpload extends Driver
+class ContentUpload extends Upload
 {
     /**
      * 执行上传
-     * @param ContentParameter $parameter
      * @return UploadResult
+     * @throws FilesystemException
      */
-    public function upload($parameter) : UploadResult
+    protected function handle() : UploadResult
     {
-        if (!$parameter instanceof ContentParameter) {
-            throw new ClassNotExtendsException($parameter, ContentParameter::class);
+        if (!$this->parameter instanceof ContentParameter) {
+            throw new ClassNotExtendsException($this->parameter, ContentParameter::class);
         }
         
-        if (!$content = $parameter->getData()) {
+        if (!$content = $this->parameter->getData()) {
             throw new InvalidArgumentException('无效的文件数据');
         }
         
-        return $this->deal($parameter, $content);
+        return $this->deal($this->parameter, $content);
     }
     
     
@@ -46,6 +47,7 @@ class ContentUpload extends Driver
      * @param string           $extension
      * @param string           $mimetype
      * @return UploadResult
+     * @throws FilesystemException
      */
     protected function deal(ContentParameter $parameter, string $content, string $basename = '', string $extension = '', string $mimetype = '') : UploadResult
     {

@@ -1,22 +1,21 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\upload;
+namespace BusyPHP;
 
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\upload\interfaces\BindDriverParameterInterface;
 use BusyPHP\upload\result\UploadResult;
 use Closure;
-use InvalidArgumentException;
 use League\Flysystem\FilesystemException;
 use LogicException;
-use ReflectionException;
 use think\Container;
 use think\exception\FileException;
+use think\exception\InvalidArgumentException;
 use think\facade\Filesystem;
 use think\File;
-use think\filesystem\Driver as FilesystemDriver;
+use think\filesystem\Driver;
 
 /**
  * 上传驱动基本类
@@ -24,9 +23,9 @@ use think\filesystem\Driver as FilesystemDriver;
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/19 12:21 PM Driver.php $
  */
-abstract class Driver
+abstract class Upload
 {
-    /** @var FilesystemDriver */
+    /** @var Driver */
     protected $disk;
     
     /** @var bool */
@@ -44,15 +43,18 @@ abstract class Driver
     /** @var int */
     protected $limitMaxsize = 0;
     
+    /** @var BindDriverParameterInterface */
+    protected $parameter;
+    
     
     /**
      * 构造
-     * @param FilesystemDriver|string      $disk 磁盘系统
+     * @param Driver|string                $disk 磁盘系统
      * @param string|callable|Closure|null $path 保存的文件路径
      */
     public function __construct($disk, $path = null)
     {
-        if (!$disk instanceof FilesystemDriver) {
+        if (!$disk instanceof Driver) {
             $disk = Filesystem::disk((string) $disk);
         }
         
@@ -64,9 +66,9 @@ abstract class Driver
     /**
      * 设置保存文件路径
      * @param string|callable|Closure $path
-     * @return $this
+     * @return static
      */
-    public function setPath($path) : self
+    public function setPath($path) : static
     {
         $this->path = $path;
         
@@ -77,9 +79,9 @@ abstract class Driver
     /**
      * 限制文件大小
      * @param int $maxsize
-     * @return $this
+     * @return static
      */
-    public function limitMaxsize(int $maxsize) : self
+    public function limitMaxsize(int $maxsize) : static
     {
         $this->limitMaxsize = $maxsize;
         
@@ -90,9 +92,9 @@ abstract class Driver
     /**
      * 限制文件扩展名
      * @param string[] $extensions
-     * @return $this
+     * @return static
      */
-    public function limitExtensions(array $extensions) : self
+    public function limitExtensions(array $extensions) : static
     {
         $this->limitExtensions = $extensions;
         
@@ -103,8 +105,9 @@ abstract class Driver
     /**
      * 限制文件mimetype
      * @param string[] $mimetypes
+     * @return static
      */
-    public function limitMimetypes(array $mimetypes) : self
+    public function limitMimetypes(array $mimetypes) : static
     {
         $this->limitMimetypes = $mimetypes;
         
@@ -113,11 +116,37 @@ abstract class Driver
     
     
     /**
-     * 执行上传
+     * 设置上传参数
      * @param BindDriverParameterInterface $parameter
+     * @return static
+     */
+    public function setParameter(BindDriverParameterInterface $parameter) : static
+    {
+        $this->parameter = $parameter;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 执行上传
      * @return UploadResult
      */
-    abstract public function upload($parameter) : UploadResult;
+    public function save() : UploadResult
+    {
+        if (!$this->parameter) {
+            throw new InvalidArgumentException('没有设置上传参数');
+        }
+        
+        return $this->handle();
+    }
+    
+    
+    /**
+     * 处理上传
+     * @return UploadResult
+     */
+    abstract protected function handle() : UploadResult;
     
     
     /**
@@ -125,7 +154,7 @@ abstract class Driver
      * @param File   $file 文件对象
      * @param string $path 文件相对路径
      * @return string
-     * @throws ReflectionException
+     * @throws FilesystemException
      */
     protected function putFileToDisk(File $file, string $path = '') : string
     {
@@ -152,6 +181,7 @@ abstract class Driver
      * @param File   $file 文件对象
      * @param string $path 文件相对路径
      * @return string
+     * @throws FilesystemException
      */
     protected function copyFileToDisk(File $file, string $path = '') : string
     {
@@ -161,9 +191,7 @@ abstract class Driver
             if (!$stream = fopen($file->getPathname(), 'rb')) {
                 throw new FileException("读取文件失败: {$file->getPathname()}");
             }
-            if (!$this->disk->putStream($path, $stream)) {
-                throw new FileException("文件写入失败: $path");
-            }
+            $this->disk->writeStream($path, $stream);
         } finally {
             if (is_resource($stream)) {
                 fclose($stream);
@@ -260,17 +288,17 @@ abstract class Driver
     /**
      * 通过参数模版获取上传驱动实例
      * @param BindDriverParameterInterface $parameter
-     * @param FilesystemDriver|string      $disk 磁盘系统
+     * @param Driver|string                $disk 磁盘系统
      * @param string|callable|Closure|null $path 保存的文件路径
-     * @return Driver
+     * @return Upload
      */
-    public static function getInstanceByParameter(BindDriverParameterInterface $parameter, $disk, $path = null) : Driver
+    public static function init(BindDriverParameterInterface $parameter, $disk, $path = null) : Upload
     {
         $object = Container::getInstance()->make($parameter->getDriver(), [$disk, $path], true);
-        if (!$object instanceof Driver) {
-            throw new ClassNotExtendsException($object, Driver::class);
+        if (!$object instanceof Upload) {
+            throw new ClassNotExtendsException($object, Upload::class);
         }
         
-        return $object;
+        return $object->setParameter($parameter);
     }
 }
