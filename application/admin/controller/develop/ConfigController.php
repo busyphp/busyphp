@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\app\admin\model\system\config\SystemConfigField;
@@ -17,19 +20,18 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:35 下午 ConfigController.php $
  */
+#[MenuRoute(path: 'system_config', class: true)]
 class ConfigController extends InsideController
 {
     /**
      * @var SystemConfig
      */
-    private $model;
+    protected $model;
     
     
-    public function initialize($checkLogin = true)
+    protected function initialize($checkLogin = true)
     {
-        if (!$this->app->isDebug()) {
-            abort(404);
-        }
+        $this->releaseDisabled();
         
         parent::initialize($checkLogin);
         
@@ -38,18 +40,17 @@ class ConfigController extends InsideController
     
     
     /**
-     * 配置列表
+     * 配置管理
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
      */
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-cube', sort: 20)]
     public function index() : Response
     {
-        if ($this->pluginTable) {
-            return $this->success($this->pluginTable->build($this->model));
+        if ($table = Table::initIfRequest()) {
+            return $table->model($this->model)->response();
         }
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -59,16 +60,17 @@ class ConfigController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->createInfo(SystemConfigField::parse($this->post()));
+            $this->model->create(SystemConfigField::parse($this->post()));
             $this->log()->record(self::LOG_INSERT, '增加系统配置');
             
             return $this->success('添加成功');
         }
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -79,10 +81,11 @@ class ConfigController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function edit() : Response
     {
         if ($this->isPost()) {
-            $this->model->updateInfo(SystemConfigField::parse($this->post()));
+            $this->model->modify(SystemConfigField::parse($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改系统配置');
             
             return $this->success('修改成功');
@@ -90,18 +93,19 @@ class ConfigController extends InsideController
         
         $this->assign('info', $this->model->getInfo($this->get('id/d')));
         
-        return $this->display('add');
+        return $this->insideDisplay('add');
     }
     
     
     /**
-     * 删除
+     * 删除配置
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的配置', 'intval') as $id) {
-            $this->model->deleteInfo($id);
+            $this->model->remove($id);
         }
         
         $this->log()->record(self::LOG_DELETE, '删除系统配置');
