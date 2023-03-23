@@ -5,7 +5,6 @@ namespace BusyPHP\helper;
 
 use ArrayAccess;
 use BusyPHP\model\ArrayOption;
-use BusyPHP\model\Entity;
 use think\Collection;
 use think\helper\Arr;
 
@@ -31,28 +30,24 @@ class ArrayHelper extends Arr
     /**
      * 把返回的数据集转换成Tree
      * @param array<T>      $list 要转换的数据集
-     * @param string|Entity $pkKey 主键字段
-     * @param string|Entity $parentKey parent标记字段
-     * @param string|Entity $childKey 子节点字段
-     * @param int|string    $root parent字段依据，默认为0则代表是跟节点
+     * @param string        $primaryKey 主键字段
+     * @param string        $parentKey parent标记字段
+     * @param string        $childKey 子节点字段
+     * @param int           $root parent字段依据，默认为0则代表是跟节点
      * @param callable|null $filter 数据过滤方法，接受一个$item
      * @return array<T>
      */
-    public static function listToTree(array $list, $pkKey = 'id', $parentKey = 'parent_id', $childKey = 'child', $root = 0, ?callable $filter = null) : array
+    public static function listToTree(array $list, string $primaryKey = 'id', string $parentKey = 'parent_id', string $childKey = 'child', $root = 0, ?callable $filter = null) : array
     {
-        $pkKey     = StringHelper::cast($pkKey);
-        $parentKey = StringHelper::cast($parentKey);
-        $childKey  = StringHelper::cast($childKey);
-        
         // 创建Tree
         $tree = [];
         // 创建基于主键的数组引用
         $refer = [];
         foreach ($list as $key => $data) {
             if (is_object($data)) {
-                $refer[$data->{$pkKey}] = &$list[$key];
+                $refer[$data->{$primaryKey}] = &$list[$key];
             } else {
-                $refer[$data[$pkKey]] = &$list[$key];
+                $refer[$data[$primaryKey]] = &$list[$key];
             }
         }
         
@@ -90,16 +85,14 @@ class ArrayHelper extends Arr
     
     /**
      * 把树状数据转为数据集
-     * @param array<T>      $tree 树状数据
-     * @param string|Entity $childKey 子节点字段
-     * @param bool          $clearChild 是否清理子节点
-     * @param array         $list 内部用
+     * @param array<T> $tree 树状数据
+     * @param string   $childKey 子节点字段
+     * @param bool     $clearChild 是否清理子节点
+     * @param array    $list 内部用
      * @return array<T>
      */
-    public static function treeToList(array $tree, $childKey = 'child', bool $clearChild = true, &$list = []) : array
+    public static function treeToList(array $tree, string $childKey = 'child', bool $clearChild = true, array &$list = []) : array
     {
-        $childKey = StringHelper::cast($childKey);
-        
         foreach ($tree as $item) {
             if (is_object($item)) {
                 $child = $item->{$childKey} ?? [];
@@ -107,7 +100,7 @@ class ArrayHelper extends Arr
                 $child = $item[$childKey] ?? [];
             }
             
-            self::treeToList($child, $childKey, $clearChild, $list);
+            static::treeToList($child, $childKey, $clearChild, $list);
             
             if ($clearChild) {
                 if (is_object($item)) {
@@ -126,14 +119,13 @@ class ArrayHelper extends Arr
     
     /**
      * 对二维数组进行排序
-     * @param array<T>      $list 要排序的二维数据
-     * @param string|Entity $field 排序依据的字段
-     * @param string        $orderBy 排序方式，默认位升序
+     * @param array<T> $list 要排序的二维数据
+     * @param string   $field 排序依据的字段
+     * @param string   $orderBy 排序方式，默认位升序
      * @return array<T>
      */
-    public static function listSortBy(array $list, $field, string $orderBy = self::ORDER_BY_ASC) : array
+    public static function listSortBy(array $list, string $field, string $orderBy = self::ORDER_BY_ASC) : array
     {
-        $field = StringHelper::cast($field);
         $refer = $resultSet = [];
         foreach ($list as $i => $data) {
             $refer[$i] = $data[$field];
@@ -168,10 +160,12 @@ class ArrayHelper extends Arr
      * @param string|array $condition 查询条件，支持 array('name'=>$value) 或者 name=$value
      * @return array<T>
      */
-    public static function listSearch(array $list, $condition) : array
+    public static function listSearch(array $list, string|array $condition) : array
     {
         if (is_string($condition)) {
-            parse_str($condition, $condition);
+            $result = [];
+            parse_str($condition, $result);
+            $condition = $result;
         }
         
         // 返回的结果集合
@@ -180,7 +174,7 @@ class ArrayHelper extends Arr
             $find = false;
             foreach ($condition as $field => $value) {
                 if (isset($data[$field])) {
-                    if (0 === strpos($value, '/')) {
+                    if (str_starts_with($value, '/')) {
                         $find = preg_match($value, $data[$field]);
                     } elseif ($data[$field] == $value) {
                         $find = true;
@@ -188,7 +182,7 @@ class ArrayHelper extends Arr
                 }
             }
             if ($find) {
-                $resultSet[] =   &$list[$key];
+                $resultSet[] = &$list[$key];
             }
         }
         
@@ -198,46 +192,34 @@ class ArrayHelper extends Arr
     
     /**
      * 将列表数据通过某字段值作为主键重新整理
-     * @param array<T>|Collection $list 列表
-     * @param string|Entity       $key 字段名称
+     * @param array<T>|Collection $list 数据
+     * @param string              $key 索引键
      * @return array<T>|Collection
      */
-    public static function listByKey($list, $key)
+    public static function listByKey(array|Collection $list, string $key) : Collection|array
     {
-        $key          = StringHelper::cast($key);
-        $isCollection = $list instanceof Collection;
-        $list         = is_array($list) || $isCollection ? $list : [];
-        $newList      = [];
-        foreach ($list as $r) {
-            if (is_object($r)) {
-                $newList[$r->{$key}] = $r;
-            } else {
-                $newList[$r[$key]] = $r;
-            }
-        }
+        $make = $list instanceof Collection;
+        $list = array_column(is_array($list) || $make ? $list : [], null, $key);
         
-        return $isCollection ? $list::make($newList) : $newList;
+        return $make ? Collection::make($list) : $list;
     }
     
     
     /**
      * 对树状结构数据进行排序
-     * @param array<T>      $tree 树状结构数据
-     * @param string|Entity $sortKey 排序依据字段
-     * @param string        $order 排序方式
-     * @param string        $childKey 子节点字段
-     * @param int           $level 层级
+     * @param array<T> $tree 树状结构数据
+     * @param string   $sortKey 排序依据字段
+     * @param string   $order 排序方式
+     * @param string   $childKey 子节点字段
+     * @param int      $level 层级
      * @return array<T>
      */
-    public static function sortTree(array $tree, $sortKey = 'sort', string $order = self::ORDER_BY_ASC, $childKey = 'child', $level = 1) : array
+    public static function sortTree(array $tree, string $sortKey = 'sort', string $order = self::ORDER_BY_ASC, string $childKey = 'child', int $level = 1) : array
     {
-        $sortKey  = StringHelper::cast($sortKey);
-        $childKey = StringHelper::cast($childKey);
-        
         foreach ($tree as $i => $r) {
             $r['level'] = $level;
             if (isset($r[$childKey]) && count($r[$childKey]) > 0) {
-                $r[$childKey] = self::sortTree($r[$childKey], $sortKey, $order, $childKey, $level + 1);
+                $r[$childKey] = static::sortTree($r[$childKey], $sortKey, $order, $childKey, $level + 1);
             } else {
                 $r[$childKey] = [];
             }
@@ -245,7 +227,7 @@ class ArrayHelper extends Arr
             $tree[$i] = $r;
         }
         
-        return self::listSortBy($tree, $sortKey, $order);
+        return static::listSortBy($tree, $sortKey, $order);
     }
     
     
@@ -279,7 +261,7 @@ class ArrayHelper extends Arr
      * @param int    $minLength
      * @return array
      */
-    public static function split(string $separator, $string, int $minLength) : array
+    public static function split(string $separator, mixed $string, int $minLength) : array
     {
         $arr    = explode($separator, (string) $string);
         $length = count($arr);
@@ -298,7 +280,7 @@ class ArrayHelper extends Arr
      * @param bool  $toOption 是否返回 {@see ArrayOption} 对象，键为数字会删除
      * @return array|ArrayOption
      */
-    public static function oneToTwo(array $array, int $split = 2, bool $toOption = true)
+    public static function oneToTwo(array $array, int $split = 2, bool $toOption = true) : ArrayOption|array
     {
         $length = count($array);
         $arr    = [];
@@ -326,9 +308,9 @@ class ArrayHelper extends Arr
      * 通过键获取值，如果键为null则返回该数据
      * @param array $map
      * @param mixed $key
-     * @return array|mixed
+     * @return mixed
      */
-    public static function getValueOrSelf(array $map, $key = null)
+    public static function getValueOrSelf(array $map, $key = null) : mixed
     {
         if (is_null($key)) {
             return $map;

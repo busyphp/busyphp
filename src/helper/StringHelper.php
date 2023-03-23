@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
-use BusyPHP\model\Entity;
 use think\helper\Str;
 
 /**
@@ -173,34 +172,6 @@ class StringHelper extends Str
     
     
     /**
-     * 将list中的成员强制转换为字符
-     * @param array $array
-     * @return string[]
-     */
-    public static function castList(array $array) : array
-    {
-        return array_map(function($item) {
-            return (string) $item;
-        }, $array);
-    }
-    
-    
-    /**
-     * 强制转换为字符串
-     * @param mixed $value
-     * @return string
-     */
-    public static function cast($value) : string
-    {
-        if ($value instanceof Entity) {
-            return $value->name();
-        }
-        
-        return (string) $value;
-    }
-    
-    
-    /**
      * 格式化切割字符
      * @param string       $value 要处理的字符
      * @param bool         $array 是否输出数组
@@ -223,5 +194,26 @@ class StringHelper extends Str
         }
         
         return implode($implode, $value);
+    }
+    
+    
+    /**
+     * 合并 {@see parse_url()}
+     * @param array $parsedVars
+     * @return string
+     */
+    public static function unParseUrl(array $parsedVars) : string
+    {
+        $scheme   = isset($parsedVars['scheme']) ? $parsedVars['scheme'] . '://' : '';
+        $host     = $parsedVars['host'] ?? '';
+        $port     = isset($parsedVars['port']) ? ':' . $parsedVars['port'] : '';
+        $user     = $parsedVars['user'] ?? '';
+        $pass     = isset($parsedVars['pass']) ? ':' . $parsedVars['pass'] : '';
+        $pass     = ($user || $pass) ? "$pass@" : '';
+        $path     = $parsedVars['path'] ?? '';
+        $query    = isset($parsedVars['query']) ? '?' . $parsedVars['query'] : '';
+        $fragment = isset($parsedVars['fragment']) ? '#' . $parsedVars['fragment'] : '';
+        
+        return "$scheme$user$pass$host$port$path$query$fragment";
     }
 }

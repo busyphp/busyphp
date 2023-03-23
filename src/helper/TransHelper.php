@@ -25,10 +25,10 @@ class TransHelper
      */
     public static function safePhone(string $phone) : string
     {
-        $first = (string) substr($phone, 0, 3);
-        $last  = (string) substr($phone, -4);
+        $first = substr($phone, 0, 3);
+        $last  = substr($phone, -4);
         
-        return "{$first}****{$last}";
+        return "$first****$last";
     }
     
     
@@ -40,7 +40,11 @@ class TransHelper
      */
     public static function date($time = 0, $format = 'Y-m-d H:i:s') : string
     {
-        return date($format, $time);
+        if ($time > 0) {
+            return date($format, $time);
+        }
+        
+        return '';
     }
     
     
@@ -123,8 +127,8 @@ class TransHelper
     public static function toOptionHtml(array $list, $selected = null, $nameKey = '', $valueKey = '', array $attrs = []) : string
     {
         $selected = !is_array($selected) ? [$selected] : $selected;
-        $nameKey  = StringHelper::cast($nameKey);
-        $valueKey = StringHelper::cast($valueKey);
+        $nameKey  = Entity::cast($nameKey);
+        $valueKey = Entity::cast($valueKey);
         $attrs    = $attrs ?: [];
         
         $options = '';
@@ -223,34 +227,34 @@ class TransHelper
         $content = trim($content);
         //$Text=htmlspecialchars($Text);
         $content = preg_replace("/\\t/is", "  ", $content);
-        $content = preg_replace("/\[h1\](.+?)\[\/h1\]/is", "<h1>\\1</h1>", $content);
-        $content = preg_replace("/\[h2\](.+?)\[\/h2\]/is", "<h2>\\1</h2>", $content);
-        $content = preg_replace("/\[h3\](.+?)\[\/h3\]/is", "<h3>\\1</h3>", $content);
-        $content = preg_replace("/\[h4\](.+?)\[\/h4\]/is", "<h4>\\1</h4>", $content);
-        $content = preg_replace("/\[h5\](.+?)\[\/h5\]/is", "<h5>\\1</h5>", $content);
-        $content = preg_replace("/\[h6\](.+?)\[\/h6\]/is", "<h6>\\1</h6>", $content);
-        $content = preg_replace("/\[separator\]/is", "", $content);
-        $content = preg_replace("/\[center\](.+?)\[\/center\]/is", "<center>\\1</center>", $content);
-        $content = preg_replace("/\[url=http:\/\/([^\[]*)\](.+?)\[\/url\]/is", "<a href=\"http://\\1\" target=_blank>\\2</a>", $content);
-        $content = preg_replace("/\[url=([^\[]*)\](.+?)\[\/url\]/is", "<a href=\"http://\\1\" target=_blank>\\2</a>", $content);
-        $content = preg_replace("/\[url\]http:\/\/([^\[]*)\[\/url\]/is", "<a href=\"http://\\1\" target=_blank>\\1</a>", $content);
-        $content = preg_replace("/\[url\]([^\[]*)\[\/url\]/is", "<a href=\"\\1\" target=_blank>\\1</a>", $content);
-        $content = preg_replace("/\[img\](.+?)\[\/img\]/is", "<img src=\\1>", $content);
-        $content = preg_replace("/\[color=(.+?)\](.+?)\[\/color\]/is", "<font color=\\1>\\2</font>", $content);
-        $content = preg_replace("/\[size=(.+?)\](.+?)\[\/size\]/is", "<font size=\\1>\\2</font>", $content);
-        $content = preg_replace("/\[sup\](.+?)\[\/sup\]/is", "<sup>\\1</sup>", $content);
-        $content = preg_replace("/\[sub\](.+?)\[\/sub\]/is", "<sub>\\1</sub>", $content);
-        $content = preg_replace("/\[pre\](.+?)\[\/pre\]/is", "<pre>\\1</pre>", $content);
-        $content = preg_replace("/\[email\](.+?)\[\/email\]/is", "<a href='mailto:\\1'>\\1</a>", $content);
-        $content = preg_replace("/\[colorTxt\](.+?)\[\/colorTxt\]/eis", "color_txt('\\1')", $content);
-        $content = preg_replace("/\[emot\](.+?)\[\/emot\]/eis", "emot('\\1')", $content);
-        $content = preg_replace("/\[i\](.+?)\[\/i\]/is", "<i>\\1</i>", $content);
-        $content = preg_replace("/\[u\](.+?)\[\/u\]/is", "<u>\\1</u>", $content);
-        $content = preg_replace("/\[b\](.+?)\[\/b\]/is", "<b>\\1</b>", $content);
-        $content = preg_replace("/\[quote\](.+?)\[\/quote\]/is", " <div class='quote'><h5>引用:</h5><blockquote>\\1</blockquote></div>", $content);
-        $content = preg_replace("/\[code\](.+?)\[\/code\]/eis", "highlight_code('\\1')", $content);
-        $content = preg_replace("/\[php\](.+?)\[\/php\]/eis", "highlight_code('\\1')", $content);
-        $content = preg_replace("/\[sig\](.+?)\[\/sig\]/is", "<div class='sign'>\\1</div>", $content);
+        $content = preg_replace("/\[h1](.+?)\[\/h1]/is", "<h1>\\1</h1>", $content);
+        $content = preg_replace("/\[h2](.+?)\[\/h2]/is", "<h2>\\1</h2>", $content);
+        $content = preg_replace("/\[h3](.+?)\[\/h3]/is", "<h3>\\1</h3>", $content);
+        $content = preg_replace("/\[h4](.+?)\[\/h4]/is", "<h4>\\1</h4>", $content);
+        $content = preg_replace("/\[h5](.+?)\[\/h5]/is", "<h5>\\1</h5>", $content);
+        $content = preg_replace("/\[h6](.+?)\[\/h6]/is", "<h6>\\1</h6>", $content);
+        $content = preg_replace("/\[separator]/is", "", $content);
+        $content = preg_replace("/\[center](.+?)\[\/center]/is", "<center>\\1</center>", $content);
+        $content = preg_replace("/\[url=http:\/\/([^\[]*)](.+?)\[\/url]/is", "<a href=\"http://\\1\" target=_blank>\\2</a>", $content);
+        $content = preg_replace("/\[url=([^\[]*)](.+?)\[\/url]/is", "<a href=\"http://\\1\" target=_blank>\\2</a>", $content);
+        $content = preg_replace("/\[url]http:\/\/([^\[]*)\[\/url]/is", "<a href=\"http://\\1\" target=_blank>\\1</a>", $content);
+        $content = preg_replace("/\[url]([^\[]*)\[\/url]/is", "<a href=\"\\1\" target=_blank>\\1</a>", $content);
+        $content = preg_replace("/\[img](.+?)\[\/img]/is", "<img src=\"\\1\">", $content);
+        $content = preg_replace("/\[color=(.+?)](.+?)\[\/color]/is", "<font color=\\1>\\2</font>", $content);
+        $content = preg_replace("/\[size=(.+?)](.+?)\[\/size]/is", "<font size=\\1>\\2</font>", $content);
+        $content = preg_replace("/\[sup](.+?)\[\/sup]/is", "<sup>\\1</sup>", $content);
+        $content = preg_replace("/\[sub](.+?)\[\/sub]/is", "<sub>\\1</sub>", $content);
+        $content = preg_replace("/\[pre](.+?)\[\/pre]/is", "<pre>\\1</pre>", $content);
+        $content = preg_replace("/\[email](.+?)\[\/email]/is", "<a href='mailto:\\1'>\\1</a>", $content);
+        $content = preg_replace("/\[colorTxt](.+?)\[\/colorTxt]/eis", "color_txt('\\1')", $content);
+        $content = preg_replace("/\[emot](.+?)\[\/emot]/eis", "emot('\\1')", $content);
+        $content = preg_replace("/\[i](.+?)\[\/i]/is", "<i>\\1</i>", $content);
+        $content = preg_replace("/\[u](.+?)\[\/u]/is", "<u>\\1</u>", $content);
+        $content = preg_replace("/\[b](.+?)\[\/b]/is", "<b>\\1</b>", $content);
+        $content = preg_replace("/\[quote](.+?)\[\/quote]/is", " <div class='quote'><h5>引用:</h5><blockquote>\\1</blockquote></div>", $content);
+        $content = preg_replace("/\[code](.+?)\[\/code]/eis", "highlight_code('\\1')", $content);
+        $content = preg_replace("/\[php](.+?)\[\/php]/eis", "highlight_code('\\1')", $content);
+        $content = preg_replace("/\[sig](.+?)\[\/sig]/is", "<div class='sign'>\\1</div>", $content);
         $content = preg_replace("/\\n/is", "<br/>", $content);
         
         return $content;

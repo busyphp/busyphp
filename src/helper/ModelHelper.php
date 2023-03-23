@@ -32,8 +32,7 @@ class ModelHelper
             $model = new $model();
         }
         
-        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseClass'), true);
-        $bindParseExtendClass = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'bindParseExtendClass'), true);
+        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'fieldClass'), true);
         $entityClass          = ClassHelper::getAbsoluteClassname(Entity::class, true);
         $pk                   = $model->getPk();
         $pkType               = 'mixed';
@@ -52,11 +51,11 @@ class ModelHelper
         $fieldGetterList      = [];
         
         foreach ($model->getFields() as $field) {
-            $method  = StringHelper::studly($field['name']);
-            $name    = StringHelper::camel($field['name']);
-            $type    = $model->getFieldType($field['name']);
-            $type    = in_array($type, ['date', 'datetime', 'timestamp']) ? 'string' : $type;
-            $comment = ClassHelper::replaceMethodDocSpecialStr($field['comment'] ?: $field['name']);
+            $method    = StringHelper::studly($field['name']);
+            $name      = StringHelper::camel($field['name']);
+            $fieldType = $model->getFieldType($field['name']);
+            $type      = in_array($fieldType, ['date', 'datetime', 'timestamp']) ? 'string' : $fieldType;
+            $comment   = ClassHelper::replaceMethodDocSpecialStr($field['comment'] ?: $field['name']);
             if ($field['name'] == $pk) {
                 $pkType = $type;
             }
@@ -83,11 +82,6 @@ PHP;
                 $getInfoByList[]  = sprintf('@method %s getInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseClass, $method, $type, $name);
                 $findInfoByList[] = sprintf('@method %s|null findInfoBy%s(%s $%s)', $bindParseClass, $method, $type, $name);
             }
-            
-            if ($bindParseExtendClass) {
-                $getExtendInfoByList[]  = sprintf('@method %s getExtendInfoBy%s(%s $%s, string $notFoundMessage = null)', $bindParseExtendClass, $method, $type, $name);
-                $findExtendInfoByList[] = sprintf('@method %s|null findExtendInfoBy%s(%s $%s)', $bindParseExtendClass, $method, $type, $name);
-            }
         }
         
         $commonList = [];
@@ -95,13 +89,8 @@ PHP;
             $commonList[] = sprintf('@method %s getInfo(%s $%s, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
             $commonList[] = sprintf('@method %s|null findInfo(%s $%s = null)', $bindParseClass, $pkType, $pk);
             $commonList[] = sprintf('@method %s[] selectList()', $bindParseClass);
-            $commonList[] = sprintf('@method %s[] buildListWithField(array $values, string|%s $key = null, string|%s $field = null)', $bindParseClass, $entityClass, $entityClass);
-        }
-        if ($bindParseExtendClass) {
-            $commonList[] = sprintf('@method %s getExtendInfo(%s $%s, string $notFoundMessage = null)', $bindParseClass, $pkType, $pk);
-            $commonList[] = sprintf('@method %s|null findExtendInfo(%s $%s = null)', $bindParseClass, $pkType, $pk);
-            $commonList[] = sprintf('@method %s[] selectExtendList()', $bindParseExtendClass);
-            $commonList[] = sprintf('@method %s[] buildExtendListWithField(array $values, string|%s $key = null, string|%s $field = null)', $bindParseExtendClass, $entityClass, $entityClass);
+            $commonList[] = sprintf('@method %s[] indexList(string|%s $key = \'\')', $bindParseClass, $entityClass);
+            $commonList[] = sprintf('@method %s[] indexListIn(array $range, string|%s $key = \'\', string|%s $field = \'\')', $bindParseClass, $entityClass, $entityClass);
         }
         
         return [
@@ -191,14 +180,6 @@ PHP;
                 'content' => implode(PHP_EOL . '* ', $builds['find_info_by'])
             ],
             [
-                'name'    => '虚拟 getExtendInfoBy 方法',
-                'content' => implode(PHP_EOL . '* ', $builds['get_extend_info_by'])
-            ],
-            [
-                'name'    => '虚拟 findExtendInfoBy 方法',
-                'content' => implode(PHP_EOL . '* ', $builds['find_extend_info_by'])
-            ],
-            [
                 'name'    => '虚拟 whereOr 方法',
                 'content' => implode(PHP_EOL . '* ', $builds['where_or'])
             ],
@@ -208,7 +189,7 @@ PHP;
             ],
             [
                 'name'    => '所有虚拟方法',
-                'content' => implode(PHP_EOL . '* ', array_merge($builds['common'], $builds['get_by'], $builds['get_field_by'], $builds['get_info_by'], $builds['find_info_by'], $builds['get_extend_info_by'], $builds['find_extend_info_by'], $builds['where_or'], $builds['where']))
+                'content' => implode(PHP_EOL . '* ', array_merge($builds['common'], $builds['get_by'], $builds['get_field_by'], $builds['get_info_by'], $builds['find_info_by'], $builds['where_or'], $builds['where']))
             ],
         ]);
     }

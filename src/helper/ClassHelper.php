@@ -177,7 +177,7 @@ class ClassHelper
         $doc  = static::encodeDocSpecialStr($doc ?: '');
         $name = '';
         $item = [];
-        if (false === strpos($doc, PHP_EOL)) {
+        if (!str_contains($doc, PHP_EOL)) {
             if (preg_match('/\*\*\s@var(.+)\s(.+)\*\//i', $doc, $match)) {
                 $type = trim($match[1]);
                 $name = trim($match[2]);
@@ -187,11 +187,12 @@ class ClassHelper
             $item[self::ATTR_VAR] = $type;
         } else {
             // 取出名称
-            if (preg_match('/\/\*\*(.*?)(@.*?)\*\//is', $doc, $match)) {
-                $name = trim(preg_replace('/\s?\*/', '', $match[1]));
+            if (preg_match('/\/\*\*(.*?)\*\//is', $doc, $match)) {
+                $splits = preg_split('/\*\s+@/', $match[1]);
+                $name   = trim(preg_replace('/\s?\*/', '', array_shift($splits)));
                 
                 // 取出 @name
-                foreach (preg_split('/\*\s+@/', $match[2]) as $vo) {
+                foreach ($splits as $vo) {
                     $vo = preg_replace('/\s?\*|@/', '', $vo);
                     
                     // 匹配 "type value"
@@ -226,14 +227,26 @@ class ClassHelper
         }
         
         // 解析类型
-        $var = $item[self::ATTR_VAR] ?? 'mixed';
-        if (!isset(self::PRIMITIVE_TYPES[$var])) {
-            if (substr($var, 0, 1) !== '\\') {
-                $var = self::parseValue($class, $var, self::CAST_CLASS);
+        $vars = [];
+        foreach (explode('|', $item[self::ATTR_VAR] ?? 'mixed') as $var) {
+            $var = trim($var);
+            if ($var === '') {
+                continue;
             }
+            
+            $builtin = true;
+            if (!isset(self::PRIMITIVE_TYPES[$var])) {
+                $var = self::parseValue($class, $var, self::CAST_CLASS);
+                if (!$var) {
+                    continue;
+                }
+                $builtin = false;
+            }
+            
+            $vars[] = new ReflectionNamedType($var, $builtin);
         }
         
-        $item[self::ATTR_VAR]   = $var;
+        $item[self::ATTR_VAR]   = $vars;
         $item[self::ATTR_NAME]  = static::decodeDocSpecialStr($name);
         $item[self::ATTR_KEY]   = $key;
         $item[self::ATTR_VALUE] = $value;

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\helper;
 
@@ -14,19 +15,19 @@ use think\filesystem\Driver;
 class FilesystemHelper
 {
     /** @var string 本地系统文件磁盘标识 */
-    const STORAGE_LOCAL = 'public';
+    const STORAGE_PUBLIC = 'public';
     
     /** @var string 本地临时文件磁盘标识 */
-    const STORAGE_TMP = 'local';
+    const STORAGE_LOCAL = 'local';
     
     
     /**
      * 获取本地公共文件驱动
      * @return Driver
      */
-    public static function local() : Driver
+    public static function public() : Driver
     {
-        return Filesystem::disk(self::STORAGE_LOCAL);
+        return Filesystem::disk(self::STORAGE_PUBLIC);
     }
     
     
@@ -36,6 +37,6 @@ class FilesystemHelper
      */
     public static function runtime() : Driver
     {
-        Filesystem::disk(self::STORAGE_TMP);
+        return Filesystem::disk(self::STORAGE_LOCAL);
     }
 }
