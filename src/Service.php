@@ -7,7 +7,6 @@ use BusyPHP\command\InstallCommand;
 use BusyPHP\command\VersionCommand;
 use BusyPHP\facade\Captcha;
 use BusyPHP\facade\QrCode;
-use BusyPHP\helper\FilesystemHelper;
 use BusyPHP\image\driver\Local;
 use Closure;
 use think\event\HttpRun;
@@ -52,20 +51,19 @@ class Service extends ThinkService
         Model::maker(function(Model $model) {
             $config = $this->app->config;
             
+            // 自动写入时间戳
             $isAutoWriteTimestamp = $model->getAutoWriteTimestamp();
-            
             if (is_null($isAutoWriteTimestamp)) {
-                // 自动写入时间戳
                 $model->isAutoWriteTimestamp($config->get('database.auto_timestamp', 'timestamp'));
             }
             
+            // 设置时间戳格式
             $dateFormat = $model->getDateFormat();
-            
             if (is_null($dateFormat)) {
-                // 设置时间戳格式
                 $model->setDateFormat($config->get('database.datetime_format', 'Y-m-d H:i:s'));
             }
             
+            // 设置字段
             $timeField = $config->get('database.datetime_field');
             if (!empty($timeField)) {
                 [$createTime, $updateTime] = explode(',', $timeField);
@@ -122,12 +120,7 @@ class Service extends ThinkService
             
             // 动态图片路由
             $route->rule('general/image/<path>', function() {
-                $path    = $this->app->request->param('path/s', '', 'trim');
-                $process = $this->app->request->param('process/s', '', 'trim');
-                
-                return FilesystemHelper::local()
-                    ->image()
-                    ->response(Local::convertProcessRuleToParameter($process, $path));
+                return Local::http()->response();
             })->pattern(['path' => '.+']);
         });
     }
