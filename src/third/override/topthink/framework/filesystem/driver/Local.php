@@ -59,20 +59,14 @@ class Local extends Driver
      */
     protected function createAdapter() : FilesystemAdapter
     {
-        $visibility = PortableVisibilityConverter::fromArray(
-            $this->config['permissions'] ?? [],
-            $this->config['visibility'] ?? Visibility::PRIVATE
-        );
-        
-        $links = ($this->config['links'] ?? null) === 'skip'
-            ? LocalFilesystemAdapter::SKIP_LINKS
-            : LocalFilesystemAdapter::DISALLOW_LINKS;
-        
         return new LocalFilesystemAdapter(
             $this->config['root'],
-            $visibility,
+            PortableVisibilityConverter::fromArray(
+                $this->config['permissions'] ?? [],
+                $this->config['visibility'] ?? Visibility::PRIVATE
+            ),
             $this->config['lock'] ?? LOCK_EX,
-            $links
+            ($this->config['links'] ?? null) === 'skip' ? LocalFilesystemAdapter::SKIP_LINKS : LocalFilesystemAdapter::DISALLOW_LINKS
         );
     }
     
@@ -129,13 +123,7 @@ class Local extends Driver
      */
     public function url(string $path) : string
     {
-        $path = $this->normalizer()->normalizePath($path);
-        
-        if (isset($this->config['url'])) {
-            return $this->concatPathToUrl($this->config['url'], $path);
-        }
-        
-        return parent::url($path);
+        return $this->concatPathToUrl($this->config['url'] ?? '', $this->normalizer()->normalizePath($path));
     }
     
     
@@ -145,5 +133,26 @@ class Local extends Driver
     public function path(string $path) : string
     {
         return $this->prefixer()->prefixPath($path);
+    }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function matchRelativePathByURL(string $url) : ?string
+    {
+        $prefix = $this->config['url'] ?? '';
+        $prefix = $prefix ? '/' . ltrim($prefix, '/') : '';
+        $path   = '/' . ltrim(parse_url($url, PHP_URL_PATH) ?: '', '/');
+        if (!$prefix || !str_starts_with($path, $prefix)) {
+            return null;
+        }
+        
+        $path = substr($path, strlen($prefix));
+        if (!is_string($path)) {
+            return null;
+        }
+        
+        return $this->normalizer()->normalizePath($path);
     }
 }

@@ -23,7 +23,9 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use RuntimeException;
 use think\Cache;
+use think\facade\Route;
 use think\File;
+use think\route\Url;
 
 /**
  * 文件系统驱动类
@@ -103,9 +105,25 @@ abstract class Driver
      */
     protected function createFilesystem(FilesystemAdapter $adapter) : Filesystem
     {
-        $config = array_intersect_key($this->config, array_flip(['visibility', 'disable_asserts', 'url']));
+        return new Filesystem($adapter, array_intersect_key($this->config, array_flip([
+            'visibility',
+            'disable_asserts',
+            'url'
+        ])));
+    }
+    
+    
+    /**
+     * 获取存储设置
+     * @return \BusyPHP\app\admin\setting\StorageSetting|null
+     */
+    protected function getStorageSetting() : ?\BusyPHP\app\admin\setting\StorageSetting
+    {
+        if (class_exists('\BusyPHP\app\admin\setting\StorageSetting')) {
+            return \BusyPHP\app\admin\setting\StorageSetting::instance();
+        }
         
-        return new Filesystem($adapter, count($config) > 0 ? $config : null);
+        return null;
     }
     
     
@@ -149,6 +167,17 @@ abstract class Driver
     public function url(string $path) : string
     {
         throw new RuntimeException('This driver does not support retrieving URLs.');
+    }
+    
+    
+    /**
+     * 从URL中匹配出相对路径，如果不符合规则请返回null
+     * @param string $url
+     * @return string|null
+     */
+    public function matchRelativePathByURL(string $url) : ?string
+    {
+        return null;
     }
     
     
@@ -200,7 +229,7 @@ abstract class Driver
     {
         try {
             $this->writeStream($path, $contents, $options);
-        } catch (UnableToWriteFile | UnableToSetVisibility | FilesystemException $e) {
+        } catch (UnableToWriteFile|UnableToSetVisibility|FilesystemException $e) {
             return false;
         }
         
@@ -257,6 +286,27 @@ abstract class Driver
     public function isLocal() : bool
     {
         return ($this->config['type'] ?? '') == 'local';
+    }
+    
+    
+    /**
+     * 转换路径为URL
+     * @param string $path 路径
+     * @param string $domain 不含协议的域名
+     * @param string $scheme 请求协议，支持 https, http, 空字符为协议跟随
+     * @param array  $vars 参数
+     * @return Url
+     */
+    protected function convertPathToUrl(string $path, string $domain, string $scheme = '', array $vars = []) : Url
+    {
+        if ($scheme === 'http') {
+            $domain = 'http://' . $domain;
+        }
+        
+        return Route::buildUrl('/' . ltrim($path, '/'), $vars)
+            ->https($scheme === 'https')
+            ->domain($domain)
+            ->suffix(false);
     }
     
     
