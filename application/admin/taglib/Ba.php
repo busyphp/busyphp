@@ -4,7 +4,6 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\taglib;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use think\template\TagLib;
 
 /**
@@ -36,9 +35,10 @@ class Ba extends TagLib
      */
     protected function tagAccess(array $tag, string $content) : string
     {
-        $value = (string) ($tag['value'] ?? '');
-        $list  = explode(',', $value);
-        $path  = [];
+        $value      = (string) ($tag['value'] ?? '');
+        $list       = explode(',', $value);
+        $path       = [];
+        $controller = App::getInstance()->request->controller();
         foreach ($list as $item) {
             // 解析变量
             $flag = substr($item, 0, 1);
@@ -48,21 +48,15 @@ class Ba extends TagLib
                 $values = explode('/', $item) ?: [];
                 // 需要获取控制器补全
                 if (count($values) == 1) {
-                    $controller = App::getInstance()->request->controller();
-                    $item       = "'{$controller}/{$values[0]}'";
+                    $item = "'$controller/$values[0]'";
                 } else {
-                    $item = "'{$item}'";
+                    $item = "'$item'";
                 }
             }
             $path[] = $item;
         }
         $path = implode(',', $path);
         
-        $groupClass = AdminGroup::class;
-        
-        /** @see AdminGroup::checkPermission() */
-        return <<<HTML
-<?php if ({$groupClass}::getClass()::checkPermission(\$system['user'] ?? null, {$path})): ?>{$content}<?php endif; ?>
-HTML;
+        return "<?php if (\BusyPHP\app\admin\model\admin\group\AdminGroup::class()::checkPermission(\$system['user'], $path)): ?>$content<?php endif;?>";
     }
 }
