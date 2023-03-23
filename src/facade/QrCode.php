@@ -22,10 +22,10 @@ use think\route\Url;
  * @method static \BusyPHP\QrCode format(string $format) 设置二维码输出格式
  * @method static \BusyPHP\QrCode download(string $filename) 设置response的时候执行下载
  * @method static \BusyPHP\QrCode cache(int $lifetime) 设置response的时候进行缓存的秒数
- * @method static \BusyPHP\QrCode http() 通过HTTP参数执行response，以配合 Captcha::url() 生成的在线二维码链接
+ * @method static \BusyPHP\QrCode http() 解析HTTP参数
  * @method static Response response() 输出到浏览器
  * @method static string build(bool $dataUri = false) 构建数据
- * @method static string save(string $path) 保存到指定路径
+ * @method static string save(string $destination) 保存到指定路径
  * @method static Url url() 生成在线二维码链接
  */
 class QrCode extends Facade

@@ -104,9 +104,9 @@ class QrCode
     /**
      * 设置文本
      * @param string $text
-     * @return $this
+     * @return static
      */
-    public function text(string $text) : self
+    public function text(string $text) : static
     {
         $this->options['text'] = $text;
         
@@ -117,9 +117,9 @@ class QrCode
     /**
      * 设置还原率级别
      * @param string $level
-     * @return $this
+     * @return static
      */
-    public function level(string $level) : self
+    public function level(string $level) : static
     {
         $this->options['level'] = $level;
         
@@ -131,9 +131,9 @@ class QrCode
     /**
      * 设置空白间距
      * @param int $margin
-     * @return $this
+     * @return static
      */
-    public function margin(int $margin) : self
+    public function margin(int $margin) : static
     {
         $this->options['margin'] = $margin;
         
@@ -144,9 +144,9 @@ class QrCode
     /**
      * 设置二维码尺寸
      * @param int $size
-     * @return $this
+     * @return static
      */
-    public function size(int $size) : self
+    public function size(int $size) : static
     {
         $this->options['size'] = $size;
         
@@ -159,9 +159,9 @@ class QrCode
      * @param string $logo logo 路径
      * @param int    $width 宽度
      * @param int    $height 宽度
-     * @return $this
+     * @return static
      */
-    public function logo(string $logo, int $width = 0, int $height = 0) : self
+    public function logo(string $logo, int $width = 0, int $height = 0) : static
     {
         $this->options['logo']        = $logo;
         $this->options['logo_width']  = $width;
@@ -174,9 +174,9 @@ class QrCode
     /**
      * 设置输出类型
      * @param string $format
-     * @return $this
+     * @return static
      */
-    public function format(string $format) : self
+    public function format(string $format) : static
     {
         $format = strtolower($format);
         $format = in_array($format, array_keys(self::getFormats())) ? $format : self::FORMAT_PNG;
@@ -190,9 +190,9 @@ class QrCode
     /**
      * 设置是否下载 与 {@see QrCode::cache()} 互斥
      * @param string $filename 文件名
-     * @return $this
+     * @return static
      */
-    public function download(string $filename = '') : self
+    public function download(string $filename = '') : static
     {
         $this->download = true;
         $this->filename = $filename;
@@ -206,9 +206,9 @@ class QrCode
     /**
      * 设置缓存多少秒 与 {@see QrCode::download()} 互斥
      * @param int $lifetime 过期秒数
-     * @return $this
+     * @return static
      */
-    public function cache(int $lifetime) : self
+    public function cache(int $lifetime) : static
     {
         $this->download = false;
         
@@ -291,7 +291,7 @@ class QrCode
         
         // 浏览器缓存
         $currentEtag = sprintf('"%s"', md5(json_encode($this->options)));
-        $headerEtag  = str_replace('W/', '', Request::header('if-none-match'));
+        $headerEtag  = str_replace('W/', '', Request::header('if-none-match', ''));
         if (!$download && $headerEtag == $currentEtag) {
             return Response::create(null)
                 ->code(304)
@@ -346,19 +346,19 @@ class QrCode
     
     /**
      * 保存到指定路径
-     * @param string $path
+     * @param string $destination
      */
-    public function save(string $path)
+    public function save(string $destination)
     {
-        $this->prepareEndroidQrCode()->writeFile($path);
+        $this->prepareEndroidQrCode()->writeFile($destination);
     }
     
     
     /**
-     * 通过HTTP响应
-     * @return $this
+     * 解析HTTP参数
+     * @return static
      */
-    public function http() : self
+    public function http() : static
     {
         $process = $this->app->request->param('process', '', 'trim');
         $process = explode(',', $process);

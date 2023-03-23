@@ -31,7 +31,7 @@ use think\route\Url;
  * @method static \BusyPHP\Captcha bgColor(string $color) 设置背景颜色16进制格式
  * @method static \BusyPHP\Captcha id(string $id) 设置验证码标识
  * @method static \BusyPHP\Captcha reset(bool $reset) 设置验证成功后是否清理验证码
- * @method static \BusyPHP\Captcha http() 通过HTTP参数执行response，以配合 Captcha::url() 生成的在线验证码URL
+ * @method static \BusyPHP\Captcha http() 解析HTTP参数
  * @method static string build(bool $dataUri = false) 构建验证码数据并把验证码的值保存的session中
  * @method static Response response() 输出到浏览器
  * @method static Url url(string $appName = '') 生成在线验证码URL，支持前置方法：Captcha::id()->width()->height()->url()

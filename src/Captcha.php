@@ -192,9 +192,9 @@ class Captcha
     /**
      * 设置混淆码
      * @param string $token
-     * @return $this
+     * @return static
      */
-    public function token(string $token) : self
+    public function token(string $token) : static
     {
         $this->token = $token;
         
@@ -205,9 +205,9 @@ class Captcha
     /**
      * 设置英文数字字符
      * @param string $chars
-     * @return $this
+     * @return static
      */
-    public function chars(string $chars) : self
+    public function chars(string $chars) : static
     {
         $this->chars = $chars;
         
@@ -218,9 +218,9 @@ class Captcha
     /**
      * 设置中文字符
      * @param string $zhChars
-     * @return $this
+     * @return static
      */
-    public function zhChars(string $zhChars) : self
+    public function zhChars(string $zhChars) : static
     {
         $this->zhChars = $zhChars;
         
@@ -231,9 +231,9 @@ class Captcha
     /**
      * 设置过期时间
      * @param int $expire
-     * @return $this
+     * @return static
      */
-    public function expire(int $expire) : self
+    public function expire(int $expire) : static
     {
         $this->expire = $expire;
         
@@ -244,9 +244,9 @@ class Captcha
     /**
      * 设置是否使用中文字符
      * @param bool $zh
-     * @return $this
+     * @return static
      */
-    public function zh(bool $zh) : self
+    public function zh(bool $zh) : static
     {
         $this->zh = $zh;
         
@@ -257,9 +257,9 @@ class Captcha
     /**
      * 设置是否使用背景图
      * @param bool $bgImage
-     * @return $this
+     * @return static
      */
-    public function bgImage(bool $bgImage) : self
+    public function bgImage(bool $bgImage) : static
     {
         $this->bgImage = $bgImage;
         
@@ -270,9 +270,9 @@ class Captcha
     /**
      * 设置字体大小
      * @param int $fontSize
-     * @return $this
+     * @return static
      */
-    public function fontSize(int $fontSize) : self
+    public function fontSize(int $fontSize) : static
     {
         $this->fontSize = $fontSize;
         
@@ -283,9 +283,9 @@ class Captcha
     /**
      * 设置是否绘制线条
      * @param bool $curve
-     * @return $this
+     * @return static
      */
-    public function curve(bool $curve) : self
+    public function curve(bool $curve) : static
     {
         $this->curve = $curve;
         
@@ -296,9 +296,9 @@ class Captcha
     /**
      * 设置是否添加杂点
      * @param bool $noise
-     * @return $this
+     * @return static
      */
-    public function noise(bool $noise) : self
+    public function noise(bool $noise) : static
     {
         $this->noise = $noise;
         
@@ -309,9 +309,9 @@ class Captcha
     /**
      * 设置验证码高度
      * @param int $height
-     * @return $this
+     * @return static
      */
-    public function height(int $height) : self
+    public function height(int $height) : static
     {
         $this->height = $height;
         
@@ -322,9 +322,9 @@ class Captcha
     /**
      * 设置验证码宽度
      * @param int $width
-     * @return $this
+     * @return static
      */
-    public function width(int $width) : self
+    public function width(int $width) : static
     {
         $this->width = $width;
         
@@ -335,9 +335,9 @@ class Captcha
     /**
      * 设置验证码长度
      * @param int $length
-     * @return $this
+     * @return static
      */
-    public function length(int $length) : self
+    public function length(int $length) : static
     {
         $this->length = $length;
         
@@ -348,9 +348,9 @@ class Captcha
     /**
      * 设置验证码字体文件
      * @param string $fontFile
-     * @return $this
+     * @return static
      */
-    public function fontFile(string $fontFile) : self
+    public function fontFile(string $fontFile) : static
     {
         $this->fontFile = $fontFile;
         
@@ -361,9 +361,9 @@ class Captcha
     /**
      * 设置背景颜色
      * @param array $bg
-     * @return $this
+     * @return static
      */
-    public function bg(array $bg) : self
+    public function bg(array $bg) : static
     {
         $this->bg = $bg;
         
@@ -374,9 +374,9 @@ class Captcha
     /**
      * 设置背景颜色16进制格式
      * @param string $color
-     * @return $this
+     * @return static
      */
-    public function bgColor(string $color) : self
+    public function bgColor(string $color) : static
     {
         $color = ltrim($color, '#');
         $r     = hexdec(substr($color, 0, 2));
@@ -390,9 +390,9 @@ class Captcha
     /**
      * 设置验证码标识
      * @param string $id
-     * @return $this
+     * @return static
      */
-    public function id(string $id) : self
+    public function id(string $id) : static
     {
         $this->id = $id;
         
@@ -406,7 +406,7 @@ class Captcha
      * @param bool   $errorReset 验证失败是否清理验证码
      * @param bool   $successReset 验证成功是否清理验证码
      */
-    public function check(string $code, $errorReset = false, $successReset = true)
+    public function check(string $code, bool $errorReset = false, bool $successReset = true)
     {
         if ($code === '') {
             throw new VerifyException('请输入验证码', self::VERIFY_EMPTY_CODE);
@@ -559,10 +559,10 @@ class Captcha
     
     
     /**
-     * 通过HTTP响应
-     * @return $this
+     * 解析HTTP参数
+     * @return static
      */
-    public function http() : self
+    public function http() : static
     {
         $app = $this->app->request->param('app/s', '', 'trim');
         $this->id($this->app->request->param('id/s', '', 'trim'));
