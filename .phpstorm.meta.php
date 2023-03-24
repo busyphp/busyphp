@@ -176,4 +176,8 @@ namespace PHPSTORM_META {
         \BusyPHP\image\parameter\BaseParameter::GRAVITY_BOTTOM_RIGHT |
         \BusyPHP\image\parameter\BaseParameter::GRAVITY_RAND
     );
+    
+    registerArgumentsSet('order_types', 'desc' | 'asc');
+    expectedArguments(\think\db\BaseQuery::order(), 1, argumentsSet('order_types'));
+    expectedArguments(\BusyPHP\Model::order(), 1, argumentsSet('order_types'));
 }
