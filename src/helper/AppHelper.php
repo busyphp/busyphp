@@ -31,7 +31,7 @@ class AppHelper
         if (!isset($list)) {
             $basePath = App::getInstance()->getBasePath();
             $list     = [];
-            $maps     = ['admin' => '系统', 'home' => '前端'];
+            $maps     = ['admin' => '管理端', 'home' => '网站端'];
             foreach (scandir($basePath) as $value) {
                 if (!is_dir($path = $basePath . $value) || $value === '.' || $value === '..') {
                     continue;
