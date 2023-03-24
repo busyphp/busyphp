@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\component\js\traits;
 
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\Model;
-use BusyPHP\Request;
+use think\Request;
 
 /**
  * 模型排序特征类

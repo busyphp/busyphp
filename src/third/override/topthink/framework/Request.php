@@ -13,6 +13,8 @@ declare (strict_types = 1);
 namespace think;
 
 use ArrayAccess;
+use BusyPHP\helper\StringHelper;
+use think\facade\Config;
 use think\facade\Lang;
 use think\file\UploadedFile;
 use think\route\Rule;
@@ -300,6 +302,24 @@ class Request implements ArrayAccess
      * @var bool
      */
     protected $mergeParam = false;
+    
+    /**
+     * 来源地址
+     * @var string
+     */
+    protected $varRedirectUrl = 'redirect_url';
+    
+    /**
+     * 应用入口URL
+     * @var string
+     */
+    protected $appUrl;
+    
+    /**
+     * 网站入口URL
+     * @var string
+     */
+    protected $webUrl;
     
     
     /**
@@ -883,9 +903,9 @@ class Request implements ArrayAccess
     /**
      * 获取当前请求的参数
      * @access public
-     * @param string|array $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function param($name = '', $default = null, $filter = '')
@@ -985,9 +1005,9 @@ class Request implements ArrayAccess
     /**
      * 获取路由参数
      * @access public
-     * @param string|array $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function route($name = '', $default = null, $filter = '')
@@ -1003,9 +1023,9 @@ class Request implements ArrayAccess
     /**
      * 获取GET参数
      * @access public
-     * @param string|array $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function get($name = '', $default = null, $filter = '')
@@ -1034,9 +1054,9 @@ class Request implements ArrayAccess
     /**
      * 获取POST参数
      * @access public
-     * @param string|array $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function post($name = '', $default = null, $filter = '')
@@ -1052,9 +1072,9 @@ class Request implements ArrayAccess
     /**
      * 获取PUT参数
      * @access public
-     * @param string|array $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function put($name = '', $default = null, $filter = '')
@@ -1085,9 +1105,9 @@ class Request implements ArrayAccess
     /**
      * 设置获取DELETE参数
      * @access public
-     * @param mixed        $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param mixed                 $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function delete($name = '', $default = null, $filter = '')
@@ -1099,9 +1119,9 @@ class Request implements ArrayAccess
     /**
      * 设置获取PATCH参数
      * @access public
-     * @param mixed        $name 变量名
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param mixed                 $name 变量名
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function patch($name = '', $default = null, $filter = '')
@@ -1113,9 +1133,9 @@ class Request implements ArrayAccess
     /**
      * 获取request变量
      * @access public
-     * @param string|array $name 数据名称
-     * @param mixed        $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param string|array          $name 数据名称
+     * @param mixed                 $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function request($name = '', $default = null, $filter = '')
@@ -1167,9 +1187,9 @@ class Request implements ArrayAccess
     /**
      * 获取cookie参数
      * @access public
-     * @param mixed        $name 数据名称
-     * @param string       $default 默认值
-     * @param string|array $filter 过滤方法
+     * @param mixed                 $name 数据名称
+     * @param string                $default 默认值
+     * @param string|array|callable $filter 过滤方法
      * @return mixed
      */
     public function cookie(string $name = '', $default = null, $filter = '')
@@ -1216,7 +1236,7 @@ class Request implements ArrayAccess
      * 获取上传的文件信息
      * @access public
      * @param string $name 名称
-     * @return null|array|UploadedFile
+     * @return null|UploadedFile[]|UploadedFile
      */
     public function file(string $name = '')
     {
@@ -1238,6 +1258,8 @@ class Request implements ArrayAccess
                 return $array[$name];
             }
         }
+        
+        return null;
     }
     
     
@@ -1577,9 +1599,9 @@ class Request implements ArrayAccess
     /**
      * 获取指定的参数
      * @access public
-     * @param array        $name 变量名
-     * @param mixed        $data 数据或者变量类型
-     * @param string|array $filter 过滤方法
+     * @param array                 $name 变量名
+     * @param mixed                 $data 数据或者变量类型
+     * @param string|array|callable $filter 过滤方法
      * @return array
      */
     public function only(array $name, $data = 'param', $filter = '') : array
@@ -2335,5 +2357,242 @@ class Request implements ArrayAccess
     #[\ReturnTypeWillChange]
     public function offsetUnset($name)
     {
+    }
+    
+    
+    /**
+     * 获取路由路径
+     * @param bool $snake 是否转换为下划线形式
+     * @return string
+     */
+    public function getRoutePath(bool $snake = false) : string
+    {
+        $path = $this->controller() . '/' . $this->action();
+        
+        return $snake ? StringHelper::snake($path) : $path;
+    }
+    
+    
+    /**
+     * 设置$_SERVER
+     * @param string $name
+     * @param mixed  $value
+     * @return $this
+     */
+    public function setServer(string $name, $value) : static
+    {
+        $this->server[strtoupper($name)] = $value;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置$_GET
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setGet(string $name, $value = '') : static
+    {
+        if (isset($this->get[$name]) && is_array($this->get[$name])) {
+            $this->get[$name] = array_merge($this->get[$name], $value);
+        } else {
+            $this->get[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置$_PUT
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setPut(string $name, $value = '') : static
+    {
+        if (isset($this->put[$name]) && is_array($this->put[$name])) {
+            $this->put[$name] = array_merge($this->put[$name], $value);
+        } else {
+            $this->put[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置param
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setParam(string $name, $value = '') : static
+    {
+        if (isset($this->param[$name]) && is_array($this->param[$name])) {
+            $this->param[$name] = array_merge($this->param[$name], $value);
+        } else {
+            $this->param[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置$_POST
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setPost(string $name, $value = '') : static
+    {
+        if (isset($this->post[$name]) && is_array($this->post[$name])) {
+            $this->post[$name] = array_merge($this->post[$name], $value);
+        } else {
+            $this->post[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 设置$_REQUEST
+     * @param string       $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function setRequest(string $name, $value = '') : static
+    {
+        if (isset($this->request[$name]) && is_array($this->request[$name])) {
+            $this->request[$name] = array_merge($this->request[$name], $value);
+        } else {
+            $this->request[$name] = $value;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取Ajax表单伪装键
+     * @return string
+     */
+    public function getVarAjax() : string
+    {
+        return $this->varAjax;
+    }
+    
+    
+    /**
+     * 获取Pjax表单伪装键
+     * @return string
+     */
+    public function getVarPjax() : string
+    {
+        return $this->varPjax;
+    }
+    
+    
+    /**
+     * 设置当前请求为ajax请求
+     */
+    public function setRequestIsAjax() : void
+    {
+        $this->setServer('HTTP_X_REQUESTED_WITH', 'xmlhttprequest');
+    }
+    
+    
+    /**
+     * 获取来源地址请求参数名称
+     * @return string
+     */
+    public function getVarRedirectUrl() : string
+    {
+        $varRedirectUrl = Config::get('route.var_redirect_url') ?: 'redirect_url';
+        
+        return $varRedirectUrl ?: $this->varRedirectUrl;
+    }
+    
+    
+    /**
+     * 获取来源地址
+     * @param string|null $default 默认地址
+     * @param bool        $byServer 如果无法从参数获取，是否从server中获取
+     * @return string
+     */
+    public function getRedirectUrl(string $default = null, $byServer = true) : string
+    {
+        $url = $this->param($this->getVarRedirectUrl(), '', 'rawurldecode');
+        if (!$url && $byServer) {
+            $url = $this->server('HTTP_REFERER');
+        }
+        if (!$url) {
+            $url = $default;
+        }
+        
+        return $url;
+    }
+    
+    
+    /**
+     * 获取站点入口URL
+     * @param bool $domain 是否包含完整域名
+     * @return string
+     */
+    public function getWebUrl(bool $domain = false) : string
+    {
+        if (!$this->webUrl) {
+            $root = $this->baseFile();
+            if ($root && !str_starts_with($this->url(), $root)) {
+                $root = str_replace('\\', '/', dirname($root));
+            }
+            
+            $root = rtrim($root, '/') . '/';
+            $root = strpos($root, '.') ? ltrim(dirname($root), DIRECTORY_SEPARATOR) : $root;
+            if ('' != $root) {
+                $root = '/' . ltrim($root, '/');
+            }
+            $this->webUrl = rtrim($root, '/') . '/';
+        }
+        
+        return $domain ? $this->domain() . $this->webUrl : $this->webUrl;
+    }
+    
+    
+    /**
+     * 获取APP入口URL
+     * @param bool $domain 是否包含完整域名
+     * @return string
+     */
+    public function getAppUrl(bool $domain = false) : string
+    {
+        if (!$this->appUrl) {
+            $appUrl = $this->root();
+            if (!str_contains($appUrl, '.')) {
+                $appUrl = $this->getWebUrl() . trim($appUrl, '/');
+            }
+            $this->appUrl = rtrim($appUrl, '/') . '/';
+        }
+        
+        return $domain ? $this->domain() . $this->appUrl : $this->appUrl;
+    }
+    
+    
+    /**
+     * 获取网站资源入口URL
+     * @param bool $domain 是否包含完整域名
+     * @return string
+     */
+    public function getAssetsUrl(bool $domain = false) : string
+    {
+        if ($domainAssets = Config::get('route.domain_assets')) {
+            return rtrim($domainAssets, '/') . '/';
+        } else {
+            return $this->getWebUrl($domain) . 'assets/';
+        }
     }
 }

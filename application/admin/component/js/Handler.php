@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\component\js;
 
 use BusyPHP\App;
 use BusyPHP\Model;
-use BusyPHP\Request;
+use think\Request;
 
 /**
  * 基本处理回调类

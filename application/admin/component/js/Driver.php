@@ -8,12 +8,12 @@ use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\Model;
-use BusyPHP\Request;
 use BusyPHP\traits\ContainerDefine;
 use BusyPHP\traits\ContainerInit;
 use RuntimeException;
 use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 use think\Response;
 
 /**

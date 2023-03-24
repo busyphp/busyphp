@@ -3,8 +3,8 @@ declare(strict_types = 1);
 
 namespace BusyPHP\interfaces;
 
-use BusyPHP\Request;
 use Closure;
+use think\Request;
 use think\Response;
 
 /**

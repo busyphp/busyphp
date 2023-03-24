@@ -12,6 +12,7 @@ use Closure;
 use think\event\HttpRun;
 use think\middleware\SessionInit;
 use think\Paginator;
+use think\Request;
 use think\Route;
 use think\Service as ThinkService;
 

@@ -16,11 +16,11 @@ use BusyPHP\app\admin\setting\CaptchaSetting;
 use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\Captcha;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\Request;
 use BusyPHP\Service as BusyService;
 use Closure;
 use think\event\HttpRun;
 use think\exception\Handle;
+use think\Request;
 use think\Route;
 use think\Service as ThinkService;
 

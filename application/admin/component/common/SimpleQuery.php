@@ -13,13 +13,13 @@ use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\ArrayOption;
 use BusyPHP\model\Entity;
-use BusyPHP\Request;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Paginator;
+use think\Request;
 
 /**
  * 常规数据查询

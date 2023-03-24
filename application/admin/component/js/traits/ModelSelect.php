@@ -5,9 +5,9 @@ namespace BusyPHP\app\admin\component\js\traits;
 
 use BusyPHP\Model;
 use BusyPHP\model\Field;
-use BusyPHP\Request;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\Request;
 
 /**
  * 模型是否查询扩展信息特征类

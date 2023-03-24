@@ -4,8 +4,8 @@
 // +----------------------------------------------------
 
 use BusyPHP\App;
-use BusyPHP\Request;
 use think\Container;
+use think\Request;
 
 if (!function_exists('is_mobile')) {
     /**

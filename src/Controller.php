@@ -6,6 +6,7 @@ namespace BusyPHP;
 use think\Exception;
 use think\exception\ValidateException;
 use think\facade\Route;
+use think\Request;
 use think\Response;
 use think\response\Json;
 use think\response\Jsonp;

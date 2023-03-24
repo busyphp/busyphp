@@ -7,11 +7,11 @@ use BusyPHP\App;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
-use BusyPHP\Request;
 use BusyPHP\traits\ContainerDefine;
 use LogicException;
 use think\db\exception\DbException;
 use think\exception\InvalidArgumentException;
+use think\Request;
 
 /**
  * 常规表单操作
