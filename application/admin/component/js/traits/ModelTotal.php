@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\js\traits;
 
 use BusyPHP\Model;
+use think\db\exception\DbException;
 
 /**
  * 模型统计特征类
@@ -17,6 +18,7 @@ trait ModelTotal
     /**
      * 统计
      * @return int
+     * @throws DbException
      */
     protected function modelTotal() : int
     {

@@ -22,10 +22,10 @@ trait ModelQuery
     
     /**
      * 指定查询处理回调
-     * @param null|callable($model Model):mixed $callback 查询处理回调
-     * @return $this
+     * @param callable($model Model):mixed $callback 查询处理回调
+     * @return static
      */
-    public function query(callable $callback)
+    public function query(callable $callback) : static
     {
         $this->queryCallback = $callback;
         
@@ -35,9 +35,9 @@ trait ModelQuery
     
     /**
      * 查询处理回调
-     * @return false|void|null
+     * @return mixed
      */
-    protected function modelQuery()
+    protected function modelQuery() : mixed
     {
         $query = null;
         if ($this->handler) {

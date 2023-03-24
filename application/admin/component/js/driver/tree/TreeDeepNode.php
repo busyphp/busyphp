@@ -33,9 +33,9 @@ class TreeDeepNode extends TreeNode
     /**
      * 设置获取下级节点数据集或是否含有下级节点
      * @param TreeDeepNode[]|bool $children
-     * @return $this
+     * @return static
      */
-    public function setChildren($children) : self
+    public function setChildren($children) : static
     {
         if (!is_array($children)) {
             $children = (bool) $children;
@@ -50,9 +50,9 @@ class TreeDeepNode extends TreeNode
     /**
      * 添加下级节点
      * @param TreeDeepNode $node
-     * @return $this
+     * @return static
      */
-    public function addChildren(TreeDeepNode $node) : self
+    public function addChildren(TreeDeepNode $node) : static
     {
         if (!is_array($this->children)) {
             $this->children = [];

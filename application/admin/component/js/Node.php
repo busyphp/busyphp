@@ -21,7 +21,7 @@ abstract class Node extends ObjectOption
      * @param mixed $source 源数据
      * @return static
      */
-    public static function init($source = [])
+    public static function init($source = []) : static
     {
         $obj = parent::init();
         $obj->setSource($source);
@@ -33,9 +33,9 @@ abstract class Node extends ObjectOption
     /**
      * 设置源数据
      * @param mixed $source
-     * @return $this
+     * @return static
      */
-    public function setSource($source)
+    public function setSource($source) : static
     {
         $this->source = $source;
         
@@ -47,7 +47,7 @@ abstract class Node extends ObjectOption
      * 获取源数据
      * @return mixed
      */
-    public function getSource()
+    public function getSource() : mixed
     {
         return $this->source;
     }

@@ -9,7 +9,7 @@ use BusyPHP\app\admin\component\message\todo\TodoListParameter;
 use BusyPHP\app\admin\component\message\todo\TodoNode;
 use BusyPHP\app\admin\component\message\todo\TodoReadParameter;
 use BusyPHP\app\admin\component\message\todo\TodoTotalParameter;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\TransHelper;
@@ -84,15 +84,15 @@ class Todo implements ContainerInterface
     
     /**
      * 获取待办总数
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @return int
      */
-    public function getTotal(AdminUserInfo $adminUserInfo) : int
+    public function getTotal(AdminUserField $AdminUserField) : int
     {
         $total = 0;
         foreach ($this->getInterfaces() as $item) {
             $parameter = new TodoTotalParameter();
-            $parameter->setUser($adminUserInfo);
+            $parameter->setUser($AdminUserField);
             $total += $item->getAdminTodoTotal($parameter);
         }
         
@@ -102,17 +102,17 @@ class Todo implements ContainerInterface
     
     /**
      * 获取待办数据
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @return TodoNode[]
      */
-    public function getList(AdminUserInfo $adminUserInfo) : array
+    public function getList(AdminUserField $AdminUserField) : array
     {
         $list  = [];
         $index = 0;
         foreach ($this->getInterfaces() as $item) {
             $interface = TransHelper::base64encodeUrl(get_class($item));
             $parameter = new TodoListParameter();
-            $parameter->setUser($adminUserInfo);
+            $parameter->setUser($AdminUserField);
             foreach ($item->getAdminTodoList($parameter) as $todo) {
                 if (!$todo instanceof TodoNode) {
                     continue;
@@ -133,10 +133,10 @@ class Todo implements ContainerInterface
     
     /**
      * 用户点击待办项目的时候反馈已读
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @param string        $id
      */
-    public function setRead(AdminUserInfo $adminUserInfo, string $id)
+    public function setRead(AdminUserField $AdminUserField, string $id)
     {
         [$class, $id] = explode(',', TransHelper::base64decodeUrl($id));
         $class = TransHelper::base64decodeUrl($class);
@@ -146,7 +146,7 @@ class Todo implements ContainerInterface
         }
         
         $parameter = new TodoReadParameter();
-        $parameter->setUser($adminUserInfo);
+        $parameter->setUser($AdminUserField);
         $parameter->setId($id);
         $interface->setAdminTodoRead($parameter);
     }

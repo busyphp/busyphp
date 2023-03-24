@@ -110,9 +110,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 指定节点集后置处理回调
      * @param callable($list TreeFlatNode[]|TreeDeepNode[]):mixed $after
-     * @return $this
+     * @return static
      */
-    public function after(callable $after) : self
+    public function after(callable $after) : static
     {
         $this->afterCallback = $after;
         
@@ -133,9 +133,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 设置获取id的字段
      * @param string|Entity $idField
-     * @return $this
+     * @return static
      */
-    public function setIdField($idField) : self
+    public function setIdField($idField) : static
     {
         $this->idField = (string) $idField;
         
@@ -156,9 +156,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 设置获取上级ID的字段
      * @param string|Entity $parentField
-     * @return $this
+     * @return static
      */
-    public function setParentField($parentField) : self
+    public function setParentField($parentField) : static
     {
         $this->parentField = (string) $parentField;
         
@@ -179,9 +179,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 设置获取name的字段
      * @param string|Entity $nameField
-     * @return $this
+     * @return static
      */
-    public function setNameField($nameField) : self
+    public function setNameField($nameField) : static
     {
         $this->nameField = (string) $nameField;
         
@@ -202,9 +202,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 设置获取是否禁用的字段
      * @param string|Entity $disabledField
-     * @return $this
+     * @return static
      */
-    public function setDisabledField($disabledField) : self
+    public function setDisabledField($disabledField) : static
     {
         $this->disabledField = (string) $disabledField;
         
@@ -225,9 +225,9 @@ class Tree extends Driver implements ContainerInterface
     /**
      * 设置获取图标的字段
      * @param string|Entity $iconField
-     * @return $this
+     * @return static
      */
-    public function setIconField($iconField) : self
+    public function setIconField($iconField) : static
     {
         $this->iconField = (string) $iconField;
         

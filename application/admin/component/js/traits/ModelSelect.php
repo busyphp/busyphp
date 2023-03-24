@@ -28,9 +28,9 @@ trait ModelSelect
     /**
      * 设置是否查询扩展数据
      * @param bool $extend
-     * @return $this
+     * @return static
      */
-    public function setExtend(bool $extend)
+    public function setExtend(bool $extend) : static
     {
         $this->extend = $extend;
         
@@ -58,12 +58,8 @@ trait ModelSelect
      * @throws DataNotFoundException
      * @throws DbException
      */
-    protected function modelSelect()
+    protected function modelSelect() : array
     {
-        if ($this->isExtend()) {
-            return $this->model->selectExtendList();
-        } else {
-            return $this->model->selectList();
-        }
+        return $this->model->extend($this->isExtend())->selectList();
     }
 }

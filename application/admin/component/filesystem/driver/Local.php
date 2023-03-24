@@ -41,4 +41,13 @@ class Local extends Driver
     {
         return '文件直接上传到本地服务器的 <code>public/uploads</code> 目录，占用服务器磁盘空间，可以使用CDN加速';
     }
+    
+    
+    /**
+     * @inheritDoc
+     */
+    public function getForm() : array
+    {
+        return [];
+    }
 }

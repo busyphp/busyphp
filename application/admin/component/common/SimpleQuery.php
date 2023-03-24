@@ -17,7 +17,6 @@ use BusyPHP\Request;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use think\Collection;
-use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Paginator;
@@ -78,7 +77,7 @@ class SimpleQuery implements ContainerInterface
      * 是否查询扩展数据
      * @var bool
      */
-    protected $extend;
+    protected $extend = false;
     
     /**
      * 每页显示条数
@@ -162,9 +161,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 指定处理回调
      * @param SimpleQueryHandler $handler
-     * @return $this
+     * @return static
      */
-    public function handler(SimpleQueryHandler $handler) : self
+    public function handler(SimpleQueryHandler $handler) : static
     {
         $this->handler = $handler;
         
@@ -176,9 +175,9 @@ class SimpleQuery implements ContainerInterface
      * 指定搜索字段或搜索字段处理回调
      * @param string|Entity|callable($model Model, $field string, $word string, $op string, $source string):mixed $field 字段名称或处理回调
      * @param null|callable($model Model, $field string, $word string, $op string, $source string):mixed          $callback 处理回调
-     * @return $this
+     * @return static
      */
-    public function field($field, callable $callback = null) : self
+    public function field($field, callable $callback = null) : static
     {
         if ($field instanceof Closure) {
             $this->fieldCallback = $field;
@@ -195,10 +194,10 @@ class SimpleQuery implements ContainerInterface
     
     /**
      * 指定查询处理回调
-     * @param null|callable($model Model, $option ArrayOption):void $callback 查询处理回调
-     * @return $this
+     * @param callable($model Model, $option ArrayOption):void $callback 查询处理回调
+     * @return static
      */
-    public function query(callable $callback) : self
+    public function query(callable $callback) : static
     {
         $this->queryCallback = $callback;
         
@@ -209,9 +208,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 指定数据集处理回调
      * @param callable($list array|Collection):mixed $callback 数据集处理回调
-     * @return $this
+     * @return static
      */
-    public function list(callable $callback) : self
+    public function list(callable $callback) : static
     {
         $this->listCallback = $callback;
         
@@ -222,9 +221,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置是否简洁模式分页
      * @param bool $simple
-     * @return $this
+     * @return static
      */
-    public function simple(bool $simple) : self
+    public function simple(bool $simple) : static
     {
         $this->simple = $simple;
         
@@ -235,9 +234,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置分页驱动类
      * @param class-string<Paginator> $paginator
-     * @return $this
+     * @return static
      */
-    public function paginator(string $paginator) : self
+    public function paginator(string $paginator) : static
     {
         if (!is_subclass_of($this->paginator, Paginator::class)) {
             throw new ClassNotExtendsException($paginator, Paginator::class);
@@ -262,9 +261,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置搜索关键词
      * @param string $word
-     * @return $this
+     * @return static
      */
-    public function setWord(string $word) : self
+    public function setWord(string $word) : static
     {
         $this->word = $word;
         
@@ -285,9 +284,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置是否精确搜索
      * @param bool $accurate
-     * @return $this
+     * @return static
      */
-    public function setAccurate(bool $accurate) : self
+    public function setAccurate(bool $accurate) : static
     {
         $this->accurate = $accurate;
         
@@ -308,9 +307,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置页码
      * @param int $page
-     * @return $this
+     * @return static
      */
-    public function setPage(int $page) : self
+    public function setPage(int $page) : static
     {
         $this->page = $page;
         
@@ -331,9 +330,9 @@ class SimpleQuery implements ContainerInterface
     /**
      * 设置是否查询扩展数据
      * @param bool $extend
-     * @return $this
+     * @return static
      */
-    public function setExtend(bool $extend) : self
+    public function setExtend(bool $extend) : static
     {
         $this->extend = $extend;
         
@@ -355,9 +354,9 @@ class SimpleQuery implements ContainerInterface
      * 设置每页显示条数
      * @param int  $limit 每页查询条数，0为全部
      * @param bool $max 是否启用最多查询，即$limit设置多少就最多查多少
-     * @return $this
+     * @return static
      */
-    public function setLimit(int $limit, bool $max = false) : self
+    public function setLimit(int $limit, bool $max = false) : static
     {
         $this->limit    = $limit;
         $this->maxLimit = $max;
@@ -394,7 +393,7 @@ class SimpleQuery implements ContainerInterface
             }
         }
         
-        $list = $this->extend ? $this->model->selectExtendList() : $this->model->selectList();
+        $list = $this->model->extend($this->extend)->selectList();
         
         // 数据集处理回调
         $result = null;
@@ -420,9 +419,9 @@ class SimpleQuery implements ContainerInterface
     
     /**
      * 构建查询条件
-     * @return $this
+     * @return static
      */
-    public function buildCondition() : self
+    public function buildCondition() : static
     {
         if ($this->handler) {
             $this->handler->prepare($this, $this->model);
@@ -468,7 +467,7 @@ class SimpleQuery implements ContainerInterface
      * @param string $likeWord 模糊查询的关键词
      * @return mixed
      */
-    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord)
+    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord) : mixed
     {
         $op   = 'like';
         $word = $likeWord;
@@ -499,8 +498,8 @@ class SimpleQuery implements ContainerInterface
      * @param Model $model
      * @return static
      */
-    public static function init(Model $model)
+    public static function init(Model $model) : static
     {
-        return Container::getInstance()->make(self::class, [$model], true);
+        return self::makeContainer([$model], true);
     }
 }

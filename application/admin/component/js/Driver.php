@@ -60,9 +60,9 @@ abstract class Driver
     /**
      * 指定查询模型
      * @param Model|class-string<Model> $model 模型
-     * @return $this
+     * @return static
      */
-    public function model($model)
+    public function model($model) : static
     {
         if (is_string($model)) {
             if (!is_subclass_of($model, Model::class)) {
@@ -93,9 +93,9 @@ abstract class Driver
     /**
      * 指定处理回调
      * @param Handler $handler
-     * @return $this
+     * @return static
      */
-    public function handler(Handler $handler)
+    public function handler(Handler $handler) : static
     {
         $this->handler = $handler;
         
@@ -175,7 +175,7 @@ abstract class Driver
      * 如果是该JS组件发起的请求，则获取该JS组件的单例
      * @return static|null
      */
-    public static function initIfRequest() : ?self
+    public static function initIfRequest() : ?static
     {
         if (static::isRequest()) {
             return self::init();

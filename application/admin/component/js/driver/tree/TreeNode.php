@@ -79,9 +79,9 @@ abstract class TreeNode extends Node
     /**
      * 设置节点ID
      * @param mixed $id
-     * @return $this
+     * @return static
      */
-    public function setId($id)
+    public function setId($id) : static
     {
         $this->id = (string) $id;
         
@@ -102,9 +102,9 @@ abstract class TreeNode extends Node
     /**
      * 设置节点名称
      * @param mixed $text
-     * @return $this
+     * @return static
      */
-    public function setText($text)
+    public function setText($text) : static
     {
         $this->text = (string) $text;
         
@@ -125,9 +125,9 @@ abstract class TreeNode extends Node
     /**
      * 设置节点图标
      * @param mixed $icon
-     * @return $this
+     * @return static
      */
-    public function setIcon($icon)
+    public function setIcon($icon) : static
     {
         $this->icon = (string) $icon;
         
@@ -148,9 +148,9 @@ abstract class TreeNode extends Node
     /**
      * 设置是否展开
      * @param mixed $opened
-     * @return $this
+     * @return static
      */
-    public function setOpened($opened)
+    public function setOpened($opened) : static
     {
         $this->state['opened'] = (bool) $opened;
         
@@ -171,9 +171,9 @@ abstract class TreeNode extends Node
     /**
      * 设置是否禁用
      * @param mixed $disabled
-     * @return $this
+     * @return static
      */
-    public function setDisabled($disabled)
+    public function setDisabled($disabled) : static
     {
         $this->state['disabled'] = (bool) $disabled;
         
@@ -194,9 +194,9 @@ abstract class TreeNode extends Node
     /**
      * 设置是否选中
      * @param mixed $selected
-     * @return $this
+     * @return static
      */
-    public function setSelected($selected)
+    public function setSelected($selected) : static
     {
         $this->state['selected'] = (bool) $selected;
         
@@ -222,9 +222,9 @@ abstract class TreeNode extends Node
      * 添加LI标签的自定义属性
      * @param string $key 属性名称
      * @param mixed  $value 属性值
-     * @return $this
+     * @return static
      */
-    public function addLiAttr(string $key, $value)
+    public function addLiAttr(string $key, $value) : static
     {
         if ($this->li_attr instanceof stdClass) {
             $this->li_attr = [];
@@ -254,9 +254,9 @@ abstract class TreeNode extends Node
      * 添加A标签的自定义属性
      * @param string $key 属性名称
      * @param mixed  $value 属性值
-     * @return $this
+     * @return static
      */
-    public function addAAttr(string $key, $value)
+    public function addAAttr(string $key, $value) : static
     {
         if ($this->a_attr instanceof stdClass) {
             $this->a_attr = [];

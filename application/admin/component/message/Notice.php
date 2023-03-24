@@ -7,7 +7,7 @@ use BusyPHP\App;
 use BusyPHP\app\admin\component\message\notice\NoticeNode;
 use BusyPHP\app\admin\model\admin\message\AdminMessage;
 use BusyPHP\app\admin\model\admin\message\AdminMessageField;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\traits\ContainerDefine;
@@ -48,13 +48,13 @@ class Notice implements ContainerInterface
     
     /**
      * 获取未读消息总数
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @return int
      */
-    public function getUnreadTotal(AdminUserInfo $adminUserInfo) : int
+    public function getUnreadTotal(AdminUserField $AdminUserField) : int
     {
         return AdminMessage::init()
-            ->where(AdminMessageField::userId($adminUserInfo->id))
+            ->where(AdminMessageField::userId($AdminUserField->id))
             ->where(AdminMessageField::read(0))
             ->count();
     }
@@ -62,65 +62,65 @@ class Notice implements ContainerInterface
     
     /**
      * 设为已读
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @param string        $id
      * @throws Throwable
      */
-    public function setRead(AdminUserInfo $adminUserInfo, string $id)
+    public function setRead(AdminUserField $AdminUserField, string $id)
     {
-        AdminMessage::init()->setRead($adminUserInfo->id, (int) $id);
+        AdminMessage::init()->setRead($AdminUserField->id, (int) $id);
     }
     
     
     /**
      * 全部已读
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @throws Throwable
      */
-    public function setAllRead(AdminUserInfo $adminUserInfo)
+    public function setAllRead(AdminUserField $AdminUserField)
     {
-        AdminMessage::init()->setAllRead($adminUserInfo->id);
+        AdminMessage::init()->setAllRead($AdminUserField->id);
     }
     
     
     /**
      * 删除消息
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @param string        $id
      * @throws Throwable
      */
-    public function delete(AdminUserInfo $adminUserInfo, string $id)
+    public function delete(AdminUserField $AdminUserField, string $id)
     {
         AdminMessage::init()
-            ->where(AdminMessageField::userId($adminUserInfo->id))
+            ->where(AdminMessageField::userId($AdminUserField->id))
             ->remove($id);
     }
     
     
     /**
      * 清空消息
-     * @param AdminUserInfo $adminUserInfo
+     * @param AdminUserField $AdminUserField
      * @throws Throwable
      */
-    public function clear(AdminUserInfo $adminUserInfo)
+    public function clear(AdminUserField $AdminUserField)
     {
-        AdminMessage::init()->clear($adminUserInfo->id);
+        AdminMessage::init()->clear($AdminUserField->id);
     }
     
     
     /**
      * 获取通知列表
-     * @param AdminUserInfo $adminUserInfo 管理员信息
+     * @param AdminUserField $AdminUserField 管理员信息
      * @param int           $page 分页码
      * @return NoticeNode[]
      * @throws Throwable
      */
-    public function getList(AdminUserInfo $adminUserInfo, int $page) : array
+    public function getList(AdminUserField $AdminUserField, int $page) : array
     {
         $size = 20;
         $page = max($page, 1);
         $data = AdminMessage::init()
-            ->where(AdminMessageField::userId($adminUserInfo->id))
+            ->where(AdminMessageField::userId($AdminUserField->id))
             ->order(AdminMessageField::id(), 'desc')
             ->page($page, $size)
             ->selectList();

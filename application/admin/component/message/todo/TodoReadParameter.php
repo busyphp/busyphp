@@ -28,9 +28,9 @@ class TodoReadParameter extends TodoParameter
     /**
      * 设置ID
      * @param string $id
-     * @return $this
+     * @return static
      */
-    public function setId(string $id) : self
+    public function setId(string $id) : static
     {
         $this->id = $id;
         

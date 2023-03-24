@@ -39,9 +39,9 @@ class SelectPickerNode extends Node
     /**
      * 设置选项ID
      * @param mixed $id
-     * @return $this
+     * @return static
      */
-    public function setId($id) : self
+    public function setId($id) : static
     {
         $this->id = (string) $id;
         
@@ -62,9 +62,9 @@ class SelectPickerNode extends Node
     /**
      * 设置选项文本
      * @param mixed $text
-     * @return $this
+     * @return static
      */
-    public function setText($text) : self
+    public function setText($text) : static
     {
         $this->text = (string) $text;
         

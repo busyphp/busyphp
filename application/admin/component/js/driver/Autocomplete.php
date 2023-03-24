@@ -72,9 +72,9 @@ class Autocomplete extends Driver implements ContainerInterface
     /**
      * 设置查询关键词
      * @param string $word
-     * @return $this
+     * @return static
      */
-    public function setWord(string $word) : self
+    public function setWord(string $word) : static
     {
         $this->word = $word;
         
@@ -95,9 +95,9 @@ class Autocomplete extends Driver implements ContainerInterface
     /**
      * 设置查询限制条数，设为0则不限
      * @param int $limit
-     * @return $this
+     * @return static
      */
-    public function setLimit(int $limit) : self
+    public function setLimit(int $limit) : static
     {
         $this->limit = $limit;
         
@@ -118,9 +118,9 @@ class Autocomplete extends Driver implements ContainerInterface
     /**
      * 设置选项文本字段
      * @param string|Entity $textField
-     * @return $this
+     * @return static
      */
-    public function setTextField($textField) : self
+    public function setTextField($textField) : static
     {
         $this->textField = (string) $textField;
         

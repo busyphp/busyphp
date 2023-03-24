@@ -50,9 +50,9 @@ abstract class Handler
      * 预备参数
      * @param mixed      $driver
      * @param Model|null $model
-     * @return $this
+     * @return static
      */
-    public function prepare($driver, Model $model = null) : self
+    public function prepare($driver, Model $model = null) : static
     {
         if ($this->prepare) {
             return $this;

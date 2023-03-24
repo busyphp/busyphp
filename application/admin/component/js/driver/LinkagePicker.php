@@ -90,9 +90,9 @@ class LinkagePicker extends Driver implements ContainerInterface
     /**
      * 设置获取id的字段
      * @param string|Entity $idField
-     * @return LinkagePicker
+     * @return static
      */
-    public function setIdField($idField) : self
+    public function setIdField($idField) : static
     {
         $this->idField = (string) $idField;
         
@@ -113,9 +113,9 @@ class LinkagePicker extends Driver implements ContainerInterface
     /**
      * 设置获取上级ID的字段
      * @param string|Entity $parentField
-     * @return $this
+     * @return static
      */
-    public function setParentField($parentField) : self
+    public function setParentField($parentField) : static
     {
         $this->parentField = (string) $parentField;
         
@@ -136,9 +136,9 @@ class LinkagePicker extends Driver implements ContainerInterface
     /**
      * 设置获取name的字段
      * @param string|Entity $nameField
-     * @return $this
+     * @return static
      */
-    public function setNameField($nameField) : self
+    public function setNameField($nameField) : static
     {
         $this->nameField = (string) $nameField;
         
@@ -159,9 +159,9 @@ class LinkagePicker extends Driver implements ContainerInterface
     /**
      * 设置获取是否禁用的字段
      * @param string|Entity $disabledField
-     * @return $this
+     * @return static
      */
-    public function setDisabledField($disabledField) : self
+    public function setDisabledField($disabledField) : static
     {
         $this->disabledField = (string) $disabledField;
         

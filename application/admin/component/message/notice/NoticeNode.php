@@ -1,5 +1,5 @@
 <?php
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\component\message\notice;
 
@@ -82,9 +82,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置消息ID
      * @param mixed $id
-     * @return $this
+     * @return static
      */
-    public function setId($id) : self
+    public function setId($id) : static
     {
         $this->id = (string) $id;
         
@@ -105,9 +105,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置消息标题
      * @param mixed $title
-     * @return $this
+     * @return static
      */
-    public function setTitle($title) : self
+    public function setTitle($title) : static
     {
         $this->title = (string) $title;
         
@@ -128,9 +128,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置消息描述
      * @param mixed $desc
-     * @return $this
+     * @return static
      */
-    public function setDesc($desc) : self
+    public function setDesc($desc) : static
     {
         $this->desc = (string) $desc;
         
@@ -151,9 +151,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置是否已读
      * @param bool $read
-     * @return $this
+     * @return static
      */
-    public function setRead(bool $read) : self
+    public function setRead(bool $read) : static
     {
         $this->read = $read;
         
@@ -174,9 +174,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置创建时间
      * @param string $create_time
-     * @return $this
+     * @return static
      */
-    public function setCreateTime(string $create_time) : self
+    public function setCreateTime(string $create_time) : static
     {
         $this->create_time = $create_time;
         
@@ -197,9 +197,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置操作URL
      * @param string|Url $url
-     * @return $this
+     * @return static
      */
-    public function setUrl($url) : self
+    public function setUrl($url) : static
     {
         $this->url = (string) $url;
         
@@ -230,9 +230,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置图标颜色
      * @param string $icon_color
-     * @return $this
+     * @return static
      */
-    public function setIconColor(string $icon_color) : self
+    public function setIconColor(string $icon_color) : static
     {
         $this->icon_color = $icon_color;
         
@@ -243,9 +243,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置图标类名
      * @param string $icon 图标类或图片地址
-     * @return $this
+     * @return static
      */
-    public function setIcon(string $icon) : self
+    public function setIcon(string $icon) : static
     {
         $this->icon = $icon;
         
@@ -266,9 +266,9 @@ class NoticeNode extends ObjectOption
     /**
      * 设置标签自定义属性
      * @param array $attrs
-     * @return $this
+     * @return static
      */
-    public function setAttrs(array $attrs) : self
+    public function setAttrs(array $attrs) : static
     {
         $this->attrs = $attrs;
         
@@ -280,9 +280,9 @@ class NoticeNode extends ObjectOption
      * 添加标签自定义属性
      * @param string $name 属性名称
      * @param mixed  $value 属性值
-     * @return $this
+     * @return static
      */
-    public function addAttr(string $name, $value) : self
+    public function addAttr(string $name, $value) : static
     {
         $this->attrs[$name] = $value;
         

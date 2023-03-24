@@ -97,9 +97,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办ID
      * @param string $id
-     * @return $this
+     * @return static
      */
-    public function setId($id) : self
+    public function setId($id) : static
     {
         $this->id = (string) $id;
         
@@ -120,9 +120,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办标题
      * @param string $title
-     * @return $this
+     * @return static
      */
-    public function setTitle($title) : self
+    public function setTitle($title) : static
     {
         $this->title = (string) $title;
         
@@ -143,9 +143,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办描述
      * @param string $desc
-     * @return $this
+     * @return static
      */
-    public function setDesc($desc) : self
+    public function setDesc($desc) : static
     {
         $this->desc = (string) $desc;
         
@@ -166,9 +166,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办操作URL
      * @param string|Url $url
-     * @return $this
+     * @return static
      */
-    public function setUrl($url) : self
+    public function setUrl($url) : static
     {
         $this->url = (string) $url;
         
@@ -189,9 +189,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办数
      * @param int $total
-     * @return $this
+     * @return static
      */
-    public function setTotal(int $total) : self
+    public function setTotal(int $total) : static
     {
         $this->total = $total;
         
@@ -212,9 +212,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置标签自定义属性
      * @param array $attrs
-     * @return $this
+     * @return static
      */
-    public function setAttrs(array $attrs) : self
+    public function setAttrs(array $attrs) : static
     {
         $this->attrs = $attrs;
         
@@ -226,9 +226,9 @@ class TodoNode extends ObjectOption
      * 添加标签自定义属性
      * @param string $name 属性名称
      * @param mixed  $value 属性值
-     * @return $this
+     * @return static
      */
-    public function addAttr(string $name, $value) : self
+    public function addAttr(string $name, $value) : static
     {
         $this->attrs[$name] = $value;
         
@@ -249,9 +249,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置待办级别
      * @param int $level
-     * @return $this
+     * @return static
      */
-    public function setLevel(int $level) : self
+    public function setLevel(int $level) : static
     {
         $this->level = $level;
         
@@ -271,9 +271,9 @@ class TodoNode extends ObjectOption
     /**
      * 设置排序下标
      * @param int $sort
-     * @return $this
+     * @return static
      */
-    public function setSort(int $sort) : self
+    public function setSort(int $sort) : static
     {
         $this->sort = $sort;
         

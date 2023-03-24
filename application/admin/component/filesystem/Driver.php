@@ -55,11 +55,18 @@ abstract class Driver
     
     
     /**
+     * 获取参数管理表单
+     * @return array
+     */
+    abstract public function getForm() : array;
+    
+    
+    /**
      * 获取实例
      * @param string $disk
      * @return static
      */
-    public static function getInstance(string $disk) : self
+    public static function getInstance(string $disk) : static
     {
         $class = Config::get(sprintf('filesystem.disks.%s.admin', $disk));
         if (!$class) {

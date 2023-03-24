@@ -89,9 +89,9 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     /**
      * 设置查重字段
      * @param string|Entity $field
-     * @return $this
+     * @return static
      */
-    public function setField($field) : self
+    public function setField($field) : static
     {
         $this->field = (string) $field;
         
@@ -112,9 +112,9 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     /**
      * 设置查重值
      * @param string $value
-     * @return $this
+     * @return static
      */
-    public function setValue(string $value) : self
+    public function setValue(string $value) : static
     {
         $this->value = $value;
         
@@ -135,9 +135,9 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     /**
      * 设置排除查重字段
      * @param string|Entity $excludeField
-     * @return $this
+     * @return static
      */
-    public function setExcludeField($excludeField) : self
+    public function setExcludeField($excludeField) : static
     {
         $this->excludeField = (string) $excludeField;
         
@@ -158,9 +158,9 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     /**
      * 设置排除查重值
      * @param string $excludeValue
-     * @return $this
+     * @return static
      */
-    public function setExcludeValue(string $excludeValue) : self
+    public function setExcludeValue(string $excludeValue) : static
     {
         $this->excludeValue = $excludeValue;
         
@@ -181,9 +181,9 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     /**
      * 设置查重错误消息
      * @param string $errorMessage
-     * @return $this
+     * @return static
      */
-    public function setErrorMessage(string $errorMessage) : self
+    public function setErrorMessage(string $errorMessage) : static
     {
         $this->errorMessage = $errorMessage;
         

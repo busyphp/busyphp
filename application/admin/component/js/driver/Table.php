@@ -146,9 +146,9 @@ class Table extends Driver implements ContainerInterface
      * 指定数据集
      * @param array|Collection|callable($list array):array $list 数据集或处理回调
      * @param null|callable($list array):array|void        $listCallback 处理回调
-     * @return $this
+     * @return static
      */
-    public function list($list, callable $listCallback = null) : self
+    public function list($list, callable $listCallback = null) : static
     {
         if ($list instanceof Closure) {
             $listCallback = $list;
@@ -164,10 +164,10 @@ class Table extends Driver implements ContainerInterface
     
     /**
      * 指定查询处理回调
-     * @param null|callable($model Model, $option ArrayOption):void $callback 查询处理回调
-     * @return $this
+     * @param callable($model Model, $option ArrayOption):void $callback 查询处理回调
+     * @return static
      */
-    public function query(callable $callback) : self
+    public function query(callable $callback) : static
     {
         $this->queryCallback = $callback;
         
@@ -179,9 +179,9 @@ class Table extends Driver implements ContainerInterface
      * 指定搜索字段或搜索字段处理回调
      * @param string|Entity|callable($model Model, $field string, $word string, $op string, $source string):mixed $field 字段名称或处理回调
      * @param null|callable($model Model, $field string, $word string, $op string, $source string):mixed          $callback 处理回调
-     * @return $this
+     * @return static
      */
-    public function field($field, callable $callback = null) : self
+    public function field($field, callable $callback = null) : static
     {
         if ($field instanceof Closure) {
             $this->fieldCallback = $field;
@@ -199,9 +199,9 @@ class Table extends Driver implements ContainerInterface
     /**
      * 设置是否精确搜索
      * @param bool $accurate
-     * @return $this
+     * @return static
      */
-    public function setAccurate(bool $accurate) : self
+    public function setAccurate(bool $accurate) : static
     {
         $this->accurate = $accurate;
         
@@ -222,9 +222,9 @@ class Table extends Driver implements ContainerInterface
     /**
      * 设置查询关键词
      * @param string $word
-     * @return $this
+     * @return static
      */
-    public function setWord(string $word) : self
+    public function setWord(string $word) : static
     {
         $this->word = $word;
         
@@ -245,9 +245,9 @@ class Table extends Driver implements ContainerInterface
     /**
      * 设置排序字段
      * @param string|Entity $orderField
-     * @return $this
+     * @return static
      */
-    public function setOrderField($orderField) : self
+    public function setOrderField($orderField) : static
     {
         $this->orderField = (string) $orderField;
         
@@ -268,9 +268,9 @@ class Table extends Driver implements ContainerInterface
     /**
      * 设置排序方式
      * @param string $orderType
-     * @return $this
+     * @return static
      */
-    public function setOrderType(string $orderType) : self
+    public function setOrderType(string $orderType) : static
     {
         $this->orderType = $orderType;
         
@@ -292,9 +292,9 @@ class Table extends Driver implements ContainerInterface
      * 设置查询限制条数
      * @param int  $limit 每页查询条数，0为全部
      * @param bool $max 是否启用最多查询，即$limit设置多少就最多查多少
-     * @return $this
+     * @return static
      */
-    public function setLimit(int $limit, bool $max = false) : self
+    public function setLimit(int $limit, bool $max = false) : static
     {
         $this->limit    = $limit;
         $this->maxLimit = $max;
@@ -326,9 +326,9 @@ class Table extends Driver implements ContainerInterface
     /**
      * 设置查询偏移量
      * @param int $offset
-     * @return $this
+     * @return static
      */
-    public function setOffset(int $offset) : self
+    public function setOffset(int $offset) : static
     {
         $this->offset = $offset;
         
@@ -350,9 +350,9 @@ class Table extends Driver implements ContainerInterface
      * 设置参与搜索的字段
      * @param array|string|Entity $searchable
      * @param bool                $merge 是否合并
-     * @return $this
+     * @return static
      */
-    public function setSearchable($searchable, bool $merge = true) : self
+    public function setSearchable($searchable, bool $merge = true) : static
     {
         if (!is_array($searchable)) {
             $searchable = [$searchable];
@@ -424,8 +424,9 @@ class Table extends Driver implements ContainerInterface
     
     /**
      * 构建查询条件
+     * @return static
      */
-    public function buildCondition() : self
+    public function buildCondition() : static
     {
         $this->prepareHandler();
         
@@ -544,7 +545,7 @@ class Table extends Driver implements ContainerInterface
      * @param string $likeWord 模糊查询的关键词
      * @return mixed
      */
-    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord)
+    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord) : mixed
     {
         $op   = 'like';
         $word = $likeWord;

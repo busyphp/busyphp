@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\component\message\todo;
 
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 
 /**
  * TodoParameter
@@ -14,16 +14,16 @@ use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
 class TodoParameter
 {
     /**
-     * @var AdminUserInfo
+     * @var AdminUserField
      */
     private $user;
     
     
     /**
      * 设置管理员信息
-     * @param AdminUserInfo $user
+     * @param AdminUserField $user
      */
-    public function setUser(AdminUserInfo $user) : void
+    public function setUser(AdminUserField $user) : void
     {
         $this->user = $user;
     }
@@ -31,9 +31,9 @@ class TodoParameter
     
     /**
      * 获取管理员信息
-     * @return AdminUserInfo
+     * @return AdminUserField
      */
-    public function getUser() : AdminUserInfo
+    public function getUser() : AdminUserField
     {
         return $this->user;
     }

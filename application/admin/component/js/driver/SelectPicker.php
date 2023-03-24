@@ -120,9 +120,9 @@ class SelectPicker extends Driver implements ContainerInterface
     /**
      * 设置每页显示条数，0为不限
      * @param int $length
-     * @return SelectPicker
+     * @return static
      */
-    public function setLength(int $length) : self
+    public function setLength(int $length) : static
     {
         $this->length = $length < 0 ? 20 : $length;
         
@@ -143,9 +143,9 @@ class SelectPicker extends Driver implements ContainerInterface
     /**
      * 设置选项ID字段
      * @param string|Entity $idField
-     * @return SelectPicker
+     * @return static
      */
-    public function setIdField($idField) : self
+    public function setIdField($idField) : static
     {
         $this->idField = (string) $idField;
         
@@ -166,9 +166,9 @@ class SelectPicker extends Driver implements ContainerInterface
     /**
      * 设置选项文本字段
      * @param string|Entity $textField
-     * @return $this
+     * @return static
      */
-    public function setTextField($textField) : self
+    public function setTextField($textField) : static
     {
         $this->textField = (string) $textField;
         
@@ -189,9 +189,9 @@ class SelectPicker extends Driver implements ContainerInterface
     /**
      * 设置查询的关键词或默认值
      * @param string|string[] $word
-     * @return $this
+     * @return static
      */
-    public function setWord($word) : self
+    public function setWord($word) : static
     {
         $this->word = $word;
         

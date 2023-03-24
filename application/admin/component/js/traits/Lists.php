@@ -38,9 +38,9 @@ trait Lists
      * @param array|Collection|callable                   $list 数据集或数据集的Item处理回调
      * @param null|callable                               $itemCallback 数据集的Item处理回调
      * @param null|callable($list array|Collection):mixed $listCallback 数据集处理回调
-     * @return $this
+     * @return static
      */
-    public function list($list, callable $itemCallback = null, callable $listCallback = null)
+    public function list($list, callable $itemCallback = null, callable $listCallback = null) : static
     {
         if ($list instanceof Closure) {
             $listCallback = $itemCallback;

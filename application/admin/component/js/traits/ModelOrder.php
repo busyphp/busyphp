@@ -27,7 +27,7 @@ trait ModelOrder
      * 获取排序方式
      * @return array|string
      */
-    public function getOrder()
+    public function getOrder() : array|string
     {
         if (is_null($this->order)) {
             $order = $this->request->param('order/s', '', 'trim');
@@ -57,9 +57,9 @@ trait ModelOrder
     /**
      * 设置排序方式
      * @param array|string $order
-     * @return $this
+     * @return static
      */
-    public function setOrder($order)
+    public function setOrder($order) : static
     {
         $this->order = $order;
         
@@ -69,9 +69,9 @@ trait ModelOrder
     
     /**
      * 模型排序
-     * @return $this
+     * @return static
      */
-    protected function modelOrder()
+    protected function modelOrder() : static
     {
         $order = $this->getOrder();
         if ($order && !$this->model->getOptions('order')) {

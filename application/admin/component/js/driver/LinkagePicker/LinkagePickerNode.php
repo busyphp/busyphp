@@ -47,9 +47,9 @@ abstract class LinkagePickerNode extends Node
     /**
      * 设置节点ID
      * @param mixed $id
-     * @return $this
+     * @return static
      */
-    public function setId($id)
+    public function setId($id) : static
     {
         $this->id = (string) $id;
         
@@ -70,9 +70,9 @@ abstract class LinkagePickerNode extends Node
     /**
      * 设置节点名称
      * @param mixed $name
-     * @return $this
+     * @return static
      */
-    public function setName($name)
+    public function setName($name) : static
     {
         $this->name = (string) $name;
         
@@ -93,9 +93,9 @@ abstract class LinkagePickerNode extends Node
     /**
      * 设置是否禁用
      * @param mixed $disabled
-     * @return $this
+     * @return static
      */
-    public function setDisabled($disabled)
+    public function setDisabled($disabled) : static
     {
         $this->disabled = (bool) $disabled;
         
