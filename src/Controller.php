@@ -34,11 +34,11 @@ use Throwable;
  * @method bool isMobile 是否在手机端运行
  * @method bool isAndroid 是否在安卓端运行
  * @method bool isIos 是否在苹果上运行
- * @method mixed param(string $key = "", callable $filter = "", string $default = null) 获取参数
- * @method mixed get(string $key = "", callable $filter = "", string $default = null) 获取$_GET参数
- * @method mixed post(string $key = "", callable $filter = "", string $default = null) 获取$_POST参数
- * @method mixed route(string $key = "", callable $filter = "", string $default = null) 获取路由参数
- * @method mixed cookie(string $key = "", callable $filter = "", string $default = null) 获取Cookie
+ * @method mixed param(string $key = "", callable $filter = "", mixed $default = null) 获取参数
+ * @method mixed get(string $key = "", callable $filter = "", mixed $default = null) 获取$_GET参数
+ * @method mixed post(string $key = "", callable $filter = "", mixed $default = null) 获取$_POST参数
+ * @method mixed route(string $key = "", callable $filter = "", mixed $default = null) 获取路由参数
+ * @method mixed cookie(string $key = "", callable $filter = "", mixed $default = null) 获取Cookie
  * @method Json json(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSON数据
  * @method Jsonp jsonp(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出JSONP数据
  * @method Xml xml(mixed $data = [], int $code = 200, array $header = [], array $options = []) 输出XML数据
@@ -116,7 +116,7 @@ abstract class Controller
                 // 支持场景
                 [$validate, $scene] = explode('.', $validate);
             }
-            $class = false !== strpos($validate, '\\') ? $validate : $this->app->parseClass('validate', $validate);
+            $class = str_contains($validate, '\\') ? $validate : $this->app->parseClass('validate', $validate);
             $v     = new $class();
             if (!empty($scene)) {
                 $v->scene($scene);
