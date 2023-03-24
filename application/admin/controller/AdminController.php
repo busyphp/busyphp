@@ -5,27 +5,17 @@ namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
 use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
-use BusyPHP\app\admin\plugin\AutocompletePlugin;
-use BusyPHP\app\admin\plugin\FormVerifyRemotePlugin;
-use BusyPHP\app\admin\plugin\LinkagePickerPlugin;
-use BusyPHP\app\admin\plugin\ListPlugin;
-use BusyPHP\app\admin\plugin\SelectPickerPlugin;
-use BusyPHP\app\admin\plugin\TablePlugin;
-use BusyPHP\app\admin\plugin\TreePlugin;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\group\AdminGroup;
+use BusyPHP\app\admin\model\admin\user\AdminUser;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
+use BusyPHP\app\admin\model\system\logs\SystemLogs;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\Controller;
 use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\FileHelper;
-use BusyPHP\app\admin\model\admin\group\AdminGroup;
-use BusyPHP\app\admin\model\admin\user\AdminUser;
-use BusyPHP\app\admin\model\system\logs\SystemLogs;
-use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\Model;
 use FilesystemIterator;
 use SplFileInfo;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
 use think\exception\HttpResponseException;
 use think\facade\Event;
 use think\Response;
@@ -44,79 +34,37 @@ abstract class AdminController extends Controller
     //| 记录
     //+--------------------------------------
     /** 新增操作 */
-    const LOG_INSERT = SystemLogs::TYPE_INSERT;
+    public const LOG_INSERT = SystemLogs::TYPE_INSERT;
     
     /** 更新操作 */
-    const LOG_UPDATE = SystemLogs::TYPE_UPDATE;
+    public const LOG_UPDATE = SystemLogs::TYPE_UPDATE;
     
     /** 删除操作 */
-    const LOG_DELETE = SystemLogs::TYPE_DELETE;
+    public const LOG_DELETE = SystemLogs::TYPE_DELETE;
     
     /** 默认操作 */
-    const LOG_DEFAULT = SystemLogs::TYPE_DEFAULT;
+    public const LOG_DEFAULT = SystemLogs::TYPE_DEFAULT;
     
     //+--------------------------------------
     //| 变量
     //+--------------------------------------
     /**
      * 管理员信息
-     * @var AdminUserInfo
+     * @var AdminUserField|null
      */
-    protected $adminUser;
+    protected ?AdminUserField $adminUser = null;
     
     /**
      * 管理员ID
      * @var int
      */
-    protected $adminUserId = 0;
+    protected int $adminUserId = 0;
     
     /**
      * 管理员账号名称
      * @var string
      */
-    protected $adminUsername = '';
-    
-    /**
-     * 请求的插件名称
-     * @var bool
-     */
-    protected $requestPluginName;
-    
-    /**
-     * JS SelectPicker 插件
-     * @var SelectPickerPlugin
-     */
-    protected $pluginSelectPicker;
-    
-    /**
-     * JS Autocomplete 插件
-     * @var AutocompletePlugin
-     */
-    protected $pluginAutocomplete;
-    
-    /**
-     * Js Table 插件
-     * @var TablePlugin
-     */
-    protected $pluginTable;
-    
-    /**
-     * Js Tree 插件
-     * @var TreePlugin
-     */
-    protected $pluginTree;
-    
-    /**
-     * Js LinkagePicker 插件
-     * @var LinkagePickerPlugin
-     */
-    protected $pluginLinkagePicker;
-    
-    /**
-     * Js FormVerify 远程验证插件
-     * @var FormVerifyRemotePlugin
-     */
-    protected $pluginFormVerifyRemote;
+    protected string $adminUsername = '';
     
     //+--------------------------------------
     //| 私有
@@ -125,77 +73,24 @@ abstract class AdminController extends Controller
      * 页面名称
      * @var string
      */
-    private $pageTitle;
+    private string $pageTitle = '';
     
     /**
      * 是否记录操作时长
      * @var bool
      */
-    private $saveOperate = true;
-    
-    
-    protected function initializeBefore()
-    {
-        $this->requestPluginName = $this->request->header('Busy-Admin-Plugin', '');
-    }
+    private bool $saveOperate = true;
     
     
     /**
      * 初始化
      * @param bool $checkLogin 是否验证登录，默认验证
-     * @throws DataNotFoundException
-     * @throws DbException
      */
-    protected function initialize($checkLogin = true)
+    protected function initialize(bool $checkLogin = true)
     {
-        // 验证登录
-        if ($checkLogin) {
+        // 排除登录校验
+        if (!SystemMenu::isExcludeLogin(static::class, $this->request->action()) && $checkLogin) {
             $this->checkLogin();
-        }
-        
-        // 自动处理
-        switch ($this->requestPluginName) {
-            // SelectPicker插件
-            case 'SelectPicker':
-                $this->pluginSelectPicker = new SelectPickerPlugin();
-                $result                   = $this->pluginSelectPicker->build();
-            break;
-            
-            // Autocomplete插件
-            case 'Autocomplete':
-                $this->pluginAutocomplete = new AutocompletePlugin();
-                $result                   = $this->pluginAutocomplete->build();
-            break;
-            
-            // Table插件
-            case 'Table':
-                $this->pluginTable = new TablePlugin();
-                $result            = $this->pluginTable->build();
-            break;
-            
-            // Tree插件
-            case 'Tree':
-                $this->pluginTree = new TreePlugin();
-                $result           = $this->pluginTree->build();
-            break;
-            
-            // 联级选择器
-            case 'LinkagePicker':
-                $this->pluginLinkagePicker = new LinkagePickerPlugin();
-                $result                    = $this->pluginLinkagePicker->build();
-            break;
-            
-            // 远程验证插件
-            case 'FormVerifyRemote':
-                $this->pluginFormVerifyRemote = new FormVerifyRemotePlugin();
-                $result                       = $this->pluginFormVerifyRemote->build();
-            break;
-            default:
-                $result = null;
-        }
-        
-        if (!is_null($result)) {
-            throw new HttpResponseException($this->success($result));
         }
     }
     
@@ -230,7 +125,7 @@ abstract class AdminController extends Controller
         }
         
         // 权限验证
-        if (!AdminGroup::getClass()::checkPermission($this->adminUser)) {
+        if (!AdminGroup::class()::checkPermission($this->adminUser)) {
             throw new HttpResponseException($this->error('无权限操作', $this->request->getAppUrl(), 0));
         }
     }
@@ -238,19 +133,19 @@ abstract class AdminController extends Controller
     
     /**
      * 获取登录用户信息
-     * @return AdminUserInfo
+     * @return AdminUserField|null
      */
-    protected function isLogin() : ?AdminUserInfo
+    protected function isLogin() : ?AdminUserField
     {
         try {
             $this->adminUser     = AdminUser::init()->checkLogin($this->saveOperate);
             $this->adminUserId   = $this->adminUser->id;
             $this->adminUsername = $this->adminUser->username;
-        } catch (Throwable $e) {
+            
+            return $this->adminUser;
+        } catch (Throwable) {
             return null;
         }
-        
-        return $this->adminUser;
     }
     
     
@@ -267,43 +162,11 @@ abstract class AdminController extends Controller
     
     
     /**
-     * 通用数据列表查询器
-     * @param Model $model 模型
-     * @param int   $limit 每页显示条数
-     * @param bool  $extend 是否查询扩展数据
-     * @param null  $isTotal 是否统计条数
-     * @return ListPlugin
-     */
-    protected function list(Model $model, $limit = null, $extend = null, $isTotal = null) : ListPlugin
-    {
-        $plugin = new ListPlugin($model);
-        
-        if (is_numeric($limit) && $limit >= 0) {
-            $plugin->setLimit($limit);
-        }
-        
-        if (is_bool($extend)) {
-            $plugin->setExtend($extend);
-        }
-        
-        if (is_bool($isTotal)) {
-            $plugin->setSimple($isTotal);
-        }
-        
-        return $plugin;
-    }
-    
-    
-    /**
      * 初始化View注入参数
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     protected function initView() : void
     {
-        foreach (AdminHandle::templateBaseData($this->pageTitle, $this->adminUser) as $key => $value) {
-            $this->assign($key, $value);
-        }
+        $this->assign(AdminHandle::templateBaseData($this->pageTitle, $this->adminUser));
     }
     
     
@@ -367,8 +230,7 @@ abstract class AdminController extends Controller
     
     /**
      * 更新缓存
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
     protected function updateCache()
     {
@@ -388,8 +250,7 @@ abstract class AdminController extends Controller
     
     /**
      * 清空缓存
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
     protected function clearCache()
     {

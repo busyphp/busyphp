@@ -1,10 +1,12 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\component\js\Driver;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
@@ -13,8 +15,7 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Request;
 use stdClass;
 use think\Container;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
+use think\exception\HttpException;
 use think\exception\HttpResponseException;
 use think\Response;
 use think\response\View;
@@ -41,7 +42,7 @@ class AdminHandle extends Handle
      */
     public function render($request, Throwable $e) : Response
     {
-        if ($e instanceof HttpResponseException) {
+        if ($e instanceof HttpResponseException || $e instanceof HttpException) {
             return parent::render($request, $e);
         }
         
@@ -57,13 +58,8 @@ class AdminHandle extends Handle
         try {
             /** @var View $view */
             $view = View::create(__DIR__ . DIRECTORY_SEPARATOR . '../view/exception.html', 'view');
-            foreach (self::templateBaseData('系统发生错误') as $key => $value) {
-                $view->assign($key, $value);
-            }
-            
-            foreach ($this->convertExceptionToArray($e) as $key => $value) {
-                $view->assign($key, $value);
-            }
+            $view->assign(self::templateBaseData('系统发生错误'));
+            $view->assign($this->convertExceptionToArray($e));
             
             return $view;
         } catch (Throwable $e) {
@@ -78,19 +74,17 @@ class AdminHandle extends Handle
      */
     public static function isSinglePage() : bool
     {
-        return App::getInstance()->request->header('Busy-Admin-Plugin', '') === 'SinglePage';
+        return Driver::getRequestName() === 'SinglePage';
     }
     
     
     /**
      * 模板基础数据
-     * @param string             $pageTitle
-     * @param AdminUserInfo|null $adminUser
+     * @param string              $pageTitle
+     * @param AdminUserField|null $adminUser
      * @return array
-     * @throws DataNotFoundException
-     * @throws DbException
      */
-    public static function templateBaseData($pageTitle = '', ?AdminUserInfo $adminUser = null) : array
+    public static function templateBaseData(string $pageTitle = '', ?AdminUserField $adminUser = null) : array
     {
         $app     = App::getInstance();
         $request = $app->request;
@@ -109,23 +103,20 @@ class AdminHandle extends Handle
         
         
         // 计算面包屑
-        $menuModel   = SystemMenu::init();
-        $hashList    = $menuModel->getHashList();
-        $breadcrumb  = [];
-        $currentMenu = $hashList[md5($data['url']['route_path'])] ?? null;
-        if ($currentMenu) {
-            $idList     = $menuModel->getIdList();
-            $parentList = $menuModel->getIdParens();
-            $root       = $request->getAppUrl();
-            foreach ($parentList[$currentMenu->id] ?? [] as $id) {
-                if ($item = ($idList[$id] ?? null)) {
+        $menuModel  = SystemMenu::init();
+        $hasMap     = $menuModel->getHashMap();
+        $breadcrumb = [];
+        if ($currentMenu = ($hasMap[md5($data['url']['route_path'])] ?? null)) {
+            $parentMap = $menuModel->getHashParentMap();
+            $root      = $request->getAppUrl();
+            foreach (array_reverse($parentMap[$currentMenu->hash] ?? []) as $hash) {
+                if ($item = ($hasMap[$hash] ?? null)) {
                     $breadcrumb[] = [
                         'name' => $item->name,
                         'url'  => $item->url ? $root . ltrim($item->url, '/') : '',
                     ];
                 }
             }
-            krsort($breadcrumb);
             $breadcrumb = array_values($breadcrumb);
             
             // 最终页面
@@ -165,8 +156,8 @@ class AdminHandle extends Handle
         ];
         
         // 系统信息
-        $adminSetting    = AdminSetting::init();
-        $publicSetting   = PublicSetting::init();
+        $adminSetting    = AdminSetting::instance();
+        $publicSetting   = PublicSetting::instance();
         $pageTitleSuffix = ' - ' . $adminSetting->getTitle();
         $requires        = $app->config->get('app.admin.requires', '');
         $requires        = is_callable($requires) ? Container::getInstance()->invokeFunction($requires) : $requires;
@@ -177,7 +168,7 @@ class AdminHandle extends Handle
             'favicon'           => $publicSetting->getFavicon(),
             'logo_icon'         => $adminSetting->getLogoIcon(),
             'logo_horizontal'   => $adminSetting->getLogoHorizontal(),
-            'user'              => $adminUser ?? [],
+            'user'              => $adminUser ?? null,
             'breadcrumb'        => $breadcrumb,
             'frame_config'      => json_encode([
                 'root'       => $data['url']['app'],
@@ -190,26 +181,45 @@ class AdminHandle extends Handle
                 'debug'      => $app->config->get('app.admin.debug', false),
                 'requires'   => $requires,
                 'configs'    => [
-                    'app'         => [
+                    'app'           => [
                         'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder(false) . "?v={$data['skin']['version']}",
                         'url'             => $data['url']['app'],
                         'navSingleHold'   => $theme['nav_single_hold'],
                         'navMode'         => $theme['nav_mode'],
-                        'pageTitleSuffix' => $pageTitleSuffix
+                        'pageTitleSuffix' => $pageTitleSuffix,
+                        'operateTipStyle' => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
                     ],
-                    'upload'      => [
-                        'configUrl' => (string) url('Common.File/config?noext'),
+                    'upload'        => [
+                        'configUrl' => (string) url('common.file/config?noext'),
                     ],
-                    'editor'      => [
-                        'ueConfigUrl' => (string) url('Common.Ueditor/runtime?js=1&noext'),
+                    'editor'        => [
+                        'ueConfigUrl' => (string) url('common.ueditor/runtime?js=1&noext'),
                     ],
-                    'topBar'      => [
-                        'url' => (string) url('Common.Message/index'),
+                    'topBar'        => [
+                        'url' => $data['url']['app'],
                     ],
-                    'adminDetail' => [
-                        'url' => (string) url('Common.User/detail')
+                    'adminDetail'   => [
+                        'url' => (string) url('common.user/detail')
                     ],
-                    'watermark'   => $adminSetting->getWatermark()
+                    'tree'          => [
+                        'url' => $data['url']['app']
+                    ],
+                    'linkagePicker' => [
+                        'url' => $data['url']['app']
+                    ],
+                    'table'         => [
+                        'url' => $data['url']['app']
+                    ],
+                    'selectPicker'  => [
+                        'url' => $data['url']['app']
+                    ],
+                    'autocomplete'  => [
+                        'url' => $data['url']['app']
+                    ],
+                    'formVerify'    => [
+                        'remote' => $data['url']['app']
+                    ],
+                    'watermark'     => $adminSetting->getWatermark(),
                 ]
             ], JSON_UNESCAPED_UNICODE)
         ];
@@ -235,14 +245,12 @@ class AdminHandle extends Handle
             if ($result && !ArrayHelper::isAssoc($result)) {
                 return self::restResponse(0, '返回数据结构必须是键值对形式');
             }
-        } else {
-            $result = new stdClass();
         }
         
         $data = [
             'code'    => $code,
             'message' => $message ?: ($code === 1 ? 'Succeeded' : 'Failed'),
-            'result'  => $result,
+            'result'  => $result ?: new stdClass(),
             'url'     => $url,
         ];
         if ($app->isDebug()) {
@@ -263,7 +271,7 @@ class AdminHandle extends Handle
     public static function restResponseSuccess($message = '', $result = [], $url = '') : Response
     {
         if (is_array($message)) {
-            $url     = $result;
+            $url     = is_array($result) ? '' : $result;
             $result  = $message;
             $message = '';
         } elseif (!is_array($result) && $result) {
