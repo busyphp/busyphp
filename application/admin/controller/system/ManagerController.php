@@ -3,27 +3,28 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\SelectPicker;
+use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerNode;
+use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\image\SystemFileImageStyle;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\app\admin\plugin\table\TableHandler;
-use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\CaptchaSetting;
-use BusyPHP\app\admin\setting\QrcodeSetting;
-use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\file\QRCode;
+use BusyPHP\app\admin\setting\StorageSetting;
+use BusyPHP\facade\Image;
 use BusyPHP\helper\AppHelper;
-use BusyPHP\helper\TransHelper;
-use BusyPHP\image\parameter\UrlParameter;
+use BusyPHP\helper\FileHelper;
+use BusyPHP\helper\FilesystemHelper;
 use BusyPHP\image\result\ImageStyleResult;
-use BusyPHP\Model;
-use BusyPHP\model\Map;
+use BusyPHP\model\ArrayOption;
+use League\Flysystem\FilesystemException;
 use ReflectionException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -37,14 +38,13 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/18 下午下午3:50 SystemManager.php $
  */
+#[MenuRoute(path: 'system_manager', class: true)]
 class ManagerController extends InsideController
 {
-    const TEMPLATE_INDEX = self::class . 'index';
-    
     /**
      * @var string
      */
-    private $disk;
+    protected $disk;
     
     
     protected function initialize($checkLogin = true)
@@ -52,14 +52,14 @@ class ManagerController extends InsideController
         parent::initialize($checkLogin);
         
         $disk       = $this->param('disk/s', 'trim');
-        $this->disk = $disk ?: StorageSetting::STORAGE_LOCAL;
+        $this->disk = $disk ?: FilesystemHelper::STORAGE_PUBLIC;
     }
     
     
     /**
      * 写入菜单
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @return array
+     * @throws Throwable
      */
     protected function assignNav() : array
     {
@@ -71,54 +71,58 @@ class ManagerController extends InsideController
     
     
     /**
-     * 系统基本设置
+     * 系统设置
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
+     * @throws Throwable
      */
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-cogs', sort: 1)]
     public function index() : Response
     {
         if ($this->isPost()) {
             $data = $this->post('data/a');
-            PublicSetting::init()->set($data);
+            PublicSetting::instance()->set($data);
             $this->log()->record(self::LOG_UPDATE, '系统基本设置');
             $this->updateCache();
             
             return $this->success('设置成功');
         }
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX, '', [
-            'info' => PublicSetting::init()->get(),
+        $this->assign([
+            'info' => PublicSetting::instance()->get(),
             'nav'  => $this->assignNav()
-        ]));
+        ]);
+        
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 管理面板设置
+     * 管理面板
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
+     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function admin() : Response
     {
         if ($this->isPost()) {
             $data = $this->post('data/a');
-            AdminSetting::init()->set($data);
+            AdminSetting::instance()->set($data);
             $this->log()->record(self::LOG_UPDATE, '管理面板设置');
             $this->updateCache();
             
             return $this->success('设置成功');
         }
         
-        $info                     = AdminSetting::init()->get();
+        $info                     = AdminSetting::instance()->get();
         $info['watermark']['txt'] = ($info['watermark']['txt'] ?? '') ?: "登录人：{username}\r\n内部系统，严禁拍照，截图\r\n{time}";
         $this->assign('info', $info);
         $this->assignNav();
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -127,14 +131,14 @@ class ManagerController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws ParamInvalidException
+     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function storage() : Response
     {
-        $setting = StorageSetting::init();
+        $setting = StorageSetting::instance();
         if ($this->isPost()) {
-            $data = $this->post('data/a');
-            $setting->set($data);
+            $setting->set($this->post('data/a'));
             $this->log()->record(self::LOG_UPDATE, '存储设置');
             $this->updateCache();
             
@@ -142,36 +146,81 @@ class ManagerController extends InsideController
         }
         
         $this->assign('clients', AppHelper::getList());
-        $this->assign('disks', $setting->getDisks());
+        $this->assign('disks', $setting::getDisks());
         $this->assign('info', $setting->get());
         $this->assignNav();
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 图片样式管理
+     * 存储分类
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
+     * @throws Throwable
      */
-    public function image_style() : Response
+    #[MenuNode(menu: false, parent: '/index')]
+    public function file_class() : Response
     {
-        if ($this->pluginTable) {
-            $data = [];
-            foreach (Filesystem::disk($this->disk)->image()->selectStyleByCache() as $item) {
-                $data[] = $item;
-            }
+        // 分类设置
+        if ($this->isPost()) {
+            SystemFileClass::init()
+                ->modify(SystemFileClassField::parse($this->post()), SystemFileClass::SCENE_USER_SET);
+            $this->log()->record(self::LOG_UPDATE, '分类上传设置');
+            $this->updateCache();
             
-            return $this->success($this->pluginTable->result($data, count($data)));
+            return $this->success('设置成功');
         }
         
-        $this->assign('disks', StorageSetting::init()->getDisks());
+        // 分类列表数据
+        if ($table = Table::initIfRequest()) {
+            return $table
+                ->model(SystemFileClass::init())
+                ->query(function(SystemFileClass $model, ArrayOption $option) {
+                    $model->order(SystemFileClassField::sort(), 'asc');
+                    $model->order(SystemFileClassField::id(), 'desc');
+                })
+                ->response();
+        }
+        
+        //
+        // 修改分类
+        elseif ($this->get('action/s') == 'edit') {
+            $this->assign('disks', StorageSetting::class()::getDisks());
+            $this->assign('info', SystemFileClass::init()->getInfo($this->get('id/d')));
+            
+            return $this->insideDisplay('file_class_edit');
+        }
+        
+        // 分类列表
+        $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
+        $this->assign('type', SystemFile::class()::getTypes());
+        $this->assign('info', StorageSetting::instance()->get());
+        $this->assignNav();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 图片样式
+     * @return Response
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/index')]
+    public function image_style() : Response
+    {
+        if ($table = Table::initIfRequest()) {
+            return $table->list(array_values(Filesystem::disk($this->disk)->image()->selectStyleByCache()))->response();
+        }
+        
+        $this->assign('disks', StorageSetting::class()::getDisks());
         $this->assign('disk', $this->disk);
         $this->assignNav();
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -180,6 +229,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws ReflectionException
      */
+    #[MenuNode(menu: false, parent: '/image_style')]
     public function image_style_add() : Response
     {
         if ($this->isPost()) {
@@ -196,7 +246,7 @@ class ManagerController extends InsideController
         $this->assign('font_list', $image->getFontList());
         $this->assign('font_default', $image->getDefaultFontPath());
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -204,6 +254,7 @@ class ManagerController extends InsideController
      * 修改图片样式
      * @return Response
      */
+    #[MenuNode(menu: false, parent: '/image_style')]
     public function image_style_edit() : Response
     {
         if ($this->isPost()) {
@@ -220,14 +271,14 @@ class ManagerController extends InsideController
         $this->assign('font_list', $image->getFontList());
         $this->assign('font_default', $image->getDefaultFontPath());
         
-        return $this->display('image_style_add');
+        return $this->insideDisplay('image_style_add');
     }
     
     
     /**
      * 删除图片样式
-     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/image_style')]
     public function image_style_delete() : Response
     {
         $driver = Filesystem::disk($this->disk)->image();
@@ -248,9 +299,12 @@ class ManagerController extends InsideController
     public function image_style_upload_watermark() : Response
     {
         $this->request->setRequestIsAjax();
-        $url = Filesystem::disk($this->disk)->image()->uploadWatermark($this->request->file('file'));
+        $file = $this->request->file('file');
+        FileHelper::checkFilesize(StorageSetting::instance()->getMaxSize(), $file->getSize());
         
-        return $this->success(['file_url' => $url]);
+        return $this->success([
+            'file_url' => Filesystem::disk($this->disk)->image()->uploadWatermark($file)
+        ]);
     }
     
     
@@ -260,92 +314,48 @@ class ManagerController extends InsideController
      */
     public function image_style_select() : Response
     {
-        $list = [];
-        foreach (Filesystem::disk($this->disk)->image()->selectStyleByCache() as $item) {
-            $list[] = $item;
-        }
-        if ($this->pluginSelectPicker) {
-            return $this->success($this->pluginSelectPicker->result($list, (string) ImageStyleResult::id(), (string) ImageStyleResult::id()));
-        }
-        
-        return $this->success($list);
+        return SelectPicker::init()
+            ->list(
+                Filesystem::disk($this->disk)->image()->selectStyleByCache(),
+                function(SelectPickerNode $node, ImageStyleResult $item) {
+                    $node->setId($item->id);
+                    $node->setText($item->id);
+                }
+            )
+            ->response();
     }
     
     
     /**
      * 预览图片样式
      * @return Response
+     * @throws FilesystemException
      */
     public function image_style_preview() : Response
     {
-        $filesystem = Filesystem::disk($this->disk);
-        $parameter  = new UrlParameter(SystemFileImageStyle::getPreviewImagePath($filesystem));
-        $parameter->style($this->get('id/s', 'trim'));
-        
-        return $this->redirect($filesystem->image()->url($parameter));
+        return $this->redirect(
+            Image::path(SystemFileImageStyle::class()::getPreviewImagePath($this->disk))
+                ->disk($this->disk)
+                ->style($this->get('id/s', 'trim'))
+                ->url()
+        );
     }
     
     
     /**
-     * 分类上传设置
+     * 图形验证码
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Throwable
      */
-    public function file_class() : Response
+    #[MenuNode(menu: false, parent: '/index')]
+    public function captcha() : Response
     {
-        // 分类设置
-        if ($this->isPost()) {
-            SystemFileClass::init()
-                ->updateInfo(SystemFileClassField::parse($this->post()), SystemFileClass::SCENE_USER_SET);
-            $this->log()->record(self::LOG_UPDATE, '分类上传设置');
-            $this->updateCache();
-            
-            return $this->success('设置成功');
-        }
-        
-        // 分类列表数据
-        if ($this->pluginTable) {
-            $this->pluginTable->setHandler(new class extends TableHandler {
-                public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                {
-                    $model->order(SystemFileClassField::sort(), 'asc');
-                    $model->order(SystemFileClassField::id(), 'desc');
-                }
-            });
-            
-            return $this->success($this->pluginTable->build(SystemFileClass::init()));
-        }
-        
-        //
-        // 修改分类
-        elseif ($this->get('action/s') == 'edit') {
-            $this->assign('disks', StorageSetting::init()->getDisks());
-            $this->assign('info', SystemFileClass::init()->getInfo($this->get('id/d')));
-            
-            return $this->display('file_class_edit');
-        }
-        
-        // 分类列表
-        $this->assign('file_class', SystemFileClass::init()->order('sort ASC')->selectList());
-        $this->assign('type', SystemFile::getClass()::getTypes());
-        $this->assign('info', StorageSetting::init()->get());
-        $this->assignNav();
-        
-        return $this->display();
-    }
-    
-    
-    /**
-     * 图形验证码设置
-     * @throws DbException
-     */
-    public function captcha()
-    {
+        $setting = CaptchaSetting::instance();
         if ($this->isPost()) {
             $data = $this->post('data/a');
-            CaptchaSetting::init()->set($data);
+            $setting->set($data);
             $this->log()->record(self::LOG_UPDATE, '图形验证码设置');
             $this->updateCache();
             
@@ -353,63 +363,39 @@ class ManagerController extends InsideController
         }
         
         $this->assign('clients', AppHelper::getList());
-        $this->assign('info', CaptchaSetting::init()->get());
+        $this->assign('info', $setting->get());
         $this->assignNav();
         
-        return $this->display();
-    }
-    
-    
-    /**
-     * 二维码生成设置
-     * @throws DbException
-     */
-    public function qrcode()
-    {
-        if ($this->isPost()) {
-            $data = $this->post('data/a');
-            QrcodeSetting::init()->set($data);
-            $this->log()->record(self::LOG_UPDATE, '二维码生成设置');
-            $this->updateCache();
-            
-            return $this->success('设置成功');
-        }
-        
-        $this->assign('level_options', TransHelper::toOptionHtml(QRCode::getLevels(), QrcodeSetting::init()
-            ->getLevel()));
-        $this->assign('info', QrcodeSetting::init()->get());
-        $this->assignNav();
-        
-        return $this->display();
-    }
-    
-    
-    /**
-     * 生成缓存
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function cache_create() : Response
-    {
-        $this->updateCache();
-        $this->log()->record(self::LOG_DEFAULT, '生成缓存');
-        
-        return $this->success('生成缓存成功');
+        return $this->insideDisplay();
     }
     
     
     /**
      * 清理缓存
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '#system_manager')]
     public function cache_clear() : Response
     {
         $this->clearCache();
         $this->log()->record(self::LOG_DEFAULT, '清理缓存');
         
         return $this->success('清理缓存成功');
+    }
+    
+    
+    /**
+     * 缓存加速
+     * @return Response
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '#system_manager')]
+    public function cache_create() : Response
+    {
+        $this->updateCache();
+        $this->log()->record(self::LOG_DEFAULT, '生成缓存');
+        
+        return $this->success('生成缓存成功');
     }
 }

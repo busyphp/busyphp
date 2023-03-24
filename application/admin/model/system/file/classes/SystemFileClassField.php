@@ -3,10 +3,16 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
-use BusyPHP\app\admin\setting\StorageSetting;
-use BusyPHP\interfaces\FieldObtainDataInterface;
-use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\helper\StringHelper;
+use BusyPHP\interfaces\FieldGetModelDataInterface;
+use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\Json;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\Validator;
+use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use BusyPHP\app\admin\model\system\file\SystemFile;
@@ -28,6 +34,11 @@ use think\validate\ValidateRule;
  * @method static Entity mimetype(mixed $op = null, mixed $condition = null) 限制文件mimetype
  * @method static Entity style(mixed $op = null, mixed $condition = null) 样式
  * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统类型
+ * @method static Entity typeName() 类型名称
+ * @method static Entity isFile() 是否附件
+ * @method static Entity isImage() 是否图片
+ * @method static Entity isVideo() 是否视频
+ * @method static Entity isAudio() 是否音频
  * @method $this setId(mixed $id) 设置ID
  * @method $this setName(mixed $name) 设置分类名称
  * @method $this setVar(mixed $var) 设置分类标识
@@ -39,37 +50,38 @@ use think\validate\ValidateRule;
  * @method $this setStyle(mixed $style) 设置样式
  * @method $this setSystem(mixed $system) 设置是否系统类型
  */
-class SystemFileClassField extends Field implements ModelSceneValidateInterface, FieldObtainDataInterface
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
+class SystemFileClassField extends Field implements ModelValidateInterface, FieldGetModelDataInterface
 {
     /**
      * ID
      * @var int
-     * @busy-validate require
-     * @busy-validate gt:0
      */
+    #[Validator(name: Validator::REQUIRE)]
+    #[Validator(name: Validator::GT, rule: 0)]
     public $id;
     
     /**
      * 分类名称
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-filter trim
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Filter(filter: 'trim')]
     public $name;
     
     /**
      * 分类标识
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-filter trim
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Filter(filter: 'trim')]
     public $var;
     
     /**
      * 文件类型
      * @var string
-     * @busy-validate require#请选择:attribute
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
     public $type;
     
     /**
@@ -81,29 +93,29 @@ class SystemFileClassField extends Field implements ModelSceneValidateInterface,
     /**
      * 上传格式限制
      * @var string
-     * @busy-filter trim
      */
+    #[Filter(filter: 'trim')]
     public $extensions;
     
     /**
      * 上传大小限制
      * @var int
-     * @busy-validate egt:0
      */
+    #[Validator(name: Validator::EGT, rule: 0)]
     public $maxSize;
     
     /**
      * Mimetype限制
      * @var string
-     * @busy-filter trim
      */
+    #[Filter(filter: 'trim')]
     public $mimetype;
     
     /**
      * 样式
      * @var array
-     * @busy-array json
      */
+    #[Json]
     public $style;
     
     /**
@@ -112,24 +124,68 @@ class SystemFileClassField extends Field implements ModelSceneValidateInterface,
      */
     public $system;
     
+    /**
+     * 类型
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'type'])]
+    #[Filter([SystemFile::class, 'getTypes'])]
+    public $typeName;
+    
+    /**
+     * 是否附件
+     * @var bool
+     */
+    #[Ignore]
+    public $isFile;
+    
+    /**
+     * 是否图片
+     * @var bool
+     */
+    #[Ignore]
+    public $isImage;
+    
+    /**
+     * 是否视频
+     * @var bool
+     */
+    #[Ignore]
+    public $isVideo;
+    
+    /**
+     * 是否音频
+     * @var bool
+     */
+    #[Ignore]
+    public $isAudio;
+    
+    
+    protected function onParseAfter()
+    {
+        $this->isFile  = $this->type == SystemFile::FILE_TYPE_FILE;
+        $this->isImage = $this->type == SystemFile::FILE_TYPE_IMAGE;
+        $this->isVideo = $this->type == SystemFile::FILE_TYPE_VIDEO;
+        $this->isAudio = $this->type == SystemFile::FILE_TYPE_AUDIO;
+    }
+    
     
     /**
      * @inheritDoc
      */
-    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
+    public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
         $validate
-            ->append(
-                $this::var(),
-                ValidateRule::regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', ':attribute必须是英文数字下划线组合，且必须是英文开头')->unique($model)
-            )
-            ->append($this::type(), ValidateRule::in(array_keys(SystemFile::getClass()::getTypes()), '请选择有效的:attribute'));
+            ->append($this::var(), ValidateRule::init()->isFirstAlphaNumDash()->unique($model))
+            ->append($this::type(), ValidateRule::init()
+                ->in(array_keys(SystemFile::class()::getTypes()), '请选择有效的:attribute'));
         
-        if ($data instanceof SystemFileClassInfo && $data->system) {
+        if ($data instanceof SystemFileClassField && $data->system) {
             $this->setSystem(true);
         }
         
-        if ($name == SystemFileClass::SCENE_CREATE) {
+        if ($scene == SystemFileClass::SCENE_CREATE) {
             $this->setId(0);
             $this->retain($validate, [
                 $this::name(),
@@ -139,7 +195,7 @@ class SystemFileClassField extends Field implements ModelSceneValidateInterface,
             ]);
             
             return true;
-        } elseif ($name == SystemFileClass::SCENE_UPDATE) {
+        } elseif ($scene == SystemFileClass::SCENE_UPDATE) {
             $this->retain($validate, [
                 $this::id(),
                 $this::name(),
@@ -149,7 +205,7 @@ class SystemFileClassField extends Field implements ModelSceneValidateInterface,
             ]);
             
             return true;
-        } elseif ($name == SystemFileClass::SCENE_USER_SET) {
+        } elseif ($scene == SystemFileClass::SCENE_USER_SET) {
             $this->retain($validate, [
                 $this::id(),
                 $this::extensions(),
@@ -168,10 +224,10 @@ class SystemFileClassField extends Field implements ModelSceneValidateInterface,
     /**
      * @inheritDoc
      */
-    public function onObtainData(string $field, string $property, array $attrs, $value)
+    public function onGetModelData(string $field, string $property, array $attrs, $value)
     {
         if ($field == $this::extensions() || $field == $this::mimetype()) {
-            return StorageSetting::parseExtensions($value);
+            return StringHelper::formatSplit((string) $value);
         }
         
         return $value;

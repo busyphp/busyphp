@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\model\system\lock;
 
 use BusyPHP\helper\CacheHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use InvalidArgumentException;
 use think\db\exception\DataNotFoundException;
@@ -15,14 +16,13 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/29 下午下午4:19 SystemLock.php $
- * @method static string|SystemLock getClass()
  */
-class SystemLock extends Model
+class SystemLock extends Model implements ContainerInterface
 {
     /**
      * @inheritDoc
      */
-    protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -81,6 +81,6 @@ class SystemLock extends Model
      */
     protected function create(string $id, string $remark = null)
     {
-        $this->replace(true)->addData(['id' => $id, 'remark' => $remark ?: $id]);
+        $this->replace(true)->insert(['id' => $id, 'remark' => $remark ?: $id]);
     }
 }

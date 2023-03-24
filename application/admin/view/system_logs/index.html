@@ -2,7 +2,7 @@
 <block name="content">
     <?php
     
-    use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
+    use BusyPHP\app\admin\model\system\logs\SystemLogsField;
     use BusyPHP\helper\AppHelper;
 
     ?>
@@ -11,7 +11,7 @@
          data-toggle="busy-search-bar"
          data-url="{$url.self}"
          data-accurate-show="true"
-         data-fields="<?=SystemLogsInfo::name()?>:操作名称,<?=SystemLogsInfo::username()?>:操作用户名,<?=SystemLogsInfo::userId()?>:操作用户ID">
+         data-fields="<?=SystemLogsField::name()?>:操作名称,<?=SystemLogsField::username()?>:操作用户名,<?=SystemLogsField::userId()?>:操作用户ID">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
                 <div class="input-group">
@@ -60,31 +60,31 @@
            data-height="true">
         <thead>
             <tr>
-                <th class="text-center" width="60" data-field="<?=SystemLogsInfo::id();?>" data-sortable="true">
+                <th class="text-center" width="60" data-field="<?=SystemLogsField::id();?>" data-sortable="true">
                     ID
                 </th>
-                <th class="text-center" data-field="<?=SystemLogsInfo::name();?>" data-halign="center" data-align="left">
+                <th class="text-center" data-field="<?=SystemLogsField::name();?>" data-halign="center" data-align="left">
                     操作名称
                 </th>
-                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::url();?>" data-align="center" data-formatter="@">
+                <th class="text-center" width="150" data-field="<?=SystemLogsField::url();?>" data-align="center" data-formatter="@">
                     操作地址
                 </th>
-                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::ip();?>" data-formatter="@">
+                <th class="text-center" width="150" data-field="<?=SystemLogsField::ip();?>" data-formatter="@">
                     IP
                 </th>
-                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::typeName();?>">
+                <th class="text-center" width="100" data-field="<?=SystemLogsField::typeName();?>">
                     操作类型
                 </th>
-                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::clientName();?>">
+                <th class="text-center" width="100" data-field="<?=SystemLogsField::clientName();?>">
                     客户端
                 </th>
-                <th class="text-center" width="100" data-field="<?=SystemLogsInfo::username();?>" data-sortable="true">
+                <th class="text-center" width="100" data-field="<?=SystemLogsField::username();?>" data-sortable="true">
                     用户
                 </th>
-                <th class="text-center" width="80" data-field="<?=SystemLogsInfo::userId();?>" data-sortable="true" data-formatter="@">
+                <th class="text-center" width="80" data-field="<?=SystemLogsField::userId();?>" data-sortable="true" data-formatter="@">
                     用户ID
                 </th>
-                <th class="text-center" width="150" data-field="<?=SystemLogsInfo::formatCreateTime();?>" data-sortable="true">
+                <th class="text-center" width="150" data-field="<?=SystemLogsField::formatCreateTime();?>" data-sortable="true">
                     操作时间
                 </th>
                 <ba:access value="detail">
@@ -110,7 +110,7 @@
         </div>
     </div>
 
-    <script type="text/html" id="<?=SystemLogsInfo::ip();?>">
+    <script type="text/html" id="<?=SystemLogsField::ip();?>">
         <div class="input-group input-group-xs">
             <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
             <div class="input-group-btn">
@@ -119,7 +119,7 @@
         </div>
     </script>
 
-    <script type="text/html" id="<?=SystemLogsInfo::url();?>">
+    <script type="text/html" id="<?=SystemLogsField::url();?>">
         <div class="input-group input-group-xs">
             <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
             <div class="input-group-btn">
@@ -128,11 +128,11 @@
         </div>
     </script>
 
-    <script type="text/html" id="<?=SystemLogsInfo::userId();?>">
+    <script type="text/html" id="<?=SystemLogsField::userId();?>">
         <a href="{:url('?field=user_id&word=')}{{value}}">{{value}}</a>
     </script>
 
     <script type="text/html" id="operate">
-        <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.<?=SystemLogsInfo::id();?>}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
+        <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.<?=SystemLogsField::id();?>}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
     </script>
 </block>

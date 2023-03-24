@@ -31,10 +31,57 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">上传方式</div>
+                    <select class="form-control" name="static[upload_type]">
+                        <option value="0">不限</option>
+                        <option value="1">普通</option>
+                        <option value="2">秒传</option>
+                        <option value="3">等待中</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">存储方式</div>
+                    <select class="form-control" name="static[disk]">
+                        <option value="">不限</option>
+                        <?=\BusyPHP\helper\TransHelper::toOptionHtml(\BusyPHP\app\admin\setting\StorageSetting::class()::getDisks(), '', 'name', 'type')?>
+                    </select>
+                </div>
+            </div>
         </script>
-        <ba:access value="upload">
+        <ba:access value="upload,clear_repeat,clear_invalid">
             <script type="text/html" data-search-id="toolbar">
-                <a class="btn btn-success" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="uploadHidden" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i> 上传文件</a>
+                <div class="btn-group">
+                    <ba:access value="upload">
+                        <a class="btn btn-success" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="uploadHidden" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i>
+                            上传文件</a>
+                    </ba:access>
+
+                    <ba:access value="clear_repeat,clear_invalid">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right min-width-100">
+                            <ba:access value="clear_invalid">
+                                <li><a href="javascript:void(0)"
+                                       data-url="{:url('clear_invalid')}"
+                                       data-confirm="确认要清理无效的文件吗？<br /><div class=text-danger>本操作可以清理超过48小时未上传成功的文件</div>"
+                                       data-method="post"
+                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理无效文件</a></li>
+                            </ba:access>
+                            <ba:access value="clear_repeat">
+                                <li><a href="javascript:void(0)"
+                                       data-url="{:url('clear_repeat')}"
+                                       data-confirm="确认要清理重复的文件吗？"
+                                       data-method="post"
+                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理重复文件</a></li>
+                            </ba:access>
+                        </ul>
+                    </ba:access>
+                </div>
             </script>
         </ba:access>
     </div>
@@ -72,6 +119,8 @@
                 <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">
                     大小
                 </th>
+                <th class="text-center" width="80" data-field="fast" data-formatter="@">上传方式</th>
+                <th class="text-center" width="80" data-field="disk_name">存储方式</th>
                 <th class="text-center" width="80" data-field="user_id" data-sortable="true">用户ID
                 </th>
                 <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">
@@ -85,8 +134,7 @@
             </tr>
         </thead>
     </table>
-
-
+    
     <div class="hide">
         <div id="tableToolbar">
             <ba:access value="delete">
@@ -105,7 +153,11 @@
     </div>
 
     <script type="text/html" id="name">
+        {{if item.pending}}
+        <span class="text-gray">{{value}}</span>
+        {{else}}
         <a href="{{item.url}}" target="_blank">{{value}}</a>
+        {{/if}}
     </script>
 
     <script type="text/html" id="hash">
@@ -120,6 +172,18 @@
 
     <script type="text/html" id="format_create_time">
         <span class="text-gray">{{value}}</span>
+    </script>
+
+    <script type="text/html" id="fast">
+        {{if item.pending}}
+        <span class="text-warning">等待中</span>
+        {{else}}
+        {{if value}}
+        <b class="text-success">秒传</b>
+        {{else}}
+        <b class="text-info">普通</b>
+        {{/if}}
+        {{/if}}
     </script>
 
     <script type="text/html" id="operate">

@@ -3,8 +3,12 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\config;
 
-use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Serialize;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\Validate;
@@ -28,37 +32,38 @@ use think\validate\ValidateRule;
  * @method $this setSystem(mixed $system) 设置系统配置
  * @method $this setAppend(mixed $append) 设置是否加入全局配置
  */
-class SystemConfigField extends Field implements ModelSceneValidateInterface
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
+class SystemConfigField extends Field implements ModelValidateInterface
 {
     /**
      * ID
      * @var int
-     * @busy-validate require
-     * @busy-validate gt:0
      */
+    #[Validator(name: Validator::REQUIRE)]
+    #[Validator(name: Validator::GT, rule: 0)]
     public $id;
     
     /**
      * content
      * @var array
-     * @busy-array serialize
      */
+    #[Serialize]
     public $content;
     
     /**
      * 配置名称
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-filter trim
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Filter(filter: 'trim')]
     public $name;
     
     /**
      * 配置标识
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-filter trim
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Filter(filter: 'trim')]
     public $type;
     
     /**
@@ -76,20 +81,20 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
     
     /**
      * @inheritDoc
-     * @param null|SystemConfigInfo $data
+     * @param null|SystemConfigField $data
      */
-    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
+    public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
         $validate->append(
             $this::type(),
-            ValidateRule::regex('/^[a-zA-Z]+[a-zA-Z0-9_]*$/', ':attribute必须是英文数字下划线组合，且必须是英文开头')->unique($model)
+            ValidateRule::init()->isFirstAlphaNumDash()->unique($model)
         );
         
-        if ($data instanceof SystemConfigInfo && $data->system) {
+        if ($data instanceof SystemConfigField && $data->system) {
             $this->setSystem(true);
         }
         
-        if ($name == SystemConfig::SCENE_CREATE) {
+        if ($scene == SystemConfig::SCENE_CREATE) {
             $this->setId(0);
             $this->setContent([]);
             $this->retain($validate, [
@@ -101,7 +106,7 @@ class SystemConfigField extends Field implements ModelSceneValidateInterface
             ]);
             
             return true;
-        } elseif ($name == SystemConfig::SCENE_UPDATE) {
+        } elseif ($scene == SystemConfig::SCENE_UPDATE) {
             if (!$this->append) {
                 $this->setAppend(false);
             }

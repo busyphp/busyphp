@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\controller\develop\plugin;
 
 use BusyPHP\app\admin\controller\AdminController;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
 use BusyPHP\app\admin\model\system\plugin\SystemPluginPackageInfo;
 use think\db\exception\DbException;
@@ -50,7 +50,7 @@ abstract class SystemPluginBaseController extends AdminController
     }
     
     
-    protected function isLogin() : ?AdminUserInfo
+    protected function isLogin() : ?AdminUserField
     {
         // 强制返回用户信息
         return $this->adminUser;
@@ -66,10 +66,10 @@ abstract class SystemPluginBaseController extends AdminController
     
     /**
      * 设置信息
-     * @param AdminUserInfo           $userInfo
+     * @param AdminUserField           $userInfo
      * @param SystemPluginPackageInfo $packageInfo
      */
-    public function setParams(AdminUserInfo $userInfo, SystemPluginPackageInfo $packageInfo) : void
+    public function setParams(AdminUserField $userInfo, SystemPluginPackageInfo $packageInfo) : void
     {
         $this->adminUser     = $userInfo;
         $this->adminUserId   = $this->adminUser->id;

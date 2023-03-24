@@ -3,108 +3,14 @@ BusyPHP使用说明
 
 `BusyPHP` 框架基于 `ThinkPHP6.0` 进行的开发，所以 `ThinkPHP6.0` 中的所有内置方都可以继续使用，具体请参考 [官方手册](https://www.kancloud.cn/manual/thinkphp6_0/1037479) 
 
-## 后台管理系统
+## 文档
 
-### 配置 `app/config/app.php`
+- 后台
+  - [后台配置](./wiki/admin_config.md)
+  - [系统权限管理](./wiki/permissions.md)
+- 开发
+  - [模型字段](./wiki/field.md)
+  - [图形验证码](./wiki/captcha.md)
+  - [二维码](./wiki/qrcode.md)
+  - [文件存储](./wiki/filesystem.md)
 
-```php
-
-<?php
-
-use BusyPHP\app\admin\controller\common\IndexController;
-use BusyPHP\app\admin\controller\system\GroupController;
-use BusyPHP\app\admin\controller\system\UserController;
-use BusyPHP\app\admin\model\admin\user\AdminUser;
-
-return [
-    // 管理面板配置
-    'admin' => [
-        // 是否启用js/css调试模式，启用后js/css无缓存
-        'debug'                 => true,
-        
-        // JS/CSS版本号
-        'version'               => '',
-        
-        // 自定义全局数据
-        'data'                  => '',
-        
-        // 全局requires，支持数组|闭包|字符串
-        'requires'              => '',
-        
-        // 默认主题风格
-        'theme_skin'            => 'default',
-        
-        // 默认菜单栏是否使用迷你菜单
-        'theme_nav_mode'        => false,
-        
-        // 默认菜单栏是否只有一个能展开
-        'theme_nav_single_hold' => false,
-        
-        // 自定义模板配置
-        'template'              => [
-            // 首页模板
-            IndexController::TEMPLATE_INDEX           => [
-                'path'   => '', // 默认路径，支持绝对路径，相对view下的文件夹路径
-                'assign' => '', // 模板赋值闭包，返回array
-            ],
-            // 管理员列表模板
-            UserController::TEMPLATE_INDEX      => [
-                'path'         => '',
-                'assign'       => '',
-                'plugin_table' => '' // 列表table插件搜索处理闭包
-            ],
-            // 添加管理员模板
-            UserController::TEMPLATE_ADD        => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 修改管理员模板
-            UserController::TEMPLATE_EDIT       => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 修改管理员密码模板
-            UserController::TEMPLATE_PWD        => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 修改管理员个人资料
-            UserController::TEMPLATE_MY_PROFILE => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 修改管理员个人密码
-            UserController::TEMPLATE_MY_PWD     => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 角色组列表模板
-            GroupController::TEMPLATE_INDEX     => [
-                'path'         => '',
-                'assign'       => '',
-                'plugin_table' => ''
-            ],
-            // 添加角色组模板
-            GroupController::TEMPLATE_ADD        => [
-                'path'   => '',
-                'assign' => '',
-            ],
-            // 修改角色组模板
-            GroupController::TEMPLATE_EDIT       => [
-                'path'   => '',
-                'assign' => '',
-            ],
-        ]
-    ],
-    
-    // 模型相关配置
-    'model' => [
-        // 管理员模型配置
-        AdminUser::class => [
-            // 创建/修改/手机号登录验证规则，支持正则/闭包，默认为验证中国大陆手机号
-            'check_phone_match' => function(string $phone) {
-            }
-        ]
-    ]
-];
-```

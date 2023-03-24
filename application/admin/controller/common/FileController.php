@@ -3,10 +3,11 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
+use BusyPHP\app\admin\component\common\SimpleQuery;
+use BusyPHP\app\admin\component\filesystem\Driver;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\filesystem\Driver;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\file\SystemFilePrepareUploadParameter;
@@ -15,6 +16,7 @@ use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\upload\parameter\LocalParameter;
+use League\Flysystem\FilesystemException;
 use stdClass;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -32,7 +34,7 @@ class FileController extends InsideController
     /**
      * @var SystemFile
      */
-    private $model;
+    protected $model;
     
     
     protected function initialize($checkLogin = true)
@@ -48,6 +50,7 @@ class FileController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
+     * @throws FilesystemException
      */
     public function front_prepare() : Response
     {
@@ -184,24 +187,24 @@ class FileController extends InsideController
         // 按分类查询
         if ($range > 0) {
             if (false !== stripos($type, 'type:')) {
-                $typeList = SystemFileClass::init()->getAdminOptions(true);
+                $typeList = SystemFileClass::instance()->getAdminOptions(true);
                 $fileType = substr($type, 5);
                 $typeList = $typeList[$fileType] ?? [];
                 $ins      = [];
                 
-                /** @var SystemFileClassInfo $item */
+                /** @var SystemFileClassField $item */
                 foreach ($typeList as $item) {
                     $ins[] = $item->var;
                 }
                 
                 if ($typeList) {
-                    $this->model->whereEntity(SystemFileField::type('in', $ins));
+                    $this->model->where(SystemFileField::type('in', $ins));
                 }
             } else {
-                $typeList = SystemFileClass::init()->getList();
+                $typeList = SystemFileClass::instance()->getList();
                 $fileType = $typeList[$type]->type ?? $fileType;
                 if ($type) {
-                    $this->model->whereEntity(SystemFileField::type($type));
+                    $this->model->where(SystemFileField::type($type));
                 }
             }
         }
@@ -209,22 +212,22 @@ class FileController extends InsideController
         //
         // 当前信息
         else {
-            $typeList = SystemFileClass::init()->getList();
+            $typeList = SystemFileClass::instance()->getList();
             $fileType = $typeList[$classType]->type ?? $fileType;
-            $this->model->whereEntity(SystemFileField::classType($classType));
-            $this->model->whereEntity(SystemFileField::classValue($classValue));
+            $this->model->where(SystemFileField::classType($classType));
+            $this->model->where(SystemFileField::classValue($classValue));
         }
         
         // 允许的后缀
         if ($extensions) {
             $extensionsList = FilterHelper::trimArray(explode(',', $extensions));
             if ($extensionsList) {
-                $this->model->whereEntity(SystemFileField::extension('in', $extensionsList));
+                $this->model->where(SystemFileField::extension('in', $extensionsList));
             }
         }
         
         if ($word) {
-            $this->model->whereEntity(SystemFileField::name('like', '%' . FilterHelper::searchWord($word) . '%'));
+            $this->model->where(SystemFileField::name('like', '%' . FilterHelper::searchWord($word) . '%'));
         }
         
         $isImage = $fileType === SystemFile::FILE_TYPE_IMAGE;
@@ -241,27 +244,22 @@ class FileController extends InsideController
             SystemFile::FILE_TYPE_AUDIO
         ]));
         $this->assign('is_image', $isImage);
-        $this->assign('info', $this->list($this->model->whereComplete(), $isImage ? 20 : 30)->select());
+        $this->assign('info', SimpleQuery::init($this->model->whereComplete())->setLimit($isImage ? 20 : 3)->build());
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
     /**
      * 上传配置
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function config() : Response
     {
-        $setting   = StorageSetting::init();
+        $setting   = StorageSetting::instance();
         $fileClass = [];
-        foreach (SystemFileClass::init()->getList() as $key => $item) {
+        foreach (SystemFileClass::instance()->getList() as $key => $item) {
             $fileClass[$key] = [
-                'size'             => $setting->getMaxSize($key), // TODO 移除
-                'suffix'           => implode(',', $setting->getAllowExtensions($key)), // TODO 移除
-                'mime'             => implode(',', $setting->getMimeType($key)),  // TODO 移除
                 'max_size'         => $setting->getMaxSize($key),
                 'allow_extensions' => implode(',', $setting->getAllowExtensions($key)),
                 'allow_mimetypes'  => implode(',', $setting->getMimeType($key)),
@@ -272,7 +270,7 @@ class FileController extends InsideController
         
         // 遍历磁盘
         $injectScripts = [];
-        foreach ($setting->getDisks() as $disk) {
+        foreach ($setting::getDisks() as $disk) {
             $type            = $disk['type'];
             $injectScript    = Driver::getInstance($disk['type'])->frontUploadInjectScript();
             $injectScripts[] = <<<JS

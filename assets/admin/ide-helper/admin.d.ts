@@ -1282,7 +1282,7 @@ declare namespace busyAdmin {
         username: string,
         menu_default: string,
         menu_list: [BusyAdminMenuItem],
-        message_agency: boolean,
+        message_todo: boolean,
         message_notice: boolean,
         user: BusyAdminUserInfo,
         user_dropdowns: [{
@@ -2015,6 +2015,18 @@ declare namespace busyAdmin {
          * @param close 关闭回调
          */
         toastError(message: string, close?: BusyAdminDialogCloseCallback): number;
+
+        /**
+         * 提示成功
+         * @param message
+         */
+        tipSuccess(message: string);
+
+        /**
+         * 提示失败
+         * @param message
+         */
+        tipError(message: string);
 
         /**
          * 加载中对话框

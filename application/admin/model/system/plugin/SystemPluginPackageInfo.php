@@ -2,10 +2,9 @@
 
 namespace BusyPHP\app\admin\model\system\plugin;
 
+use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
 
 /**
  * 插件信息结构
@@ -26,6 +25,7 @@ use think\db\exception\DbException;
  * @method static Entity canUninstall() 是否允许卸载
  * @method static Entity canSetting() 是否允许设置
  */
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemPluginPackageInfo extends Field
 {
     /**
@@ -66,7 +66,7 @@ class SystemPluginPackageInfo extends Field
     
     /**
      * 主页
-     * @var array
+     * @var string
      */
     public $homepage;
     
@@ -118,22 +118,9 @@ class SystemPluginPackageInfo extends Field
      */
     public $canSetting;
     
-    /**
-     * @var SystemPluginInfo[]
-     */
-    protected static $_pluginList;
     
-    
-    /**
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
     protected function onParseAfter()
     {
-        if (!isset(self::$_pluginList)) {
-            self::$_pluginList = SystemPlugin::init()->getList();
-        }
-        
         if ($this->installConfig->uninstallOperate->requestConfirm) {
             $this->installConfig->uninstallOperate->requestConfirm = str_replace([
                 '__package__',
@@ -160,7 +147,8 @@ class SystemPluginPackageInfo extends Field
         }
         
         // 查询配置
-        if ($pluginInfo = self::$_pluginList[SystemPlugin::createId($this->package)] ?? null) {
+        $id = SystemPlugin::class()::createId($this->package);
+        if ($pluginInfo = SystemPlugin::instance()->getList()[$id] ?? null) {
             // 已标记安装
             if ($pluginInfo->install) {
                 $canInstall   = false;

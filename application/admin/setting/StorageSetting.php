@@ -4,16 +4,17 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\filesystem\Driver as FilesystemManager;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClassInfo;
-use BusyPHP\helper\TransHelper;
-use BusyPHP\model\Setting;
-use BusyPHP\helper\FilterHelper;
+use BusyPHP\app\admin\component\filesystem\Driver;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\FilesystemHelper;
+use BusyPHP\helper\FilterHelper;
+use BusyPHP\helper\StringHelper;
+use BusyPHP\helper\TransHelper;
+use BusyPHP\interfaces\ContainerInterface;
+use BusyPHP\model\Setting;
 use think\facade\Filesystem;
-use think\filesystem\Driver;
 
 /**
  * 存储设置
@@ -21,44 +22,29 @@ use think\filesystem\Driver;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/20 下午上午11:20 StorageSetting.php $
  */
-class StorageSetting extends Setting
+class StorageSetting extends Setting implements ContainerInterface
 {
-    /** @var string 本地系统文件磁盘标识 */
-    const STORAGE_LOCAL = 'public';
-    
-    /** @var string 本地临时文件磁盘标识 */
-    const STORAGE_TMP = 'local';
+    /** @var array */
+    protected static $disks;
     
     
     /**
-     * 解析文件扩展
-     * @param string $extensions
-     * @param bool   $returnArray
-     * @return string|array
+     * @inheritDoc
      */
-    public static function parseExtensions($extensions, bool $returnArray = false)
+    final public static function defineContainer() : string
     {
-        $extensions = explode(',', $extensions);
-        $extensions = FilterHelper::trimArray($extensions);
-        
-        if ($returnArray) {
-            return $extensions;
-        }
-        
-        return implode(', ', $extensions);
+        return self::class;
     }
     
     
     /**
      * 获取分类配置
      * @param string $classType
-     * @return SystemFileClassInfo
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @return SystemFileClassField|null
      */
-    protected function getClassConfig($classType) : ?SystemFileClassInfo
+    protected function getClassConfig($classType) : ?SystemFileClassField
     {
-        $list = SystemFileClass::init()->getList();
+        $list = SystemFileClass::instance()->getList();
         
         return $list[$classType] ?? null;
     }
@@ -72,12 +58,12 @@ class StorageSetting extends Setting
         $data = FilterHelper::trim($data);
         
         $data['disk'] = $data['disk'] ?? '';
-        $data['disk'] = $data['disk'] ?: 'public';
+        $data['disk'] = $data['disk'] ?: FilesystemHelper::STORAGE_PUBLIC;
         
         // 客户端限制过滤
         $data['clients'] = $data['clients'] ?? [];
         foreach ($data['clients'] as $client => $item) {
-            $item['allow_extensions'] = self::parseExtensions($item['allow_extensions'] ?? '');
+            $item['allow_extensions'] = StringHelper::formatSplit($item['allow_extensions'] ?? '');
             $item['max_size']         = TransHelper::formatMoney(floatval($item['max_size'] ?? 0));
             $data['clients'][$client] = $item;
         }
@@ -92,7 +78,19 @@ class StorageSetting extends Setting
      */
     public function getDisk() : string
     {
-        return $this->get('disk', '') ?: 'public';
+        return $this->get('disk', '') ?: FilesystemHelper::STORAGE_PUBLIC;
+    }
+    
+    
+    /**
+     * 获取磁盘独立配置
+     * @param string $key
+     * @param mixed  $default
+     * @return mixed
+     */
+    public function getDiskConfig(string $key, $default = null) : mixed
+    {
+        return ArrayHelper::get($this->get('disk_config', []), $key, $default);
     }
     
     
@@ -125,13 +123,11 @@ class StorageSetting extends Setting
      * @param string $classType 文件分类
      * @param string $client 客户端类型，留空自动获取当前客户端
      * @return string[]
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function getAllowExtensions(string $classType = '', string $client = '') : array
     {
         if ($config = $this->getClassConfig($classType)) {
-            if ($config->extensions && $extensions = self::parseExtensions($config->extensions, true)) {
+            if ($config->extensions && $extensions = StringHelper::formatSplit($config->extensions, true)) {
                 return $extensions;
             }
         }
@@ -145,8 +141,6 @@ class StorageSetting extends Setting
      * @param string $classType 文件类型
      * @param string $client 客户端类型，留空自动获取当前客户端
      * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function getMaxSize(string $classType = '', string $client = '') : int
     {
@@ -164,13 +158,11 @@ class StorageSetting extends Setting
      * 获取允许上传mime类型
      * @param string $classType
      * @return array
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function getMimeType(string $classType = '') : array
     {
         if ($config = $this->getClassConfig($classType)) {
-            return self::parseExtensions($config->mimetype, true);
+            return StringHelper::formatSplit($config->mimetype, true);
         }
         
         return [];
@@ -182,8 +174,6 @@ class StorageSetting extends Setting
      * @param string $classType 文件分类
      * @param string $disk 磁盘系统
      * @return string
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function getImageStyle(string $classType = '', string $disk = '') : string
     {
@@ -196,57 +186,46 @@ class StorageSetting extends Setting
     
     
     /**
-     * 获取磁盘文件操作系统
-     * @return Driver
-     */
-    public function getDiskFileSystem() : Driver
-    {
-        return Filesystem::disk($this->getDisk());
-    }
-    
-    
-    /**
-     * 获取本地文件操作系统
-     * @return Driver
-     */
-    public function getLocalFileSystem() : Driver
-    {
-        return Filesystem::disk(self::STORAGE_LOCAL);
-    }
-    
-    
-    /**
-     * 获取Runtime文件操作系统
-     * @return Driver
-     */
-    public function getRuntimeFileSystem() : Driver
-    {
-        return Filesystem::disk(self::STORAGE_TMP);
-    }
-    
-    
-    /**
      * 获取支持的磁盘
-     * @return array<int, array{name: string, desc: string, type: string, checked: bool}>
+     * @param string     $disk 磁盘名称
+     * @param string     $key 索引名称
+     * @param mixed|null $default 默认值
+     * @return array<string, array{name: string, desc: string, type: string, checked: bool, form: array}>
      */
-    public function getDisks() : array
+    public static function getDisks(string $disk = '', string $key = '', mixed $default = null) : mixed
     {
-        // 磁盘信息
-        $disks = [];
-        foreach (Filesystem::getConfig('disks') as $key => $disk) {
-            if (($disk['visibility'] ?? '') !== 'public') {
-                continue;
+        if (!static::$disks) {
+            // 磁盘信息
+            $disks = [];
+            foreach (Filesystem::getConfig('disks') as $type => $vo) {
+                if (($vo['visibility'] ?? '') !== 'public') {
+                    continue;
+                }
+                
+                $manager      = Driver::getInstance($type);
+                $form         = $manager->getForm();
+                $disks[$type] = [
+                    'name'    => $manager->getName(),
+                    'desc'    => $manager->getDescription(),
+                    'type'    => $type,
+                    'checked' => $type == self::instance()->getDisk(),
+                    'form'    => !empty($form),
+                    'fields'  => $form['fields'] ?? [],
+                    'alert'   => $form['alert'] ?? ''
+                ];
             }
             
-            $manager = FilesystemManager::getInstance($key);
-            $disks[] = [
-                'name'    => $manager->getName(),
-                'desc'    => $manager->getDescription(),
-                'type'    => $key,
-                'checked' => $key == $this->getDisk()
-            ];
+            static::$disks = $disks;
         }
         
-        return $disks;
+        if ($disk) {
+            if (!$key) {
+                return ArrayHelper::get(static::$disks, $disk, $default);
+            }
+            
+            return ArrayHelper::get(static::$disks, $disk . '.' . $key, $default);
+        }
+        
+        return static::$disks;
     }
 }

@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\FilterHelper;
 
@@ -13,14 +14,26 @@ use BusyPHP\helper\FilterHelper;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午6:02 下午 PublicSetting.php $
  */
-class PublicSetting extends Setting
+class PublicSetting extends Setting implements ContainerInterface
 {
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
+    
+    
     /**
      * @inheritDoc
      */
     protected function parseSet(array $data) : array
     {
-        return FilterHelper::trim($data);
+        $data              = FilterHelper::trim($data);
+        $data['copyright'] = htmlspecialchars($data['copyright']);
+        
+        return $data;
     }
     
     
@@ -72,7 +85,7 @@ class PublicSetting extends Setting
     {
         $year = date('Y');
         
-        return $this->get('copyright', '') ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP' target='_blank'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
+        return htmlspecialchars_decode($this->get('copyright', '')) ?: "© CopyRight 2015-{$year} <a href='https://www.harter.cn?form=BusyPHP' target='_blank'>{$this->app->getFrameworkName()}</a>  V{$this->app->getFrameworkVersion()}";
     }
     
     

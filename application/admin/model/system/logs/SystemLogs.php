@@ -7,7 +7,9 @@ use BusyPHP\App;
 use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
+use BusyPHP\model\Entity;
 use BusyPHP\Service;
 use Exception;
 use think\db\exception\DbException;
@@ -17,12 +19,13 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:59 SystemLogs.php $
- * @method SystemLogsInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemLogsInfo getInfo($data, $notFoundMessage = null)
- * @method SystemLogsInfo[] selectList()
- * @method SystemLogsInfo[] buildListWithField(array $values, $key = null, $field = null) : array
+ * @method SystemLogsField getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemLogsField|null findInfo(int $id = null)
+ * @method SystemLogsField[] selectList()
+ * @method SystemLogsField[] indexList(string|Entity $key = '')
+ * @method SystemLogsField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class SystemLogs extends Model
+class SystemLogs extends Model implements ContainerInterface
 {
     /** @var int 默认操作 */
     const TYPE_DEFAULT = 0;
@@ -36,7 +39,16 @@ class SystemLogs extends Model
     /** @var int 删除操作 */
     const TYPE_DELETE = 3;
     
-    protected $bindParseClass = SystemLogsInfo::class;
+    protected string $fieldClass = SystemLogsField::class;
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -110,23 +122,23 @@ class SystemLogs extends Model
                 $params[$key] = $value;
             }
             
-            $insert             = SystemLogsField::init();
-            $insert->createTime = time();
-            $insert->name       = $name;
-            $insert->method     = $request->method() ?: '';
-            $insert->type       = $type;
-            $insert->username   = $this->getOptions('logs_username') ?: '';
-            $insert->userId     = $this->getOptions('logs_user_id') ?: 0;
-            $insert->classType  = $this->getOptions('logs_class_type') ?: '';
-            $insert->classValue = $this->getOptions('logs_class_value') ?: '';
-            $insert->client     = $isCli ? AppHelper::CLI_CLIENT_KEY : $app->getDirName();
-            $insert->ip         = $isCli ? '' : ($request->ip() ?: '');
-            $insert->url        = $isCli ? '' : ($request->url() ?: '');
-            $insert->headers    = json_encode($request->header() ?: [], JSON_UNESCAPED_UNICODE);
-            $insert->params     = json_encode($params, JSON_UNESCAPED_UNICODE);
-            $insert->result     = trim($result);
+            $data = SystemLogsField::init();
+            $data->setCreateTime(time());
+            $data->setName($name);
+            $data->setMethod($request->method() ?: '');
+            $data->setType($type);
+            $data->setUsername($this->getOptions('logs_username') ?: '');
+            $data->setUserId($this->getOptions('logs_user_id') ?: 0);
+            $data->setClassType($this->getOptions('logs_class_type') ?: '');
+            $data->setClassValue($this->getOptions('logs_class_value') ?: '');
+            $data->setClient($isCli ? AppHelper::CLI_CLIENT_KEY : $app->getDirName());
+            $data->setIp($isCli ? '' : ($request->ip() ?: ''));
+            $data->setUrl($isCli ? '' : ($request->url() ?: ''));
+            $data->setHeaders($request->header() ?: []);
+            $data->setParams($params);
+            $data->setResult($result);
             
-            return $this->addData($insert);
+            return $this->insert($data);
         } catch (Exception $e) {
             return false;
         }
@@ -142,7 +154,7 @@ class SystemLogs extends Model
     {
         $time = strtotime('-6 month');
         
-        return $this->whereEntity(SystemLogsField::createTime('<=', $time))->delete();
+        return $this->where(SystemLogsField::createTime('<=', $time))->delete();
     }
     
     
@@ -154,9 +166,9 @@ class SystemLogs extends Model
      */
     public function whereClass($type, string $value = '') : self
     {
-        $this->whereEntity(SystemLogsField::classType($type));
+        $this->where(SystemLogsField::classType($type));
         if ($value !== '') {
-            $this->whereEntity(SystemLogsField::classValue($value));
+            $this->where(SystemLogsField::classValue($value));
         }
         
         return $this;

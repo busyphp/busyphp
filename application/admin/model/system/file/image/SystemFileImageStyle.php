@@ -6,8 +6,10 @@ namespace BusyPHP\app\admin\model\system\file\image;
 use BusyPHP\image\driver\Local;
 use BusyPHP\image\driver\local\LocalImageStyleManagerInterface;
 use BusyPHP\image\result\ImageStyleResult;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
+use League\Flysystem\FilesystemException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Filesystem;
@@ -18,25 +20,23 @@ use think\filesystem\Driver as FilesystemDriver;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/15 11:33 AM SystemFileImageStyle.php $
- * @method SystemFileImageStyleInfo getInfo(string $id, string $notFoundMessage = null)
- * @method SystemFileImageStyleInfo|null findInfo(string $id = null, string $notFoundMessage = null)
- * @method SystemFileImageStyleInfo[] selectList()
- * @method SystemFileImageStyleInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method static string|SystemFileImageStyle getClass()
+ * @method SystemFileImageStyleField getInfo(string $id, string $notFoundMessage = null)
+ * @method SystemFileImageStyleField|null findInfo(string $id = null)
+ * @method SystemFileImageStyleField[] selectList()
+ * @method SystemFileImageStyleField[] indexList(string|Entity $key = '')
+ * @method SystemFileImageStyleField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterface
+class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterface, ContainerInterface
 {
-    protected $bindParseClass      = SystemFileImageStyleInfo::class;
+    protected string $fieldClass          = SystemFileImageStyleField::class;
     
-    protected $dataNotFoundMessage = '图片样式不存在';
-    
-    protected $findInfoFilter      = 'trim';
+    protected string $dataNotFoundMessage = '图片样式不存在';
     
     
     /**
      * @inheritDoc
      */
-    final protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -49,9 +49,9 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      * @throws DataNotFoundException
      * @throws DbException
      */
-    protected function createStyle(SystemFileImageStyleField $data) : string
+    protected function create(SystemFileImageStyleField $data) : string
     {
-        $this->validate($data, self::SCENE_CREATE)->replace(true)->addData();
+        $this->validate($data, static::SCENE_CREATE)->replace(true)->insert();
         
         return $data->id;
     }
@@ -61,6 +61,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      * 获取预览图路径
      * @param string|FilesystemDriver $disk
      * @return string
+     * @throws FilesystemException
      */
     public static function getPreviewImagePath($disk) : string
     {
@@ -69,8 +70,8 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
         }
         
         $path = "system/preview.jpeg";
-        if (!$disk->has($path)) {
-            $disk->put($path, file_get_contents(__DIR__ . '/../../../../../../assets/images/preview.jpeg'));
+        if (!$disk->fileExists($path)) {
+            $disk->write($path, file_get_contents(__DIR__ . '/../../../../../../assets/images/preview.jpeg'));
         }
         
         return $path;
@@ -90,7 +91,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
         $result          = new ImageStyleResult();
         $result->id      = $info->id;
         $result->content = $info->content;
-        $result->rule    = Local::convertParameterToProcessRule(ImageStyleResult::convertContentToUrlParameter($info->content));
+        $result->rule    = Local::convertImageToProcessRule(ImageStyleResult::convertContentToImage($info->content));
         
         return $result;
     }
@@ -109,7 +110,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
             $result          = new ImageStyleResult();
             $result->id      = $item->id;
             $result->content = $item->content;
-            $result->rule    = Local::convertParameterToProcessRule(ImageStyleResult::convertContentToUrlParameter($item->content));
+            $result->rule    = Local::convertImageToProcessRule(ImageStyleResult::convertContentToImage($item->content));
             $list[]          = $result;
         }
         
@@ -125,7 +126,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      */
     public function deleteImageStyle(string $name) : void
     {
-        $this->deleteInfo($name);
+        $this->remove($name);
     }
     
     
@@ -142,7 +143,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
         $data = SystemFileImageStyleField::init();
         $data->setId($name);
         $data->setContent($content);
-        $this->createStyle($data);
+        $this->create($data);
     }
     
     
@@ -150,7 +151,6 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      * 更新图片样式
      * @param string $name 图片样式
      * @param array  $content 样式规则
-     * @return void
      * @throws DataNotFoundException
      * @throws DbException
      */

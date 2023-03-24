@@ -1,13 +1,16 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\chunks;
 
 use BusyPHP\app\admin\model\system\file\fragment\SystemFileFragment;
 use BusyPHP\app\admin\model\system\file\fragment\SystemFileFragmentField;
-use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\FileHelper;
+use BusyPHP\helper\FilesystemHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
+use BusyPHP\model\Entity;
 use DomainException;
 use think\File;
 use Throwable;
@@ -17,25 +20,23 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/8 9:18 PM SystemFileChunks.php $
- * @method SystemFileChunksInfo getInfo($data, $notFoundMessage = null)
- * @method SystemFileChunksInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemFileChunksInfo[] selectList()
- * @method SystemFileChunksInfo[] buildListWithField(array $values, $key = null, $field = null)
- * @method static string|SystemFileChunks getClass()
+ * @method SystemFileChunksField getInfo(string $id, string $notFoundMessage = null)
+ * @method SystemFileChunksField|null findInfo(string $id = null)
+ * @method SystemFileChunksField[] selectList()
+ * @method SystemFileChunksField[] indexList(string|Entity $key = '')
+ * @method SystemFileChunksField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class SystemFileChunks extends Model
+class SystemFileChunks extends Model implements ContainerInterface
 {
-    protected $bindParseClass      = SystemFileChunksInfo::class;
+    protected string $fieldClass          = SystemFileChunksField::class;
     
-    protected $dataNotFoundMessage = '碎片不存在';
-    
-    protected $findInfoFilter      = 'intval';
+    protected string $dataNotFoundMessage = '碎片不存在';
     
     
     /**
      * @inheritDoc
      */
-    protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -59,9 +60,9 @@ class SystemFileChunks extends Model
         }
         
         // 将文件移动至分块目录
-        $tmp  = StorageSetting::init()->getRuntimeFileSystem();
-        $dir  = $this::buildDir($fragmentId);
-        $file = FileHelper::convertUploadToFile($data)->move($tmp->path($dir), $this::buildName($number));
+        $tmp  = FilesystemHelper::runtime();
+        $dir  = static::buildDir($fragmentId);
+        $file = FileHelper::convertUploadToFile($data)->move($tmp->path($dir), static::buildName($number));
         $size = $file->getSize();
         
         $fragmentModel = SystemFileFragment::init();
@@ -75,22 +76,22 @@ class SystemFileChunks extends Model
             $data->setNumber($number);
             $data->setCreateTime(time());
             $data->setSize($size);
-            $data->setId($this::buildId($fragmentId, $number));
-            $this->replace(true)->addData($data);
+            $data->setId(static::buildId($fragmentId, $number));
+            $this->replace(true)->insert($data);
             
             // 更新碎片总表
             $fragmentData = SystemFileFragmentField::init();
             $fragmentData->setNumber(
                 $this
-                    ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
+                    ->where(SystemFileChunksField::fragmentId($fragmentId))
                     ->count()
             );
             $fragmentData->setSize(
                 $this
-                    ->whereEntity(SystemFileChunksField::fragmentId($fragmentId))
+                    ->where(SystemFileChunksField::fragmentId($fragmentId))
                     ->sum(SystemFileChunksField::size())
             );
-            $fragmentModel->whereEntity(SystemFileFragmentField::id($fragmentInfo->id))->saveData($fragmentData);
+            $fragmentModel->where(SystemFileFragmentField::id($fragmentInfo->id))->update($fragmentData);
             
             $this->commit();
             
@@ -98,7 +99,7 @@ class SystemFileChunks extends Model
         } catch (Throwable $e) {
             $this->rollback();
             
-            $tmp->deleteDir($dir);
+            $tmp->deleteDirectory($dir);
             
             throw $e;
         }

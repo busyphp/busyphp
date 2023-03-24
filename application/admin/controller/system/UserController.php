@@ -3,62 +3,39 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\Table;
+use BusyPHP\app\admin\component\js\driver\Tree;
+use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\plugin\table\TableHandler;
-use BusyPHP\app\admin\plugin\TablePlugin;
-use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
-use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
-use BusyPHP\app\admin\model\admin\user\AdminUserInfo;
-use BusyPHP\app\admin\plugin\tree\TreeHandler;
-use BusyPHP\exception\ParamInvalidException;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
+use BusyPHP\app\admin\model\admin\group\AdminGroupField;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
-use BusyPHP\Model;
-use BusyPHP\model\Map;
-use think\Container;
+use BusyPHP\model\ArrayOption;
+use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
 use Throwable;
 
 /**
- * 后台管理员管理
+ * 管理员管理
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/4 下午12:02 下午 User.php $
+ * @version $Id: 2020/6/4 下午12:02 下午 UserController.php $
  */
+#[MenuRoute(path: 'system_user', class: true)]
 class UserController extends InsideController
 {
-    /** @var string 列表模板 */
-    const TEMPLATE_INDEX = self::class . 'index';
-    
-    /** @var string 添加模板 */
-    const TEMPLATE_ADD = self::class . 'add';
-    
-    /** @var string 修改模板 */
-    const TEMPLATE_EDIT = self::class . 'edit';
-    
-    /** @var string 修改密码魔板 */
-    const TEMPLATE_PWD = self::class . 'password';
-    
-    /** @var string 修改个人资料模板 */
-    const TEMPLATE_MY_PROFILE = self::class . 'my_profile';
-    
-    /** @var string 修改个人密码模板 */
-    const TEMPLATE_MY_PWD = self::class . 'my_pwd';
-    
-    /** @var string 用户详情模板 */
-    const TEMPLATE_DETAIL = self::class . 'detail';
-    
     /**
      * @var AdminUser
      */
-    private $model;
+    protected $model;
     
     
-    public function initialize($checkLogin = true)
+    protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
@@ -67,68 +44,73 @@ class UserController extends InsideController
     
     
     /**
-     * 管理员列表
+     * 管理员管理
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
      */
+    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-manager', sort: 1)]
     public function index() : Response
     {
         // 管理员列表数据
-        if ($this->pluginTable) {
-            $callback = $this->getUseTemplateAttr(self::TEMPLATE_INDEX, 'plugin_table', '');
-            if ($callback) {
-                Container::getInstance()->invokeFunction($callback, [$this->pluginTable]);
-            } else {
-                $this->pluginTable->setHandler(new class extends TableHandler {
-                    public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                    {
-                        switch ($data->get('status', 0)) {
-                            // 正常
-                            case 1:
-                                $model->whereEntity(AdminUserField::checked(1));
-                            break;
-                            // 禁用
-                            case 2:
-                                $model->whereEntity(AdminUserField::checked(0));
-                            break;
-                            // 零时锁定
-                            case 3:
-                                $model->whereEntity(AdminUserField::errorRelease('>', time()));
-                            break;
-                        }
-                        $data->remove('status');
-                        
-                        if ($groupId = $data->get('group_id', 0)) {
-                            $model->whereEntity(AdminUserField::groupIds('like', '%,' . $groupId . ',%'));
-                        }
-                        $data->remove('group_id');
-                        
-                        if ($plugin->sortField == AdminUserInfo::formatCreateTime()) {
-                            $plugin->sortField = AdminUserInfo::createTime();
-                        } elseif ($plugin->sortField == AdminUserInfo::formatLastTime()) {
-                            $plugin->sortField = AdminUserInfo::lastTime();
-                        }
-                    }
-                });
+        if ($table = Table::initIfRequest()) {
+            $table->model($this->model);
+            
+            switch ($table->getOrderField()) {
+                case AdminUserField::formatCreateTime():
+                    $table->setOrderField(AdminUserField::createTime());
+                break;
+                case AdminUserField::formatLastTime():
+                    $table->setOrderField(AdminUserField::lastTime());
+                break;
             }
             
-            return $this->success($this->pluginTable->build($this->model));
+            $table->query(function(AdminUser $model, ArrayOption $option) {
+                switch ($option->pull('status', 0, 'intval')) {
+                    // 正常
+                    case 1:
+                        $model->where(AdminUserField::checked(1));
+                    break;
+                    // 禁用
+                    case 2:
+                        $model->where(AdminUserField::checked(0));
+                    break;
+                    // 临时锁定
+                    case 3:
+                        $model->where(AdminUserField::errorRelease('>', time()));
+                    break;
+                }
+                
+                if ($groupId = $option->pull('group_id', 0, 'trim')) {
+                    $groupId = explode(',', $groupId);
+                    $groupId = (int) end($groupId);
+                    
+                    if ($groupId) {
+                        $childIds = array_column(
+                            AdminGroup::instance()->getAllSubRoles($groupId, true),
+                            AdminGroupField::id()->name()
+                        );
+                        
+                        $model->where(function(AdminUser $model) use ($childIds) {
+                            foreach ($childIds as $childId) {
+                                $model->whereOr(AdminUserField::groupIds(), 'like', "%,$childId,%");
+                            }
+                        });
+                    }
+                }
+            });
+            
+            return $table->response();
         }
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX, '', [
-            'group_options' => AdminGroup::init()->getTreeOptions()
-        ]));
+        return $this->insideDisplay();
     }
     
     
     /**
      * 添加管理员
      * @return Response
-     * @throws DbException
-     * @throws VerifyException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function add() : Response
     {
         if ($this->isPost()) {
@@ -138,33 +120,30 @@ class UserController extends InsideController
             return $this->success('添加成功');
         }
         
-        // 权限数据
-        if ($this->pluginTree) {
-            return $this->groupTree();
-        }
+        $this->assign([
+            'info' => [
+                'checked' => 1,
+                'system'  => 0
+            ]
+        ]);
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_ADD, '', [
-            'info' => ['checked' => 1]
-        ]));
+        return $this->insideDisplay();
     }
     
     
     /**
      * 修改管理员
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ParamInvalidException
-     * @throws VerifyException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function edit() : Response
     {
         if ($this->isPost()) {
             $id      = $this->post('id/d');
             $checked = $this->post('checked/b');
-            if ($id == $this->adminUserId && !$checked) {
-                throw new VerifyException('不能禁用自己');
+            if ($id == $this->adminUserId && $this->request->has('checked') && !$checked) {
+                throw new RuntimeException('不能禁用自己');
             }
             
             $this->model->modify(AdminUserField::parse($this->post()));
@@ -173,70 +152,75 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
-        // 权限数据
-        $info = $this->model->getInfo($this->get('id/d'));
-        if ($this->pluginTree) {
-            return $this->groupTree($info);
-        }
+        $this->assign([
+            'info' => $this->model->getInfo($this->get('id/d'))
+        ]);
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_EDIT, 'add', [
-            'info' => $info
-        ]));
+        return $this->insideDisplay('add');
     }
     
     
     /**
      * 角色数据
-     * @param AdminUserInfo|null $info
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      */
-    private function groupTree(?AdminUserInfo $info = null) : Response
+    public function group_tree_data() : Response
     {
-        $this->pluginTree->setHandler(new class($info) extends TreeHandler {
-            /**
-             * @var AdminUserInfo|null
-             */
-            private $info;
-            
-            
-            public function __construct(?AdminUserInfo $info)
-            {
-                $this->info = $info;
-            }
-            
-            
-            /**
-             * @param AdminGroupInfo     $item
-             * @param TreeFlatItemStruct $node
-             */
-            public function node($item, TreeFlatItemStruct $node) : void
-            {
+        $info = null;
+        if ($id = $this->get('user_id/d')) {
+            $info = $this->model->getInfo($id);
+        }
+        
+        return Tree::init()
+            ->setOrder([
+                AdminGroupField::sort()->field() => 'asc',
+                AdminGroupField::id()->field()   => 'asc',
+            ])
+            ->model(AdminGroup::init())
+            ->list(function(TreeFlatNode $node, AdminGroupField $item, int $index) use ($info) {
                 $node->setText($item->name);
                 $node->setParent($item->parentId);
                 $node->setId($item->id);
-                $node->state->setOpened(true);
+                $node->setOpened(true);
                 
-                if ($this->info && in_array($item->id, $this->info->groupIds)) {
-                    $node->state->setSelected(true);
+                if ($info && in_array($item->id, $info->groupIds)) {
+                    $node->setSelected(true);
                 }
-            }
-        });
-        
-        return $this->success($this->pluginTree->build(AdminGroup::init()));
+                
+                if ($info && $info->system) {
+                    $node->setDisabled(true);
+                    $node->setOpened(false);
+                }
+            })
+            ->response();
     }
     
     
     /**
-     * 修改密码
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws VerifyException
-     * @throws ParamInvalidException
+     * 删除管理员
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
+    public function delete() : Response
+    {
+        foreach ($this->param('id/list/请选择要删除的用户') as $id) {
+            $this->model->remove($id);
+        }
+        
+        $this->log()->record(self::LOG_DELETE, '删除管理员');
+        
+        return $this->success('删除成功');
+    }
+    
+    
+    /**
+     * 修改管理员密码
+     * @return Response
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/index')]
     public function password() : Response
     {
         if ($this->isPost()) {
@@ -246,9 +230,9 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_PWD, '', [
-            'info' => $this->model->getInfo($this->get('id/d'))
-        ]));
+        $this->assign(['info' => $this->model->getInfo($this->get('id/d'))]);
+        
+        return $this->insideDisplay();
     }
     
     
@@ -256,11 +240,12 @@ class UserController extends InsideController
      * 启用/禁用管理员
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function change_checked() : Response
     {
         $id = $this->get('id/d');
         if ($id == $this->adminUserId) {
-            throw new VerifyException('不能禁用自己');
+            throw new RuntimeException('不能禁用自己');
         }
         
         $status = $this->get('status/b');
@@ -275,27 +260,12 @@ class UserController extends InsideController
      * 解锁管理员
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function unlock() : Response
     {
         $this->model->unlock($this->get('id/d'));
         $this->log()->record(self::LOG_UPDATE, '解锁管理员');
         
         return $this->success('解锁成功');
-    }
-    
-    
-    /**
-     * 删除
-     * @throws Throwable
-     */
-    public function delete() : Response
-    {
-        foreach ($this->param('id/list/请选择要删除的用户') as $id) {
-            $this->model->remove($id);
-        }
-        
-        $this->log()->record(self::LOG_DELETE, '删除管理员');
-        
-        return $this->success('删除成功');
     }
 }

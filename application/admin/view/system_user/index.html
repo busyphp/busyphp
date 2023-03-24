@@ -20,10 +20,12 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">角色</div>
-                    <select class="form-control" name="group_id">
-                        <option value="0">不限</option>
-                        {$group_options}
-                    </select>
+                    <input data-toggle="busy-linkage-picker"
+                           name="group_id"
+                           placeholder="不限角色"
+                           data-url="{:url('system_group/linkage_picker_data')}"
+                           data-strict="false"
+                           data-clear="true"/>
                 </div>
             </div>
         </script>
@@ -63,6 +65,7 @@
                 </th>
             </tr>
         </thead>
+        
     </table>
 
 
@@ -108,7 +111,11 @@
 
     <script type="text/html" id="checked">
         <div class="min-width-70">
+            {{if item.system}}
+            -
+            {{else}}
             <input type="checkbox" class="switch input-xs primary" data-toggle="busy-checkbox" data-url="{:url('change_checked?id=')}{{item.id}}" title="正常,禁用" {{value ? 'checked': ''}}/>
+            {{/if}}
         </div>
     </script>
 

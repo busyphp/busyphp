@@ -1,128 +1,176 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\app\admin\plugin\table\TableHandler;
-use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
-use BusyPHP\app\admin\model\system\file\SystemFile;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\Model;
-use BusyPHP\model\Map;
-use Exception;
-use think\db\exception\DataNotFoundException;
+use BusyPHP\model\ArrayOption;
 use think\db\exception\DbException;
 use think\Response;
+use Throwable;
 
 /**
- * 附件管理
+ * 文件管理
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午2:17 下午 FileController.php $
  */
+#[MenuRoute(path: 'system_file', class: true)]
 class FileController extends InsideController
 {
     /**
      * @var SystemFile
      */
-    private $model;
+    protected $model;
+    
+    /**
+     * 文件管理默认时间范围
+     * @var string
+     */
+    protected $indexTimeRange;
     
     
-    public function initialize($checkLogin = true)
+    protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
-        $this->model = SystemFile::init();
+        $this->model          = SystemFile::init();
+        $this->indexTimeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
     }
     
     
     /**
-     * 列表
+     * 文件管理
      * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
      */
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text', sort: 3)]
     public function index() : Response
     {
-        $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
-        if ($this->pluginTable) {
-            $this->pluginTable->setHandler(new class($timeRange) extends TableHandler {
-                private $timeRange;
-                
-                
-                public function __construct($timeRange)
-                {
-                    $this->timeRange = $timeRange;
-                }
-                
-                
-                public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                {
-                    if (!$type = $data->get('type', '')) {
-                        $data->remove('type');
-                    }
-                    if (0 === strpos($type, 'type:')) {
-                        $data->set('type', substr($type, 5));
-                    } elseif ($type) {
-                        $data->set('class_type', $type);
-                        $data->remove('type');
+        if ($table = Table::initIfRequest()) {
+            switch ($table->getOrderField()) {
+                case SystemFileField::formatSize():
+                    $table->setOrderField(SystemFileField::size());
+                break;
+                case SystemFileField::formatCreateTime():
+                    $table->setOrderField(SystemFileField::createTime());
+                break;
+            }
+            
+            return $table
+                ->model($this->model)
+                ->query(function(SystemFile $model, ArrayOption $option) {
+                    $option->deleteIfEmpty('client');
+                    $option->deleteIfEmpty('disk');
+                    
+                    if (!$type = $option->get('type', '', 'trim')) {
+                        $option->delete('type');
                     }
                     
-                    if (!$data->get('client', '')) {
-                        $data->remove('client');
+                    // 查询类型
+                    if (str_starts_with($type, 'type:')) {
+                        $option->set('type', substr($type, 5));
                     }
                     
-                    if ($time = $data->get('time', $this->timeRange)) {
+                    //
+                    // 查询分类
+                    elseif ($type) {
+                        $option->set('class_type', $type);
+                        $option->delete('type');
+                    }
+                    
+                    // 时间
+                    if ($time = $option->pull('time', $this->indexTimeRange)) {
                         $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
                     }
-                    $data->remove('time');
                     
-                    if ($plugin->sortField === 'format_size') {
-                        $plugin->sortField = 'size';
-                    } elseif ($plugin->sortField === 'format_create_time') {
-                        $plugin->sortField = 'create_time';
+                    if ($uploadType = $option->pull('upload_type', 0, 'intval')) {
+                        switch ($uploadType) {
+                            case 1:
+                                $model->whereComplete()->where(SystemFileField::fast(0));
+                            break;
+                            case 2:
+                                $model->whereComplete()->where(SystemFileField::fast(1));
+                            break;
+                            case 3:
+                                $model->whereComplete(false);
+                            break;
+                        }
                     }
-                }
-            });
-            
-            return $this->success($this->pluginTable->build($this->model->whereComplete()));
+                })
+                ->response();
         }
         
         $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
         $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
-        $this->assign('time', $timeRange);
+        $this->assign('time', $this->indexTimeRange);
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 文件上传
+     * 上传文件
      * @return Response
-     * @throws Exception
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function upload() : Response
     {
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 删除附件
+     * 删除文件
      * @return Response
-     * @throws Exception
+     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的文件', 'intval') as $id) {
-            $this->model->deleteInfo($id);
+            $this->model->remove($id);
         }
         
         $this->log()->record(self::LOG_DELETE, '删除文件');
         
         return $this->success('删除成功');
+    }
+    
+    
+    /**
+     * 清理重复文件
+     * @return Response
+     * @throws DbException
+     */
+    #[MenuNode(menu: false, parent: '/index')]
+    public function clear_repeat() : Response
+    {
+        $total = $this->model->clearRepeat();
+        $this->log()->record(self::LOG_DELETE, '清理重复文件');
+        
+        return $this->success("成功清理{$total}个文件");
+    }
+    
+    
+    /**
+     * 清理无效文件
+     * @return Response
+     * @throws DbException
+     */
+    #[MenuNode(menu: false, parent: '/index')]
+    public function clear_invalid() : Response
+    {
+        $total = $this->model->where(SystemFileField::createTime('<', time() - 86400 * 2))->clearInvalid();
+        $this->log()->record(self::LOG_DELETE, '清理无效文件');
+        
+        return $this->success("成功清理{$total}个文件");
     }
 }

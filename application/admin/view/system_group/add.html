@@ -5,10 +5,19 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">父角色组</label>
             <div class="col-sm-9">
-                <select class="form-control font-tabs" name="parent_id">
-                    <option value="0">顶级角色组</option>
-                    {$group_options}
-                </select>
+                <input type="text"
+                       readonly
+                       class="form-control"
+                       name="parent_id"
+                       placeholder="顶级角色组"
+                       value="{$info.parent_id|default=''}"
+                       data-toggle="busy-linkage-picker"
+                       data-url="{:url('linkage_picker_data?id=' . ($info['id'] ?? 0))}"
+                       data-strict="false"
+                       data-clear="true"
+                       <?=is_disabled($info['system'])?>
+                />
+                
                 <span class="help-block">选择父角色组，将直接继承父角色组的权限规则</span>
             </div>
         </div>
@@ -33,7 +42,7 @@
                      data-toggle="busy-tree"
                      data-block="true"
                      data-name="rule[]"
-                     data-url="{:url()}"
+                     data-url="{:url('rule_tree_data')}"
                      data-params="busyAdmin.data.treeParams"
                      data-checkbox-relation="false"
                      data-checkbox-relation-dir="up,undetermined"
@@ -58,8 +67,8 @@
             <label class="col-sm-2 control-label">启用角色</label>
             <div class="col-sm-9">
                 <div class="radio">
-                    <input type="radio" name="status" value="1" data-toggle="busy-radio" title="启用" <?=is_checked(($info['status'] ?? 0) == 1)?>/>
-                    <input type="radio" name="status" value="0" data-toggle="busy-radio" title="禁用" <?=is_checked(($info['status'] ?? 0) == 0)?>/>
+                    <input type="radio" <?=is_disabled($info['system'])?> name="status" value="1" data-toggle="busy-radio" title="启用" <?=is_checked(($info['status'] ?? 0) == 1)?>/>
+                    <input type="radio" <?=is_disabled($info['system'])?> name="status" value="0" data-toggle="busy-radio" title="禁用" <?=is_checked(($info['status'] ?? 0) == 0)?>/>
                 </div>
                 <span class="help-block">设置角色状态，禁用后将无法使用该角色</span>
             </div>
@@ -68,12 +77,12 @@
 </block>
 <block name="foot">
     <script>
-        busyAdmin.data.treeParentGroupId = '{$info.parent_id|default=0}';
-        busyAdmin.data.defaultMenuId     = '{$info.default_menu_id|default=0}';
+        busyAdmin.data.treeParentGroupId = '{$info.parent_id|default=""}';
+        busyAdmin.data.defaultMenuId     = '{$info.default_menu_id|default=""}';
         busyAdmin.data.treeParams        = function () {
             return {
-                group_id : busyAdmin.data.treeParentGroupId,
-                id       : '{$info.id|default=""}'
+                parent_group_id : busyAdmin.data.treeParentGroupId,
+                group_id        : '{$info.id|default=""}'
             }
         };
 
@@ -118,8 +127,8 @@
                             return;
                         }
 
-                        var selected = item.a_attr['data-id'] == busyAdmin.data.defaultMenuId ? ' selected' : '';
-                        options += '<option value="' + item.a_attr['data-id'] + '"' + selected + '>' + item.text + '</option>';
+                        var selected = item.id == busyAdmin.data.defaultMenuId ? ' selected' : '';
+                        options += '<option value="' + item.id + '"' + selected + '>' + item.text + '</option>';
                     });
 
                     if (options) {

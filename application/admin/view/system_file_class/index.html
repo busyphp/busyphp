@@ -42,7 +42,7 @@
                     排序
                 </th>
                 <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
-                <th class="text-center" data-field="name" data-halign="center" data-align="left">分类名称</th>
+                <th class="text-center" data-field="name" data-halign="center" data-align="left" data-formatter="@">分类名称</th>
                 <th class="text-center" width="100" data-field="type_name" data-halign="center">类型</th>
                 <th class="text-center" width="120" data-field="var" data-formatter="@" >分类标识</th>
                 <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
@@ -84,6 +84,13 @@
         </div>
     </div>
 
+    <script type="text/html" id="name">
+        {{value}}
+        {{if item.system}}
+        <kbd>系统配置</kbd>
+        {{/if}}
+    </script>
+    
     <script type="text/html" id="sort">
         <input type="text" class="form-control input-xs text-center" value="{{value}}" data-bind="sort"/>
     </script>

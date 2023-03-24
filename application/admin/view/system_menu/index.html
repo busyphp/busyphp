@@ -1,17 +1,20 @@
 <extend name="@admin:layout"/>
 <block name="head"></block>
 <block name="content">
+    <?php
+    
+    use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+    
+    ?>
     <table class="table table-striped table-bordered table-hover"
            data-toggle="busy-table"
            data-height="true"
            data-show-columns="true"
-           data-show-export="true"
-           data-show-print="true"
            data-search="true"
            data-show-refresh="true"
            data-tree-show-field="name"
-           data-parent-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::parentHash();?>"
-           data-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuInfo::hash();?>"
+           data-parent-id-field="<?=SystemMenuField::parentHash();?>"
+           data-id-field="<?=SystemMenuField::hash();?>"
            data-root-parent-id=""
            data-state="true"
            data-state-key="{$url.controller}{$url.action}"
@@ -25,13 +28,13 @@
            data-route="true">
         <thead>
             <tr>
-                <th class="text-center" width="40" data-checkbox="true"></th>
+                <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
                 <th width="60" data-align="center" data-field="sort" data-formatter="@">排序</th>
                 <th width="60" data-align="center" data-field="id">ID</th>
                 <th width="50" data-align="center" data-field="icon" data-formatter="@">图标</th>
                 <th data-align="left" data-halign="center" data-field="name" data-formatter="@" data-searchable="true">菜单名称</th>
                 <th width="100" data-align="center" data-field="disabled" data-formatter="@">状态</th>
-                <th width="100" data-align="center" data-field="hide" data-formatter="@">显示</th>
+                <th width="100" data-align="center" data-field="hide" data-formatter="@">节点类型</th>
                 <th width="130" data-align="center" data-field="operate" data-formatter="@">操作</th>
             </tr>
         </thead>
@@ -88,20 +91,24 @@
 
     <script type="text/html" id="disabled">
         <div class="min-width-80">
-            {{if item.is_system}}
-            <span class="badge badge-default badge-pill">系统菜单</span>
+            {{if item.system}}
+            <kbd>系统菜单</kbd>
             {{else}}
-            <input class="switch input-xs success" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="正常,禁用"/>
+            <input class="switch input-xs success" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="启用,禁用"/>
             {{/if}}
         </div>
     </script>
 
     <script type="text/html" id="hide">
         <div class="min-width-80">
-            {{if item.is_system}}
-            <span class="badge badge-default badge-pill">系统菜单</span>
+            {{if item.system}}
+                {{if value}}
+                <span class="badge badge-success badge-pill">&nbsp;权限&nbsp;</span>
+                {{else}}
+                <span class="badge badge-primary badge-pill">&nbsp;菜单&nbsp;</span>
+                {{/if}}
             {{else}}
-            <input class="switch input-xs primary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="显示,隐藏"/>
+            <input class="switch input-xs primary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ? '':'checked'}} title="菜单,权限"/>
             {{/if}}
         </div>
     </script>
@@ -125,8 +132,19 @@
            data-form-on-success="@table.reload|@app.loadInfo">
             <i class="fa fa-pencil"></i>
         </a>
-        {{if !item.is_system}}
+        {{if !item.system}}
         <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload|@app.loadInfo"><i class="fa fa-trash"></i></a>
         {{/if}}
+    </script>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.data.checkboxState = function (value, item, index) {
+            if (item.system) {
+                return {disabled : true}
+            }
+
+            return value;
+        };
     </script>
 </block>

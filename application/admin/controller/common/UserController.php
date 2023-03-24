@@ -4,7 +4,6 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\controller\system\UserController as SystemUserController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
@@ -40,10 +39,11 @@ class UserController extends InsideController
         }
         
         $this->setPageTitle('修改个人资料');
-        
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PROFILE, '', [
+        $this->assign([
             'info' => $this->adminUser
-        ]));
+        ]);
+        
+        return $this->insideDisplay();
     }
     
     
@@ -60,7 +60,7 @@ class UserController extends InsideController
                 throw new VerifyException('请输入登录密码', 'old_password');
             }
             
-            if (!AdminUser::getClass()::verifyPassword($oldPassword, $this->adminUser->password)) {
+            if (!AdminUser::class()::verifyPassword($oldPassword, $this->adminUser->password)) {
                 throw new VerifyException('登录密码输入错误', 'old_password');
             }
             
@@ -74,11 +74,13 @@ class UserController extends InsideController
             
             return $this->success('修改成功');
         }
-        $this->setPageTitle('修改个人密码');
         
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_MY_PWD, '', [
+        $this->setPageTitle('修改个人密码');
+        $this->assign([
             'info' => $this->adminUser
-        ]));
+        ]);
+        
+        return $this->insideDisplay();
     }
     
     
@@ -119,7 +121,7 @@ class UserController extends InsideController
         $this->assign('info', AdminUser::init()->getTheme($this->adminUser));
         $this->setPageTitle('主题设置');
         
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -129,7 +131,7 @@ class UserController extends InsideController
      * @param int    $index
      * @return array|false
      */
-    private function parseFile(string $cssFile, int $index)
+    protected function parseFile(string $cssFile, int $index)
     {
         if (!is_file($cssFile)) {
             return false;
@@ -158,11 +160,11 @@ class UserController extends InsideController
      */
     public function detail() : Response
     {
-        $title = $this->param('title/s', 'trim');
-        $this->setPageTitle($title ?: '管理员详情');
-        
-        return $this->display($this->getUseTemplate(SystemUserController::TEMPLATE_DETAIL, '', [
+        $this->setPageTitle($this->param('title/s', 'trim') ?: '管理员详情');
+        $this->assign([
             'info' => AdminUser::init()->getInfo($this->param('id/d'))
-        ]));
+        ]);
+        
+        return $this->insideDisplay();
     }
 }

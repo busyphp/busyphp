@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\setting;
 use BusyPHP\App;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\helper\TransHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Setting;
 
 /**
@@ -14,9 +15,22 @@ use BusyPHP\model\Setting;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/19 下午下午3:44 CaptchaSetting.php $
  */
-class CaptchaSetting extends Setting
+class CaptchaSetting extends Setting implements ContainerInterface
 {
-    private $client;
+    /**
+     * 应用客户端名称
+     * @var string
+     */
+    protected $client;
+    
+    
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
     
     
     /**
@@ -61,9 +75,9 @@ class CaptchaSetting extends Setting
      */
     protected function value($key, $default = null)
     {
-        $clients = $this->get('clients', []);
+        $name = $this->client ?: $this->app->getDirName();
         
-        return $clients[$this->client ?: $this->app->getDirName()][$key] ?? $default;
+        return $this->get("clients.$name.$key", $default);
     }
     
     

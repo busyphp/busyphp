@@ -3,12 +3,12 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\model\Entity;
 use RuntimeException;
-use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use Throwable;
 
@@ -17,19 +17,17 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午4:56 SystemFileClass.php $
- * @method SystemFileClassInfo getInfo(int $id, string $notFoundMessage = null)
- * @method SystemFileClassInfo|null findInfo(int $id = null, string $notFoundMessage = null)
- * @method SystemFileClassInfo[] selectList()
- * @method SystemFileClassInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method static string|SystemFileClass getClass()
+ * @method SystemFileClassField getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemFileClassField|null findInfo(int $id = null)
+ * @method SystemFileClassField[] selectList()
+ * @method SystemFileClassField[] indexList(string|Entity $key = '')
+ * @method SystemFileClassField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class SystemFileClass extends Model
+class SystemFileClass extends Model implements ContainerInterface
 {
-    protected $dataNotFoundMessage = '文件分类不存在';
+    protected string $dataNotFoundMessage = '文件分类不存在';
     
-    protected $findInfoFilter      = 'intval';
-    
-    protected $bindParseClass      = SystemFileClassInfo::class;
+    protected string $fieldClass          = SystemFileClassField::class;
     
     /** @var string 操作场景-用户设置 */
     public const SCENE_USER_SET = 'user_set';
@@ -38,7 +36,7 @@ class SystemFileClass extends Model
     /**
      * @inheritDoc
      */
-    final protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -50,9 +48,9 @@ class SystemFileClass extends Model
      * @return int
      * @throws DbException
      */
-    public function createInfo(SystemFileClassField $data) : int
+    public function create(SystemFileClassField $data) : int
     {
-        return (int) $this->validate($data, self::SCENE_CREATE)->addData();
+        return (int) $this->validate($data, static::SCENE_CREATE)->insert();
     }
     
     
@@ -62,32 +60,30 @@ class SystemFileClass extends Model
      * @param string               $scene
      * @throws Throwable
      */
-    public function updateInfo(SystemFileClassField $data, string $scene = self::SCENE_UPDATE)
+    public function modify(SystemFileClassField $data, string $scene = self::SCENE_UPDATE)
     {
         $this->transaction(function() use ($data, $scene) {
             $info = $this->lock(true)->getInfo($data->id);
-            $this->validate($data, $scene, $info)->saveData();
+            $this->validate($data, $scene, $info)->update();
         });
     }
     
     
     /**
      * 删除分类
-     * @param int $data
+     * @param int $id
      * @return int
      * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function remove(int $id) : int
     {
-        $id = (int) $data;
-        
         return $this->transaction(function() use ($id) {
-            $info = $this->getInfo($id);
+            $info = $this->lock(true)->getInfo($id);
             if ($info->system) {
                 throw new RuntimeException('系统分类禁止删除');
             }
             
-            return parent::deleteInfo($info->id);
+            return $this->delete($info->id);
         });
     }
     
@@ -97,10 +93,8 @@ class SystemFileClass extends Model
      * @param string|bool $selectedValue 选中项，设为true则返回数组
      * @param bool|string $defaultText 默认文本，false则不输出
      * @param string      $defaultValue 默认值
-     * @param string      $type 指定附件类型
-     * @return string|SystemFileClassInfo[]
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @param null        $type 指定附件类型
+     * @return string|array<string, SystemFileClassField>
      */
     public function getAdminOptions($selectedValue = '', $defaultText = true, $defaultValue = '', $type = null)
     {
@@ -128,7 +122,7 @@ class SystemFileClass extends Model
         }
         foreach ($array as $type => $list) {
             $value    = sprintf("type:%s", $type);
-            $name     = SystemFile::getClass()::getTypes($type);
+            $name     = SystemFile::class()::getTypes($type);
             $selected = '';
             if ($selectedValue == $value) {
                 $selected = ' selected';
@@ -137,7 +131,7 @@ class SystemFileClass extends Model
             $options .= sprintf("<optgroup label=\"%s\">", $name);
             $options .= sprintf("<option value=\"%s\"%s>所有%s</option>", $value, $selected, $name);
             
-            /** @var SystemFileClassInfo $item */
+            /** @var SystemFileClassField $item */
             foreach ($list as $item) {
                 $itemSelected = '';
                 if ($item->var == $selectedValue) {
@@ -155,50 +149,23 @@ class SystemFileClass extends Model
     
     /**
      * 获取分类缓存
-     * @param bool $must
-     * @return SystemFileClassInfo[]
-     * @throws DbException
-     * @throws DataNotFoundException
+     * @param bool $force
+     * @return array<string, SystemFileClassField>
      */
-    public function getList($must = false) : array
+    public function getList(bool $force = false) : array
     {
-        $list = $this->getCache('list');
-        if (!$list || $must) {
+        return $this->rememberCacheByCallback('list', function() {
             $list = $this->order(SystemFileClassField::sort(), 'asc')
                 ->order(SystemFileClassField::id(), 'desc')
                 ->selectList();
-            $list = ArrayHelper::listByKey($list, SystemFileClassField::var()->name());
-            $this->setCache('list', $list);
-        }
-        
-        return $list;
-    }
-    
-    
-    /**
-     * 设置分类排序
-     * @param array $data
-     * @throws DbException
-     */
-    public function setSort(array $data)
-    {
-        $saveAll = [];
-        foreach ($data as $id => $value) {
-            $item       = SystemFileClassField::init();
-            $item->id   = $id;
-            $item->sort = $value;
-            $saveAll[]  = $item;
-        }
-        
-        if ($saveAll) {
-            $this->saveAll($saveAll);
-        }
+            
+            return ArrayHelper::listByKey($list, SystemFileClassField::var()->name());
+        }, $force);
     }
     
     
     /**
      * @inheritDoc
-     * @throws
      */
     protected function onChanged($method, $id, $options)
     {
@@ -208,9 +175,8 @@ class SystemFileClass extends Model
     
     /**
      * @inheritDoc
-     * @throws
      */
-    public function onSaveAll()
+    public function onUpdateAll()
     {
         $this->getList(true);
     }

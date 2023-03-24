@@ -1,12 +1,16 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\develop\plugin\SystemPluginBaseController;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\model\system\plugin\SystemPluginPackageInfo;
 use BusyPHP\app\admin\model\system\plugin\SystemPlugin;
+use BusyPHP\app\admin\model\system\plugin\SystemPluginPackageInfo;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\ClassNotFoundException;
 use BusyPHP\helper\ArrayHelper;
@@ -20,26 +24,35 @@ use think\Response;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/10/18 下午下午6:38 PluginController.php $
  */
+#[MenuRoute(path: 'system_plugin', class: true)]
 class PluginController extends InsideController
 {
+    protected function initialize($checkLogin = true)
+    {
+        $this->releaseDisabled();
+        
+        parent::initialize($checkLogin);
+    }
+    
+    
     /**
-     * 插件列表
+     * 插件管理
      */
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-plug', sort: 30)]
     public function index() : Response
     {
-        if ($this->pluginTable) {
-            $list = Collection::make(SystemPlugin::getPluginList());
-            
-            if ($this->pluginTable->word) {
-                $list = $list->whereLike(SystemPluginPackageInfo::name(), $this->pluginTable->word);
-                $list = array_values($list->toArray());
+        if ($table = Table::initIfRequest()) {
+            $list = Collection::make(SystemPlugin::class()::getPluginList());
+            if ($word = $table->getWord()) {
+                $list = $list->whereLike(SystemPluginPackageInfo::name()->name(), $word);
             }
             
-            return $this->success($this->pluginTable->result($list, count($list)));
+            return $table->list($list, function(Collection $list) {
+                return array_values($list->all());
+            })->response();
         }
         
-        
-        return $this->display();
+        return $this->insideDisplay();
     }
     
     
@@ -48,6 +61,7 @@ class PluginController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function install() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->install();
@@ -59,6 +73,7 @@ class PluginController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function uninstall() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->uninstall();
@@ -66,10 +81,11 @@ class PluginController extends InsideController
     
     
     /**
-     * 插件设置
+     * 设置插件
      * @return Response
      * @throws DataNotFoundException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function setting() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->setting();
@@ -84,7 +100,7 @@ class PluginController extends InsideController
      */
     private function manager(string $package) : SystemPluginBaseController
     {
-        $list = SystemPlugin::getPluginList();
+        $list = SystemPlugin::class()::getPluginList();
         $list = ArrayHelper::listByKey($list, SystemPluginPackageInfo::package()->name());
         $info = $list[$package] ?? null;
         if (!$info) {

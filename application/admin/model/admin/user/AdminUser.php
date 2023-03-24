@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\model\admin\user;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\TripleDesHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
 use BusyPHP\model\Entity;
 use RuntimeException;
@@ -26,19 +27,19 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/5/30 下午5:57 下午 AdminUser.php $
- * @method AdminUserInfo getInfo(int $id, string $notFoundMessage = null)
- * @method AdminUserInfo|null findInfo(int $id = null, string $notFoundMessage = null)
- * @method AdminUserInfo[] selectList()
- * @method AdminUserInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method AdminUserInfo getInfoByUsername(string $username, string $notFoundMessage = null)
- * @method AdminUserInfo getInfoByEmail(string $email, string $notFoundMessage = null)
- * @method AdminUserInfo getInfoByPhone(string $phone, string $notFoundMessage = null)
- * @method AdminUserInfo|null findInfoByUsername(string $username, string $notFoundMessage = null)
- * @method AdminUserInfo|null findInfoByEmail(string $email, string $notFoundMessage = null)
- * @method AdminUserInfo|null findInfoByPhone(string $phone, string $notFoundMessage = null)
- * @method static static getClass()
+ * @method AdminUserField getInfo(int $id, string $notFoundMessage = null)
+ * @method AdminUserField|null findInfo(int $id = null)
+ * @method AdminUserField[] selectList()
+ * @method AdminUserField[] indexList(string|Entity $key = '')
+ * @method AdminUserField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
+ * @method AdminUserField getInfoByUsername(string $username, string $notFoundMessage = null)
+ * @method AdminUserField getInfoByEmail(string $email, string $notFoundMessage = null)
+ * @method AdminUserField getInfoByPhone(string $phone, string $notFoundMessage = null)
+ * @method AdminUserField|null findInfoByUsername(string $username)
+ * @method AdminUserField|null findInfoByEmail(string $email)
+ * @method AdminUserField|null findInfoByPhone(string $phone)
  */
-class AdminUser extends Model
+class AdminUser extends Model implements ContainerInterface
 {
     //+--------------------------------------
     //| 登录相关常量
@@ -75,19 +76,29 @@ class AdminUser extends Model
     /** @var string 操作场景-修改个人资料 */
     const SCENE_PROFILE = 'profile';
     
-    protected $dataNotFoundMessage = '管理员不存在';
+    protected string $dataNotFoundMessage = '管理员不存在';
     
-    protected $listNotFoundMessage = '暂无管理员';
+    protected string $listNotFoundMessage = '暂无管理员';
     
-    protected $findInfoFilter      = 'intval';
+    protected string $fieldClass          = AdminUserField::class;
     
-    protected $bindParseClass      = AdminUserInfo::class;
+    /**
+     * 创建/修改/手机号登录验证规则，支持正则/闭包，默认为验证中国大陆手机号
+     * @var mixed
+     */
+    public static mixed $phoneRegex = null;
+    
+    /**
+     * 手机号是否必填
+     * @var bool
+     */
+    public static bool $requirePhone = false;
     
     
     /**
      * @inheritDoc
      */
-    final protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -96,17 +107,17 @@ class AdminUser extends Model
     /**
      * 添加管理员
      * @param AdminUserField $data
-     * @return AdminUserInfo
+     * @return AdminUserField
      * @throws Throwable
      */
-    public function create(AdminUserField $data) : AdminUserInfo
+    public function create(AdminUserField $data) : AdminUserField
     {
         $prepare = $this->trigger(new AdminUserEventCreatePrepare($this, $data), true);
         
         return $this->transaction(function() use ($data, $prepare) {
-            $this->validate($data, self::SCENE_CREATE);
+            $this->validate($data, static::SCENE_CREATE);
             $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
-            $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->addData($data))));
+            $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->insert($data))));
             
             return $info;
         });
@@ -119,7 +130,7 @@ class AdminUser extends Model
      * @param string         $scene 场景
      * @throws Throwable
      */
-    public function modify(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserInfo
+    public function modify(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserField
     {
         $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $scene), true);
         
@@ -127,7 +138,7 @@ class AdminUser extends Model
             $info = $this->lock(true)->getInfo($data->id);
             $this->validate($data, $scene, $info);
             $this->trigger(new AdminUserEventUpdateBefore($this, $data, $scene, $prepare, $info));
-            $this->saveData($data);
+            $this->update($data);
             $this->trigger(new AdminUserEventUpdateAfter($this, $data, $scene, $prepare, $info, $info = $this->getInfo($info->id)));
             
             return $info;
@@ -137,13 +148,12 @@ class AdminUser extends Model
     
     /**
      * 删除管理员
-     * @param int $data
+     * @param int $id
      * @return int
      * @throws Throwable
      */
-    public function remove($data) : int
+    public function remove(int $id) : int
     {
-        $id      = (int) $data;
         $prepare = $this->trigger(new AdminUserEventDeletePrepare($this, $id), true);
         
         return $this->transaction(function() use ($id, $prepare) {
@@ -153,7 +163,7 @@ class AdminUser extends Model
             }
             
             $this->trigger(new AdminUserEventDeleteBefore($this, $info->id, $info, $prepare));
-            $result = parent::remove($info->id);
+            $result = $this->delete($info->id);
             $this->trigger(new AdminUserEventDeleteAfter($this, $info->id, $info, $prepare));
             
             return $result;
@@ -166,14 +176,14 @@ class AdminUser extends Model
      * @param string $username 账号
      * @param string $password 密码
      * @param bool   $saveLogin 是否记住登录
-     * @return AdminUserInfo
+     * @return AdminUserField
      * @throws Throwable
      */
-    public function login(string $username, string $password, bool $saveLogin = false) : AdminUserInfo
+    public function login(string $username, string $password, bool $saveLogin = false) : AdminUserField
     {
         $username = trim($username);
         $password = trim($password);
-        $setting  = AdminSetting::init();
+        $setting  = AdminSetting::instance();
         if (!$username) {
             throw new VerifyException('请输入账号', 'username_empty');
         }
@@ -184,9 +194,9 @@ class AdminUser extends Model
         $this->trigger(new AdminUserEventLoginPrepare());
         
         // 查询账户
-        if (Validate::checkRule($username, ValidateRule::isEmail())) {
+        if (Validate::checkRule($username, ValidateRule::init()->isEmail())) {
             $info = $this->findInfoByEmail($username);
-        } elseif (self::getClass()::checkPhone($username)) {
+        } elseif (static::checkPhone($username)) {
             $info = $this->findInfoByPhone($username);
         } else {
             $info = $this->findInfoByUsername($username);
@@ -213,7 +223,7 @@ class AdminUser extends Model
         }
         
         // 检测密码
-        if (!self::getClass()::verifyPassword($password, $info->password)) {
+        if (!static::verifyPassword($password, $info->password)) {
             // 记录密码错误次数
             $errorMsg = '账号不存在或密码错误';
             if ($checkError) {
@@ -240,7 +250,7 @@ class AdminUser extends Model
                 }
                 
                 $data->setId($info->id);
-                $this->modify($data, self::SCENE_LOGIN_ERROR);
+                $this->modify($data, static::SCENE_LOGIN_ERROR);
             }
             
             throw new VerifyException($errorMsg, 'password_error');
@@ -253,12 +263,11 @@ class AdminUser extends Model
     /**
      * 校验是否登录
      * @param bool $saveOperateTime 是否记录操作时间
-     * @return AdminUserInfo
+     * @return AdminUserField
      * @throws DataNotFoundException
      * @throws DbException
-     * @throws VerifyException
      */
-    public function checkLogin($saveOperateTime = false) : AdminUserInfo
+    public function checkLogin($saveOperateTime = false) : AdminUserField
     {
         $cookieUserId  = intval(Cookie::get(AdminUser::COOKIE_USER_ID, '0'));
         $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY, ''));
@@ -268,13 +277,13 @@ class AdminUser extends Model
         
         $user          = $this->getInfo($cookieUserId);
         $cookieAuthKey = TripleDesHelper::decrypt($cookieAuthKey, $user->token);
-        if (!$cookieAuthKey || $cookieAuthKey != self::getClass()::createAuthKey($user, $user->token)) {
+        if (!$cookieAuthKey || $cookieAuthKey != static::createAuthKey($user, $user->token)) {
             throw new VerifyException('通行密钥错误', 'auth');
         }
         
         // 验证登录时常
-        if ($often = AdminSetting::init()->getOften()) {
-            $operateTime = Session::get(self::SESSION_OPERATE_TIME);
+        if ($often = AdminSetting::instance()->getOften()) {
+            $operateTime = Session::get(static::SESSION_OPERATE_TIME);
             if ($operateTime > 0 && time() - ($often * 60) > $operateTime) {
                 throw new VerifyException('登录超时', 'timeout');
             }
@@ -291,15 +300,16 @@ class AdminUser extends Model
     
     /**
      * 设为登录成功
-     * @param AdminUserInfo $userInfo
-     * @param bool          $saveLogin 是否记住登录
-     * @return AdminUserInfo
+     * @param AdminUserField $userInfo
+     * @param bool           $saveLogin 是否记住登录
+     * @return AdminUserField
      * @throws Throwable
      */
-    public function setLoginSuccess(AdminUserInfo $userInfo, bool $saveLogin = false) : AdminUserInfo
+    public function setLoginSuccess(AdminUserField $userInfo, bool $saveLogin = false) : AdminUserField
     {
-        $token = AdminSetting::init()->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
-        $data  = AdminUserField::init();
+        $setting = AdminSetting::instance();
+        $token   = $setting->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
+        $data    = AdminUserField::init();
         $data->setId($userInfo->id);
         $data->setToken($token);
         $data->setLoginTime(time());
@@ -310,17 +320,17 @@ class AdminUser extends Model
         $data->setErrorRelease(0);
         $data->setErrorTotal(0);
         $data->setErrorTime(0);
-        $this->modify($data, self::SCENE_LOGIN_SUCCESS);
+        $this->modify($data, static::SCENE_LOGIN_SUCCESS);
         
         // 设置COOKIE
         $expire       = null;
-        $saveLoginDay = AdminSetting::init()->getSaveLogin();
+        $saveLoginDay = $setting->getSaveLogin();
         if ($saveLoginDay > 0 && $saveLogin) {
             $expire = 86400 * $saveLoginDay;
         }
         
-        Cookie::set(self::COOKIE_AUTH_KEY, TripleDesHelper::encrypt(self::getClass()::createAuthKey($userInfo, $token), $token), $expire);
-        Cookie::set(self::COOKIE_USER_ID, (string) $userInfo->id, 86400 * 365);
+        Cookie::set(static::COOKIE_AUTH_KEY, TripleDesHelper::encrypt(static::createAuthKey($userInfo, $token), $token), $expire);
+        Cookie::set(static::COOKIE_USER_ID, (string) $userInfo->id, 86400 * 365);
         $this->saveThemeToCookie($userInfo->id, $userInfo->theme);
         $this->setOperateTime();
         
@@ -333,8 +343,8 @@ class AdminUser extends Model
      */
     private function setOperateTime()
     {
-        if (AdminSetting::init()->getOften()) {
-            Session::set(self::SESSION_OPERATE_TIME, time());
+        if (AdminSetting::instance()->getOften()) {
+            Session::set(static::SESSION_OPERATE_TIME, time());
         }
     }
     
@@ -350,7 +360,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->setChecked($checked);
-        $this->modify($update, self::SCENE_CHECKED);
+        $this->modify($update, static::SCENE_CHECKED);
     }
     
     
@@ -365,7 +375,7 @@ class AdminUser extends Model
         $update = AdminUserField::init();
         $update->setId($id);
         $update->setTheme($theme);
-        $this->modify($update, self::SCENE_THEME);
+        $this->modify($update, static::SCENE_THEME);
         $this->saveThemeToCookie($id, $update->theme);
     }
     
@@ -377,22 +387,22 @@ class AdminUser extends Model
      */
     protected function saveThemeToCookie($id, $theme)
     {
-        Cookie::set(self::COOKIE_USER_THEME . $id, is_array($theme) ? json_encode($theme, JSON_UNESCAPED_UNICODE) : $theme, 86400 * 365);
+        Cookie::set(static::COOKIE_USER_THEME . $id, is_array($theme) ? json_encode($theme, JSON_UNESCAPED_UNICODE) : $theme, 86400 * 365);
     }
     
     
     /**
      * 获取主题
-     * @param AdminUserInfo|null $userInfo
+     * @param AdminUserField|null $userInfo
      * @return array{skin: string, nav_mode: bool, nav_single_hold: bool}
      */
-    public function getTheme(?AdminUserInfo $userInfo = null) : array
+    public function getTheme(?AdminUserField $userInfo = null) : array
     {
         if ($userInfo) {
             $theme = $userInfo->theme;
         } else {
-            $userId = Cookie::get(self::COOKIE_USER_ID);
-            $theme  = Cookie::get(self::COOKIE_USER_THEME . $userId);
+            $userId = Cookie::get(static::COOKIE_USER_ID);
+            $theme  = Cookie::get(static::COOKIE_USER_THEME . $userId);
             $theme  = json_decode((string) $theme, true) ?: [];
         }
         
@@ -418,7 +428,7 @@ class AdminUser extends Model
         $update->setErrorTime(0);
         $update->setErrorTotal(0);
         
-        $this->modify($update, self::SCENE_UNLOCK);
+        $this->modify($update, static::SCENE_UNLOCK);
     }
     
     
@@ -427,7 +437,7 @@ class AdminUser extends Model
      */
     public function outLogin()
     {
-        Cookie::delete(self::COOKIE_AUTH_KEY);
+        Cookie::delete(static::COOKIE_AUTH_KEY);
     }
     
     
@@ -437,18 +447,18 @@ class AdminUser extends Model
      */
     public function clearToken()
     {
-        $this->whereEntity(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
+        $this->where(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
         $this->clearCache();
     }
     
     
     /**
      * 创建COOKIE密钥
-     * @param AdminUserInfo $userInfo
-     * @param string        $token
+     * @param AdminUserField $userInfo
+     * @param string         $token
      * @return string
      */
-    public static function createAuthKey(AdminUserInfo $userInfo, string $token) : string
+    public static function createAuthKey(AdminUserField $userInfo, string $token) : string
     {
         return md5(implode('_', [
             $token,
@@ -496,11 +506,11 @@ class AdminUser extends Model
     /**
      * 校验手机号
      * @param string $phone
-     * @return false|string
+     * @return bool|string
      */
     public static function checkPhone(string $phone)
     {
-        if ($regex = self::getClass()::getCheckPhoneMatch()) {
+        if ($regex = static::getPhoneRegex()) {
             if (is_callable($regex)) {
                 $res = Container::getInstance()->invoke($regex, [$phone]);
                 if ($res === false) {
@@ -509,20 +519,30 @@ class AdminUser extends Model
                 
                 return $res ?: true;
             } else {
-                return Validate::checkRule($phone, ValidateRule::regex($regex));
+                return Validate::checkRule($phone, ValidateRule::init()->regex($regex));
             }
         }
         
-        return Validate::checkRule($phone, ValidateRule::isMobile());
+        return Validate::checkRule($phone, ValidateRule::init()->isMobile());
     }
     
     
     /**
-     * 获取检测手机号配置
-     * @return string|callable
+     * 获取手机号验证正则
+     * @return mixed
      */
-    public static function getCheckPhoneMatch()
+    public static function getPhoneRegex() : mixed
     {
-        return self::getDefine('check_phone_match', '');
+        return static::$phoneRegex;
+    }
+    
+    
+    /**
+     * 手机号是否必填
+     * @return bool
+     */
+    public static function isRequirePhone() : bool
+    {
+        return static::$requirePhone;
     }
 }

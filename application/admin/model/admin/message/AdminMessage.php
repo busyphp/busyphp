@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\message;
 
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use think\db\exception\DbException;
@@ -13,25 +14,25 @@ use think\route\Url;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/12/18 下午10:56 上午 AdminMessage.php $
- * @method AdminMessageInfo getInfo(int $id, string $notFoundMessage = null)
- * @method AdminMessageInfo|null findInfo(int $id = null, string $notFoundMessage = null)
- * @method AdminMessageInfo[] selectList()
- * @method AdminMessageInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method static AdminMessage getClass()
+ * @method AdminMessageField getInfo(int $id, string $notFoundMessage = null)
+ * @method AdminMessageField|null findInfo(int $id = null)
+ * @method AdminMessageField[] selectList()
+ * @method AdminMessageField[] indexList(string|Entity $key = '')
+ * @method AdminMessageField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class AdminMessage extends Model
+class AdminMessage extends Model implements ContainerInterface
 {
-    protected $dataNotFoundMessage = '消息不存在';
+    protected string $dataNotFoundMessage = '消息不存在';
     
-    protected $listNotFoundMessage = '暂无消息';
+    protected string $listNotFoundMessage = '暂无消息';
     
-    protected $bindParseClass      = AdminMessageInfo::class;
+    protected string $fieldClass = AdminMessageField::class;
     
     
     /**
      * @inheritDoc
      */
-    final protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -44,10 +45,11 @@ class AdminMessage extends Model
      * @param string|Url   $url 操作链接
      * @param string       $desc 消息备注
      * @param string|array $icon 图标或图片地址，图标支持传入：图标类名称 或 array(图标类名称, 图标颜色16进制字符)，图片必须是 / 开头或 http 开头
+     * @param array        $attrs 自定义标签属性
      * @return int
      * @throws DbException
      */
-    public function createInfo(int $userId, string $content, $url = '', $desc = '', $icon = '') : int
+    public function create(int $userId, string $content, $url = '', string $desc = '', $icon = '', array $attrs = []) : int
     {
         $data = AdminMessageField::init();
         $data->setUserId($userId);
@@ -56,23 +58,25 @@ class AdminMessage extends Model
         $data->setUrl((string) $url);
         $data->setCreateTime(time());
         $data->setIcon((array) $icon);
+        $data->setAttrs($attrs);
         
-        return (int) $this->validate($data, self::SCENE_CREATE)->addData();
+        return (int) $this->validate($data, self::SCENE_CREATE)->insert();
     }
     
     
     /**
      * 标记消息为已读
+     * @param int $userId
      * @param int $id
      * @throws DbException
      */
-    public function setRead(int $id)
+    public function setRead(int $userId, int $id)
     {
         $data = AdminMessageField::init();
-        $data->setId($id);
         $data->setRead(true);
         $data->setReadTime(time());
-        $this->saveData($data);
+        
+        $this->where(AdminMessageField::userId($userId))->where(AdminMessageField::id($id))->update($data);
     }
     
     
@@ -81,9 +85,9 @@ class AdminMessage extends Model
      * @param int $userId
      * @throws DbException
      */
-    public function clearByUserId(int $userId)
+    public function clear(int $userId)
     {
-        $this->whereEntity(AdminMessageField::userId($userId))->delete();
+        $this->where(AdminMessageField::userId($userId))->delete();
     }
     
     
@@ -92,11 +96,11 @@ class AdminMessage extends Model
      * @param int $userId
      * @throws DbException
      */
-    public function setAllReadByUserId(int $userId)
+    public function setAllRead(int $userId)
     {
         $data = AdminMessageField::init();
         $data->setRead(true);
         $data->setReadTime(time());
-        $this->whereEntity(AdminMessageField::userId($userId), AdminMessageField::read(0))->saveData($data);
+        $this->where(AdminMessageField::userId($userId))->where(AdminMessageField::read(0))->update($data);
     }
 }

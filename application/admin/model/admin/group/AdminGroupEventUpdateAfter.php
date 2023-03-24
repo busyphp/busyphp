@@ -7,12 +7,12 @@ namespace BusyPHP\app\admin\model\admin\group;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/12/13 下午2:32 AdminGroupEventUpdateAfter.php $
- * @property AdminGroupInfo $info 更新后的角色组信息
- * @property AdminGroupInfo $finalInfo
+ * @property AdminGroupField $info 更新后的角色组信息
+ * @property AdminGroupField $finalInfo
  */
 class AdminGroupEventUpdateAfter extends AdminGroupEventUpdateBefore
 {
-    public function __construct(AdminGroup $model, AdminGroupField $data, string $scene, $prepare, AdminGroupInfo $info, AdminGroupInfo $finalInfo)
+    public function __construct(AdminGroup $model, AdminGroupField $data, string $scene, $prepare, AdminGroupField $info, AdminGroupField $finalInfo)
     {
         $this->finalInfo = $finalInfo;
         

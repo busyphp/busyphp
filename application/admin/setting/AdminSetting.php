@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP\app\admin\setting;
 
 use BusyPHP\App;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\helper\TransHelper;
@@ -16,8 +17,17 @@ use think\db\exception\DbException;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/19 下午下午5:16 AdminSetting.php $
  */
-class AdminSetting extends Setting
+class AdminSetting extends Setting implements ContainerInterface
 {
+    /**
+     * @inheritDoc
+     */
+    final public static function defineContainer() : string
+    {
+        return self::class;
+    }
+    
+    
     /**
      * @inheritDoc
      * @throws DbException
@@ -27,15 +37,15 @@ class AdminSetting extends Setting
         $data                            = FilterHelper::trim($data);
         $data['verify']                  = TransHelper::toBool($data['verify']);
         $data['multiple_client']         = TransHelper::toBool($data['multiple_client']);
-        $data['often']                   = FilterHelper::min(intval($data['often']), 0);
-        $data['save_login']              = FilterHelper::min(intval($data['save_login']), 0);
-        $data['login_error_minute']      = FilterHelper::min(intval($data['login_error_minute']), 0);
-        $data['login_error_max']         = FilterHelper::min(intval($data['login_error_max']), 0);
-        $data['login_error_lock_minute'] = FilterHelper::min(intval($data['login_error_lock_minute']), 0);
+        $data['often']                   = max(intval($data['often']), 0);
+        $data['save_login']              = max(intval($data['save_login']), 0);
+        $data['login_error_minute']      = max(intval($data['login_error_minute']), 0);
+        $data['login_error_max']         = max(intval($data['login_error_max']), 0);
+        $data['login_error_lock_minute'] = max(intval($data['login_error_lock_minute']), 0);
         
         // 切换多设备登录，则清理
         if ($data['multiple_client'] !== $this->get('multiple_client')) {
-            AdminUser::init()->clearToken();
+            AdminUser::instance()->clearToken();
         }
         
         return $data;
@@ -46,7 +56,7 @@ class AdminSetting extends Setting
      * 获取后台标题
      * @return string
      */
-    public function getTitle()
+    public function getTitle() : string
     {
         return $this->get('title', '') ?: 'BusyPHP后台管理系统';
     }
@@ -86,9 +96,9 @@ class AdminSetting extends Setting
      * 获取登录是否需要验证码
      * @return bool
      */
-    public function isVerify()
+    public function isVerify() : bool
     {
-        return $this->get('verify');
+        return (bool) $this->get('verify');
     }
     
     
@@ -96,9 +106,9 @@ class AdminSetting extends Setting
      * 获取是否只允许单台客户端登录
      * @return bool
      */
-    public function isMultipleClient()
+    public function isMultipleClient() : bool
     {
-        return $this->get('multiple_client');
+        return (bool) $this->get('multiple_client');
     }
     
     
@@ -148,7 +158,7 @@ class AdminSetting extends Setting
      */
     public function getOften() : int
     {
-        return intval($this->get('often', 0));
+        return (int) $this->get('often', 0);
     }
     
     

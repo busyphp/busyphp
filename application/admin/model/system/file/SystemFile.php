@@ -6,20 +6,24 @@ namespace BusyPHP\app\admin\model\system\file;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
+use BusyPHP\facade\Image;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\FileHelper;
+use BusyPHP\helper\FilesystemHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\image\parameter\FormatParameter;
-use BusyPHP\image\parameter\ProcessParameter;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
 use BusyPHP\model\Entity;
-use BusyPHP\upload\Driver;
+use BusyPHP\Upload;
 use BusyPHP\upload\front\Local;
+use League\Flysystem\FilesystemException;
 use RangeException;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\db\Raw;
 use think\exception\FileException;
 use think\facade\Filesystem;
 use think\facade\Request;
@@ -33,17 +37,17 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright 2015 - 2017 busy^life <busy.life@qq.com>
  * @version $Id: 2017-05-30 下午7:38 SystemFile.php busy^life $
- * @method SystemFileInfo getInfo(int $id, string $notFoundMessage = null)
- * @method SystemFileInfo|null findInfo(int $id = null, string $notFoundMessage = null)
- * @method SystemFileInfo[] selectList()
- * @method SystemFileInfo[] buildListWithField(array $values, string|Entity $key = null, string|Entity $field = null)
- * @method SystemFileInfo|null findInfoByHash(string $hash, string $notFoundMessage = null)
- * @method SystemFileInfo|null findInfoByPath(string $path, string $notFoundMessage = null)
- * @method SystemFileInfo|null findInfoByUrlHash(string $urlHash, string $notFoundMessage = null)
- * @method SystemFileInfo|null findInfoByUrl(string $url, string $notFoundMessage = null)
- * @method static string|SystemFile getClass()
+ * @method SystemFileField getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemFileField|null findInfo(int $id = null)
+ * @method SystemFileField[] selectList()
+ * @method SystemFileField[] indexList(string|Entity $key = '')
+ * @method SystemFileField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
+ * @method SystemFileField|null findInfoByHash(string $hash)
+ * @method SystemFileField|null findInfoByPath(string $path)
+ * @method SystemFileField|null findInfoByUrlHash(string $urlHash)
+ * @method SystemFileField|null findInfoByUrl(string $url)
  */
-class SystemFile extends Model
+class SystemFile extends Model implements ContainerInterface
 {
     //+--------------------------------------
     //| 文件类型
@@ -57,6 +61,9 @@ class SystemFile extends Model
     /** @var string 音频 */
     const FILE_TYPE_AUDIO = 'audio';
     
+    /** @var string 文档 */
+    const FILE_TYPE_DOC = 'doc';
+    
     /** @var string 文件 */
     const FILE_TYPE_FILE = 'file';
     
@@ -66,17 +73,15 @@ class SystemFile extends Model
     /** 临时附件前缀 */
     const MARK_VALUE_TMP_PREFIX = 'temp_';
     
-    protected $dataNotFoundMessage = '文件不存在';
+    protected string $dataNotFoundMessage = '文件不存在';
     
-    protected $findInfoFilter      = 'intval';
-    
-    protected $bindParseClass      = SystemFileInfo::class;
+    protected string $fieldClass          = SystemFileField::class;
     
     
     /**
      * @inheritDoc
      */
-    final protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -98,9 +103,9 @@ class SystemFile extends Model
      * @param null|string $value
      * @return string
      */
-    public static function createTempClassValue($value = null) : string
+    public static function createTmp($value = null) : string
     {
-        return self::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . StringHelper::random(32));
+        return static::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . StringHelper::random(32));
     }
     
     
@@ -115,12 +120,12 @@ class SystemFile extends Model
      */
     public static function createFilename(string $classType, string $classValue, $userId, $file, string $extension = '') : string
     {
-        $setting = StorageSetting::init();
+        $setting = StorageSetting::instance();
         
         // hash多层
         $type = $setting->getDirGenerateType();
         $dir  = '';
-        if (0 === strpos($type, 'hash-')) {
+        if (str_starts_with($type, 'hash-')) {
             $level = max(intval(substr($type, 5)), 1);
             if ($file instanceof File) {
                 $hash = hash_file('sha1', $file->getPathname());
@@ -165,12 +170,12 @@ class SystemFile extends Model
     /**
      * 添加文件
      * @param SystemFileField $data
-     * @return SystemFileInfo
+     * @return SystemFileField
      * @throws DbException
      */
-    public function createInfo(SystemFileField $data) : SystemFileInfo
+    public function create(SystemFileField $data) : SystemFileField
     {
-        return $this->getInfo($this->validate($data, self::SCENE_CREATE)->addData());
+        return $this->getInfo($this->validate($data, static::SCENE_CREATE)->insert());
     }
     
     
@@ -200,7 +205,7 @@ class SystemFile extends Model
     public function updateValueById(int $id, string $newValue) : int
     {
         return $this
-            ->whereEntity(SystemFileField::id($id))
+            ->where(SystemFileField::id($id))
             ->setField(SystemFileField::classValue(), trim($newValue));
     }
     
@@ -213,11 +218,11 @@ class SystemFile extends Model
      */
     public function whereClass(string $classType, string $classValue = null) : self
     {
-        $this->whereEntity(SystemFileField::classType(trim($classType)));
+        $this->where(SystemFileField::classType(trim($classType)));
         
         if (!is_null($classValue)) {
             $classValue = trim($classValue);
-            $this->whereEntity(SystemFileField::classValue($classValue));
+            $this->where(SystemFileField::classValue($classValue));
         }
         
         return $this;
@@ -226,11 +231,12 @@ class SystemFile extends Model
     
     /**
      * 已上传完成的文件
+     * @param bool $complete
      * @return $this
      */
-    public function whereComplete() : self
+    public function whereComplete(bool $complete = true) : self
     {
-        $this->whereEntity(SystemFileField::pending(0));
+        $this->where(SystemFileField::pending($complete ? 0 : 1));
         
         return $this;
     }
@@ -238,29 +244,56 @@ class SystemFile extends Model
     
     /**
      * 删除附件
-     * @param int $data
+     * @param int $id
      * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
      * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function remove(int $id) : int
     {
-        $id = (int) $data;
-        
         return $this->transaction(function() use ($id) {
             $info = $this->lock(true)->getInfo($id);
             
-            // 删除文件
-            try {
-                $info->filesystem()->delete($info->path);
-            } catch (Throwable $e) {
-                $this->log($e, Log::ERROR);
+            // 没有相同的文件才真实的删除
+            if (!$this->where(SystemFileField::urlHash(md5($info->url)))
+                ->where(SystemFileField::id('<>', $info->id))
+                ->find()) {
+                try {
+                    $info->filesystem()->delete($info->path);
+                } catch (Throwable $e) {
+                    $this->log($e, Log::ERROR);
+                }
             }
             
             // 删除数据
-            return parent::deleteInfo($info->id);
+            return $this->delete($info->id);
         });
+    }
+    
+    
+    /**
+     * 清理重复文件
+     * @return int
+     * @throws DbException
+     */
+    public function clearRepeat() : int
+    {
+        $min = $this->field(SystemFileField::id()->exp('min')->as('min_id'))
+            ->group(SystemFileField::urlHash())
+            ->buildSql();
+        $sql = $this->field('t.min_id')->table($min)->alias('t')->buildSql(false);
+        
+        return $this->where(SystemFileField::id('NOT IN', new Raw($sql)))->delete();
+    }
+    
+    
+    /**
+     * 清理无效文件
+     * @return int
+     * @throws DbException
+     */
+    public function clearInvalid() : int
+    {
+        return $this->where(SystemFileField::pending(1))->delete();
     }
     
     
@@ -274,11 +307,7 @@ class SystemFile extends Model
      */
     public function deleteByUrl(string $url) : int
     {
-        $id = $this->whereEntity(SystemFileField::urlHash(md5(trim($url))))
-            ->failException(true)
-            ->findInfo()->id;
-        
-        return $this->deleteInfo($id);
+        return $this->remove($this->failException(true)->findInfoByUrlHash(md5(trim($url)))->id);
     }
     
     
@@ -293,24 +322,22 @@ class SystemFile extends Model
      */
     public function deleteByClass(string $classType, string $classValue = null) : int
     {
-        $id = $this->whereClass($classType, $classValue)->failException(true)->findInfo()->id;
-        
-        return $this->deleteInfo($id);
+        return $this->remove($this->whereClass($classType, $classValue)->failException(true)->findInfo()->id);
     }
     
     
     /**
      * 上传文件
      * @param SystemFileUploadParameter $parameter
-     * @return SystemFileInfo
+     * @return SystemFileField
      * @throws Throwable
      */
-    public function upload(SystemFileUploadParameter $parameter) : SystemFileInfo
+    public function upload(SystemFileUploadParameter $parameter) : SystemFileField
     {
-        $storage    = StorageSetting::init();
+        $storage    = StorageSetting::instance();
         $disk       = $parameter->getDisk() ?: $storage->getDisk();
         $filesystem = Filesystem::disk($disk);
-        $result     = Driver::getInstanceByParameter(
+        $result     = Upload::init(
             $parameter->getParameter(),
             $filesystem,
             function($file, $extension) use ($parameter) {
@@ -325,16 +352,14 @@ class SystemFile extends Model
             ->limitMaxsize($storage->getMaxSize($parameter->getClassType()))
             ->limitMimetypes($storage->getMimeType($parameter->getClassType()))
             ->limitExtensions($storage->getAllowExtensions($parameter->getClassType()))
-            ->upload($parameter->getParameter());
+            ->save();
         
         try {
             // 处理图片
             $extension  = strtolower(pathinfo($result->getPath(), PATHINFO_EXTENSION));
             $imageStyle = $storage->getImageStyle($parameter->getClassType(), $disk);
             if (in_array($extension, array_keys(FormatParameter::getFormats())) && $imageStyle !== '') {
-                $imageParams = new ProcessParameter($result->getPath());
-                $imageParams->style($imageStyle);
-                $imageResult = $filesystem->image()->save($imageParams);
+                $imageResult = Image::path($result->getPath())->style($imageStyle)->disk($filesystem)->save();
                 $result->setFilesize($imageResult->getSize());
                 $result->setWidth($imageResult->getWidth());
                 $result->setHeight($imageResult->getHeight());
@@ -356,7 +381,7 @@ class SystemFile extends Model
             $data->setExtension($extension);
             $data->setDisk($disk);
             
-            return $this->createInfo($data);
+            return $this->create($data);
         } catch (Throwable $e) {
             // 删除文件
             $filesystem->delete($result->getPath());
@@ -372,6 +397,7 @@ class SystemFile extends Model
      * @return SystemFilePrepareUploadResult
      * @throws DataNotFoundException
      * @throws DbException
+     * @throws FilesystemException
      */
     public function frontPrepareUpload(SystemFilePrepareUploadParameter $parameter) : SystemFilePrepareUploadResult
     {
@@ -384,25 +410,26 @@ class SystemFile extends Model
         $filesize   = $parameter->getFilesize();
         
         // 校验文件分类
-        if (!array_key_exists($classType, SystemFileClass::init()->getList())) {
+        if (!array_key_exists($classType, SystemFileClass::instance()->getList())) {
             throw new RangeException(sprintf('文件分类%s不存在', $classType));
         }
         
         $fast       = false;
         $path       = '';
-        $setting    = StorageSetting::init();
+        $setting    = StorageSetting::instance();
         $disk       = $parameter->getDisk() ?: $setting->getDisk();
         $filesystem = Filesystem::disk($disk);
         
         // 查询是否可以秒传
-        if ($info = $this->findInfoByHash($md5)) {
+        if ($info = $this->where(SystemFileField::disk($disk))->whereComplete()->findInfoByHash($md5)) {
             $path = $info->path;
-            $fast = Filesystem::disk($info->disk)->has($path);
+            $fast = Filesystem::disk($info->disk)->fileExists($path);
         }
         
         // 秒传
         if ($fast) {
-            $data = SystemFileField::copyData($info, SystemFileField::id());
+            $data = clone $info;
+            $data->setId(null);
             $data->setUserId($userId);
             $data->setClassType($classType);
             $data->setClassValue($classValue);
@@ -432,7 +459,7 @@ class SystemFile extends Model
             $data->setFast(false);
             $data->setPending(true);
         }
-        $info = $this->createInfo($data);
+        $info = $this->create($data);
         
         // 启用分块上传
         $uploadId = '';
@@ -464,7 +491,7 @@ class SystemFile extends Model
         }
         
         $filesystem = Filesystem::disk($info->disk);
-        $setting    = StorageSetting::init();
+        $setting    = StorageSetting::instance();
         try {
             $result   = $filesystem->front()->doneUpload($info->path, $uploadId, $parts);
             $filesize = $result['filesize'] ?? 0;
@@ -482,21 +509,19 @@ class SystemFile extends Model
             $data->setSize($filesize);
             
             // 处理图片
-            $imageStyle = StorageSetting::init()->getImageStyle($info->classType, $info->disk);
+            $imageStyle = $setting->getImageStyle($info->classType, $info->disk);
             if (in_array($info->extension, array_keys(FormatParameter::getFormats())) && $imageStyle !== '') {
-                $imageParams = new ProcessParameter($info->path);
-                $imageParams->style($imageStyle);
-                $imageResult = $filesystem->image()->save($imageParams);
+                $imageResult = Image::path($info->path)->disk($filesystem)->style($imageStyle)->save();
                 $data->setWidth($imageResult->getWidth());
                 $data->setHeight($imageResult->getHeight());
                 $data->setSize($imageResult->getSize());
             }
             
-            $this->whereEntity(SystemFileField::id($info->id))->saveData($data);
+            $this->where(SystemFileField::id($info->id))->update($data);
         } catch (Throwable $e) {
             // 删除数据
             try {
-                $this->deleteInfo($info->id);
+                $this->remove($info->id);
             } catch (Throwable $e) {
                 // 忽略异常
             }
@@ -536,13 +561,13 @@ class SystemFile extends Model
      */
     public function frontLocalUpload(int $id, UploadedFile $file, string $uploadId = '', int $partNumber = 0) : string
     {
-        $front = StorageSetting::init()->getLocalFileSystem()->front();
+        $front = FilesystemHelper::public()->front();
         if (!$front instanceof Local) {
             throw new ClassNotExtendsException($front, Local::class);
         }
         
         $info = $this->getInfo($id);
-        if ($info->disk != StorageSetting::STORAGE_LOCAL) {
+        if ($info->disk != FilesystemHelper::STORAGE_PUBLIC) {
             throw new RuntimeException('非本地磁盘系统');
         }
         

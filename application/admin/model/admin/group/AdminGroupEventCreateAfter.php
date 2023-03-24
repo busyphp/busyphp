@@ -7,11 +7,11 @@ namespace BusyPHP\app\admin\model\admin\group;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/12/13 下午2:32 AdminGroupEventCreateAfter.php $
- * @property AdminGroupInfo $info 添加成功的校色组数据
+ * @property AdminGroupField $info 添加成功的校色组数据
  */
 class AdminGroupEventCreateAfter extends AdminGroupEventCreateBefore
 {
-    public function __construct(AdminGroup $model, AdminGroupField $data, $prepare, AdminGroupInfo $info)
+    public function __construct(AdminGroup $model, AdminGroupField $data, $prepare, AdminGroupField $info)
     {
         $this->info = $info;
         

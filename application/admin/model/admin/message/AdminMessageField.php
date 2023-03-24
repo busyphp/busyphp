@@ -3,6 +3,10 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\message;
 
+use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\Json;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 
@@ -20,6 +24,8 @@ use BusyPHP\model\Field;
  * @method static Entity description(mixed $op = null, mixed $condition = null) 消息备注
  * @method static Entity url(mixed $op = null, mixed $condition = null) 操作链接
  * @method static Entity icon(mixed $op = null, mixed $condition = null) 图标
+ * @method static Entity attrs(mixed $op = null, mixed $condition = null) 自定义标签属性
+ * @method static Entity iconColor() 图标颜色
  * @method $this setId(mixed $id) 设置id
  * @method $this setUserId(mixed $userId) 设置管理员ID
  * @method $this setCreateTime(mixed $createTime) 设置创建时间
@@ -29,7 +35,9 @@ use BusyPHP\model\Field;
  * @method $this setDescription(mixed $description) 设置消息备注
  * @method $this setUrl(mixed $url) 设置操作链接
  * @method $this setIcon(mixed $icon) 设置图标
+ * @method $this setAttrs(mixed $attrs) 设置自定义标签属性
  */
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class AdminMessageField extends Field
 {
     /**
@@ -41,9 +49,9 @@ class AdminMessageField extends Field
     /**
      * 用户ID
      * @var int
-     * @busy-validate require#必须指定消息接收者
-     * @busy-validate gt:0#必须指定消息接收者
      */
+    #[Validator(name: Validator::REQUIRE, msg: '必须指定消息接收者')]
+    #[Validator(name: Validator::GT, rule: 0, msg: '必须指定消息接收者')]
     public $userId;
     
     /**
@@ -67,8 +75,8 @@ class AdminMessageField extends Field
     /**
      * 消息内容
      * @var string
-     * @busy-validate require
      */
+    #[Validator(name: Validator::REQUIRE)]
     public $content;
     
     /**
@@ -86,7 +94,35 @@ class AdminMessageField extends Field
     /**
      * 图标
      * @var array
-     * @busy-array json
      */
+    #[Json]
     public $icon;
+    
+    /**
+     * 自定义标签属性
+     * @var array
+     */
+    #[Json]
+    public $attrs;
+    
+    /**
+     * 图标颜色
+     * @var string
+     */
+    #[Ignore]
+    public $iconColor;
+    
+    
+    protected function onParseAfter()
+    {
+        $color = '';
+        if (count($this->icon) > 1) {
+            [$icon, $color] = $this->icon;
+        } else {
+            [$icon] = $this->icon;
+        }
+        
+        $this->iconColor = $color;
+        $this->icon      = $icon;
+    }
 }

@@ -12,7 +12,7 @@ namespace BusyPHP\app\admin\model\system\file;
 class SystemFilePrepareUploadResult
 {
     /**
-     * @var SystemFileInfo
+     * @var SystemFileField
      */
     private $info;
     
@@ -28,10 +28,10 @@ class SystemFilePrepareUploadResult
     
     
     /**
-     * @param SystemFileInfo $info
+     * @param SystemFileField $info
      * @param string         $uploadId
      */
-    public function __construct(SystemFileInfo $info, string $uploadId, string $serverUrl)
+    public function __construct(SystemFileField $info, string $uploadId, string $serverUrl)
     {
         $this->info      = $info;
         $this->uploadId  = $uploadId;
@@ -49,9 +49,9 @@ class SystemFilePrepareUploadResult
     
     
     /**
-     * @return SystemFileInfo
+     * @return SystemFileField
      */
-    public function getInfo() : SystemFileInfo
+    public function getInfo() : SystemFileField
     {
         return $this->info;
     }

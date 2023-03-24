@@ -1,17 +1,17 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\logs\SystemLogsField;
-use BusyPHP\app\admin\model\system\logs\SystemLogsInfo;
-use BusyPHP\app\admin\plugin\table\TableHandler;
-use BusyPHP\app\admin\plugin\TablePlugin;
 use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
-use BusyPHP\app\admin\model\system\logs\SystemLogs;
-use BusyPHP\Model;
-use BusyPHP\model\Map;
+use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -22,67 +22,73 @@ use think\Response;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/18 下午下午3:46 LogsController.php $
  */
+#[MenuRoute(path: 'system_logs', class: true)]
 class LogsController extends InsideController
 {
     /**
-     * 日志管理
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @var SystemLogs
      */
-    public function index() : Response
+    protected $model;
+    
+    /**
+     * 操作记录默认查询时间范围
+     * @var string
+     */
+    protected $indexTimeRange;
+    
+    
+    protected function initialize($checkLogin = true)
     {
-        $timeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
-        if ($this->pluginTable) {
-            $this->pluginTable->setHandler(new class($timeRange) extends TableHandler {
-                private $timeRange;
-                
-                
-                public function __construct($timeRange)
-                {
-                    $this->timeRange = $timeRange;
-                }
-                
-                
-                public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                {
-                    if ($data->get('type', -1) < 0) {
-                        $data->remove('type');
-                    }
-                    
-                    if (!$data->get('client', '')) {
-                        $data->remove('client');
-                    }
-                    
-                    if ($time = $data->get('time', $this->timeRange)) {
-                        $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
-                    }
-                    $data->remove('time');
-                    
-                    if ($plugin->sortField == SystemLogsInfo::formatCreateTime()) {
-                        $plugin->sortField = SystemLogsInfo::createTime();
-                    }
-                }
-            });
-            
-            return $this->success($this->pluginTable->build(SystemLogs::init()));
-        }
+        parent::initialize($checkLogin);
         
-        $this->assign('type_options', TransHelper::toOptionHtml(SystemLogs::getTypes()));
-        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
-        $this->assign('time', $timeRange);
-        
-        return $this->display();
+        $this->model          = SystemLogs::init();
+        $this->indexTimeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
     }
     
     
     /**
-     * 清空操作记录
+     * 操作记录
+     * @return Response
+     */
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text-o', sort: 2)]
+    public function index() : Response
+    {
+        if ($table = Table::initIfRequest()) {
+            if ($table->getOrderField() == SystemLogsField::formatCreateTime()) {
+                $table->setOrderField(SystemLogsField::createTime());
+            }
+            
+            return $table
+                ->model($this->model)
+                ->query(function(SystemLogs $model, ArrayOption $option) {
+                    $option->deleteIfLt('type', 0);
+                    $option->deleteIfEmpty('client');
+                    
+                    if ($time = $option->pull('time', $this->indexTimeRange)) {
+                        $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
+                    }
+                    
+                    $model->order('id', 'desc');
+                })
+                ->response();
+        }
+        
+        $this->assign('type_options', TransHelper::toOptionHtml($this->model::getTypes()));
+        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
+        $this->assign('time', $this->indexTimeRange);
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 清理操作记录
      * @throws DbException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function clear() : Response
     {
-        $len = SystemLogs::init()->clear();
+        $len = $this->model->clear();
         $this->log()->record(self::LOG_DELETE, '清空操作记录');
         
         return $this->success('清理成功' . $len . '条');
@@ -95,10 +101,11 @@ class LogsController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function detail() : Response
     {
-        $this->assign('info', $info = SystemLogs::init()->getInfo($this->get('id/d')));
+        $this->assign('info', $this->model->getInfo($this->get('id/d')));
         
-        return $this->display();
+        return $this->insideDisplay();
     }
 }

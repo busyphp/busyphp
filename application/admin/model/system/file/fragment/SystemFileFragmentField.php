@@ -2,6 +2,11 @@
 
 namespace BusyPHP\app\admin\model\system\file\fragment;
 
+use BusyPHP\helper\TransHelper;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 
@@ -27,6 +32,7 @@ use BusyPHP\model\Field;
  * @method $this setSize(mixed $size) 设置碎片大小
  * @method $this setMerging(mixed $merging) 设置是否正在合并中
  */
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileFragmentField extends Field
 {
     /**
@@ -76,4 +82,9 @@ class SystemFileFragmentField extends Field
      * @var bool
      */
     public $merging;
+    
+    #[Ignore]
+    #[ValueBindField([self::class, 'createTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatCreateTime;
 }

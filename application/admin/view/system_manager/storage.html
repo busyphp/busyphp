@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="panel panel-default">
-        <include file="@admin:system/system_manager/nav" />
+        <include file="system_manager/nav"/>
         <div class="panel-body">
             <div class="hidden-xs space-15"></div>
             <form action="{$url.self}" method="post" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">
@@ -23,6 +23,13 @@
                             </foreach>
                             <div>更多存储引擎可以在 <code>config/filesystem.php</code> 中对 <code>disks</code> 进行配置</div>
                         </div>
+                        <foreach name="disks" item="vo">
+                            <notempty name="vo.alert">
+                                <div class="no-margin-bottom margin-5 no-margin-left no-margin-right alert alert-info disk-config disk-config-{$vo.type} {$vo.checked ? '' : 'hide'}">
+                                    {$vo.alert}
+                                </div>
+                            </notempty>
+                        </foreach>
                     </div>
                 </div>
                 <div class="form-group">
@@ -108,6 +115,55 @@
                     </div>
                 </div>
 
+                <foreach name="disks" item="vo">
+                    <notempty name="vo.form">
+                        <div class="disk-config disk-config-{$vo.type} {$vo.checked ? '' : 'hide'}">
+                            <div class="form-group-title">{$vo.name}设置</div>
+                            <foreach name="vo.fields" item="item">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label {$item.must ? 'required':''}">{$item.label}</label>
+                                    <div class="col-sm-10 col-md-8">
+                                        <notempty name="item.type">
+                                            <switch name="item.type">
+                                                <case value="select">
+                                                    <select class="form-control" name="data[disk_config][{$vo.type}][{$item.field}]">
+                                                        <option value="">{$item.placeholder}</option>
+                                                        <foreach name="item.options" item="option">
+                                                            <option value="{$option.value}" <?=is_selected(($info['disk_config'][$vo['type']][$item['field']] ?? '') == $option['value'])?>>
+                                                                {$option.text}
+                                                            </option>
+                                                        </foreach>
+                                                    </select>
+                                                </case>
+                                                <case value="textarea">
+                                                    <textarea class="form-control" placeholder="{$item.placeholder}" rows="4" name="data[disk_config][{$vo.type}][{$item.field}]">{$info.disk_config[$vo['type']][$item['field']]|default=''}</textarea>
+                                                </case>
+                                                <case value="radio">
+                                                    <div class="radio">
+                                                        <foreach name="item.options" item="option">
+                                                            <input type="radio" data-toggle="busy-radio" title="{$option.text}" value="{$option.value}" name="data[disk_config][{$vo.type}][{$item.field}]" <?=is_checked(($info['disk_config'][$vo['type']][$item['field']] ?? '') == $option['value'])?>/>
+                                                        </foreach>
+                                                    </div>
+                                                </case>
+                                                <case value="checkbox">
+                                                    <div class="checkbox">
+                                                        <foreach name="item.options" item="option">
+                                                            <input type="checkbox" data-toggle="busy-checkbox" title="{$option.text}" value="{$option.value}" name="data[disk_config][{$vo.type}][{$item.field}][]" <?=is_checked(in_array($option['value'], (array)($info['disk_config'][$vo['type']][$item['field']] ?? [])))?>/>
+                                                        </foreach>
+                                                    </div>
+                                                </case>
+                                            </switch>
+                                            <else/>
+                                            <input type="text" class="form-control" placeholder="{$item.placeholder}" name="data[disk_config][{$vo.type}][{$item.field}]" value="{$info.disk_config[$vo['type']][$item['field']]|default=''}"/>
+                                        </notempty>
+                                        <div class="help-block">{$item.help}</div>
+                                    </div>
+                                </div>
+                            </foreach>
+                        </div>
+                    </notempty>
+                </foreach>
+
                 <div class="text-center">
                     <button class="btn btn-primary" type="submit"><i class="fa fa-check"></i> 设置</button>
                     <button class="btn btn-secondary" type="reset"><i class="fa fa-refresh"></i> 重置</button>
@@ -116,4 +172,15 @@
             <div class="hidden-xs space-15"></div>
         </div>
     </div>
+</block>
+<block name="foot">
+    <script>
+        $(function () {
+            $('[name="data[disk]"]').on('change', function () {
+                var type = $(this).val();
+                $('.disk-config').addClass('hide');
+                $('.disk-config-' + type).removeClass('hide');
+            });
+        });
+    </script>
 </block>

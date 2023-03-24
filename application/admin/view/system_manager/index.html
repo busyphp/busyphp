@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="panel panel-default">
-        <include file="@admin:system/system_manager/nav"/>
+        <include file="system_manager/nav"/>
         <div class="panel-body">
             <div class="hidden-xs space-15"></div>
 
@@ -17,7 +17,15 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">浏览器图标</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[favicon]" placeholder="上传网站图标" value="{$info.favicon|default=''}" data-toggle="busy-upload" data-class-type="image" data-class-value="system_favicon"/>
+                        <input type="text"
+                               class="form-control"
+                               name="data[favicon]"
+                               placeholder="上传网站图标"
+                               value="{$info.favicon|default=''}"
+                               data-toggle="busy-upload"
+                               data-class-type="image"
+                               data-class-value="system_favicon"
+                        />
                         <span class="help-block">建议上传 <code>128x128</code> 的 ico 或 png 图片，可以通过<a href="https://www.bitbug.net/" target="_blank">ICON</a>在线制作 ico 文件</span>
                     </div>
                 </div>
@@ -35,10 +43,11 @@
                         <span class="help-block">设置ICP备案号，在<a href="https://beian.miit.gov.cn/" target="_blank">域名信息备案管理系统</a>申请或查询获取</span>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label class="col-sm-2 control-label">版权信息</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[copyright]" placeholder="请输入版权信息" value="{$info.copyright|default=''}"/>
+                        <textarea class="form-control" name="data[copyright]" placeholder="请输入版权信息">{$info.copyright|default=''}</textarea>
                         <span class="help-block">设置版权信息，如：CopyRight ** 版权所有</span>
                     </div>
                 </div>

@@ -3,9 +3,19 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
-use BusyPHP\interfaces\FieldObtainDataInterface;
-use BusyPHP\interfaces\ModelSceneValidateInterface;
+use BusyPHP\app\admin\model\admin\group\AdminGroup;
+use BusyPHP\app\admin\model\admin\group\AdminGroupField;
+use BusyPHP\helper\TransHelper;
+use BusyPHP\interfaces\FieldGetModelDataInterface;
+use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\Json;
+use BusyPHP\model\annotation\field\Separate;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\Validator;
+use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\Validate;
@@ -39,6 +49,20 @@ use think\validate\ValidateRule;
  * @method static Entity errorTime(mixed $op = null, mixed $condition = null) 密码错误开始时间
  * @method static Entity errorRelease(mixed $op = null, mixed $condition = null) 密码错误锁定释放时间
  * @method static Entity theme(mixed $op = null, mixed $condition = null) 主题配置
+ * @method static Entity groupList($op = null, $value = null) 权限组数据
+ * @method static Entity groupRulePaths($op = null, $value = null) 权限规则路径集合
+ * @method static Entity groupRuleIds($op = null, $value = null) 权限规则ID集合
+ * @method static Entity groupNames($op = null, $value = null) 权限名称集合
+ * @method static Entity groupHasSystem($op = null, $value = null) 权限中是否包涵超级权限
+ * @method static Entity formatCreateTime($op = null, $value = null) 格式化的创建时间
+ * @method static Entity formatUpdateTime($op = null, $value = null) 格式化的更新时间
+ * @method static Entity formatLastTime($op = null, $value = null) 格式化的上次登录时间
+ * @method static Entity formatLoginTime($op = null, $value = null) 格式化的本次登录时间
+ * @method static Entity isTempLock($op = null, $value = null) 是否临时锁定
+ * @method static Entity formatErrorReleaseTime($op = null, $value = null) 格式化的锁定释放时间
+ * @method static Entity defaultGroup($op = null, $value = null) 默认角色组信息
+ * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
+ * @method static Entity skin($op = null, $value = null) 皮肤
  * @method $this setId(mixed $id) 设置ID
  * @method $this setUsername(mixed $username) 设置帐号
  * @method $this setPassword(mixed $password) 设置密码
@@ -63,49 +87,50 @@ use think\validate\ValidateRule;
  * @method $this setErrorRelease(mixed $errorRelease) 设置密码错误锁定释放时间
  * @method $this setTheme(mixed $theme) 设置主题配置
  */
-class AdminUserField extends Field implements ModelSceneValidateInterface, FieldObtainDataInterface
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
+class AdminUserField extends Field implements ModelValidateInterface, FieldGetModelDataInterface
 {
     /**
      * ID
      * @var int
-     * @busy-validate require
-     * @busy-validate number
-     * @busy-validate gt:0
      */
+    #[Validator(name: Validator::REQUIRE)]
+    #[Validator(name: Validator::IS_NUMBER)]
+    #[Validator(name: Validator::GT, rule: 0)]
     public $id;
     
     /**
      * 用户名
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-validate min:2#:attribute不能少于:rule个字符
-     * @busy-validate max:20#:attribute不能超过:rule个字符
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Validator(name: Validator::MIN, rule: 2, msg: ':attribute不能少于:rule个字符')]
+    #[Validator(name: Validator::MAX, rule: 20, msg: ':attribute不能超过:rule个字符')]
     public $username;
     
     /**
      * 登录密码
      * @var string
-     * @busy-validate require#请输入:attribute
-     * @busy-validate min:6
-     * @busy-validate max:20
      */
+    #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Validator(name: Validator::MIN, rule: 6)]
+    #[Validator(name: Validator::MAX, rule: 20)]
     public $password;
     
     /**
      * 确认密码
      * @var string
-     * @busy-validate require#输入:attribute以确认
-     * @busy-validate confirm:password#:attribute和登录密码不一致
-     * @busy-ignore true
      */
+    #[Validator(name: Validator::REQUIRE, msg: '输入:attribute以确认')]
+    #[Validator(name: Validator::CONFIRM, rule: 'password', msg: ':attribute和登录密码不一致')]
     private $confirmPassword;
     
     /**
      * 邮箱
      * @var string
-     * @busy-validate email#请输入有效的:attribute
      */
+    #[Validator(name: Validator::IS_EMAIL, msg: '请输入有效的:attribute')]
+    #[Validator(name: Validator::UNIQUE, rule: AdminUser::class)]
     public $email;
     
     /**
@@ -117,20 +142,20 @@ class AdminUserField extends Field implements ModelSceneValidateInterface, Field
     /**
      * QQ号码
      * @var string
-     * @busy-validate number#请输入有效的:attribute
-     * @busy-validate min:5#:attribute至少需要:rule个数字
-     * @busy-validate max:13#:attribute最多允许:rule个数字
      */
+    #[Validator(name: Validator::IS_NUMBER, msg: '请输入有效的:attribute')]
+    #[Validator(name: Validator::MIN, rule: 5, msg: ':attribute至少需要:rule个数字')]
+    #[Validator(name: Validator::MAX, rule: 13, msg: ':attribute最多允许:rule个数字')]
     public $qq;
     
     /**
      * 角色组
      * @var array
-     * @busy-validate require#请选择:attribute
-     * @busy-validate array
-     * @busy-validate min:1#请至少选择:rule个:attribute
-     * @busy-array "," true
      */
+    #[Separate(separator: ',', full: true)]
+    #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
+    #[Validator(name: Validator::IS_ARRAY)]
+    #[Validator(name: Validator::MIN, rule: 1, msg: '请至少选择:rule个:attribute')]
     public $groupIds;
     
     /**
@@ -220,36 +245,187 @@ class AdminUserField extends Field implements ModelSceneValidateInterface, Field
     /**
      * 主题配置
      * @var array
-     * @busy-array json
      */
+    #[Json]
     public $theme;
+    
+    /**
+     * 权限组数据，以权限ID为下标
+     * @var AdminGroupField[]
+     */
+    #[Ignore]
+    public $groupList = [];
+    
+    /**
+     * 权限规则路径集合，未去重复
+     * @var string[]
+     */
+    #[Ignore]
+    public $groupRulePaths = [];
+    
+    /**
+     * 权限规则Id集合，未去重复
+     * @var int[]
+     */
+    #[Ignore]
+    public $groupRuleIds = [];
+    
+    /**
+     * 权限名称集合
+     * @var string[]
+     */
+    #[Ignore]
+    public $groupNames = [];
+    
+    /**
+     * 权限是否包涵超级权限
+     * @var bool
+     */
+    #[Ignore]
+    public $groupHasSystem;
+    
+    /**
+     * 格式化的创建时间
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'createTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatCreateTime;
+    
+    /**
+     * 格式化的更新时间
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'updateTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatUpdateTime;
+    
+    /**
+     * 格式化的上次登录时间
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'lastTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatLastTime;
+    
+    /**
+     * 格式化的本次登录时间
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'loginTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatLoginTime;
+    
+    /**
+     * 是否已经临时锁定
+     * @var bool
+     */
+    #[Ignore]
+    public $isTempLock;
+    
+    /**
+     * 格式化的锁定释放时间
+     * @var string
+     */
+    #[Ignore]
+    public $formatErrorRelease;
+    
+    /**
+     * 默认角色组信息
+     * @var AdminGroupField
+     */
+    #[Ignore]
+    public $defaultGroup;
+    
+    /**
+     * 默认菜单
+     * @var string
+     */
+    #[Ignore]
+    public $defaultMenu;
+    
+    /**
+     * 皮肤
+     * @var string
+     */
+    #[Ignore]
+    public $skin;
+    
+    
+    protected function onParseAfter()
+    {
+        $groupIdMap = AdminGroup::instance()->getIdMap();
+        
+        $this->skin               = $this->theme['skin'] ?? '';
+        $this->isTempLock         = $this->errorRelease > time();
+        $this->formatErrorRelease = $this->errorRelease > 0 ? TransHelper::date($this->errorRelease) : '';
+        
+        $groupIds             = $this->groupIds;
+        $this->groupIds       = [];
+        $this->groupList      = [];
+        $this->groupRuleIds   = [];
+        $this->groupRulePaths = [];
+        $this->groupNames     = [];
+        $this->groupHasSystem = false;
+        foreach ($groupIds as $groupId) {
+            $groupId = intval($groupId);
+            if (!$groupId || !isset($groupIdMap[$groupId])) {
+                continue;
+            }
+            
+            $groupInfo = $groupIdMap[$groupId];
+            if (!$groupInfo->status) {
+                continue;
+            }
+            
+            $this->groupNames[]        = $groupInfo->name;
+            $this->groupIds[]          = $groupId;
+            $this->groupList[$groupId] = $groupInfo;
+            $this->groupRuleIds        = array_merge($this->groupRuleIds, $groupInfo->ruleIds);
+            $this->groupRulePaths      = array_merge($this->groupRulePaths, $groupInfo->rulePaths);
+            if ($groupInfo->system) {
+                $this->groupHasSystem = true;
+            }
+        }
+        
+        if (!$this->defaultGroupId || !isset($this->groupList[$this->defaultGroupId])) {
+            $this->defaultGroupId = end($this->groupIds);
+        }
+        
+        $this->defaultGroup = $this->groupList[$this->defaultGroupId] ?? null;
+        $this->defaultMenu  = $this->defaultGroup->defaultMenu->path ?? '';
+    }
     
     
     /**
      * @inheritDoc
+     * @param AdminUserField $data
      */
-    public function onModelSceneValidate(Model $model, Validate $validate, string $name, $data = null)
+    public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
         $validate
-            ->rule($this::phone(), ValidateRule::closure(function($value) {
+            ->rule($this::phone(), ValidateRule::init()->closure(function($value) {
                 // 必填验证
-                if (AdminUser::getDefine('require_phone', false) && !$value) {
+                if (AdminUser::class()::isRequirePhone() && !$value) {
                     return '请输入:attribute';
                 } elseif (!$value) {
                     return true;
                 }
                 
-                return AdminUser::getClass()::checkPhone($value);
-            }, '请输入有效的:attribute')->unique($model))
-            ->append($this::email(), ValidateRule::unique($model));
+                return AdminUser::class()::checkPhone($value);
+            }, '请输入有效的:attribute')->unique($model));
         
         $this->setCreateTime(time());
         $this->setUpdateTime(time());
         
-        switch ($name) {
+        switch ($scene) {
             // 添加场景
             case AdminUser::SCENE_CREATE:
-                $validate->append($this::username(), ValidateRule::unique($model));
+                $validate->append($this::username(), ValidateRule::init()->unique($model));
                 $this->retain($validate, [
                     $this::groupIds(),
                     $this::defaultGroupId(),
@@ -268,17 +444,29 @@ class AdminUserField extends Field implements ModelSceneValidateInterface, Field
             
             // 修改
             case AdminUser::SCENE_UPDATE:
-                $this->retain($validate, [
-                    $this::id(),
-                    $this::groupIds(),
-                    $this::defaultGroupId(),
-                    $this::username(),
-                    $this::phone(),
-                    $this::email(),
-                    $this::qq(),
-                    $this::checked(),
-                    $this->updateTime()
-                ]);
+                if ($data->system) {
+                    $this->retain($validate, [
+                        $this::id(),
+                        $this::defaultGroupId(),
+                        $this::username(),
+                        $this::phone(),
+                        $this::email(),
+                        $this::qq(),
+                        $this->updateTime()
+                    ]);
+                } else {
+                    $this->retain($validate, [
+                        $this::id(),
+                        $this::groupIds(),
+                        $this::defaultGroupId(),
+                        $this::username(),
+                        $this::phone(),
+                        $this::email(),
+                        $this::qq(),
+                        $this::checked(),
+                        $this->updateTime()
+                    ]);
+                }
                 
                 return true;
             
@@ -314,10 +502,10 @@ class AdminUserField extends Field implements ModelSceneValidateInterface, Field
     /**
      * @inheritDoc
      */
-    public function onObtainData(string $field, string $property, array $attrs, $value)
+    public function onGetModelData(string $field, string $property, array $attrs, $value)
     {
         if ($field == $this::password()) {
-            return AdminUser::getClass()::createPassword($value);
+            return AdminUser::class()::createPassword($value);
         }
         
         return $value;

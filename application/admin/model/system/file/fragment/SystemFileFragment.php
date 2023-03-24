@@ -1,12 +1,15 @@
 <?php
+declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\fragment;
 
 use BusyPHP\app\admin\model\system\file\chunks\SystemFileChunks;
 use BusyPHP\app\admin\model\system\file\chunks\SystemFileChunksField;
-use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\FilesystemHelper;
+use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
+use BusyPHP\model\Entity;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -18,25 +21,23 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/9/8 9:15 PM SystemFileFragment.php $
- * @method SystemFileFragmentInfo getInfo($data, $notFoundMessage = null)
- * @method SystemFileFragmentInfo findInfo($data = null, $notFoundMessage = null)
- * @method SystemFileFragmentInfo[] selectList()
- * @method SystemFileFragmentInfo[] buildListWithField(array $values, $key = null, $field = null)
- * @method static string|SystemFileFragment getClass()
+ * @method SystemFileFragmentField getInfo(int $id, string $notFoundMessage = null)
+ * @method SystemFileFragmentField|null findInfo(int $id = null)
+ * @method SystemFileFragmentField[] selectList()
+ * @method SystemFileFragmentField[] indexList(string|Entity $key = '')
+ * @method SystemFileFragmentField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  */
-class SystemFileFragment extends Model
+class SystemFileFragment extends Model implements ContainerInterface
 {
-    protected $bindParseClass      = SystemFileFragmentInfo::class;
+    protected string $fieldClass          = SystemFileFragmentField::class;
     
-    protected $dataNotFoundMessage = '碎片不存在';
-    
-    protected $findInfoFilter      = 'intval';
+    protected string $dataNotFoundMessage = '碎片不存在';
     
     
     /**
      * @inheritDoc
      */
-    protected static function defineClass() : string
+    final public static function defineContainer() : string
     {
         return self::class;
     }
@@ -69,40 +70,28 @@ class SystemFileFragment extends Model
         $data->setPath($path);
         $data->setCreateTime(time());
         
-        return (int) $this->addData($data);
+        return (int) $this->insert($data);
     }
     
     
     /**
      * 删除碎片
-     * @param $data
+     * @param int $id
      * @return int
-     * @throws DataNotFoundException
-     * @throws DbException
      * @throws Throwable
      */
-    public function deleteInfo($data) : int
+    public function remove(int $id) : int
     {
-        $chunks = SystemFileChunks::init();
-        $this->startTrans();
-        try {
-            $info = $this->lock(true)->getInfo($data);
-            $dir  = SystemFileChunks::getClass()::buildDir($info->id);
-            if (!StorageSetting::init()->getRuntimeFileSystem()->deleteDir($dir)) {
-                throw new FileException("删除碎片失败: $dir");
-            }
+        return $this->transaction(function() use ($id) {
+            $info = $this->lock(true)->getInfo($id);
+            $dir  = SystemFileChunks::class()::buildDir($info->id);
+            FilesystemHelper::runtime()->deleteDirectory($dir);
             
-            $result = parent::deleteInfo($info->id);
-            $chunks->whereEntity(SystemFileChunksField::fragmentId($info->id))->delete();
-            
-            $this->commit();
+            $result = $this->delete($info->id);
+            SystemFileChunks::init()->where(SystemFileChunksField::fragmentId($info->id))->delete();
             
             return $result;
-        } catch (Throwable $e) {
-            $this->rollback();
-            
-            throw $e;
-        }
+        });
     }
     
     
@@ -110,12 +99,12 @@ class SystemFileFragment extends Model
      * 合并碎片
      * @param int $id 碎片ID
      * @param int $total 碎片总数
-     * @return SystemFileFragmentInfo
+     * @return SystemFileFragmentField
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Throwable
      */
-    public function merge(int $id, int $total) : SystemFileFragmentInfo
+    public function merge(int $id, int $total) : SystemFileFragmentField
     {
         $chunksModel = SystemFileChunks::init();
         
@@ -129,7 +118,7 @@ class SystemFileFragment extends Model
             
             // 查找待合并的碎片
             $chunkList  = $chunksModel
-                ->whereEntity(SystemFileChunksField::fragmentId($info->id))
+                ->where(SystemFileChunksField::fragmentId($info->id))
                 ->order(SystemFileChunksField::number(), 'asc')
                 ->selectList();
             $chunkTotal = count($chunkList);
@@ -148,7 +137,7 @@ class SystemFileFragment extends Model
                 }
             }
             
-            $this->whereEntity(SystemFileFragmentField::id($id))->setField(SystemFileFragmentField::merging(), true);
+            $this->where(SystemFileFragmentField::id($id))->setField(SystemFileFragmentField::merging(), true);
             $this->commit();
         } catch (Throwable $e) {
             $this->rollback();
@@ -159,19 +148,20 @@ class SystemFileFragment extends Model
         // 合并碎片
         try {
             $resource = null;
-            $setting  = StorageSetting::init();
-            $tmp      = $setting->getRuntimeFileSystem();
-            $local    = $setting->getLocalFileSystem();
+            $tmp      = FilesystemHelper::runtime();
+            $local    = FilesystemHelper::public();
             
             // 创建一个空文件
-            $local->put($info->path, '');
+            $local->write($info->path, '');
             if (!$resource = fopen($local->path($info->path), 'w+b')) {
                 throw new FileException("打开文件失败: $info->path");
             }
             
             // 遍历碎片写入到文件
             foreach ($chunkList as $item) {
-                if (!$body = $tmp->read($item->path)) {
+                try {
+                    $body = $tmp->read($item->path);
+                } catch (Throwable $e) {
                     throw new FileException("读取碎片失败: $item->path");
                 }
                 if (!fwrite($resource, $body)) {
@@ -182,7 +172,7 @@ class SystemFileFragment extends Model
             $this->startTrans();
             try {
                 $this->lock(true)->getInfo($info->id);
-                $this->whereEntity(SystemFileFragmentField::id($id))
+                $this->where(SystemFileFragmentField::id($id))
                     ->setField(SystemFileFragmentField::merging(), false);
                 
                 $this->commit();
@@ -201,7 +191,7 @@ class SystemFileFragment extends Model
         
         // 清空碎片
         try {
-            $this->deleteInfo($info->id);
+            $this->remove($info->id);
         } catch (Throwable $e) {
         }
         

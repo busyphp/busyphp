@@ -2,6 +2,11 @@
 
 namespace BusyPHP\app\admin\model\system\file\chunks;
 
+use BusyPHP\helper\TransHelper;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 
@@ -23,6 +28,7 @@ use BusyPHP\model\Field;
  * @method $this setCreateTime(mixed $createTime) 设置上传时间
  * @method $this setSize(mixed $size) 设置块大小
  */
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileChunksField extends Field
 {
     /**
@@ -54,4 +60,44 @@ class SystemFileChunksField extends Field
      * @var int
      */
     public $size;
+    
+    /**
+     * 格式化的创建时间
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'createTime'])]
+    #[Filter([TransHelper::class, 'date'])]
+    public $formatCreateTime;
+    
+    /**
+     * 目录名称
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'fragmentId'])]
+    #[Filter([SystemFileChunks::class, 'buildDir'])]
+    public $dirname;
+    
+    /**
+     * 文件名称
+     * @var string
+     */
+    #[Ignore]
+    #[ValueBindField([self::class, 'number'])]
+    #[Filter([SystemFileChunks::class, 'buildName'])]
+    public $basename;
+    
+    /**
+     * 文件路径
+     * @var string
+     */
+    #[Ignore]
+    public $path;
+    
+    
+    protected function onParseAfter() : void
+    {
+        $this->path = $this->dirname . '/' . $this->basename;
+    }
 }

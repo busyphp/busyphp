@@ -3,24 +3,20 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\system;
 
-use BusyPHP\app\admin\controller\AdminController;
+use BusyPHP\app\admin\annotation\MenuNode;
+use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\common\SimpleForm;
+use BusyPHP\app\admin\component\js\driver\LinkagePicker;
+use BusyPHP\app\admin\component\js\driver\Table;
+use BusyPHP\app\admin\component\js\driver\Tree;
+use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
-use BusyPHP\app\admin\plugin\table\TableHandler;
-use BusyPHP\app\admin\plugin\TablePlugin;
-use BusyPHP\app\admin\plugin\tree\TreeFlatItemStruct;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
-use BusyPHP\app\admin\model\admin\group\AdminGroupInfo;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
-use BusyPHP\app\admin\model\system\menu\SystemMenuInfo;
-use BusyPHP\app\admin\plugin\tree\TreeHandler;
-use BusyPHP\app\admin\plugin\TreePlugin;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\helper\TransHelper;
-use BusyPHP\Model;
-use BusyPHP\model\Map;
-use think\Container;
+use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\Response;
@@ -32,24 +28,16 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/4 下午12:11 下午 GroupController.php $
  */
+#[MenuRoute(path: 'system_group', class: true)]
 class GroupController extends InsideController
 {
-    /** @var string 列表模板 */
-    const TEMPLATE_INDEX = self::class . 'index';
-    
-    /** @var string 添加模板 */
-    const TEMPLATE_ADD = self::class . 'add';
-    
-    /** @var string 修改模板 */
-    const TEMPLATE_EDIT = self::class . 'edit';
-    
     /**
      * @var AdminGroup
      */
-    private $model;
+    protected $model;
     
     
-    public function initialize($checkLogin = true)
+    protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
@@ -58,237 +46,221 @@ class GroupController extends InsideController
     
     
     /**
-     * 角色列表
+     * 管理员角色
      * @return Response
-     * @throws DbException
-     * @throws DataNotFoundException
      */
+    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-lock', sort: 2)]
     public function index() : Response
     {
         // 角色列表数据
-        if ($this->pluginTable) {
-            $callback = $this->getUseTemplateAttr(self::TEMPLATE_INDEX, 'plugin_table', '');
-            if ($callback) {
-                Container::getInstance()->invokeFunction($callback, [$this->pluginTable]);
-            } else {
-                $this->pluginTable->sortField = '';
-                $this->pluginTable->sortOrder = '';
-                $this->pluginTable->setHandler(new class extends TableHandler {
-                    public function query(TablePlugin $plugin, Model $model, Map $data) : void
-                    {
-                        $model->order(AdminGroupField::sort(), 'asc');
-                        $model->order(AdminGroupField::id(), 'desc');
-                    }
-                });
-            }
+        if ($table = Table::initIfRequest()) {
+            $table->model($this->model);
+            $table->query(function(AdminGroup $model, ArrayOption $option) {
+                $model->order(AdminGroupField::sort(), 'asc');
+                $model->order(AdminGroupField::id(), 'asc');
+            });
             
-            return $this->success($this->pluginTable->build($this->model));
+            return $table->response();
         }
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_INDEX));
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 增加管理角色
+     * 添加角色
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function add() : Response
     {
         // 添加
         if ($this->isPost()) {
-            $insert = AdminGroupField::init();
-            $insert->setParentId($this->post('parent_id/d'));
-            $insert->setName($this->post('name/s', 'trim'));
-            $insert->setDefaultMenuId($this->post('default_menu_id/d'));
-            $insert->setRule($this->hashToId($this->post('rule/a')));
-            $insert->setStatus($this->post('status/b'));
-            $this->model->createInfo($insert);
+            $this->model->create(AdminGroupField::parse($this->parseData()));
             $this->log()->record(self::LOG_INSERT, '添加管理角色');
             
             return $this->success('添加成功');
         }
         
+        $id = $this->get('id/d');
+        $this->assign([
+            'info' => [
+                'status'    => true,
+                'system'    => false,
+                'parent_id' => $id > 0 ? $this->parseParentId($this->model->getInfo($id), true) : ''
+            ],
+        ]);
         
-        // 权限
-        if ($this->pluginTree) {
-            return $this->ruleList();
-        }
-        
-        return $this->display($this->getUseTemplate(self::TEMPLATE_ADD, '', [
-            'info'          => ['status' => true, 'system' => false],
-            'menu_options'  => TransHelper::toOptionHtml(SystemMenu::init()
-                ->getSafeTree(), null, SystemMenuField::id(), SystemMenuField::name()),
-            'group_options' => $this->model->getTreeOptions($this->get('id/s')),
-        ]));
+        return $this->insideDisplay();
     }
     
     
     /**
-     * 修改管理角色
+     * 修改角色
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function edit() : Response
     {
         // 修改
         if ($this->isPost()) {
-            $update = AdminGroupField::init();
-            $update->setId($this->post('id/d'));
-            $update->setParentId($this->post('parent_id/d'));
-            $update->setName($this->post('name/s', 'trim'));
-            $update->setDefaultMenuId($this->post('default_menu_id/d'));
-            $update->setRule($this->hashToId($this->post('rule/a', [])));
-            $update->setStatus($this->post('status/b'));
-            $this->model->updateInfo($update);
+            $this->model->modify(AdminGroupField::parse($this->parseData()));
             $this->log()->record(self::LOG_UPDATE, '修改管理角色');
             
             return $this->success('修改成功');
         }
         
-        // 权限列表
-        $id   = $this->get('id/d');
-        $info = $this->model->getInfo($id);
-        if ($this->pluginTree) {
-            return $this->ruleList($info);
-        }
+        $info           = $this->model->getInfo($this->get('id/d'));
+        $info->parentId = $this->parseParentId($info);
+        $this->assign([
+            'info' => $info,
+        ]);
         
-        return $this->display($this->getUseTemplate(self::TEMPLATE_EDIT, 'add', [
-            'info'          => $info,
-            'menu_options'  => TransHelper::toOptionHtml(SystemMenu::init()
-                ->getSafeTree(), $info->defaultMenuId, SystemMenuField::id(), SystemMenuField::name()),
-            'group_options' => $this->model->getTreeOptions($info->parentId, $info->id)
-        ]));
+        return $this->insideDisplay('add');
     }
     
     
     /**
-     * Hash转ID集合
-     * @param array $rule
-     * @return mixed
-     * @throws DataNotFoundException
-     * @throws DbException
+     * 解析提交的数据
+     * @return array
      */
-    private function hashToId(array $rule) : array
+    protected function parseData() : array
     {
-        $idRule   = [];
-        $hashList = SystemMenu::init()->getHashList(true);
-        foreach ($rule as $item) {
-            if (!isset($hashList[$item])) {
-                continue;
-            }
-            
-            $idRule[] = $hashList[$item]->id;
-        }
+        $data              = $this->post();
+        $parentIds         = explode(',', $data['parent_id'] ?? '');
+        $data['parent_id'] = end($parentIds) ?: 0;
         
-        return $idRule;
+        return $data;
     }
     
     
     /**
-     * 权限列表
-     * @param AdminGroupInfo|null $info
+     * 解析上级角色组
+     * @param AdminGroupField $info
+     * @param bool            $hasSelf
+     * @return string
+     */
+    protected function parseParentId(AdminGroupField $info, bool $hasSelf = false) : string
+    {
+        $idMap     = $this->model->getIdMap();
+        $parentMap = $this->model->getIdParentMap()[$info->id] ?? [];
+        $parentMap = array_reverse($parentMap);
+        $pathList  = [];
+        foreach ($parentMap as $id) {
+            $path = $idMap[$id]->id ?? '';
+            if ($path) {
+                $pathList[] = $path;
+            }
+        }
+        if ($hasSelf) {
+            $pathList[] = $info->id;
+        }
+        
+        return implode(',', $pathList);
+    }
+    
+    
+    /**
+     * 获取树权限节点
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      */
-    private function ruleList(?AdminGroupInfo $info = null) : Response
+    public function rule_tree_data() : Response
     {
-        $this->pluginTree->setHandler(new class($info, $this, $this->model) extends TreeHandler {
-            /**
-             * @var AdminGroupInfo|null
-             */
-            private $info;
-            
-            /**
-             * @var AdminController
-             */
-            private $controller;
-            
-            /**
-             * @var AdminGroup
-             */
-            private $adminGroupModel;
-            
-            
-            public function __construct(?AdminGroupInfo $info, AdminController $controller, AdminGroup $adminGroupModel)
-            {
-                $this->info            = $info;
-                $this->controller      = $controller;
-                $this->adminGroupModel = $adminGroupModel;
+        $id         = $this->get('group_id/d');
+        $parentId   = explode(',', $this->get('parent_group_id/s', 'trim'));
+        $parentId   = (int) end($parentId);
+        $info       = null;
+        $parentInfo = null;
+        if ($id > 0) {
+            $info = $this->model->getInfo($id);
+            if ($info->id == $parentId) {
+                throw new VerifyException('父角色不能是自己');
             }
-            
-            
-            /**
-             * @param TreePlugin       $plugin
-             * @param SystemMenu|Model $model
-             */
-            public function query(TreePlugin $plugin, Model $model) : void
-            {
-                // 继承父角色节点
-                $groupId = $this->controller->get('group_id/d');
-                if ($this->info && $groupId == $this->info->id) {
-                    throw new VerifyException('父角色不能是自己');
-                }
-                
-                if ($groupId > 1) {
-                    $groupInfo = $this->adminGroupModel->getInfo($groupId);
-                    if ($groupInfo->ruleIds) {
-                        $model->whereEntity(SystemMenuField::id('in', $groupInfo->ruleIds));
-                    } else {
-                        throw new VerifyException('该角色权限信息异常');
-                    }
-                }
-                
-                $model->whereSafe()->orderSort();
+        }
+        if ($parentId > 0) {
+            $parentInfo = $this->model->getInfo($parentId);
+            if (!$parentInfo->ruleIds) {
+                throw new VerifyException('该角色权限信息异常');
             }
-            
-            
-            /**
-             * @param SystemMenuInfo     $item
-             * @param TreeFlatItemStruct $node
-             */
-            public function node($item, TreeFlatItemStruct $node) : void
-            {
-                $node->setParent($item->parentHash);
-                $node->setText($item->name);
-                $node->setId($item->hash);
-                $node->setIcon($item->icon);
-                $node->setAAttr('data-id', $item->id);
-                
-                if (!$this->info) {
-                    return;
-                }
-                
-                // 展开选中项的父节点
-                if (in_array($item->id, $this->info->ruleIndeterminate)) {
-                    $node->state->setOpened(true);
-                }
-                
-                // 设为选中
-                if (in_array($item->id, $this->info->rule)) {
-                    $node->state->setSelected(true);
-                }
-            }
-        });
+        }
         
-        return $this->success($this->pluginTree->build(SystemMenu::init()));
+        return Tree::init()
+            ->list(
+                SystemMenu::instance()->getList(),
+                function(TreeFlatNode $node, SystemMenuField $item, int $index) use ($info) {
+                    $node->setParent($item->parentHash);
+                    $node->setText($item->name);
+                    $node->setId($item->hash);
+                    $node->setIcon($item->icon);
+                    
+                    if ($info) {
+                        // 展开选中项的父节点
+                        if (in_array($item->hash, $info->ruleIndeterminate)) {
+                            $node->setOpened(true);
+                        }
+                        
+                        // 设为选中
+                        if (in_array($item->hash, $info->rule)) {
+                            $node->setSelected(true);
+                        }
+                    }
+                },
+                function(array $list) use ($parentInfo) {
+                    return array_filter($list, function(SystemMenuField $item) use ($parentInfo) {
+                        if ($item->path === SystemMenu::class()::DEVELOPER_PATH || $item->disabled) {
+                            return false;
+                        }
+                        
+                        if ($parentInfo) {
+                            return in_array($item->hash, $parentInfo->ruleIds);
+                        }
+                        
+                        return true;
+                    });
+                })
+            ->response();
     }
     
     
     /**
-     * 删除管理角色
+     * 获取权限选择数据
+     * @return Response
+     */
+    public function linkage_picker_data() : Response
+    {
+        $id = $this->param('id/d');
+        
+        return LinkagePicker::init()
+            ->model($this->model)
+            ->query(function(AdminGroup $model) use ($id) {
+                if ($id > 0) {
+                    $model->where(AdminGroupField::id('<>', $id));
+                }
+                
+                $model->order(AdminGroupField::sort(), 'asc');
+                $model->order(AdminGroupField::id(), 'asc');
+            })
+            ->response();
+    }
+    
+    
+    /**
+     * 删除角色
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
         foreach ($this->param('id/list/请选择要删除的角色') as $id) {
-            $this->model->deleteInfo($id);
+            $this->model->remove($id);
         }
         
         $this->log()->record(self::LOG_DELETE, '删除管理角色');
@@ -302,6 +274,7 @@ class GroupController extends InsideController
      * @return Response
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function change_status() : Response
     {
         $status = $this->get('status/b');
@@ -313,12 +286,14 @@ class GroupController extends InsideController
     
     
     /**
-     * 排序
-     * @throws DbException
+     * 排序角色
+     * @return Response
+     * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index')]
     public function sort() : Response
     {
-        $this->model->setSort($this->param('sort/list'));
+        SimpleForm::init($this->model)->sort('sort', AdminGroupField::sort());
         $this->log()->record(self::LOG_UPDATE, '排序管理角色');
         $this->updateCache();
         

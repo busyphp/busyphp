@@ -6,7 +6,6 @@ namespace BusyPHP\app\admin\model\system\file;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\FileHelper;
 use RuntimeException;
-use think\filesystem\Driver;
 
 /**
  * 前端准备上传参数模版
