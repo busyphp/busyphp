@@ -15,12 +15,12 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\CaptchaSetting;
 use BusyPHP\app\admin\taglib\Ba;
 use BusyPHP\Captcha;
-use BusyPHP\Handle;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\Request;
 use BusyPHP\Service as BusyService;
 use Closure;
 use think\event\HttpRun;
+use think\exception\Handle;
 use think\Route;
 use think\Service as ThinkService;
 

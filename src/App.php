@@ -48,9 +48,8 @@ class App extends \think\App
     public function __construct(string $rootPath = '')
     {
         $this->bind([
-            \think\App::class              => App::class,
-            \think\Request::class          => Request::class,
-            \think\exception\Handle::class => Handle::class,
+            \think\App::class     => App::class,
+            \think\Request::class => Request::class,
         ]);
         
         parent::__construct($rootPath);
