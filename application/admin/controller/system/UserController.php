@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\component\js\driver\Tree;
 use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
@@ -205,9 +206,9 @@ class UserController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        foreach ($this->param('id/list/请选择要删除的用户') as $id) {
+        SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的用户', function(int $id) {
             $this->model->remove($id);
-        }
+        });
         
         $this->log()->record(self::LOG_DELETE, '删除管理员');
         

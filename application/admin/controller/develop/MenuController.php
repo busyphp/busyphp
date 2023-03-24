@@ -234,9 +234,9 @@ class MenuController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        foreach ($this->param('id/list/请选择要删除的菜单') as $id) {
+        SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的菜单', function(int $id) {
             $this->model->remove($id);
-        }
+        });
         
         $this->log()->record(self::LOG_DELETE, '删除系统菜单');
         $this->updateCache();

@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\controller\system;
 
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\SelectPicker;
 use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerNode;
 use BusyPHP\app\admin\component\js\driver\Table;
@@ -282,9 +283,9 @@ class ManagerController extends InsideController
     public function image_style_delete() : Response
     {
         $driver = Filesystem::disk($this->disk)->image();
-        foreach ($this->param('id/list/请选择要删除的图片样式') as $id) {
+        SimpleForm::init()->batch('id', '请选择要删除的图片样式', function(string $id) use ($driver) {
             $driver->deleteStyle($id);
-        }
+        });
         
         $this->log()->record(self::LOG_DELETE, '删除图片样式');
         

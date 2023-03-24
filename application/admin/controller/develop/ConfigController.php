@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\controller\develop;
 
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
+use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
@@ -104,9 +105,9 @@ class ConfigController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        foreach ($this->param('id/list/请选择要删除的配置', 'intval') as $id) {
+        SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的配置', function(int $id) {
             $this->model->remove($id);
-        }
+        });
         
         $this->log()->record(self::LOG_DELETE, '删除系统配置');
         

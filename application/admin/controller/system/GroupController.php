@@ -259,7 +259,7 @@ class GroupController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        foreach ($this->param('id/list/请选择要删除的角色') as $id) {
+        foreach ($this->param('id/a', 'intval') as $id) {
             $this->model->remove($id);
         }
         
