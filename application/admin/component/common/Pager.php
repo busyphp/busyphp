@@ -83,7 +83,7 @@ class Pager extends Bootstrap
         
         if ($this->simple) {
             return <<<HTML
-<div class="busy-admin-pagination busy--simple clearfix">
+<div class="ba-pagination busy--simple clearfix">
     <div class="busy--info">
         <span class="busy--step">
             当前<span class="busy--start">$start</span><span class="busy--space">~</span><span class="busy--last">$end</span>条
@@ -95,7 +95,7 @@ class Pager extends Bootstrap
 HTML;
         } else {
             return <<<HTML
-<div class="busy-admin-pagination busy--full clearfix">
+<div class="ba-pagination busy--full clearfix">
     <div class="busy--info">
         <span class="busy--step">
             当前<span class="busy--start">$start</span><span class="busy--space">~</span><span class="busy--last">$end</span>条

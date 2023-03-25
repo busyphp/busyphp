@@ -141,10 +141,10 @@
         <script>
             $(function () {
                 $('#demo1_btn1').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('open', true);
+                    $('#demo1_select').baSelectPicker('open', true);
                 });
                 $('#demo1_btn2').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('open', false);
+                    $('#demo1_select').baSelectPicker('open', false);
                 });
                 $('#demo1_btn3').on('click', function () {
                     $('#demo1_select').prop('disabled', false);
@@ -153,16 +153,16 @@
                     $('#demo1_select').prop('disabled', true);
                 });
                 $('#demo1_btn5').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('value', 2);
+                    $('#demo1_select').baSelectPicker('value', 2);
                 });
                 $('#demo1_btn6').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('value', null);
+                    $('#demo1_select').baSelectPicker('value', null);
                 });
                 $('#demo1_btn7').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
+                    $('#demo1_select').baSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
                 });
                 $('#demo1_btn8').on('click', function () {
-                    $('#demo1_select').busyAdminSelectPicker('list', [
+                    $('#demo1_select').baSelectPicker('list', [
                         {
                             text     : 'BAT公司',
                             children : [
@@ -195,10 +195,10 @@
                 });
 
                 $('#demo1_btn9').on('click', function () {
-                    $('#demo1_select1').busyAdminSelectPicker('value', [1, 2]);
+                    $('#demo1_select1').baSelectPicker('value', [1, 2]);
                 });
                 $('#demo1_btn10').on('click', function () {
-                    $('#demo1_select1').busyAdminSelectPicker('value', null);
+                    $('#demo1_select1').baSelectPicker('value', null);
                 });
             });
         </script>

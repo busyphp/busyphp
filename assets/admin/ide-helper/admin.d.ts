@@ -900,7 +900,7 @@ declare namespace busyAdmin {
      * @param shim 模块依赖
      * @return busyAdmin
      */
-    var addMod: (name: string, path: string, shim?: any) => void;
+    var mod: (name: string, path: string, shim?: any) => void;
 
     /**
      * 初始化

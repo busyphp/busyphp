@@ -160,7 +160,7 @@
             if (tree.data('first_init') === undefined) {
                 var status;
                 if ($(this).treegrid('getSetting', 'saveStateMethod') === 'local') {
-                    var stateList = JSON.parse(localStorage.getItem('busy.admin.treegrid') || '{}') || {};
+                    var stateList = JSON.parse(localStorage.getItem('ba..treegrid') || '{}') || {};
                     status = !stateList.hasOwnProperty(tree.treegrid('getSetting', 'saveStateName'));
                 } else {
                     status = $.cookie(tree.treegrid('getSetting', 'saveStateName')) === undefined;
@@ -181,7 +181,7 @@
             switch ($this.treegrid('getSetting', 'saveStateMethod')) {
                 case 'local':
                     var stateName        = $this.treegrid('getSetting', 'saveStateName');
-                    var stateList        = JSON.parse(localStorage.getItem('busy.admin.treegrid') || '{}') || {};
+                    var stateList        = JSON.parse(localStorage.getItem('ba..treegrid') || '{}') || {};
                     stateList[stateName] = stateList[stateName] || [];
 
                     if ($this.treegrid('isExpanded')) {
@@ -194,7 +194,7 @@
                         }
                     }
 
-                    localStorage.setItem('busy.admin.treegrid', JSON.stringify(stateList));
+                    localStorage.setItem('ba..treegrid', JSON.stringify(stateList));
                     break;
                 default:
                     var stateArrayString = $.cookie($this.treegrid('getSetting', 'saveStateName')) || '';
@@ -225,7 +225,7 @@
             switch ($this.treegrid('getSetting', 'saveStateMethod')) {
                 case 'local':
                     var stateName = $this.treegrid('getSetting', 'saveStateName');
-                    var stateList = JSON.parse(localStorage.getItem('busy.admin.treegrid') || '{}') || {};
+                    var stateList = JSON.parse(localStorage.getItem('ba..treegrid') || '{}') || {};
                     stateArray    = stateList[stateName] || [];
                     break;
                 default:

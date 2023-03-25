@@ -92,23 +92,23 @@
 
             $('#groupAddCheckedAll').on('change', function () {
                 if ($(this).prop('checked')) {
-                    $tree.busyAdminTree('check_all');
+                    $tree.baTree('check_all');
                 } else {
-                    $tree.busyAdminTree('uncheck_all');
+                    $tree.baTree('uncheck_all');
                 }
             });
 
             $('#groupAddOpenAll').on('change', function () {
                 if ($(this).prop('checked')) {
-                    $tree.busyAdminTree('open_all');
+                    $tree.baTree('open_all');
                 } else {
-                    $tree.busyAdminTree('close_all');
+                    $tree.baTree('close_all');
                 }
             });
 
             $('[name="parent_id"]').on('change', function () {
                 busyAdmin.data.treeParentGroupId = $(this).val();
-                $tree.busyAdminTree('refresh');
+                $tree.baTree('refresh');
             });
 
             $tree.on(

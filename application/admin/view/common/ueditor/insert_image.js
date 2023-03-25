@@ -47,7 +47,7 @@
                 return;
             }
 
-            parent.$.fn.busyAdminFilePicker.call($(this), {
+            parent.$.fn.baFilePicker.call($(this), {
                 classType  : classType,
                 classValue : classValue,
                 multiple   : true,

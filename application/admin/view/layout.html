@@ -5,8 +5,8 @@
 </head>
 <body>
 <div data-busy-id="app">
-    <div class="busy-admin-frame" data-busy-id="frame">
-        <div class="busy-admin-header navbar navbar-default" data-busy-id="header">
+    <div class="ba-frame" data-busy-id="frame">
+        <div class="ba-header navbar navbar-default" data-busy-id="header">
             <div class="container-fluid">
                 <div class="navbar-header" data-busy-id="header-left">
                 <a class="navbar-brand" href="{$url.app}">
@@ -26,7 +26,7 @@
                         </a>
                         </li>
                     </ul>
-                    <div class="busy-admin-menu" data-busy-id="menu"></div>
+                    <div class="ba-menu" data-busy-id="menu"></div>
                     <ul class="nav navbar-nav navbar-right" data-busy-id="bar-right">
                         <li>
                         <a href="javascript:void(0)" data-busy-id="bar-refresh">
@@ -51,25 +51,25 @@
             </div>
         </div>
 
-        <div class="busy-admin-left" data-busy-id="left">
-            <div class="busy-admin-nav" data-busy-id="nav"></div>
+        <div class="ba-left" data-busy-id="left">
+            <div class="ba-nav" data-busy-id="nav"></div>
         </div>
 
-        <div class="busy-admin-content clearfix" data-busy-id="content">
-            <div class="busy-admin-content-head" data-busy-id="content-header">
+        <div class="ba-content clearfix" data-busy-id="content">
+            <div class="ba-content-head" data-busy-id="content-header">
                 <include file="@admin:breadcrumb" />
             </div>
 
-            <div class="busy-admin-content-body clearfix" data-busy-id="content-body">
+            <div class="ba-content-body clearfix" data-busy-id="content-body">
                 <block name="head"></block>
                 <block name="content"></block>
                 <block name="foot"></block>
             </div>
-            <div class="busy-admin-content-iframes" data-busy-id="content-iframes"></div>
-            <div class="busy-admin-content-mask" data-busy-id="content-mask"></div>
+            <div class="ba-content-iframes" data-busy-id="content-iframes"></div>
+            <div class="ba-content-mask" data-busy-id="content-mask"></div>
         </div>
     </div>
-    <div class="busy-admin-loader" data-busy-id="loader"><div></div></div>
+    <div class="ba-loader" data-busy-id="loader"><div></div></div>
 </div>
 </body>
 </html>

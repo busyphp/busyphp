@@ -75,7 +75,7 @@
 <script>
     $(function () {
         $('#demo1_btn').on('click', function () {
-            busyAdmin.dialog.alert(JSON.stringify($('#demo1_select').busyAdminShuttle('getData')));
+            busyAdmin.dialog.alert(JSON.stringify($('#demo1_select').baShuttle('getData')));
         });
 
         $('#demo1_select').on(busyAdmin.e.shuttleChange, function (e, api, data, fromByLeft) {

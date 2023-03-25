@@ -2,7 +2,7 @@
 <block name="content">
     <div class="form-group no-margin-bottom">
         <label>配色方案</label>
-        <div class="busy-theme-list clearfix">
+        <div class="ba-theme-list clearfix">
             <foreach name="list" item="vo">
                 <div class="theme-item">
                     <input type="radio" id="theme_{$vo.value}" name="data[skin]" value="{$vo.value}" <?=is_checked(($info['skin'] ?? 'default') == $vo['value'])?>/>
@@ -44,7 +44,7 @@
     <script>
         busyAdmin.ready(function () {
             var $themeModal = $('[data-busy-id="theme-setting"]');
-            var $themeList  = $('.busy-theme-list');
+            var $themeList  = $('.ba-theme-list');
             var isSuccess   = false;
             var createTheme = function ($el, value) {
                 $el.find('[data-busy-id="theme-css"]').remove();
@@ -86,7 +86,7 @@
             };
             busyAdmin.data.themeSuccess = function () {
                 isSuccess = true;
-                $themeModal.busyAdminModal('hide');
+                $themeModal.baModal('hide');
             };
 
             $('[name="data[nav_mode]"]').on('change click', function () {
