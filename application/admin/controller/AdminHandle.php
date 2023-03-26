@@ -190,10 +190,13 @@ class AdminHandle extends Handle
                         'operateTipStyle' => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
                     ],
                     'upload'        => [
-                        'configUrl' => (string) url('common.file/config?noext'),
+                        'configUrl' => (string) url('common.file/config?noext')->suffix(false),
                     ],
                     'editor'        => [
-                        'ueConfigUrl' => (string) url('common.ueditor/runtime?js=1&noext'),
+                        'ueConfigUrl' => (string) url('common.ueditor/runtime?js=1&noext')->suffix(false),
+                    ],
+                    'modal' => [
+                        'cancel_right' => $app->config->get('app.admin.modal_cancel_right', false),
                     ],
                     'topBar'        => [
                         'url' => $data['url']['app'],

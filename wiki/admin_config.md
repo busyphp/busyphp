@@ -32,6 +32,9 @@ return [
         // 操作提示风格，支持 toast notify
         'operate_tip_style'     => '',
         
+        // 模态框的取消按钮是否在右边
+        'modal_cancel_right'    => false,
+        
         // 通知
         'notice'                => false,
         
