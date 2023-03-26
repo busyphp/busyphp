@@ -15,6 +15,7 @@ use BusyPHP\helper\TransHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Setting;
 use think\facade\Filesystem;
+use think\facade\Request;
 
 /**
  * 存储设置
@@ -182,6 +183,31 @@ class StorageSetting extends Setting implements ContainerInterface
         }
         
         return '';
+    }
+    
+    
+    /**
+     * 获取远程下载忽略域名
+     * @return array
+     */
+    public function getRemoteIgnoreDomains() : array
+    {
+        $domains   = explode(',', str_replace(PHP_EOL, ',', $this->get('remote_ignore_domains', '')));
+        $domains[] = Request::host(true);
+        foreach (Filesystem::getConfig('disks') as $disk => $config) {
+            $domains = array_merge($domains, Filesystem::disk($disk)->getDomains());
+        }
+        
+        $domains = array_filter($domains, function($domain) {
+            $domain = strtolower(trim($domain));
+            if (!$domain || !str_contains($domain, '.')) {
+                return false;
+            }
+            
+            return $domain;
+        });
+        
+        return FilterHelper::trimArray($domains, true);
     }
     
     
