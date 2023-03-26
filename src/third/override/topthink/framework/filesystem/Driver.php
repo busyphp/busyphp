@@ -182,6 +182,16 @@ abstract class Driver
     
     
     /**
+     * 获取磁盘支持的域名
+     * @return array
+     */
+    public function getDomains() : array
+    {
+        return [];
+    }
+    
+    
+    /**
      * 保存文件
      * @param string              $path 路径
      * @param File                $file 文件
