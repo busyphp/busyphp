@@ -1,0 +1,49 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="modal-content" id="modalDemo4Content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">自定义标题</h4>
+        </div>
+        <div class="modal-body">
+            <p>完全自定义页面内容1</p>
+            <p>完全自定义页面内容2</p>
+            <p>完全自定义页面内容3</p>
+
+            <h3>下面是交互示例</h3>
+            <button id="modalDemo4ContentSetTitle">设置标题</button>
+            <button id="modalDemo4ContentSetSize">设置大小</button>
+            <button id="modalDemo4ContentSetHeight">设置高度</button>
+            <button id="modalDemo4ContentReload">重新加载</button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-danger">确定</button>
+        </div>
+    </div>
+</block>
+<block name="foot">
+    <script>
+        $(function () {
+            var modal = $('#modalDemo4Content').closestBaModal();
+
+            $('#modalDemo4ContentSetTitle').on('click', function () {
+                modal.setTitle('一个新的标题');
+            })
+            
+            $('#modalDemo4ContentSetSize').on('click', function () {
+                modal.setSize('lg');
+            })
+            
+            $('#modalDemo4ContentSetHeight').on('click', function () {
+                modal.setHeight(500);
+            })
+            
+            $('#modalDemo4ContentReload').on('click', function () {
+                modal.setHeight();
+                modal.setSize();
+                modal.reload();
+            })
+        });
+    </script>
+</block>
