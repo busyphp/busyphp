@@ -41,6 +41,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /** @var array */
     protected $getOptions = [];
     
+    /** @var array */
+    protected $ignoreHosts = [];
+    
     
     /**
      * 构造函数
@@ -65,8 +68,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置下载进度回调
      * @param callable|Closure $progress
+     * @return static
      */
-    public function setProgress($progress) : self
+    public function setProgress($progress) : static
     {
         $this->progress = $progress;
         
@@ -87,9 +91,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置临时存储磁盘系统
      * @param string|FilesystemDriver $tmpDisk
-     * @return self
+     * @return static
      */
-    public function setTmpDisk($tmpDisk) : self
+    public function setTmpDisk($tmpDisk) : static
     {
         $this->tmpDisk = $tmpDisk;
         
@@ -110,9 +114,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置临时存储目录名称
      * @param string $tmpDir
-     * @return self
+     * @return static
      */
-    public function setTmpDir(string $tmpDir) : self
+    public function setTmpDir(string $tmpDir) : static
     {
         $this->tmpDir = $tmpDir;
         
@@ -143,9 +147,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置HTTP全局配置
      * @param array $options
-     * @return $this
+     * @return static
      */
-    public function setOptions(array $options) : self
+    public function setOptions(array $options) : static
     {
         $this->options = $options;
         
@@ -166,9 +170,9 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置HEAD请求配置
      * @param array $headOptions
-     * @return $this
+     * @return static
      */
-    public function setHeadOptions(array $headOptions) : self
+    public function setHeadOptions(array $headOptions) : static
     {
         $this->headOptions = $headOptions;
         
@@ -189,13 +193,36 @@ class RemoteParameter implements BindDriverParameterInterface
     /**
      * 设置GET请求配置
      * @param array $getOptions
-     * @return $this
+     * @return static
      */
-    public function setGetOptions(array $getOptions) : self
+    public function setGetOptions(array $getOptions) : static
     {
         $this->getOptions = $getOptions;
         
         return $this;
+    }
+    
+    
+    /**
+     * 设置下载忽略域名
+     * @param array $ignoreHosts
+     * @return static
+     */
+    public function setIgnoreHosts(array $ignoreHosts) : static
+    {
+        $this->ignoreHosts = $ignoreHosts;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取下载忽略域名
+     * @return array
+     */
+    public function getIgnoreHosts() : array
+    {
+        return $this->ignoreHosts;
     }
     
     

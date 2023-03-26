@@ -45,8 +45,11 @@ class RemoteUpload extends Upload
         
         // 解析URL
         $urls = parse_url($url) ?: [];
-        $host = $urls['host'] ?? ''; //TODO host 过滤
+        $host = strtolower($urls['host'] ?? '');
         $path = $urls['path'] ?? '';
+        if ($this->parameter->getIgnoreHosts() && $host && in_array($host, $this->parameter->getIgnoreHosts())) {
+            throw new InvalidArgumentException('该资源已被忽略远程下载');
+        }
         
         // 取出扩展名/文件名/mimetype
         // 分为2种情况：
