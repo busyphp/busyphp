@@ -21,17 +21,21 @@
 ### 注意
 
 - `close()` 和 `hide()` 均会关闭模态框，不同的是：使用 `close()` 方法不会触发 `onCancel` 事件
-- 内容与对象交互，一般在根元素指定一个唯一的id，使用 `$.fn.baGetModal()` 来获取当前模态框对象
+- 内容与对象交互，一般在根元素指定一个唯一的id，使用 `$.fn.closetGetModal()` 来获取当前模态框对象
 
 **交互示例**
 
 ```
+// 模态框HTML
 <div id="testModal">
     ...模态框的内容
 </div>
 
-var baModal = $('#testModal').baGetModal()
-baModal.close()
+// 模态框脚本
+<\script id="id1">
+var modal = $('#id1').closetGetModal()
+modal.close()
+<\/script>
 
 // 更多请参考 完全自定义对话框 示例
 ```
