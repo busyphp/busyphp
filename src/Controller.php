@@ -183,7 +183,7 @@ abstract class Controller
         }
         
         $this->view->filter(function(string $content) {
-            return str_replace([
+            $content = str_replace([
                 '__ROOT__',
                 '__APP__',
                 '__SELF__',
@@ -200,9 +200,23 @@ abstract class Controller
                 $this->request->getAssetsUrl(),
                 $this->request->domain(),
             ], $content);
+            
+            
+            return $this->viewFilter($content);
         });
         
         return $this->view;
+    }
+    
+    
+    /**
+     * view过滤
+     * @param string $content
+     * @return string
+     */
+    protected function viewFilter(string $content) : string
+    {
+        return $content;
     }
     
     
