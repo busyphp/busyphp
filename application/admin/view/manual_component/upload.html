@@ -34,7 +34,7 @@
 | data-headers | object,Function | `否` | `{}` | 上传时携带的请求头 |
 | data-disk | boolean | `否` | - | 指定磁盘系统上传 |
 | data-disabled | boolean | `否` | - | 是否禁用表单, 如果为 `input`标签，则可以直接设置`disabled`值 |
-| data-class-type | string | `否` | `file` | 上传的文件类型 |
+| data-class-type | string | `否` | - | 上传的文件类型 |
 | data-class-value | string | `否` | - | 上传的文件标识 |
 | data-value | string | `否` | - | 默认值, 如果为 `input`标签，则可以直接设置`value`值 |
 | data-dnd | boolean | `否` | `false` | 是否启用拖拽上传，该功能在一个页面只能有一个组件启用，请谨慎使用 |
@@ -52,6 +52,7 @@
 | data-allow-mimetypes | string | `否` | - | 设置允许的文件mimetype，多个用英文逗号分割 |
 | data-auto | boolean | `否` | `true` | 是否自动上传 |
 | data-object-fit | string | `否` | - | 设置图片或视频预览填充方式`css属性object-fit`的值，默认为`cover` |
+| data-title | string | `否` | - | 设置按钮名称，如: `图片`，支持直接设定`title` |
 | 系统文件库:title |  |  |  |  |
 | data-select | boolean | `否` | `true` | 是否允许选择系统库文件，`data-type="use"无效` |
 | data-select-name | string | `否` | `图库选择` | 设置选择按钮的名称 |
@@ -122,38 +123,40 @@
 
     <template class="hide" id="demo1">
         <h5>图片上传</h5>
-        <input type="text" class="form-control" name="test"
+        <input type="text" class="form-control" name="test" title="图片"
                data-toggle="busy-upload"
-               data-class-type="image"
                data-auto="false"
+               data-allow-extensions="jpg,jpeg,png,webp,gif"
+               data-allow-mimetypes="image/*"
                placeholder="可以将图片拖拽到这里上传，或使用粘贴功能"
                id="demo1_image"/>
         <hr/>
         <h5>视频上传</h5>
-        <div data-toggle="busy-upload"
+        <div data-toggle="busy-upload" title="视频"
              data-name="test1"
-             data-class-type="video"
+             data-allow-extensions="mp4"
+             data-allow-mimetypes="video/mp4"
              data-placeholder="请上传或选择mp4文件"
              id="demo1_video"></div>
         <hr/>
         <h5>音频上传</h5>
-        <div data-toggle="busy-upload"
+        <div data-toggle="busy-upload" title="音频"
              data-name="test2"
-             data-class-type="audio"
+             data-allow-extensions="mp3"
+             data-allow-mimetypes="audio/mp3"
              data-placeholder="请上传或选择mp3文件"
              id="demo1_audio"></div>
         <hr/>
         <h5>文件上传</h5>
         <div data-toggle="busy-upload"
              data-name="test3"
-             data-class-type="file"
              data-placeholder="请上传文件"
              id="demo1_file"></div>
     </template>
 
     <template class="hide" id="demo2">
         <h5>图片上传</h5>
-        <div id="demo2_banner"
+        <div id="demo2_banner" title="图片"
              data-toggle="busy-upload"
              data-type="files"
              data-class-type="banner"
@@ -165,7 +168,6 @@
         <div id="demo2_file"
              data-toggle="busy-upload"
              data-type="files"
-             data-class-type="file"
              data-auto="false"
              data-name="demo2_file"
              data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
@@ -175,7 +177,8 @@
         <h5>图片上传</h5>
         <div style="width: 150px;" id="demo3_image" data-toggle="busy-upload"
              data-type="card"
-             data-class-type="image"
+             data-allow-extensions="jpg,jpeg,png,webp,gif"
+             data-allow-mimetypes="image/*"
              data-auto="false"
              data-name="demo3_image"></div>
         <hr/>
@@ -184,7 +187,8 @@
         
         <div style="width: 150px;" id="demo3_video" data-toggle="busy-upload"
              data-type="card"
-             data-class-type="video"
+             data-allow-extensions="mp4"
+             data-allow-mimetypes="video/mp4"
              data-card-icon="fa fa-file-video-o"
              data-auto="false"
              data-name="demo3_video"></div>
