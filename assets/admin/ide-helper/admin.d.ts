@@ -2274,9 +2274,11 @@ declare namespace busyAdmin {
 
         /**
          * 监听DOM结构发生改变
+         * @param node
          * @param callback
+         * @param first
          */
-        onDomChange(callback: () => void): void;
+        onDomChange(node: object, callback: () => void, first?: boolean): void;
 
         /**
          * 解析data
