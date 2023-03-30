@@ -9,9 +9,8 @@ var scrawl = function (options) {
     options && this.initOptions(options);
 };
 
-var serverParams = editor.queryCommandValue('serverparam'),
-    classType    = serverParams.class_image_type || 'image',
-    classValue   = serverParams.class_value || '';
+var classType  = editor.getOpt('imageClass');
+var classValue = editor.getOpt('classValue');
 
 (function () {
     var canvas        = $G("J_brushBoard"),

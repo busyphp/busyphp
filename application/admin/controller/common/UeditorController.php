@@ -12,8 +12,7 @@ use BusyPHP\exception\VerifyException;
 use BusyPHP\upload\parameter\Base64Parameter;
 use BusyPHP\upload\parameter\LocalParameter;
 use BusyPHP\upload\parameter\RemoteParameter;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
+use stdClass;
 use think\Response;
 use think\response\Json;
 use Throwable;
@@ -71,7 +70,7 @@ class UeditorController extends InsideController
             return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
-            $this->assign('file_config', json_encode($this->getFileConfig()));
+            $this->assign('category', json_encode(SystemFileClass::instance()->getUploadCategory() ?: new stdClass()));
             
             return $this->insideDisplay();
         }
@@ -89,7 +88,7 @@ class UeditorController extends InsideController
             return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
-            $this->assign('file_config', json_encode($this->getFileConfig()));
+            $this->assign('category', json_encode(SystemFileClass::instance()->getUploadCategory() ?: new stdClass()));
             
             return $this->insideDisplay();
         }
@@ -107,7 +106,7 @@ class UeditorController extends InsideController
             return $this->doUpload();
         } else {
             $this->assign('upload_url', url('', [$this->request->getVarAjax() => 1]));
-            $this->assign('file_config', json_encode($this->getFileConfig()));
+            $this->assign('category', json_encode(SystemFileClass::instance()->getUploadCategory() ?: new stdClass()));
             
             return $this->insideDisplay();
         }
@@ -143,27 +142,28 @@ class UeditorController extends InsideController
     /**
      * 编辑器运行JS
      * @return Response
-     * @throws DbException
-     * @throws DataNotFoundException
      */
     public function runtime() : Response
     {
-        $fileConfig          = json_encode($this->getFileConfig(), JSON_UNESCAPED_UNICODE);
+        $category            = json_encode(SystemFileClass::instance()
+            ->getUploadCategory() ?: new stdClass(), JSON_UNESCAPED_UNICODE);
         $pageBreakTag        = $this->app->config->get('app.VAR_CONTENT_PAGE', '');
         $serverUrl           = url('server');
-        $host                = $this->request->host(true);
         $insertImageUrl      = url('insert_image');
         $insertVideoUrl      = url('insert_video');
         $insertAttachmentUrl = url('insert_attachment');
         $scrawlUrl           = url('scrawl');
         $wordImageUrl        = url('word_image');
-        $script              = <<<JS
+        $domains             = json_encode(StorageSetting::instance()
+            ->getRemoteIgnoreDomains(), JSON_UNESCAPED_UNICODE);
+        
+        $script = <<<JS
 // UEditor运行配置
 window.UEDITOR_CONFIG = {
-    busyFileConfig : {$fileConfig},
+    uploadCategory : {$category},
 
-    serverUrl           : '{$serverUrl}',
-    pageBreakTag        : '{$pageBreakTag}',
+    serverUrl           : '$serverUrl',
+    pageBreakTag        : '$pageBreakTag',
     listiconpath        : '',
     emotionLocalization : '',
 
@@ -173,24 +173,34 @@ window.UEDITOR_CONFIG = {
     imageUrlPrefix      : '',
     imageCompressEnable : false,
     imageCompressBorder : 1600,
+    imageAllowFiles     : ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.bmp'],
+    imageMaxSize        : 2 * 1024 * 1024,
+    
+    // 视频上传配置
+    videoAllowFiles     : ['.mp4', '.webm', '.ogv'],
+    videoMaxSize        : 10 * 1024 * 1024,
+    
+    // 上传文件配置
+    fileAllowFiles      : [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".flv", ".swf", ".mkv", ".avi", ".rm", ".rmvb", ".mpeg", ".mpg", ".ogg", ".ogv", ".mov", ".wmv", ".mp4", ".webm", ".mp3", ".wav", ".mid", ".rar", ".zip", ".tar", ".gz", ".7z", ".bz2", ".cab", ".iso", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".txt", ".md", ".xml"],
+    fileMaxSize         : 50 * 1024 * 1024,
 
     // 截图工具上传
     snapscreenActionName : 'snapscreen',
     snapscreenUrlPrefix  : '',
 
     // 抓取远程图片配置
-    catcherLocalDomain : ["127.0.0.1", "localhost", "{$host}"],
+    catcherLocalDomain : $domains,
     catcherActionName  : 'remote',
     catcherFieldName   : 'upload',
     catcherUrlPrefix   : '',
 
     // 重新定义dialog页面
     iframeUrlMap : {
-        insertimage : '{$insertImageUrl}',
-        insertvideo : '{$insertVideoUrl}',
-        attachment  : '{$insertAttachmentUrl}',
-        scrawl      : '{$scrawlUrl}',
-        wordimage   : '{$wordImageUrl}'
+        insertimage : '$insertImageUrl',
+        insertvideo : '$insertVideoUrl',
+        attachment  : '$insertAttachmentUrl',
+        scrawl      : '$scrawlUrl',
+        wordimage   : '$wordImageUrl'
     }
 };
 JS;
@@ -202,7 +212,7 @@ JS;
     /**
      * 执行上传
      * @param bool $isBase64
-     * @return array
+     * @return Response
      */
     protected function doUpload(bool $isBase64 = false) : Response
     {
@@ -279,7 +289,8 @@ JS;
                 $url = str_replace('&amp;', '&', $url);
                 try {
                     // TODO 默认mimetype 和 basename
-                    $remote    = new RemoteParameter($url);
+                    $remote = new RemoteParameter($url);
+                    $remote->setIgnoreHosts(StorageSetting::instance()->getRemoteIgnoreDomains());
                     $parameter = new SystemFileUploadParameter($remote);
                     $parameter->setUserId($this->adminUserId);
                     $parameter->setClassType($classType);
@@ -321,31 +332,6 @@ JS;
     {
         $this->request->setParam('class_type', $this->param('class_image_type/s', 'trim'));
         
-        return $this->json($this->doUpload());
-    }
-    
-    
-    /**
-     * 获取配置
-     * @return array
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    protected function getFileConfig() : array
-    {
-        $fileSet = StorageSetting::instance();
-        $list    = SystemFileClass::instance()->getList();
-        $array   = [];
-        foreach ($list as $key => $value) {
-            $array[$key] = [
-                'suffix' => $fileSet->getAllowExtensions($key),
-                'size'   => $fileSet->getMaxSize($key),
-                'mime'   => $fileSet->getMimeType($key),
-                'type'   => $value->type,
-                'name'   => $value->name
-            ];
-        }
-        
-        return $array;
+        return $this->doUpload();
     }
 }

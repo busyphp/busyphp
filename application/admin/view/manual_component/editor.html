@@ -25,10 +25,22 @@
 | 基本属性:title |  |  |  |  |
 | data-type | string | `否` | `ue` | 编辑器类型<br />`ue:百度富文本编辑器`<br />`ck5:CkEditor5富文本编辑器` |
 | data-mode | string | `否` | `small` | 模式<br />`default:全功能`<br />`small:简洁版`<br />`text:文字版` |
-| data-class-image | string | `否` | `image` | 编辑器图片附件类型 |
-| data-class-video | string | `否` | `video` | 编辑器视频附件类型 `ck5不支持` |
-| data-class-audio | string | `否` | `audio` | 编辑器音频附件类型 `ck5不支持`|
-| data-class-file | string | `否` | `file` | 编辑器附件类 `ck5不支持` |
+| data-image-manager | boolean | `否` | `true` | 是否显示在线图片 `ck5不支持` |
+| data-image-class | string | `否` | - | 编辑器图片分类 |
+| data-image-extensions | string | `否` | - | 自定义允许上传的图片扩展名，多个用`,`号分割 |
+| data-image-max-size | string | `否` | - | 自定义允许上传的图片大小，单位字节 |
+| data-image-mimetypes | string | `否` | - | 自定义允许上传的图片mime类型，多个用`,`号分割，如：`image/*` |
+| data-video-upload | boolean | `否` | `false` | 是否允许上传视频 `ck5不支持` |
+| data-video-manager | boolean | `否` | `true` | 是否显示在线视频 `ck5不支持` |
+| data-video-class | string | `否` | `video` | 编辑器视频分类 `ck5不支持` |
+| data-video-extensions | string | `否` | - | 自定义允许上传的视频扩展名，多个用`,`号分割 |
+| data-video-max-size | string | `否` | - | 自定义允许上传的视频大小，单位字节 |
+| data-video-mimetypes | string | `否` | - | 自定义允许上传的视频mime类型，多个用`,`号分割，如：`video/*` |
+| data-file-manager | boolean | `否` | `true` | 是否显示在线附件 `ck5不支持` |
+| data-file-class | string | `否` | `file` | 编辑器附件分类 `ck5不支持` |
+| data-file-extensions | string | `否` | - | 自定义允许上传的附件扩展名，多个用`,`号分割 |
+| data-file-max-size | string | `否` | - | 自定义允许上传的附件大小，单位字节 |
+| data-file-mimetypes | string | `否` | - | 自定义允许上传的附件mime类型，多个用`,`号分割，如：`image/*` |
 | data-class-value | string | `否` | - | 附件标识 |
 | data-show-count | boolean | `否` | `false` | 是否显示字数统计 `ck5不支持` |
 | data-auto-save | boolean,string | `否` | `false` | 是否自动保存到本地，支持设置字符串固定本地保存标识 |
@@ -37,10 +49,6 @@
 | data-auto-height | boolean | `否` | `true` | 是否允许编辑器更随内容自动长高 `ck5不支持`|
 | data-element-path | boolean | `否` | `false` | 是否显示元素路径 `ck5不支持`|
 | data-sticky-toolbar | boolean | `否` | `false` | 是否固定工具栏 `ck5不支持`|
-| data-video-upload | boolean | `否` | `false` | 是否允许上传视频 `ck5不支持` |
-| data-video-manager | boolean | `否` | `false` | 是否显示在线视频 `ck5不支持` |
-| data-image-manager | boolean | `否` | `false` | 是否显示在线图片 `ck5不支持` |
-| data-file-manager | boolean | `否` | `false` | 是否显示在线附件 `ck5不支持` |
 | data-locale | string | `否` | `zh-cn` | 编辑器语言 |
 | data-placeholder | string | `否` | - | 输入提示 |
 | data-name | string | `否` | `content` | 表单域名称，需要放到`form`标签内有效 |
@@ -126,7 +134,10 @@
         <button class="btn btn-primary" id="demo1_btn6">失去焦点</button>
         <button class="btn btn-primary" id="demo1_btn7">插入内容</button>
         <hr/>
-        <textarea id="demo1_text" class="form-control" data-toggle="busy-editor" data-auto-save="manual_component.demo1" placeholder="请输入内容"></textarea>
+        <textarea id="demo1_text" class="form-control"
+                  data-toggle="busy-editor"
+                  data-auto-save="manual_component.demo1"
+                  placeholder="请输入内容"></textarea>
         <script>
             $(function () {
                 $('#demo1_btn1').on('click', function () {

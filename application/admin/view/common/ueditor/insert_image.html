@@ -8,6 +8,11 @@
     <js href="{$skin.lib}ueditor/third-party/webuploader/webuploader.min.js"/>
     <css href="{$skin.lib}ueditor/third-party/webuploader/webuploader.css"/>
     <css href="{$skin.lib}ueditor/dialogs/image/image.css"/>
+    <style>
+        #remote #url { width: 400px; }
+        #remote button.select { width: 95px; background-color: #EEEEEE; border: 1px #E0E0E0 solid; border-radius: 5px; padding: 3px 6px; line-height: 1.42857143; font-size: 14px; cursor: pointer;}
+        #remote button.select:hover { background-color: #E0E0E0;}
+    </style>
 </head>
 <body>
 <div class="wrapper">
@@ -36,6 +41,7 @@
                 <div class="row">
                     <label for="url"><var id="lang_input_url"></var></label>
                     <span><input class="text" id="url" type="text"/></span>
+                    <button class="select" id="select">选择图片</button>
                 </div>
             </div>
             <div class="left">

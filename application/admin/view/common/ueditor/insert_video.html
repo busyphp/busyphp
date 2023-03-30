@@ -5,8 +5,14 @@
     <title>视频对话框</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <js href="{$skin.lib}ueditor/dialogs/internal.js"/>
+    <js href="{$skin.lib}ueditor/third-party/jquery-1.10.2.min.js"/>
     <css href="{$skin.lib}ueditor/third-party/webuploader/webuploader.css"/>
     <css href="{$skin.lib}ueditor/dialogs/video/video.css"/>
+    <style>
+        #video #videoUrl { width: 400px; }
+        #video button#select { width: 95px; background-color: #EEEEEE; border: 1px #E0E0E0 solid; padding: 3px 6px; line-height: 1.42857143; font-size: 12px; cursor: pointer;}
+        #video button#select:hover { background-color: #E0E0E0;}
+    </style>
 </head>
 <body>
 <div class="wrapper">
@@ -26,6 +32,7 @@
                         <td>
                             <input id="videoUrl" type="text">
                         </td>
+                        <td><button id="select">选择视频</button></td>
                     </tr>
                 </table>
                 <div id="preview"></div>
