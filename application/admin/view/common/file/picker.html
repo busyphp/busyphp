@@ -363,6 +363,11 @@
                                     if (deleteItem) {
                                         me.setSelected(deleteItem, false);
                                     }
+                                })
+
+                                // 准备好
+                                .on(busyAdmin.e.tableBodyReady, function () {
+                                    me.updateImageViewer(false);
                                 });
 
                             // 准备完成
@@ -371,7 +376,7 @@
                     },
 
                     // 重置table
-                    resetTable() {
+                    resetTable : function () {
                         var me = this;
                         if (me.list_type !== 'table') {
                             return;
@@ -380,6 +385,15 @@
                         me.$table.baTable('ready', function () {
                             this.resetView({height : me.$body.height()});
                         });
+                    },
+
+                    // 刷新图片预览
+                    updateImageViewer : function (selected) {
+                        if (selected) {
+                            this.$selectList.baImageViewer('update');
+                        } else {
+                            this.$body.baImageViewer('update');
+                        }
                     },
 
                     // 加载数据
@@ -429,10 +443,11 @@
                                 me.reload_html = false;
                                 me.$nextTick(function () {
                                     me.reload_html = true;
-
                                     if (me.list_type === 'table') {
+                                        me.refreshTable();
+                                    } else {
                                         me.$nextTick(function () {
-                                            me.refreshTable();
+                                            me.updateImageViewer(false);
                                         });
                                     }
                                 });
@@ -469,13 +484,17 @@
 
                     // 切换展示类型
                     changeListType : function (type) {
-                        this.reload_html = true;
+                        var me         = this;
+                        me.reload_html = true;
                         if (type === 'table') {
-                            this.list_type = 'table';
+                            me.list_type = 'table';
+                            me.refreshTable();
                         } else {
-                            this.list_type = '';
+                            me.list_type = '';
+                            me.$nextTick(function () {
+                                me.updateImageViewer(false);
+                            });
                         }
-                        this.refreshTable();
                     },
 
                     // 设置选中项
@@ -511,6 +530,7 @@
                                 me.$selectList.animate({
                                     scrollTop : $(me.$refs['selectItem' + (me.selected_list.length - 1)]).offset().top
                                 });
+                                me.updateImageViewer(true);
                             });
 
                             // 不能继续选择的情况下禁用
@@ -550,6 +570,9 @@
 
                             var scrollTop = $(me.$refs['selectItem' + deleteIndex]).offset().top;
                             me.selected_list.splice(deleteIndex, 1);
+                            me.$nextTick(function () {
+                                me.updateImageViewer(true);
+                            });
 
                             // 可以选择的情况下恢复
                             if (!me.is_single && me.canSelected() && me.options.count - me.selected_list.length == 1) {
