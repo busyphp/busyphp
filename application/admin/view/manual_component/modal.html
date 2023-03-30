@@ -21,7 +21,7 @@
 ### 注意
 
 - `close()` 和 `hide()` 均会关闭模态框，不同的是：使用 `close()` 方法不会触发 `onCancel` 事件
-- 内容与对象交互，一般在根元素指定一个唯一的id，使用 `$.fn.closetGetModal()` 来获取当前模态框对象
+- 内容与对象交互，一般在根元素指定一个唯一的id，使用 `$.fn.closetGetModal()` 来获取当前模态框对象，支持`:modal_id`变量由系统生成一个唯一的ID
 
 **交互示例**
 
@@ -29,11 +29,20 @@
 // 模态框HTML
 <div id="testModal">
     ...模态框的内容
+    
+    // 加上 data-dismiss="modal" 为modal绑定关闭按钮
+    <a data-dismiss="modal">关闭</a>
+    
+    // 加上 data-primary="modal" 为modal绑定确定按钮
+    <a data-primary="modal">确定</a>
+    
+    // 加上 data-click="false" 点击确定按钮不会触发onOk事件
+    <a data-primary="modal" data-click="false">确定</a>
 </div>
 
 // 模态框脚本
-<\script id="id1">
-var modal = $('#id1').closetGetModal()
+<\script id=":modal_id">
+var modal = $('#:modal_id').closetGetModal()
 modal.close()
 <\/script>
 

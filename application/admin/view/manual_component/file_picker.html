@@ -26,9 +26,10 @@
 | data-zindex | number | `否` | `auto` | 对话框层级 |
 | data-class-type | string | `否` | `file` | 文件类型 |
 | data-class-value | string | `否` | - | 文件标识 |
-| data-multiple | boolean | `否` | `false` | 是否允许多选 |
 | data-count | number | `否` | 9 | 多选情况单次最多允许选择数，0为不限 |
 | data-extensions | string | `否` | - | 允许的文件后缀，多个用英文逗号隔开，不包含`.` |
+| data-mimetypes | string | `否` | - | 允许上传mimetype，多个用英文逗号隔开 |
+| data-max-size | number | `否` | - | 允许上传文件大小(单位字节) |
 | data-success | string,function | `否` | - | 选中回调方法，参数：<br />**files** ：选中的文件数据集合|
 
 ### 使用示例
@@ -39,18 +40,14 @@
 ```demo:实例
 #demo1
 ```
-#### 多选示例
-
-```demo:实例
-#demo2
-```
             </script>
         </div>
     </div>
 
-    <textarea class="hide" id="demo1">
-<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-class-type="image" data-title="请选择图片">选择图片</button>
-<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-class-type="file" data-title="请选择文件">选择文件</button>
+    <template class="hide" id="demo1">
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="1">单选</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="3">多选</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="0">多选(不限数量)</button>
 <script>
     $(function () {
         $('.file-picker1').on(busyAdmin.e.filePickerSuccess, function (e, files) {
@@ -58,10 +55,5 @@
         });
     })
 </script>
-    </textarea>
-
-    <textarea class="hide" id="demo2">
-<button class="btn btn-primary" data-toggle="busy-file-picker" data-multiple="true" data-count="9">选择文件</button>
-<button class="btn btn-primary" data-toggle="busy-file-picker" data-multiple="true" data-count="0">选择文件(不限数量)</button>
-    </textarea>
+    </template>
 </block>
