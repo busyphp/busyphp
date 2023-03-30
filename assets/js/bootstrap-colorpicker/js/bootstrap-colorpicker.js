@@ -921,7 +921,7 @@
       });
     },
     reposition: function() {
-      if (this.options.inline !== false || this.options.container) {
+      if (this.options.inline !== false) {
         return false;
       }
       var type = this.container && this.container[0] !== window.document.body ? 'position' : 'offset';
