@@ -63,55 +63,53 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ba--body flex-grow-1 height-0 ba-full-wrap" ref="body" data-toggle="busy-image-viewer" data-has-class=".hidden">
+                    <div class="ba--body flex-grow-1 height-0 ba-full-wrap" ref="body" data-toggle="busy-image-viewer" data-filter="busyAdmin.plugins.FilePicker.ImageViewerFilter">
                         <div v-if="list_type === 'table' && reload_html">
-                            <div>
-                                <table ref="table"
-                                       data-type="html"
-                                       data-toggle="busy-table"
-                                       data-sticky-header="true"
-                                       data-fixed-columns="true"
-                                       data-fixed-number="1"
-                                       data-click-to-select="true"
-                                       data-checkbox-header="false"
-                                       :data-no-data-text="empty_text"
-                                       :data-single-select="is_single ? 'true':'false'"
-                                       data-pagination="false">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center" data-field="checked" width="40" data-checkbox="true"></th>
-                                            <th class="text-center" data-field="name">文件名</th>
-                                            <th class="text-center" data-field="size" width="100">大小</th>
-                                            <th class="text-center" data-field="operate" width="70" data-click-to-select="false">
-                                                操作
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(item, index) in list" :data-row-index="index" :data-row-id="item.id">
-                                            <td class="text-center"></td>
-                                            <td class="text-left">
-                                                <div class="max-width-280 text-line-1">
-                                                    <a :href="item.url" target="_blank" :title="item.name">{{item.name}}</a>
-                                                </div>
-                                            </td>
-                                            <td class="text-success size-12 text-right">{{item.format_size}}</td>
-                                            <td class="text-center">
-                                                <img v-if="item.is_image" :data-src="item.url" class="hidden" :alt="item.name"/>
-                                                <a class="btn btn-default btn-xs cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
-                                                <ba:access value="delete">
-                                                    <a class="btn btn-danger btn-xs"
-                                                       href="javascript:void(0)"
-                                                       :data-url="'{:url('system_file/delete')}?id=' + item.id"
-                                                       :data-confirm="item.delete_confirm">
-                                                        <i class="fa fa-trash"></i>
-                                                    </a>
-                                                </ba:access>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <table ref="table"
+                                   data-type="html"
+                                   data-toggle="busy-table"
+                                   data-sticky-header="true"
+                                   data-fixed-columns="true"
+                                   data-fixed-number="1"
+                                   data-click-to-select="true"
+                                   data-checkbox-header="false"
+                                   :data-no-data-text="empty_text"
+                                   :data-single-select="is_single ? 'true':'false'"
+                                   data-pagination="false">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" data-field="checked" width="40" data-checkbox="true"></th>
+                                        <th class="text-center" data-field="name">文件名</th>
+                                        <th class="text-center" data-field="size" width="100">大小</th>
+                                        <th class="text-center" data-field="operate" width="70" data-click-to-select="false">
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in list" :data-row-index="index" :data-row-id="item.id">
+                                        <td class="text-center"></td>
+                                        <td class="text-left">
+                                            <div class="max-width-280 text-line-1">
+                                                <a :href="item.url" target="_blank" :title="item.name">{{item.name}}</a>
+                                            </div>
+                                        </td>
+                                        <td class="text-success size-12 text-right">{{item.format_size}}</td>
+                                        <td class="text-center">
+                                            <img v-if="item.is_image" :data-src="item.url" class="hidden" :alt="item.name"/>
+                                            <a class="btn btn-default btn-xs cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
+                                            <ba:access value="delete">
+                                                <a class="btn btn-danger btn-xs"
+                                                   href="javascript:void(0)"
+                                                   :data-url="'{:url('system_file/delete')}?id=' + item.id"
+                                                   :data-confirm="item.delete_confirm">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </ba:access>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                         <div v-if="list_type === '' && reload_html" class="ba--list clearfix">
                             <div v-for="(item, index) in list" class="ba--item" :class="{active: item.checked, disabled: item.disabled}">
@@ -207,7 +205,7 @@
     <script id=":modal_id">
         busyAdmin.require([busyAdmin.lib.vue], function (Vue) {
             var modal = $('#:modal_id').closestBaModal();
-            new Vue({
+            var app   = new Vue({
                 el   : '#:modal_id_app',
                 data : {
                     info            : <?=json_encode($info, JSON_UNESCAPED_UNICODE)?>,
@@ -766,6 +764,20 @@
                     },
                 }
             });
+
+            busyAdmin.plugins.FilePicker.ImageViewerFilter = function (image) {
+                var $image = $(image);
+                if (!$image.is('.hidden')) {
+                    return false;
+                }
+
+                if (app.list_type !== 'table') {
+                    return true;
+                }
+
+                var $parent = $(image).closest('.fixed-table-body').parent();
+                return !$parent.hasClass('fixed-columns') && !$parent.hasClass('fixed-columns-right');
+            }
         });
     </script>
 </block>
