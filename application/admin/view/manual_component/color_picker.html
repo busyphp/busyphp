@@ -67,6 +67,12 @@ var colors = {
 ```demo:实例
 #demo4
 ```
+
+#### 在模态框中打开
+
+```demo:实例
+#demo5
+```
             </script>
         </div>
     </div>
@@ -114,6 +120,18 @@ var colors = {
     });
 </script>
     </textarea>
+
+    <script id="demo5" type="text/html">
+        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
+        <template id="modalContent">
+            <div style="height: 1000px;">
+                <input type="text"
+                       class="form-control"
+                       placeholder="请选择"
+                       data-toggle="busy-color-picker"/>
+            </div>
+        </template>
+    </script>
 </block>
 <block name="foot">
 </block>
