@@ -5,9 +5,9 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\component\common\SimpleQuery;
 use BusyPHP\app\admin\component\filesystem\Driver;
+use BusyPHP\app\admin\component\js\Driver as JsDriver;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\model\system\file\SystemFilePrepareUploadParameter;
@@ -176,75 +176,61 @@ class FileController extends InsideController
      */
     public function picker() : Response
     {
-        $classType  = $this->get('class_type/s', 'trim');
-        $classValue = $this->get('class_value/s', 'trim');
-        $extensions = $this->get('extensions/s', 'trim');
-        $range      = $this->get('range/d');
-        $type       = $this->get('type/s', 'trim');
-        $word       = $this->get('word/s', 'trim');
-        $fileType   = SystemFile::FILE_TYPE_FILE;
-        
-        // 按分类查询
-        if ($range > 0) {
-            if (false !== stripos($type, 'type:')) {
-                $typeList = SystemFileClass::instance()->getAdminOptions(true);
-                $fileType = substr($type, 5);
-                $typeList = $typeList[$fileType] ?? [];
-                $ins      = [];
-                
-                /** @var SystemFileClassField $item */
-                foreach ($typeList as $item) {
-                    $ins[] = $item->var;
-                }
-                
-                if ($typeList) {
-                    $this->model->where(SystemFileField::type('in', $ins));
-                }
-            } else {
-                $typeList = SystemFileClass::instance()->getList();
-                $fileType = $typeList[$type]->type ?? $fileType;
-                if ($type) {
-                    $this->model->where(SystemFileField::type($type));
-                }
+        if (JsDriver::getRequestName() == 'FilePicker') {
+            $classType  = $this->param('class_type/s', 'trim');
+            $classValue = $this->param('class_value/s', 'trim');
+            $extensions = $this->param('extensions/s', 'trim');
+            $extensions = FilterHelper::trimArray(explode(',', $extensions));
+            $type       = $this->param('type/s', 'trim');
+            $category   = $this->param('category/s', 'trim');
+            $word       = $this->param('word/s', 'trim');
+            
+            // 类型搜索
+            if ($type) {
+                $this->model->where(SystemFileField::type($type));
             }
-        }
-        
-        //
-        // 当前信息
-        else {
-            $typeList = SystemFileClass::instance()->getList();
-            $fileType = $typeList[$classType]->type ?? $fileType;
-            $this->model->where(SystemFileField::classType($classType));
-            $this->model->where(SystemFileField::classValue($classValue));
-        }
-        
-        // 允许的后缀
-        if ($extensions) {
-            $extensionsList = FilterHelper::trimArray(explode(',', $extensions));
-            if ($extensionsList) {
-                $this->model->where(SystemFileField::extension('in', $extensionsList));
+            
+            // 按当前信息查询
+            if (!$category) {
+                // 按分类搜索
+                if ($classType) {
+                    $this->model->where(SystemFileField::classType($classType));
+                }
+                
+                $this->model->where(SystemFileField::classValue($classValue));
+            } elseif ($category !== ':all') {
+                $this->model->where(SystemFileField::classType($category));
             }
+            
+            // 按扩展名搜索
+            if (!$extensions && $classType) {
+                $extensions = StorageSetting::instance()->getAllowExtensions($classType);
+            }
+            if ($extensions) {
+                $this->model->where(SystemFileField::extension('in', array_map('strtolower', $extensions)));
+            }
+            
+            // 关键词搜索
+            if ($word) {
+                $word = FilterHelper::searchWord($word);
+                $this->model->where(SystemFileField::name('like', '%' . $word . '%'));
+            }
+            
+            $result = SimpleQuery::init($this->model->whereComplete()->order(SystemFileField::id(), 'desc'))->build();
+            
+            return $this->success([
+                'list'       => $result->list,
+                'total'      => $result->total,
+                'limit'      => $result->limit,
+                'page'       => str_replace('href="', 'href="javascript:void(0)" data-url="', $result->page),
+                'extensions' => implode(',', $extensions)
+            ]);
         }
         
-        if ($word) {
-            $this->model->where(SystemFileField::name('like', '%' . FilterHelper::searchWord($word) . '%'));
-        }
-        
-        $isImage = $fileType === SystemFile::FILE_TYPE_IMAGE;
-        $this->assign('type_options', SystemFileClass::init()->getAdminOptions($type));
-        $this->assign('class_type', $classType);
-        $this->assign('class_value', $classValue);
-        $this->assign('extensions', $extensions);
-        $this->assign('range', $range);
-        $this->assign('word', $word);
-        $this->assign('reset_url', url('', ['class_type' => $classType, 'class_value' => $classValue]));
-        $this->assign('is_file', in_array($fileType, [
-            SystemFile::FILE_TYPE_FILE,
-            SystemFile::FILE_TYPE_VIDEO,
-            SystemFile::FILE_TYPE_AUDIO
-        ]));
-        $this->assign('is_image', $isImage);
-        $this->assign('info', SimpleQuery::init($this->model->whereComplete())->setLimit($isImage ? 20 : 3)->build());
+        $this->assign('info', [
+            'type_map'     => SystemFile::class()::getTypes(),
+            'category_map' => SystemFileClass::instance()->getList()
+        ]);
         
         return $this->insideDisplay();
     }
@@ -256,20 +242,9 @@ class FileController extends InsideController
      */
     public function config() : Response
     {
-        $setting   = StorageSetting::instance();
-        $fileClass = [];
-        foreach (SystemFileClass::instance()->getList() as $key => $item) {
-            $fileClass[$key] = [
-                'max_size'         => $setting->getMaxSize($key),
-                'allow_extensions' => implode(',', $setting->getAllowExtensions($key)),
-                'allow_mimetypes'  => implode(',', $setting->getMimeType($key)),
-                'type'             => $item['type'],
-                'name'             => $item['name']
-            ];
-        }
-        
         // 遍历磁盘
         $injectScripts = [];
+        $setting       = StorageSetting::instance();
         foreach ($setting::getDisks() as $disk) {
             $type            = $disk['type'];
             $injectScript    = Driver::getInstance($disk['type'])->frontUploadInjectScript();
@@ -284,13 +259,13 @@ JS;
         $injectScripts = implode('', $injectScripts);
         
         $config = json_encode([
-            'url'     => (string) url('upload'),
-            'prepare' => (string) url('front_prepare'),
-            'done'    => (string) url('front_done'),
-            'token'   => (string) url('front_token'),
-            'picker'  => (string) url('picker?class_type=_type_&class_value=_value_&extensions=_extensions_'),
-            'config'  => $fileClass ?: new stdClass(),
-            'disk'    => $setting->getDisk()
+            'url'      => (string) url('upload'),
+            'prepare'  => (string) url('front_prepare'),
+            'done'     => (string) url('front_done'),
+            'token'    => (string) url('front_token'),
+            'picker'   => (string) url('picker'),
+            'category' => SystemFileClass::instance()->getUploadCategory() ?: new stdClass(),
+            'disk'     => $setting->getDisk()
         ], JSON_UNESCAPED_UNICODE);
         
         
