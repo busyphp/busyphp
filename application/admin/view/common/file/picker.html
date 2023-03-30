@@ -1,101 +1,748 @@
 <extend name="@admin:layout"/>
+<block name="head">
+</block>
 <block name="content">
-    <div class="search-bar">
-        <form class="form-inline clearfix" action="{$url.self}" method="get">
-            <input type="hidden" name="class_type" value="{$class_type}"/>
-            <input type="hidden" name="class_value" value="{$class_value}"/>
-            <input type="hidden" name="extensions" value="{$extensions}"/>
-
-            <div class="form-group field-range">
-                <select class="form-control" name="range">
-                    <option value="0"<?=is_selected($range == 0)?>>当前信息</option>
-                    <option value="1"<?=is_selected($range == 1)?>>全部文件</option>
-                </select>
-            </div>
-            <div class="form-group field-type">
-                <select class="form-control font-tabs" name="type">
-                    {$type_options}
-                </select>
-            </div>
-            <div class="form-group field-word">
-                <input type="text" name="word" class="form-control" value="{$word}" placeholder="请输入关键词"/>
-            </div>
-            <div class="form-group field-btn">
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> 搜索</button>
-                    <a href="{$reset_url}" class="btn btn-default"><i class="fa fa-repeat"></i> 重置</a>
+    <div class="modal-content" id=":modal_id_app">
+        <template>
+            <div class="modal-header flex flex-align-center">
+                <h4 class="modal-title flex-grow-1 width-0 text-line-1">{{options.title || '选择文件'}}</h4>
+                <label class="btn btn-sm ba--menu-operate" :class="menu ? 'btn-primary':'btn-default'" @click="changeMenu"><i class="fa" :class="menu ? 'fa-close':'fa-navicon'"></i></label>
+                <label class="btn btn-default btn-sm"
+                       data-toggle="busy-upload"
+                       data-type="use"
+                       data-use-progress="true"
+                       :data-class-type="options.classType"
+                       :data-class-value="options.classValue"
+                       :data-allow-extensions="options.extensions"
+                       :data-allow-mimetypes="options.mimetypes"
+                       :data-max-single-size="options.maxSize"
+                       ref="upload">
+                    <i class="fa fa-cloud-upload"></i>
+                    {{options.locale.upload}}
+                </label>
+                <div class="btn-group btn-group-sm ba--list-type">
+                    <label class="btn" :class="list_type === '' ? 'btn-primary':'btn-default'" @click="changeListType('')">
+                        <i class="fa fa-th-large"></i>
+                    </label>
+                    <label class="btn" :class="list_type === 'table' ? 'btn-primary':'btn-default'" @click="changeListType('table')">
+                        <i class="fa fa-list-ul"></i>
+                    </label>
                 </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-        </form>
-    </div>
-
-    <eq name="is_file" value="1">
-        <div class="file-list">
-            <table class="table table-striped table-bordered table-hover"
-                   data-fixed-columns="true"
-                   data-fixed-right-number="1"
-                   data-fixed-number="1">
-                <thead>
-                    <tr>
-                        <th class="text-center" width="40" data-checkbox="true"></th>
-                        <th class="text-center" width="60" data-field="id">ID</th>
-                        <th class="text-center" data-field="name">文件名</th>
-                        <th class="text-center" data-field="size" width="100">大小</th>
-                        <th class="text-center" width="70" data-click-to-select="false">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <foreach name="info.list" item="vo">
-                        <tr data-item='<?=json_encode($vo);?>'>
-                            <td class="text-center"></td>
-                            <td class="text-center">{$vo.id}</td>
-                            <td class="text-left"><div class="max-width-280 text-line-1"><a href="{$vo.url}" target="_blank" title="{$vo.name}">{$vo.name}</a></div></td>
-                            <td class="text-center text-muted">{$vo.format_size}</td>
-                            <td class="text-center">
-                                <a class="btn btn-default btn-xs"><i class="fa fa-search-plus"></i></a>
-                                <ba:access value="delete">
-                                    <a class="btn btn-danger btn-xs"
-                                       data-url="{:url('system_file/delete?id=' . $vo['id'])}"
-                                       data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
-                                </ba:access>
-                            </td>
-                        </tr>
-                    </foreach>
-                </tbody>
-            </table>
-        </div>
-    </eq>
-
-    <eq name="is_image" value="1">
-        <div class="image-list" data-toggle="busy-image-viewer">
-            <div class="image-list-body clearfix">
-                <foreach name="info.list" item="vo">
-                    <div class="item item-{$vo.id}" data-item='<?=json_encode($vo);?>'>
-                        <div class="thumb">
-                            <img src="{$vo.url}"/>
-
-                            <div class="tool-box">
-                                <div class="toolbar">
-                                    <input type="checkbox" class="icon" value="{$vo.id}"/>
-
-                                    <div class="pull-right">
-                                        <a class="preview cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
-                                        <ba:access value="delete">
-                                            <a class="delete"
-                                               href="javascript:void(0)"
-                                               data-url="{:url('system_file/delete?id=' . $vo['id'])}"
-                                               data-confirm="确认要删除文件<code>{$vo.name}</code>吗?"><i class="fa fa-trash"></i></a>
-                                        </ba:access>
-                                    </div>
-                                </div>
-                                <div class="name">{$vo.name}</div>
+            <div class="modal-body no-padding flex flex-align-stretch">
+                <div class="ba--menu-mask" :class="{active: menu}" @click="changeMenu"></div>
+                <div class="ba--menu" :class="{active: menu}">
+                    <div class="list-group no-margin-bottom">
+                        <a class="list-group-item" :class="type == item.value ? 'active':''" href="javascript:void(0)" v-for="item in type_list" @click="changeType(item.value)">
+                            <i :class="item.icon"></i>
+                            {{item.name}}
+                        </a>
+                    </div>
+                </div>
+                <div class="ba--main flex-grow-1 width-0 flex flex-column">
+                    <div class="ba--head padding-5 border no-border-left no-border-top no-border-right flex flex-row flex-wrap flex-align-center">
+                        <div class="form-group form-group-sm">
+                            <select class="form-control font-tabs" v-model="category">
+                                <option v-for="item in category_list" :value="item.var">{{item.name}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-group-sm flex-grow-1 width-0">
+                            <input type="text" v-model="word" class="form-control" :placeholder="options.locale.placeholder"/>
+                        </div>
+                        <div class="form-group">
+                            <div class="btn-group btn-group-sm">
+                                <button type="submit" class="btn btn-success" @click="search">
+                                    <i class="fa fa-search"></i> {{options.locale.search}}
+                                </button>
+                                <a href="javascript:void(0)" class="btn btn-default" @click="reset">
+                                    <i class="fa fa-repeat"></i> {{options.locale.reset}}
+                                </a>
                             </div>
                         </div>
                     </div>
-                </foreach>
+                    <div class="ba--body flex-grow-1 height-0 ba-full-wrap" ref="body" data-toggle="busy-image-viewer" data-has-class=".hidden">
+                        <div v-if="list_type === 'table' && reload_html">
+                            <div>
+                                <table ref="table"
+                                       data-type="html"
+                                       data-toggle="busy-table"
+                                       data-sticky-header="true"
+                                       data-fixed-columns="true"
+                                       data-fixed-number="1"
+                                       data-click-to-select="true"
+                                       data-checkbox-header="false"
+                                       :data-no-data-text="empty_text"
+                                       :data-single-select="is_single ? 'true':'false'"
+                                       data-pagination="false">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" data-field="checked" width="40" data-checkbox="true"></th>
+                                            <th class="text-center" data-field="name">文件名</th>
+                                            <th class="text-center" data-field="size" width="100">大小</th>
+                                            <th class="text-center" data-field="operate" width="70" data-click-to-select="false">
+                                                操作
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item, index) in list" :data-row-index="index" :data-row-id="item.id">
+                                            <td class="text-center"></td>
+                                            <td class="text-left">
+                                                <div class="max-width-280 text-line-1">
+                                                    <a :href="item.url" target="_blank" :title="item.name">{{item.name}}</a>
+                                                </div>
+                                            </td>
+                                            <td class="text-success size-12 text-right">{{item.format_size}}</td>
+                                            <td class="text-center">
+                                                <img v-if="item.is_image" :data-src="item.url" class="hidden" :alt="item.name"/>
+                                                <a class="btn btn-default btn-xs cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
+                                                <ba:access value="delete">
+                                                    <a class="btn btn-danger btn-xs"
+                                                       href="javascript:void(0)"
+                                                       :data-url="'{:url('system_file/delete')}?id=' + item.id"
+                                                       :data-confirm="item.delete_confirm">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </ba:access>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div v-if="list_type === '' && reload_html" class="ba--list clearfix">
+                            <div v-for="(item, index) in list" class="ba--item" :class="{active: item.checked, disabled: item.disabled}">
+                                <div class="ba--thumb">
+                                    <img :src="item.icon"/>
+                                    <img v-if="item.is_image" class="hidden" :data-src="item.url" :title="item.name"/>
+                                    <div class="ba--mask" @click="selectListItem(index)">
+                                        <div class="ba--toolbar">
+                                            <div class="pull-right">
+                                                <a class="preview cursor-zoom-in" href="javascript:void(0)" @click.prevent.stop="preview($event, item)">
+                                                    <i class="fa fa-search-plus"></i>
+                                                </a>
+                                                <ba:access value="delete">
+                                                    <a class="delete"
+                                                       href="javascript:void(0)"
+                                                       :data-url="'{:url('system_file/delete')}?id=' + item.id"
+                                                       :data-confirm="item.delete_confirm"
+                                                       @click.prevent.stop="remove($event, index)">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </ba:access>
+                                            </div>
+                                        </div>
+                                        <div class="ba--name">{{item.name}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="!loading && list.length == 0" class="ba-full-empty" v-html="empty_text"></div>
+                        </div>
+                    </div>
+                    <div class="ba--pager border no-border-left no-border-bottom no-border-right" ref="foot" v-show="page_html !== ''" v-html="page_html"></div>
+                </div>
+                <div class="ba--select flex flex-column">
+                    <div class="ba--select-title flex flex-align-center padding-10">
+                        <span v-if="options.count > 0">{{options.locale.selected}} {{selected_list.length}}/{{options.count}}</span>
+                        <span v-else>{{options.locale.selected}} {{selected_list.length}}</span>
+                    </div>
+                    <div class="ba--select-list flex-grow-1 height-0 ba-full-wrap" ref="selectList" data-toggle="busy-image-viewer" data-has-class=".hidden">
+                        <div class="ba--list clearfix">
+                            <div v-for="(item, index) in selected_list" class="ba--item" :ref="'selectItem' + index">
+                                <div class="ba--thumb">
+                                    <img :src="item.icon"/>
+                                    <img v-if="item.is_image" class="hidden" :data-src="item.url" :title="item.name"/>
+                                    <div class="ba--mask" @click="deleteSelected(item)">
+                                        <div class="ba--toolbar">
+                                            <div class="pull-right">
+                                                <a class="preview cursor-zoom-in" href="javascript:void(0)" @click.prevent.stop="preview($event, item)">
+                                                    <i class="fa fa-search-plus"></i>
+                                                </a>
+                                                <a class="delete" href="javascript:void(0)" @click.stop.prevent="deleteSelected(item)">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="ba--name">{{item.name}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="selected_list.length == 0" class="ba-full-empty" v-html="options.locale.noSelect"></div>
+                        </div>
+                    </div>
+                    <div class="ba--select-foot" v-if="selected_list.length > 0">
+                        <a class="btn btn-outline-secondary btn-sm btn-block" href="javascript:void(0)" @click="clearSelected()">{{options.locale.clear}}</a>
+                    </div>
+                </div>
+                <div class="ba-loader ba-loader-inline" v-if="loading || upload_progress > -1">
+                    <div></div>
+                </div>
             </div>
-        </div>
-    </eq>
+            <div class="modal-footer">
+                <button v-if="selected_list.length > 0" type="button" class="btn btn-danger pull-left" @click="batchDelete">
+                    <i class="fa fa-trash"></i>
+                    {{options.locale.delete}}
+                </button>
 
-    {$info.page}
+                <button type="button" class="btn btn-primary" data-primary="modal" data-click="false" @click="confirm">
+                    {{options.locale.confirm}}
+                </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    {{options.locale.cancel}}
+                </button>
+                <div class="ba--progress" v-if="upload_progress > -1">
+                    <div class="progress progress-xs no-margin no-radius">
+                        <div class="progress-bar no-radius" :style="'width: '+ upload_progress +'%'"></div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</block>
+<script src="/vue.js"></script>
+<block name="foot">
+    <script id=":modal_id">
+        busyAdmin.require([busyAdmin.lib.vue], function (Vue) {
+            var modal = $('#:modal_id').closestBaModal();
+            new Vue({
+                el   : '#:modal_id_app',
+                data : {
+                    info            : <?=json_encode($info, JSON_UNESCAPED_UNICODE)?>,
+                    type            : '',
+                    type_list       : [],
+                    category        : '',
+                    category_list   : [],
+                    word            : '',
+                    list            : [],
+                    list_type       : '',
+                    selected_list   : [],
+                    page            : 1,
+                    page_html       : '',
+                    loading         : true,
+                    reload_html     : true,
+                    is_single       : false,
+                    menu            : false,
+                    options         : busyAdmin.plugins.FilePicker.DEFAULTS,
+                    upload_progress : -1,
+                    empty_text      : '',
+                },
+                mounted() {
+                    this.init();
+                    this.load();
+                },
+                methods : {
+                    // 初始化
+                    init : function () {
+                        var me         = this;
+                        me.picker      = modal.options.picker;
+                        me.options     = me.picker.options;
+                        me.is_single   = me.options.count == 1;
+                        me.$selectList = $(me.$refs.selectList);
+                        me.$body       = $(me.$refs.body);
+
+                        // 重置文件类型
+                        var typeList = [{
+                            icon  : 'fa fa-ellipsis-h',
+                            name  : me.options.locale.allFile,
+                            value : ''
+                        }];
+                        for (var key in me.info.type_map) {
+                            typeList.push(me.info.type_map[key]);
+                        }
+                        me.type_list = typeList;
+
+                        // 重置文件分类
+                        var categoryList = [{
+                            name : me.options.locale.currentInfo,
+                            var  : ''
+                        }, {
+                            name : me.options.locale.allCategory,
+                            var  : ':all',
+                        }];
+                        for (key in me.info.category_map) {
+                            categoryList.push(me.info.category_map[key]);
+                        }
+                        me.category_list = categoryList;
+
+                        // 监听分页事件
+                        $(me.$refs.foot).on('click', 'a', function () {
+                            me.page = busyAdmin.helper.parseURL($(this).data('url')).params.page || 1;
+                            me.load();
+
+                            return false;
+                        });
+
+                        // 监听上传
+                        var $upload = $(me.$refs.upload)
+                        $upload
+                            .on(busyAdmin.e.uploadFileQueued, function () {
+                                me.upload_progress = -1;
+                            })
+                            .on(busyAdmin.e.uploadReset, function () {
+                                me.upload_progress = -1;
+                            })
+                            .on(busyAdmin.e.uploadProgress, function (e, upload, file, procress) {
+                                me.upload_progress = procress * 100;
+                            })
+                            .on(busyAdmin.e.uploadSuccess, function () {
+                                busyAdmin.dialog.tipSuccess(me.options.locale.uploadSuccess);
+                                me.load();
+                            });
+
+                        // 监听窗口变化
+                        $(window).on('resize', function () {
+                            me.resetTable();
+                        });
+                    },
+
+                    // 刷新table
+                    refreshTable : function () {
+                        var me = this;
+                        me.$nextTick(function () {
+                            me.$table = $(me.$refs.table)
+
+                                // 还原选中
+                                .on(busyAdmin.e.tableDataInit, function (e, table) {
+                                    table.columns[3].events = {
+                                        // 预览
+                                        'click .btn-default' : function (e, node, data, index) {
+                                            me.doPreview($(e.currentTarget), me.list[index], true);
+                                        },
+
+                                        // 删除
+                                        'click .btn-danger' : function (e, value, data, index) {
+                                            me.doDelete($(e.currentTarget), me.list[index]);
+                                        },
+                                    };
+
+                                    table.columns[0].formatter = function (value, item, index) {
+                                        var id      = item._data['row-id'];
+                                        var checked = false;
+                                        me.selected_list.map(function (vo) {
+                                            if (vo.id == id) {
+                                                checked = true;
+                                            }
+                                        });
+
+                                        if (checked) {
+                                            return {
+                                                checked  : true,
+                                                disabled : false
+                                            }
+                                        }
+
+                                        return {
+                                            checked  : false,
+                                            disabled : !me.is_single && !me.canSelected()
+                                        }
+                                    }
+                                })
+
+                                // 选中
+                                .on(busyAdmin.e.tableCheck, function (e, table, row) {
+                                    me.setSelected(me.list[row._data['row-index']], true);
+                                })
+
+                                // 取消选中
+                                .on(busyAdmin.e.tableUncheck, function (e, table, row) {
+                                    if (me.uncheck_lock) {
+                                        me.uncheck_lock = false;
+                                        return;
+                                    }
+
+                                    var id         = row._data['row-id'];
+                                    var deleteItem = null;
+                                    me.selected_list.map(function (vo) {
+                                        if (vo.id == id) {
+                                            deleteItem = vo;
+                                        }
+                                    });
+                                    if (deleteItem) {
+                                        me.setSelected(deleteItem, false);
+                                    }
+                                });
+
+                            // 准备完成
+                            me.resetTable();
+                        });
+                    },
+
+                    // 重置table
+                    resetTable() {
+                        var me = this;
+                        if (me.list_type !== 'table') {
+                            return;
+                        }
+
+                        me.$table.baTable('ready', function () {
+                            this.resetView({height : me.$body.height()});
+                        });
+                    },
+
+                    // 加载数据
+                    load : function () {
+                        var me     = this;
+                        me.loading = true;
+                        busyAdmin.request('__URL__')
+                            .params({
+                                class_type  : me.options.classType,
+                                class_value : me.options.classValue,
+                                extensions  : me.options.extensions || '',
+                                type        : this.type,
+                                category    : this.category,
+                                word        : this.word,
+                                page        : this.page
+                            })
+                            .addHeader('Busy-Admin-Plugin', 'FilePicker')
+                            .pending(false)
+                            .complete(function () {
+                                me.loading = false;
+                            })
+                            .success(function (response, type, xhr) {
+                                response.result.list.map(function (item) {
+                                    item.checked        = false;
+                                    item.disabled       = false;
+                                    item.delete_confirm = busyAdmin.helper.sprintf(me.options.locale.confirmDelete, '<code>' + item.name + '</code>')
+                                });
+
+                                if (response.result.extensions) {
+                                    me.empty_text = busyAdmin.helper.sprintf(me.options.locale.noExtensionsData, response.result.extensions);
+                                } else {
+                                    me.empty_text = me.options.locale.noData;
+                                }
+
+                                me.page_html = response.result.page;
+                                me.list      = response.result.list;
+                                me.list.map(function (item) {
+                                    me.selected_list.map(function (vo, index) {
+                                        if (vo.id === item.id) {
+                                            item.checked            = true;
+                                            me.selected_list[index] = item;
+                                        }
+                                    });
+                                });
+
+                                // 刷新table
+                                me.reload_html = false;
+                                me.$nextTick(function () {
+                                    me.reload_html = true;
+
+                                    if (me.list_type === 'table') {
+                                        me.$nextTick(function () {
+                                            me.refreshTable();
+                                        });
+                                    }
+                                });
+
+                                return false;
+                            })
+                            .error(function (response, type, xhr) {
+
+                            })
+                            .exec();
+                    },
+
+                    // 搜索
+                    search : function () {
+                        this.page = 1;
+                        this.load();
+                    },
+
+                    // 重置
+                    reset : function () {
+                        this.type     = '';
+                        this.category = '';
+                        this.word     = '';
+                        this.page     = 1;
+                        this.load();
+                    },
+
+                    // 切换文件类型
+                    changeType : function (type) {
+                        this.type = type;
+                        this.page = 1;
+                        this.load();
+                    },
+
+                    // 切换展示类型
+                    changeListType : function (type) {
+                        this.reload_html = true;
+                        if (type === 'table') {
+                            this.list_type = 'table';
+                        } else {
+                            this.list_type = '';
+                        }
+                        this.refreshTable();
+                    },
+
+                    // 设置选中项
+                    setSelected : function (item, checked) {
+                        var me       = this;
+                        var hasTable = me.$table && me.$table.length;
+                        if (checked) {
+                            if (!me.canSelected() && !me.is_single) {
+                                return;
+                            }
+
+                            var canAdd = true;
+                            me.selected_list.map(function (vo) {
+                                if (vo.id === item.id) {
+                                    canAdd = false;
+                                }
+                            });
+
+                            if (!canAdd) {
+                                return;
+                            }
+
+                            // 单选
+                            if (me.is_single) {
+                                me.clearSelected();
+                            }
+
+                            item.checked = true;
+                            me.selected_list.push(item);
+
+                            // 滚动到指定位置
+                            me.$nextTick(function () {
+                                me.$selectList.animate({
+                                    scrollTop : $(me.$refs['selectItem' + (me.selected_list.length - 1)]).offset().top
+                                });
+                            });
+
+                            // 不能继续选择的情况下禁用
+                            if (!me.is_single && !me.canSelected()) {
+                                me.list.map(function (item) {
+                                    if (!item.checked) {
+                                        item.disabled = true;
+                                    }
+                                });
+
+                                // 禁用table下的可选项
+                                if (hasTable) {
+                                    me.$table.baTable('refreshOptions', {});
+                                }
+                            }
+                        } else {
+                            var deleteIndex = -1;
+                            item.checked    = false;
+                            me.selected_list.map(function (vo, voIndex) {
+                                if (vo.id === item.id) {
+                                    deleteIndex = voIndex;
+                                }
+                            });
+                            if (deleteIndex === -1) {
+                                return;
+                            }
+
+                            // table取消选中
+                            if (!me.is_single && hasTable) {
+                                me.list.map(function (vo, index) {
+                                    if (vo.id === item.id) {
+                                        me.uncheck_lock = item;
+                                        me.$table.baTable('uncheck', index)
+                                    }
+                                });
+                            }
+
+                            var scrollTop = $(me.$refs['selectItem' + deleteIndex]).offset().top;
+                            me.selected_list.splice(deleteIndex, 1);
+
+                            // 可以选择的情况下恢复
+                            if (!me.is_single && me.canSelected() && me.options.count - me.selected_list.length == 1) {
+                                me.list.map(function (item) {
+                                    if (item.disabled) {
+                                        item.disabled = false;
+                                    }
+                                });
+
+                                // 恢复table下的可选项
+                                if (hasTable) {
+                                    me.$table.baTable('refreshOptions', {});
+                                }
+                            }
+
+                            // 禁止滚动，只删除
+                            if (me.disabled_scroll) {
+                                me.disabled_scroll = false;
+                                return;
+                            }
+
+                            me.$nextTick(function () {
+                                me.$selectList.animate({
+                                    scrollTop : scrollTop
+                                })
+                            })
+                        }
+                    },
+
+                    // 平铺选中
+                    selectListItem : function (index) {
+                        var me   = this;
+                        var item = me.list[index];
+                        me.setSelected(item, !item.checked);
+                    },
+
+                    // 检测最多允许选中数
+                    canSelected : function () {
+                        if (this.options.count <= 1) {
+                            return true;
+                        }
+
+                        return this.selected_list.length < this.options.count;
+                    },
+
+                    // 删除选中项
+                    deleteSelected : function (item) {
+                        this.disabled_scroll = true;
+                        this.setSelected(item, false);
+                    },
+
+                    // 清空选中项
+                    clearSelected : function () {
+                        var deleteMap = [];
+                        var me        = this;
+                        me.selected_list.map(function (item) {
+                            deleteMap.push(item);
+                        });
+
+                        deleteMap.map(function (item) {
+                            me.setSelected(item, false);
+                        });
+                    },
+
+                    // 打开关闭菜单
+                    changeMenu : function () {
+                        this.menu = !this.menu
+                    },
+
+                    // 确认选择
+                    confirm : function () {
+                        var me     = this;
+                        var length = me.selected_list.length;
+                        var opt    = me.picker.options;
+                        var locale = me.options.locale;
+                        if (length == 0) {
+                            busyAdmin.dialog.toast(locale.pleaseSelectFile);
+                            return;
+                        }
+
+                        if (me.options.count > 1 && length > me.options.count) {
+                            busyAdmin.dialog.toast(busyAdmin.helper.sprintf(locale.maxSelectAllowed, me.options.count));
+                            return;
+                        }
+
+                        this.selected_list.map(function (item) {
+                            delete item.checked;
+                            delete item.disabled;
+                            delete item.delete_confirm;
+                        });
+                        busyAdmin.helper.execCallback(opt.success, me.picker.element, [this.selected_list], me.picker.$element, busyAdmin.e.filePickerSuccess);
+                        modal.close();
+                    },
+
+                    // 预览
+                    preview : function ($event, item) {
+                        this.doPreview($($event.target), item)
+                    },
+
+                    // 执行预览
+                    doPreview : function ($target, item, table) {
+                        busyAdmin.helper.urlPreviewHandler({
+                            url   : item.url,
+                            image : function () {
+                                if (table) {
+                                    $target.prev().trigger('click')
+                                } else {
+                                    $target.closest('.ba--thumb').find('img.hidden').trigger('click');
+                                }
+                            },
+                            video : function () {
+                                $target.baVideoViewer({
+                                    src          : item.url,
+                                    clickHandler : false
+                                }).baVideoViewer('show');
+                            },
+                            audio : function () {
+                                $target.baAudioViewer({
+                                    src          : item.url,
+                                    clickHandler : false
+                                }).baAudioViewer('show');
+                            },
+                            file  : function () {
+                                window.open(item.url);
+                            }
+                        })
+                    },
+
+                    // 批量删除
+                    batchDelete : function () {
+                        var me      = this;
+                        var length  = me.selected_list.length;
+                        var params  = {};
+                        var deletes = [];
+                        me.selected_list.map(function (item, index) {
+                            params['id[' + index + ']'] = item.id;
+                            deletes.push(item);
+                        });
+                        if (length == 0) {
+                            busyAdmin.dialog.toast(me.options.locale.pleaseSelectDelete);
+                            return;
+                        }
+
+                        busyAdmin.dialog.confirm(busyAdmin.helper.sprintf(me.options.locale.confirmDeleteSelect, '<code>' + length + '</code>'), function () {
+                            busyAdmin.request('{:url("system_file/delete")}')
+                                .method('post')
+                                .params(params)
+                                .success(function (response) {
+                                    deletes.map(function (item) {
+                                        me.setSelected(item, false);
+                                    });
+
+                                    me.load();
+                                })
+                                .exec();
+                        });
+                    },
+
+                    // 单个删除
+                    remove : function ($event, index) {
+                        var me      = this;
+                        var $target = $($event.target);
+                        if (!$target.is('a')) {
+                            $target = $target.parent('a');
+                        }
+
+                        this.doDelete($target, me.list[index]);
+                    },
+
+                    // 执行单个删除
+                    doDelete : function ($target, item, callback) {
+                        var me = this;
+                        $target.baRequest({
+                            clickHandler : false,
+                            onSuccess    : function () {
+                                var deleteItem = null;
+                                me.selected_list.map(function (vo) {
+                                    if (vo.id === item.id) {
+                                        deleteItem = vo
+                                    }
+                                });
+                                if (deleteItem) {
+                                    me.setSelected(deleteItem, false);
+                                }
+
+                                me.load();
+
+                                return true;
+                            }
+                        });
+                    },
+                }
+            });
+        });
+    </script>
 </block>
