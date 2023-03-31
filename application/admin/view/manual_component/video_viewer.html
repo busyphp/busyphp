@@ -23,15 +23,22 @@
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
 | 基本属性:title |  |  |  |  |
-| data-src | string | `是` | - | 设置视频地址，自动识别视频类型，`video`标签请设置`src`或`source` |
-| data-mp4 | string | `否` | - | 设置`MP4`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
-| data-webm | string | `否` | - | 设置`WEBM`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
-| data-ogv | string | `否` | - | 设置`OGV`格式的视频地址，设置后`data-src`无效，`video`标签请设置`source` |
+| data-title | string | `否` | - | 设置对话框标题 |
+| data-src | string | `否` | - | 设置视频地址，自动识别视频类型，`video`标签请设置`src`或`source` |
+| data-type | string | `否` | - | 设置视频或音乐文件类型，如：`video/mp4`，常规格式自动识别，无文件格式的需要指定 |
 | data-poster | string | `否` | - | 设置视频封面地址 |
 | data-autoplay | boolean | `否` | `true` | 设置是否自动播放 |
-| data-muted | boolean | `否` | `false` | 设置是否静音播放 |
+| data-muted | boolean | `否` | `true` | 设置是否静音播放 |
+| data-controls | boolean | `否` | `true` | 是否显示播放控制条 |
+| data-loop | boolean | `否` | `false` | 是否循环播放 |
+| data-preload | string | `否` | `auto` | 是否预加载，可选项：`auto`, `metadata`, `none` |
 | data-size | boolean | `否` | `true` | 是否自动获取尺寸 |
 | data-click-handler | boolean | `否` | `true` | 是否点击预览，针对非`video`标签有效 |
+| data-object-fit | string | `否` | `contain` | 视频填充模式 |
+| data-width | number | `否` | `false` | 视频宽 |
+| data-height | number | `否` | `false` | 视频高 |
+| data-vertical | boolean | `否` | `false` | 是否强制竖屏播放 |
+| data-options | object | `否` | `{}` | videojs配置 |
 
 ### 使用示例
 
