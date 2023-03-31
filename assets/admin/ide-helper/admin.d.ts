@@ -2225,6 +2225,10 @@ declare namespace busyAdmin {
          */
         filename: string;
         /**
+         * 文件扩展名
+         */
+        extension: string,
+        /**
          * #号后面的内容
          */
         hash: string;
