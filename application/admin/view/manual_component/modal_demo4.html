@@ -1,6 +1,6 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div class="modal-content" id="modalDemo4Content">
+    <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <h4 class="modal-title">自定义标题</h4>
@@ -18,14 +18,14 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-            <button type="button" class="btn btn-danger">确定</button>
+            <button type="button" class="btn btn-danger" data-primary="modal">确定</button>
         </div>
     </div>
 </block>
 <block name="foot">
-    <script>
+    <script id=":modal_id">
         $(function () {
-            var modal = $('#modalDemo4Content').closestBaModal();
+            var modal = $('#:modal_id').closestBaModal();
 
             $('#modalDemo4ContentSetTitle').on('click', function () {
                 modal.setTitle('一个新的标题');
