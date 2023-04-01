@@ -27,10 +27,12 @@
 | data-src | string | `否` | - | 设置音频地址，自动识别音频类型，`audio`标签请设置`src`或`source` |
 | data-type | string | `否` | - | 设置音频文件类型，如：`auto`，常规格式自动识别，无文件格式的需要指定。可选项：`auto`, `hls`, `normal` |
 | data-poster | string | `否` | - | 设置音频封面地址 |
+| data-muted | string | `否` | - | 是否静音播放 |
+| data-volume | number | `否` | `0.7` | 默认音量，范围 `0.0-1.0` |
 | data-artist | string | `否` | - | 设置音频作者名称 |
 | data-lrc | string | `否` | - | 设置音频歌词 |
 | data-lrc-type | number | `否` | `0` | 设置歌词类别， [参考 APlayer](https://aplayer.js.org/#/home?id=lrc) |
-| data-autoplay | boolean | `否` | `true` | 设置是否自动播放 |
+| data-autoplay | boolean | `否` | `false` | 设置是否自动播放 |
 | data-loop | string | `否` | `all` | 是否循环播放，可选项：`all`, `one`, `none` |
 | data-preload | string | `否` | `auto` | 是否预加载，可选项：`auto`, `metadata`, `none` |
 | data-order | string | `否` | `list` | 音频循环顺序, 可选值: `list`, `random` |
