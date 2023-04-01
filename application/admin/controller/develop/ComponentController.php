@@ -316,6 +316,16 @@ class ComponentController extends InsideController
     
     
     /**
+     * 视频播放器
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-youtube-play')]
+    public function video() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
      * 视频预览
      */
     #[MenuNode(menu: true, icon: 'bicon bicon-video')]

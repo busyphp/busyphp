@@ -1,0 +1,71 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-video-viewer"` 来触发
+
+```html
+<div data-toggle="busy-video-viewer"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-src | string | `否` | - | 设置视频地址，自动识别视频类型，`video`标签请设置`src`或`source` |
+| data-type | string | `否` | - | 设置视频或音乐文件类型，如：`video/mp4`，常规格式自动识别，无文件格式的需要指定 |
+| data-poster | string | `否` | - | 设置视频封面地址 |
+| data-autoplay | boolean | `否` | `true` | 设置是否自动播放 |
+| data-muted | boolean | `否` | `true` | 设置是否静音播放 |
+| data-controls | boolean | `否` | `true` | 是否显示播放控制条 |
+| data-loop | boolean | `否` | `false` | 是否循环播放 |
+| data-preload | string | `否` | `auto` | 是否预加载，可选项：`auto`, `metadata`, `none` |
+| data-fluid | boolean | `否` | `true` | 是否自动适配视频尺寸 |
+| data-width | number | `否` | `false` | 视频宽 |
+| data-height | number | `否` | `false` | 视频高 |
+| data-object-fit | string | `否` | `contain` | 视频填充模式 |
+| data-sources | object | `否` | `-` | 视频源 |
+| data-aspect-ratio | string | `否` | `-` | 视频比例，如：`16:9` |
+| data-playback-rates | array | `否` | `[0.5, 1, 1.25, 1.5, 2]` | 视频播放速率 |
+| data-options | object | `否` | `{}` | 更多配置，[参考videojs配置](https://videojs.com/guides/options/) |
+
+### 使用示例
+
+#### 默认示例
+```demo:实例
+#demo1
+```
+
+#### 播放器比例
+```demo:实例
+#demo2
+```
+            </script>
+        </div>
+    </div>
+    <template class="hide" id="demo1">
+        <video data-toggle="busy-video" data-src="//vjs.zencdn.net/v/oceans.webm" data-poster="{$skin.images}login/1.jpg"></video>
+    </template>
+    
+    <template class="hide" id="demo2">
+        16:9
+        <hr />
+        <video data-toggle="busy-video" data-src="//vjs.zencdn.net/v/oceans.webm" data-aspect-ratio="16:9"></video>
+        <hr />
+        4:3
+        <hr />
+        <video data-toggle="busy-video" data-src="//vjs.zencdn.net/v/oceans.webm" data-aspect-ratio="4:3"></video>
+    </template>
+    
+</block>
