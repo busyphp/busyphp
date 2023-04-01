@@ -1,0 +1,78 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-audio"` 来触发
+
+```html
+<div data-toggle="busy-audio"></div>
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-title | string | `否` | - | 音频文件名称，不设置取url文件名 |
+| data-src | string | `否` | - | 设置音频地址，自动识别音频类型，`audio`标签请设置`src`或`source` |
+| data-type | string | `否` | - | 设置音频文件类型，如：`auto`，常规格式自动识别，无文件格式的需要指定。可选项：`auto`, `hls`, `normal` |
+| data-poster | string | `否` | - | 设置音频封面地址 |
+| data-artist | string | `否` | - | 设置音频作者名称 |
+| data-lrc | string | `否` | - | 设置音频歌词 |
+| data-lrc-type | number | `否` | `0` | 设置歌词类别， [参考 APlayer](https://aplayer.js.org/#/home?id=lrc) |
+| data-autoplay | boolean | `否` | `true` | 设置是否自动播放 |
+| data-loop | string | `否` | `all` | 是否循环播放，可选项：`all`, `one`, `none` |
+| data-preload | string | `否` | `auto` | 是否预加载，可选项：`auto`, `metadata`, `none` |
+| data-order | string | `否` | `list` | 音频循环顺序, 可选值: `list`, `random` |
+| data-audio | array | `否` | `[]` | 音频信息, 应该是一个对象或对象数组，[参考 APlayer](https://aplayer.js.org/#/zh-Hans/?id=%E5%8F%82%E6%95%B0) |
+| data-mutex | boolean | `否` | `true` | 互斥，阻止多个播放器同时播放，当前播放器播放时暂停其他播放器 |
+| data-list-folded | boolean | `否` | `false` | 列表默认折叠 |
+| data-list-max-height | boolean | `否` | - | 列表最大高度 |
+| data-storage-name | boolean | `否` | `ba.audio.state` | 存储播放器设置的 localStorage key |
+| data-mini | boolean | `否` | `false` | 开启迷你模式 |
+| data-fixed | boolean | `否` | `false` | 开启吸底模式 |
+
+### 使用示例
+
+#### audio转播放器
+```demo:实例
+#demo1
+```
+
+#### 迷你模式
+```demo:实例
+#demo2
+```
+
+#### 吸底模式
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+    <template class="hide" id="demo1">
+        <audio data-toggle="busy-audio">
+            <source src="//jplayer.org/audio/m4a/Miaow-07-Bubble.m4a">
+        </audio>
+    </template>
+    <template class="hide" id="demo2">
+        <audio data-toggle="busy-audio" data-mini="true">
+            <source src="//jplayer.org/audio/m4a/Miaow-07-Bubble.m4a">
+        </audio>
+    </template>
+    <template class="hide" id="demo3">
+        <div data-toggle="busy-audio" data-fixed="true" data-src="//jplayer.org/audio/m4a/Miaow-07-Bubble.m4a" data-mini="true"></div>
+        在窗口的左下角查看
+    </template>
+</block>

@@ -326,6 +326,26 @@ class ComponentController extends InsideController
     
     
     /**
+     * 音频播放器
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-audio-description')]
+    public function audio() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 音频预览
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-play-circle')]
+    public function audio_viewer() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
      * 图标选择器
      */
     #[MenuNode(menu: true, icon: 'bicon bicon-dcs')]
