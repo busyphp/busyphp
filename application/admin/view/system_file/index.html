@@ -1,4 +1,22 @@
 <extend name="@admin:layout"/>
+<block name="head">
+    <style>
+        .file-types .fa { display: inline-block; width: 20px;}
+    </style>
+</block>
+<block name="side">
+    <div class="panel panel-default no-margin-bottom">
+        <div class="panel-heading">文件类型</div>
+        <div class="list-group file-types">
+            <a class="list-group-item{$type=='' ? ' active':''}" data-close href="{:url('')}"><i class="fa fa-ellipsis-h"></i>
+                全部</a>
+            <foreach name="types" key="index" item="vo">
+                <a class="list-group-item{$type==$index ? ' active':''}" data-close href="{:url('?type=' . $index)}"><i class="{$vo.icon}"></i>
+                    {$vo.name}</a>
+            </foreach>
+        </div>
+    </div>
+</block>
 <block name="content">
     <div id="searchBar"
          data-toggle="busy-search-bar"
@@ -16,8 +34,8 @@
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">文件分类</div>
-                    <select class="form-control" name="static[type]">
-                        {$type_options}
+                    <select class="form-control" name="static[class_type]">
+                        {$cate_options}
                     </select>
                 </div>
             </div>
@@ -70,14 +88,16 @@
                                        data-url="{:url('clear_invalid')}"
                                        data-confirm="确认要清理无效的文件吗？<br /><div class=text-danger>本操作可以清理超过48小时未上传成功的文件</div>"
                                        data-method="post"
-                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理无效文件</a></li>
+                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理无效文件</a>
+                                </li>
                             </ba:access>
                             <ba:access value="clear_repeat">
                                 <li><a href="javascript:void(0)"
                                        data-url="{:url('clear_repeat')}"
                                        data-confirm="确认要清理重复的文件吗？"
                                        data-method="post"
-                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理重复文件</a></li>
+                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理重复文件</a>
+                                </li>
                             </ba:access>
                         </ul>
                     </ba:access>
@@ -86,55 +106,59 @@
         </ba:access>
     </div>
 
-    <table class="table table-bordered table-striped table-hover"
-           id="fileTable"
-           data-toggle="busy-table"
-           data-state="{$url.controller}{$url.action}"
-           data-search="#searchBar"
-           data-show-columns="true"
-           data-show-print="true"
-           data-show-refresh="true"
-           data-show-export="true"
-           data-show-fullscreen="true"
-           data-toolbar="#tableToolbar"
-           data-route="true"
-           data-url="{$url.self}"
-           data-click-to-select="true"
-           data-fixed-columns="true"
-           data-fixed-right-number="1"
-           data-fixed-number="2"
-           data-height="true">
-        <thead>
-            <tr>
-                <th class="text-center" width="40" data-checkbox="true"></th>
-                <th class="text-center" width="60" data-field="id" data-searchable="false" data-sortable="true">ID</th>
-                <th class="text-center" data-field="name" data-halign="center" data-formatter="@" data-align="left">
-                    文件名
-                </th>
-                <th class="text-center" width="240" data-field="hash" data-formatter="@" data-sortable="true">文件哈希</th>
-                <th class="text-center" width="80" data-field="client_name">客户端</th>
-                <th class="text-center" width="80" data-field="type_name">类型</th>
-                <th class="text-center" width="80" data-field="class_name">分类</th>
-                <th class="text-center" width="80" data-field="extension" data-sortable="true">扩展名</th>
-                <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">
-                    大小
-                </th>
-                <th class="text-center" width="80" data-field="fast" data-formatter="@">上传方式</th>
-                <th class="text-center" width="80" data-field="disk_name">存储方式</th>
-                <th class="text-center" width="80" data-field="user_id" data-sortable="true">用户ID
-                </th>
-                <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">
-                    上传时间
-                </th>
-                <ba:access value="delete">
-                    <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
-                        操作
+    <div id="fileTableImageViewer" data-toggle="busy-image-viewer" data-filter="busyAdmin.data.imageViewerFilter">
+        <table class="table table-bordered table-striped table-hover"
+               id="fileTable"
+               data-toggle="busy-table"
+               data-state="__ROUTE__"
+               data-search="#searchBar"
+               data-show-columns="true"
+               data-show-print="true"
+               data-show-refresh="true"
+               data-show-export="true"
+               data-show-fullscreen="true"
+               data-toolbar="#tableToolbar"
+               data-route="true"
+               data-url="{:url('?type=' . $type)}"
+               data-click-to-select="true"
+               data-fixed-columns="true"
+               data-fixed-right-number="1"
+               data-fixed-number="2"
+               data-height="true">
+            <thead>
+                <tr>
+                    <th class="text-center" width="40" data-checkbox="true"></th>
+                    <th class="text-center" width="60" data-field="id" data-searchable="false" data-sortable="true">ID
                     </th>
-                </ba:access>
-            </tr>
-        </thead>
-    </table>
-    
+                    <th class="text-center" data-field="name" data-halign="center" data-formatter="@" data-align="left" data-click-to-select="false" data-events="busyAdmin.data.nameEvents">
+                        文件名
+                    </th>
+                    <th class="text-center" width="240" data-field="hash" data-formatter="@" data-sortable="true">文件哈希
+                    </th>
+                    <th class="text-center" width="80" data-field="client_name">客户端</th>
+                    <th class="text-center" width="80" data-field="type_name">类型</th>
+                    <th class="text-center" width="80" data-field="class_name">分类</th>
+                    <th class="text-center" width="80" data-field="extension" data-sortable="true">扩展名</th>
+                    <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">
+                        大小
+                    </th>
+                    <th class="text-center" width="80" data-field="fast" data-formatter="@">上传方式</th>
+                    <th class="text-center" width="80" data-field="disk_name">存储方式</th>
+                    <th class="text-center" width="80" data-field="user_id" data-sortable="true">用户ID
+                    </th>
+                    <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">
+                        上传时间
+                    </th>
+                    <ba:access value="delete">
+                        <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
+                            操作
+                        </th>
+                    </ba:access>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
     <div class="hide">
         <div id="tableToolbar">
             <ba:access value="delete">
@@ -153,12 +177,22 @@
     </div>
 
     <script type="text/html" id="name">
-        {{if item.pending}}
-        <span class="text-gray">{{value}}</span>
-        {{else}}
-        <a href="{{item.url}}" target="_blank">{{value}}</a>
+        <div class="width-20 height-20 pull-left cursor-zoom-in" style="background: #FFF url({{item.icon}}) no-repeat center center / cover;"></div>
+        <div class="width-10 height-20 pull-left"></div>
+
+        <div class="text-line-1">
+            {{if item.pending}}
+            <span class="text-gray">{{value}}</span>
+            {{else}}
+            <a href="{{item.url}}" target="_blank">{{value}}</a>
+            {{/if}}
+        </div>
+
+        {{if item.is_image}}
+        <img data-src="{{item.url}}" class="preview-img hidden"/>
         {{/if}}
     </script>
+
 
     <script type="text/html" id="hash">
         <span class="text-gray">{{value}}</span>
@@ -166,7 +200,7 @@
 
 
     <script type="text/html" id="format_size">
-        <span class="badge badge-primary badge-pill">{{value}}</span>
+        <div class="text-right text-muted size-12">{{value}}</div>
     </script>
 
 
@@ -198,8 +232,52 @@
 </block>
 <block name="foot">
     <script>
-        busyAdmin.data.uploadHidden = function () {
-            $('#fileTable').baTable('refresh');
-        };
+        busyAdmin.ready(function () {
+            var $table       = $('#fileTable');
+            var $imageViewer = $('#fileTableImageViewer');
+            $table.on(busyAdmin.e.tableBodyReady, function () {
+                $imageViewer.baImageViewer('update');
+            });
+
+            busyAdmin.data.uploadHidden = function () {
+                $table.baTable('refresh');
+            };
+
+            busyAdmin.data.nameEvents = {
+                'click .cursor-zoom-in' : function (e, value, row, index) {
+                    var $target = $(e.currentTarget);
+                    busyAdmin.helper.urlPreviewHandler({
+                        url   : row.url,
+                        image : function () {
+                            $target.closest('td').find('img').trigger('click');
+                        },
+                        video : function () {
+                            $target.baVideoViewer({
+                                src          : row.url,
+                                clickHandler : false,
+                                title        : '预览视频 <small>' + row.name + '</small>',
+                                width        : row.width,
+                                height       : row.height,
+                            }).baVideoViewer('show');
+                        },
+                        audio : function () {
+                            $target.baAudioViewer({
+                                src          : row.url,
+                                clickHandler : false
+                            }).baAudioViewer('show');
+                        },
+                        file  : function () {
+                            window.open(row.url);
+                        },
+                    })
+                },
+            };
+
+            busyAdmin.data.imageViewerFilter = function (image) {
+                var $parent = $(image).closest('.fixed-table-body').parent();
+
+                return !$parent.hasClass('fixed-columns') && !$parent.hasClass('fixed-columns-right');
+            }
+        });
     </script>
 </block>
