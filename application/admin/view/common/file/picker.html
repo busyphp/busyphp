@@ -147,7 +147,7 @@
                         <span v-if="options.count > 0">{{options.locale.selected}} {{selected_list.length}}/{{options.count}}</span>
                         <span v-else>{{options.locale.selected}} {{selected_list.length}}</span>
                     </div>
-                    <div class="ba--select-list flex-grow-1 height-0 ba-full-wrap" ref="selectList" data-toggle="busy-image-viewer" data-has-class=".hidden">
+                    <div class="ba--select-list flex-grow-1 height-0 ba-full-wrap" ref="selectList" data-toggle="busy-image-viewer" data-has-class="hidden">
                         <div class="ba--list clearfix">
                             <div v-for="(item, index) in selected_list" class="ba--item" :ref="'selectItem' + index">
                                 <div class="ba--thumb">
@@ -204,8 +204,8 @@
 <block name="foot">
     <script id=":modal_id">
         busyAdmin.require([busyAdmin.lib.vue], function (Vue) {
-            var modal = $('#:modal_id').closestBaModal();
-            var app   = new Vue({
+            var modal;
+            var app = new Vue({
                 el   : '#:modal_id_app',
                 data : {
                     info            : <?=json_encode($info, JSON_UNESCAPED_UNICODE)?>,
@@ -235,6 +235,7 @@
                     // 初始化
                     init : function () {
                         var me         = this;
+                        modal          = $('#:modal_id').closestBaModal();
                         me.picker      = modal.options.picker;
                         me.options     = me.picker.options;
                         me.is_single   = me.options.count == 1;
@@ -767,7 +768,7 @@
 
             busyAdmin.plugins.FilePicker.ImageViewerFilter = function (image) {
                 var $image = $(image);
-                if (!$image.is('.hidden')) {
+                if (!$image.hasClass('hidden')) {
                     return false;
                 }
 
