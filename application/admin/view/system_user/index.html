@@ -99,7 +99,7 @@
 
 
     <script type="text/html" id="username">
-        <a href="#" data-user-id="{{item.id}}" data-title="管理员资料" data-toggle="busy-admin-detail">{{value}}</a>
+        <a href="#" data-toggle="busy-modal" data-url="{:url('common.user/detail?id=')}{{item.id}}">{{value}}</a>
         
         {{if item.system}}
         <kbd>系统管理员</kbd>
