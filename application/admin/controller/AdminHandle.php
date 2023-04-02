@@ -201,9 +201,6 @@ class AdminHandle extends Handle
                     'topBar'        => [
                         'url' => $data['url']['app'],
                     ],
-                    'adminDetail'   => [
-                        'url' => (string) url('common.user/detail')
-                    ],
                     'tree'          => [
                         'url' => $data['url']['app']
                     ],
