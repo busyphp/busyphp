@@ -7,6 +7,7 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\AppHelper;
+use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
@@ -122,7 +123,7 @@ class SystemFileField extends Field implements ModelValidateInterface
      * 文件分类
      * @var string
      */
-    #[Validator(name: Validator::REQUIRE)]
+    #[Filter(filter: 'trim')]
     public $classType;
     
     /**
@@ -228,7 +229,7 @@ class SystemFileField extends Field implements ModelValidateInterface
      */
     #[Ignore]
     #[ValueBindField([self::class, 'type'])]
-    #[Filter([SystemFile::class, 'getTypes'])]
+    #[Filter([SystemFile::class, 'getTypes'], 'name')]
     public $typeName;
     
     /**
@@ -300,6 +301,20 @@ class SystemFileField extends Field implements ModelValidateInterface
     #[Filter([StorageSetting::class, 'getDisks'], 'name')]
     public $diskName;
     
+    /**
+     * 图标
+     * @var string
+     */
+    #[Ignore]
+    public $icon;
+    
+    /**
+     * 是否图片
+     * @var string
+     */
+    #[Ignore]
+    public $isImage;
+    
     
     protected function onParseAfter()
     {
@@ -312,6 +327,8 @@ class SystemFileField extends Field implements ModelValidateInterface
         $this->formatSize = "$this->sizeNum $this->sizeUnit";
         $this->filename   = pathinfo($this->url, PATHINFO_BASENAME);
         $this->diskName   = $this->diskName ?: $this->disk;
+        $this->icon       = FileIcons::match($this->url, $this->extension);
+        $this->isImage    = FileHelper::isCommonImageByPath($this->url);
     }
     
     
@@ -330,15 +347,12 @@ class SystemFileField extends Field implements ModelValidateInterface
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
-        $classList = SystemFileClass::instance()->getList();
-        $validate->append($this::classType(), ValidateRule::init()->in(array_keys($classList)));
+        $range   = array_keys(SystemFileClass::instance()->getList());
+        $range[] = '';
+        $validate->append($this::classType(), ValidateRule::init()->in($range));
         
         if ($scene == SystemFile::SCENE_CREATE) {
             $this->setCreateTime(time());
-            
-            if ($this->classType) {
-                $this->setType($classList[$this->classType]->type);
-            }
             
             if (!$this->client) {
                 $this->setClient(AppHelper::getClient());
@@ -347,6 +361,15 @@ class SystemFileField extends Field implements ModelValidateInterface
             if (!$this->extension && $this->path) {
                 $this->setExtension(pathinfo($this->path, PATHINFO_EXTENSION));
             }
+            
+            $type = SystemFile::class()::FILE_TYPE_FILE;
+            foreach (SystemFile::class()::getTypes() as $vo) {
+                if (in_array($this->extension, $vo['types'])) {
+                    $type = $vo['value'];
+                    break;
+                }
+            }
+            $this->setType($type);
             
             if ($this->url) {
                 $this->setUrlHash(md5($this->url));

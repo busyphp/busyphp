@@ -74,6 +74,9 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
      * @var string
      */
     #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Validator(name: Validator::NOT_IN, rule: SystemFileClass::PROTECT_VAR, msg: '该:attribute受系统保护')]
+    #[Validator(name: Validator::IS_FIRST_ALPHA_NUM_DASH)]
+    #[Validator(name: Validator::UNIQUE, rule: SystemFileClass::class)]
     #[Filter(filter: 'trim')]
     public $var;
     
@@ -130,7 +133,7 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
      */
     #[Ignore]
     #[ValueBindField([self::class, 'type'])]
-    #[Filter([SystemFile::class, 'getTypes'])]
+    #[Filter([SystemFile::class, 'getTypes'], 'name')]
     public $typeName;
     
     /**
@@ -176,10 +179,11 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
-        $validate
-            ->append($this::var(), ValidateRule::init()->isFirstAlphaNumDash()->unique($model))
-            ->append($this::type(), ValidateRule::init()
-                ->in(array_keys(SystemFile::class()::getTypes()), '请选择有效的:attribute'));
+        $validate->append(
+            $this::type(),
+            ValidateRule::init()
+                ->in(array_keys(SystemFile::class()::getTypes()), '请选择有效的:attribute')
+        );
         
         if ($data instanceof SystemFileClassField && $data->system) {
             $this->setSystem(true);

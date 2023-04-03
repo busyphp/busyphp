@@ -9,6 +9,7 @@ use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
+use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\helper\AppHelper;
@@ -55,6 +56,7 @@ class FileController extends InsideController
     #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text', sort: 3)]
     public function index() : Response
     {
+        $type = $this->param('type/s', 'trim');
         if ($table = Table::initIfRequest()) {
             switch ($table->getOrderField()) {
                 case SystemFileField::formatSize():
@@ -67,24 +69,13 @@ class FileController extends InsideController
             
             return $table
                 ->model($this->model)
-                ->query(function(SystemFile $model, ArrayOption $option) {
+                ->query(function(SystemFile $model, ArrayOption $option) use ($type) {
                     $option->deleteIfEmpty('client');
                     $option->deleteIfEmpty('disk');
-                    
-                    if (!$type = $option->get('type', '', 'trim')) {
-                        $option->delete('type');
-                    }
-                    
-                    // 查询类型
-                    if (str_starts_with($type, 'type:')) {
-                        $option->set('type', substr($type, 5));
-                    }
-                    
-                    //
-                    // 查询分类
-                    elseif ($type) {
-                        $option->set('class_type', $type);
-                        $option->delete('type');
+                    $option->deleteIfEmpty('class_type');
+    
+                    if ($type) {
+                        $option->set('type', $type);
                     }
                     
                     // 时间
@@ -109,9 +100,11 @@ class FileController extends InsideController
                 ->response();
         }
         
-        $this->assign('type_options', SystemFileClass::init()->getAdminOptions('', '不限'));
+        $this->assign('cate_options', TransHelper::toOptionHtml(SystemFileClass::instance()->getList(), '', SystemFileClassField::name(), SystemFileClassField::var()));
         $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
         $this->assign('time', $this->indexTimeRange);
+        $this->assign('types', SystemFile::class()::getTypes());
+        $this->assign('type', $type);
         
         return $this->insideDisplay();
     }

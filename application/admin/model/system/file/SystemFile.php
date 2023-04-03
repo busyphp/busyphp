@@ -52,19 +52,59 @@ class SystemFile extends Model implements ContainerInterface
     //+--------------------------------------
     //| 文件类型
     //+--------------------------------------
-    /** @var string 图片 */
+    /**
+     * 图片
+     * @var string
+     * @icon fa fa-file-image-o
+     * @types jpg,jpeg,png,gif,bmp,webp
+     */
     const FILE_TYPE_IMAGE = 'image';
     
-    /** @var string 视频 */
+    /**
+     * 视频
+     * @var string
+     * @icon fa fa-file-video-o
+     * @types avi,wmv,mpeg,mp4,m4v,mov,asf,flv,f4v,rmvb,rm,3gp,vob,webm,ogv
+     */
     const FILE_TYPE_VIDEO = 'video';
     
-    /** @var string 音频 */
+    /**
+     * 音频
+     * @var string
+     * @icon fa fa-file-audio-o
+     * @types mp3,wav,wma,aac,wave,ogg
+     */
     const FILE_TYPE_AUDIO = 'audio';
     
-    /** @var string 文档 */
+    /**
+     * 文档
+     * @var string
+     * @icon fa fa-file-o
+     * @types pdf,doc,docx,xls,xlsx,ppt,pptx,txt,md,rft
+     */
     const FILE_TYPE_DOC = 'doc';
     
-    /** @var string 文件 */
+    /**
+     * 压缩包
+     * @var string
+     * @icon fa fa-file-zip-o
+     * @types zip,rar,7z,gz,tar
+     */
+    const FILE_TYPE_ZIP = 'zip';
+    
+    /**
+     * 应用程序
+     * @var string
+     * @icon fa fa-codepen
+     * @types apk,ipa,dmg,exe,app
+     */
+    const FILE_TYPE_APP = 'app';
+    
+    /**
+     * 其它文件
+     * @var string
+     * @icon fa fa-paperclip
+     */
     const FILE_TYPE_FILE = 'file';
     
     //+--------------------------------------
@@ -89,12 +129,53 @@ class SystemFile extends Model implements ContainerInterface
     
     /**
      * 获取附件分类
-     * @param string|null $var
+     * @param string|null $type
+     * @param string|null $key
      * @return array|mixed
      */
-    public static function getTypes(string $var = null)
+    public static function getTypes(string $type = null, string $key = null)
     {
-        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FILE_TYPE_', ClassHelper::ATTR_NAME), $var);
+        static $_data;
+        
+        if (!isset($_data)) {
+            $data = ClassHelper::getConstAttrs(self::class, 'FILE_TYPE_', ['icon', 'types']);
+            foreach ($data as &$vo) {
+                $vo['types'] = array_filter(explode(',', $vo['types']));
+                unset($vo['var'], $vo['key']);
+            }
+            
+            unset($vo);
+            foreach ((array) Filesystem::getConfig('file_types', []) as $index => $vo) {
+                $vo['name']  = $vo['name'] ?? '';
+                $vo['types'] = $vo['types'] ?? [];
+                $vo['icon']  = $vo['icon'] ?? '';
+                $vo['value'] = $index;
+                
+                if (isset($data[$index])) {
+                    $vo['types'] = array_unique(array_merge($data[$index]['types'], $vo['types']));
+                    $vo['name']  = $vo['name'] ?: $data[$index]['name'];
+                    $vo['icon']  = $vo['icon'] ?: $data[$index]['icon'];
+                } else {
+                    $vo['name'] = $vo['name'] ?: $index;
+                    $vo['icon'] = $vo['icon'] ?: 'fa fa-file-o';
+                }
+                
+                $data[$index] = $vo;
+            }
+            
+            // 将其它插入到最后
+            $file = $data[self::FILE_TYPE_FILE];
+            unset($data[self::FILE_TYPE_FILE]);
+            $data[self::FILE_TYPE_FILE] = $file;
+            
+            $_data = $data;
+        }
+        
+        if (!is_null($type) && !is_null($key)) {
+            return $_data[$type][$key] ?? null;
+        }
+        
+        return ArrayHelper::getValueOrSelf($_data, $type);
     }
     
     
@@ -120,11 +201,11 @@ class SystemFile extends Model implements ContainerInterface
      */
     public static function createFilename(string $classType, string $classValue, $userId, $file, string $extension = '') : string
     {
-        $setting = StorageSetting::instance();
+        $classType = $classType ?: 'file';
+        $type      = StorageSetting::instance()->getDirGenerateType();
+        $dir       = '';
         
         // hash多层
-        $type = $setting->getDirGenerateType();
-        $dir  = '';
         if (str_starts_with($type, 'hash-')) {
             $level = max(intval(substr($type, 5)), 1);
             if ($file instanceof File) {
@@ -151,8 +232,10 @@ class SystemFile extends Model implements ContainerInterface
         } elseif ($file instanceof File) {
             $extension = $file->getExtension();
         }
-        
-        if (!$extension) {
+        if ($extension === '' && is_string($file)) {
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+        }
+        if ($extension === '') {
             throw new FileException('必须指定文件扩展名');
         }
         
@@ -410,7 +493,9 @@ class SystemFile extends Model implements ContainerInterface
         $filesize   = $parameter->getFilesize();
         
         // 校验文件分类
-        if (!array_key_exists($classType, SystemFileClass::instance()->getList())) {
+        $range     = SystemFileClass::instance()->getList();
+        $range[''] = '';
+        if (!array_key_exists($classType, $range)) {
             throw new RangeException(sprintf('文件分类%s不存在', $classType));
         }
         

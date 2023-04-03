@@ -119,7 +119,7 @@ class SystemFilePrepareUploadParameter
      */
     public function getClassType() : string
     {
-        return $this->classType ?: SystemFile::FILE_TYPE_FILE;
+        return $this->classType;
     }
     
     

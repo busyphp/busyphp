@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file\classes;
 
+use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
@@ -31,6 +32,9 @@ class SystemFileClass extends Model implements ContainerInterface
     
     /** @var string 操作场景-用户设置 */
     public const SCENE_USER_SET = 'user_set';
+    
+    /** @var array 保护的关键词 */
+    public const PROTECT_VAR = ['system', 'file', 'image', 'video', 'audio'];
     
     
     /**
@@ -122,7 +126,7 @@ class SystemFileClass extends Model implements ContainerInterface
         }
         foreach ($array as $type => $list) {
             $value    = sprintf("type:%s", $type);
-            $name     = SystemFile::class()::getTypes($type);
+            $name     = SystemFile::class()::getTypes($type, 'name');
             $selected = '';
             if ($selectedValue == $value) {
                 $selected = ' selected';
@@ -161,6 +165,36 @@ class SystemFileClass extends Model implements ContainerInterface
             
             return ArrayHelper::listByKey($list, SystemFileClassField::var()->name());
         }, $force);
+    }
+    
+    
+    /**
+     * 获取上传分类
+     * @return array[]
+     */
+    public function getUploadCategory() : array
+    {
+        $setting = StorageSetting::instance();
+        $list    = [
+            '' => [
+                'max_size'         => $setting->getMaxSize(),
+                'allow_extensions' => $setting->getAllowExtensions(),
+                'allow_mimetypes'  => $setting->getMimeType(),
+                'type'             => '',
+                'name'             => ''
+            ]
+        ];
+        foreach ($this->getList() as $type => $item) {
+            $list[$type] = [
+                'max_size'         => $setting->getMaxSize($type),
+                'allow_extensions' => $setting->getAllowExtensions($type),
+                'allow_mimetypes'  => $setting->getMimeType($type),
+                'type'             => $item->type,
+                'name'             => $item->name
+            ];
+        }
+        
+        return $list;
     }
     
     
