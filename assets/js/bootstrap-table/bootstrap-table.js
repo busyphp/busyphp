@@ -4086,6 +4086,7 @@
             }
 
             column.push($__default['default'].extend({}, {
+              $node: $th, // busyAdmin 增加$node节点
               title: $th.html(),
               class: $th.attr('class'),
               titleTooltip: $th.attr('title'),
