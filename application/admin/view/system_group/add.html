@@ -115,8 +115,8 @@
                 busyAdmin.e.treeReady + ' '
                 + busyAdmin.e.treeSelectAll + ' '
                 + busyAdmin.e.treeSelectNode + ' '
-                + busyAdmin.e.treeDeSelectAll + ' '
-                + busyAdmin.e.treeDeSelectNode,
+                + busyAdmin.e.treeDeselectAll + ' '
+                + busyAdmin.e.treeDeselectNode,
                 function (e, api) {
                     var list = api.get_selected(true);
                     list.push.apply(list, api.get_undetermined(true));

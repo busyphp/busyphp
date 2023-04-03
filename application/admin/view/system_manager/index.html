@@ -23,7 +23,6 @@
                                placeholder="上传网站图标"
                                value="{$info.favicon|default=''}"
                                data-toggle="busy-upload"
-                               data-class-type="image"
                                data-class-value="system_favicon"
                         />
                         <span class="help-block">建议上传 <code>128x128</code> 的 ico 或 png 图片，可以通过<a href="https://www.bitbug.net/" target="_blank">ICON</a>在线制作 ico 文件</span>
@@ -56,7 +55,7 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">错误占位图</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[img_error_placeholder]" placeholder="上传错误占位图片" value="{$info.img_error_placeholder|default=''}" data-toggle="busy-upload" data-class-type="image" data-class-value="system_img_error_placeholder"/>
+                        <input type="text" class="form-control" name="data[img_error_placeholder]" placeholder="上传错误占位图片" value="{$info.img_error_placeholder|default=''}" data-toggle="busy-upload" data-class-value="system_img_error_placeholder"/>
                         <span class="help-block">设置错误占位图，当图片不存在或图片显示失败时将使用该图片替代</span>
                     </div>
                 </div>

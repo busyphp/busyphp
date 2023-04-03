@@ -235,7 +235,7 @@
         busyAdmin.ready(function () {
             var $table       = $('#fileTable');
             var $imageViewer = $('#fileTableImageViewer');
-            $table.on(busyAdmin.e.tableBodyReady, function () {
+            $table.on(busyAdmin.e.tablePostBody, function () {
                 $imageViewer.baImageViewer('update');
             });
 
