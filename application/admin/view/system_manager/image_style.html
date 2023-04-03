@@ -20,9 +20,39 @@
                 <thead>
                     <tr>
                         <th class="text-center" width="40" data-checkbox="true"></th>
-                        <th data-field="id" data-align="center" width="100" data-formatter="@">样式名</th>
-                        <th data-field="rule" data-halign="center" data-align="left" data-formatter="@">样式</th>
-                        <th data-field="operate" data-align="center" data-formatter="@" width="100">操作</th>
+                        <th data-field="id" data-title="样式名" data-align="center" width="100" data-formatter="@">
+                            <script type="text/html">
+                                <span class="badge badge-primary">{{value}}</span>
+                            </script>
+                        </th>
+                        <th data-field="rule" data-title="样式" data-halign="center" data-align="left" data-formatter="@">
+                            <script type="text/html">
+                                <div class="text-wrap">{{value}}</div>
+                            </script>
+                        </th>
+                        <th data-title="操作" data-align="center" data-formatter="@" width="100">
+                            <script type="text/html">
+                                <a class="btn btn-default btn-xs"
+                                   target="_blank"
+                                   href="{:url('image_style_preview?disk='. $disk .'&id=')}{{item.id}}">预览</a>
+
+                                <ba:access value="image_style_edit">
+                                    <a class="btn btn-success btn-xs"
+                                       href="{:url('image_style_edit?disk='. $disk .'&id=')}{{item.id}}"
+                                       data-toggle="busy-modal"
+                                       data-size="lg"
+                                       data-ok="修改图片样式"
+                                       data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
+                                </ba:access>
+                                <ba:access value="image_style_delete">
+                                    <a class="btn btn-danger btn-xs"
+                                       href="{:url('image_style_delete?disk='. $disk .'&id=')}{{item.id}}"
+                                       data-toggle="busy-request"
+                                       data-confirm="确认要删除该图片样式吗？"
+                                       data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
+                                </ba:access>
+                            </script>
+                        </th>
                     </tr>
                 </thead>
             </table>
@@ -55,36 +85,6 @@
                     </ba:access>
                 </div>
             </div>
-
-            <script id="id" type="text/html">
-                <span class="badge badge-primary">{{value}}</span>
-            </script>
-
-            <script id="rule" type="text/html">
-                <div class="text-wrap">{{value}}</div>
-            </script>
-
-            <script id="operate" type="text/html">
-                <a class="btn btn-default btn-xs"
-                   target="_blank"
-                   href="{:url('image_style_preview?disk='. $disk .'&id=')}{{item.id}}">预览</a>
-
-                <ba:access value="image_style_edit">
-                    <a class="btn btn-success btn-xs"
-                       href="{:url('image_style_edit?disk='. $disk .'&id=')}{{item.id}}"
-                       data-toggle="busy-modal"
-                       data-size="lg"
-                       data-ok="修改图片样式"
-                       data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
-                </ba:access>
-                <ba:access value="image_style_delete">
-                    <a class="btn btn-danger btn-xs"
-                       href="{:url('image_style_delete?disk='. $disk .'&id=')}{{item.id}}"
-                       data-toggle="busy-request"
-                       data-confirm="确认要删除该图片样式吗？"
-                       data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
-                </ba:access>
-            </script>
 
             <div class="space-15"></div>
             <div class="text-gray">

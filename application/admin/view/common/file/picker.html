@@ -389,9 +389,13 @@
                     // 刷新图片预览
                     updateImageViewer : function (selected) {
                         if (selected) {
-                            this.$selectList.baImageViewer('update');
+                            this.$selectList.baImageViewer('ready', function () {
+                                this.update();
+                            });
                         } else {
-                            this.$body.baImageViewer('update');
+                            this.$body.baImageViewer('ready', function () {
+                                this.update();
+                            });
                         }
                     },
 

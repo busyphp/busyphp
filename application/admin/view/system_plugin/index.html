@@ -3,12 +3,14 @@
     <div class="page-header">
         <h4 class="page-header-title">
             {$system.page_title}
-            <small>在线管理通过 <code>composer</code> 安装后的插件，更多插件请前往：<a href="https://packagist.org/?query=busyphp%2F" target="_blank">https://packagist.org/</a> 进行搜索关键词： <kbd>busyphp/</kbd></small>
+            <small>在线管理通过 <code>composer</code>
+                安装后的插件，更多插件请前往：<a href="https://packagist.org/?query=busyphp%2F" target="_blank">https://packagist.org/</a>
+                进行搜索关键词： <kbd>busyphp/</kbd></small>
         </h4>
     </div>
     <table class="table table-bordered table-striped table-hover"
            data-toggle="busy-table"
-           data-state="{$url.controller}{$url.action}"
+           data-state="__ROUTE__"
            data-search="true"
            data-search-align="left"
            data-show-columns="true"
@@ -18,100 +20,99 @@
            data-fixed-right-number="1">
         <thead>
             <tr>
-                <th class="text-center" width="100" data-field="name" data-formatter="@" data-valign="top">名称</th>
-                <th class="text-center" data-field="description" data-valign="top" data-formatter="@">说明</th>
-                <th class="text-center" width="100" data-field="authors"  data-valign="top" data-formatter="@">开发方</th>
-                <th class="text-center" width="100" data-field="package" data-valign="top" data-formatter="@">包名</th>
-                <th class="text-center" width="100" data-field="version" data-valign="top" data-formatter="@">版本号</th>
-                <th class="text-center" width="60" data-field="operate" data-valign="top" data-formatter="@">操作</th>
+                <th class="text-center" width="100" data-field="name" data-title="名称" data-formatter="@" data-valign="top">
+                    <script type="text/html">
+                        <div class="text-left">
+                            {{if item.homepage}}
+                            <a href="{{item.homepage}}" title="点击查看教程" target="_blank">{{value}}</a>
+                            {{else}}
+                            {{value}}
+                            {{/if}}
+                        </div>
+                    </script>
+                </th>
+                <th class="text-center" data-field="description" data-title="说明" data-valign="top" data-formatter="@">
+                    <script type="text/html">
+                        <div class="text-left text-gray min-width-240 text-wrap">
+                            {{@ value || '<div class="text-center">暂无</div>'}}
+                        </div>
+                    </script>
+                </th>
+                <th class="text-center" width="100" data-field="authors" data-title="开发方" data-valign="top" data-formatter="@">
+                    <script type="text/html">
+                        {{each value vo}}
+                        <a class="btn btn-outline-primary btn-xs" href="mailto:{{vo.email}}" data-toggle="tooltip" title="{{vo.email}}">{{vo.name}}</a>
+                        {{/each}}
+                    </script>
+                </th>
+                <th class="text-center" width="100" data-field="package" data-title="包名" data-valign="top" data-formatter="@">
+                    <script type="text/html">
+                        <code>{{value}}</code>
+                    </script>
+                </th>
+                <th class="text-center" width="100" data-field="version" data-title="版本号" data-valign="top" data-formatter="@">
+                    <script type="text/html">
+                        <span class="badge badge-secondary">{{value}}</span>
+                    </script>
+                </th>
+                <th class="text-center" width="60" data-field="operate" data-title="操作" data-valign="top" data-formatter="@">
+                    <script type="text/html">
+                        {{if item.can_install}}
+                        {{if item.install_config.install_operate.type !== 'modal'}}
+                        <a class="btn btn-success btn-xs"
+                           data-toggle="busy-request"
+                           data-confirm="{{item.install_config.install_operate.request_confirm || ('确认要安装 <code>'+ item.package +'</code> 插件吗？')}}"
+                           data-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
+                           data-confirm-ok="安装"
+                           data-url="{:url('install?package=')}{{item.package}}">安装</a>
+                        {{else}}
+                        <a class="btn btn-success btn-xs"
+                           data-toggle="busy-modal"
+                           data-ok="安装"
+                           data-size="{{item.install_config.install_operate.modal_size || ''}}"
+                           data-form-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
+                           data-url="{:url('install?package=')}{{item.package}}">安装</a>
+                        {{/if}}
+                        {{/if}}
+
+                        {{if item.can_setting}}
+                        <a class="btn btn-default btn-xs"
+                           data-toggle="busy-modal"
+                           data-type="{{item.setting_config.type || 'form'}}"
+                           data-form-on-success="{{item.setting_config.success || '@modal.close'}}"
+                           data-size="{{item.setting_config.size || ''}}"
+                           data-footer="{{item.setting_config.footer ? 'true' : 'false'}}"
+                           data-padding="{{item.setting_config.padding || ''}}"
+                           data-border-top="{{item.setting_config.border_top}}"
+                           data-border-bottom="{{item.setting_config.border_bottom}}"
+                           data-height="{{item.setting_config.height}}"
+                           data-url="{:url('setting?package=')}{{item.package}}"><i class="fa fa-cog"></i> 设置</a>
+                        {{/if}}
+
+                        {{if item.can_uninstall}}
+                        {{if item.install_config.uninstall_operate.type !== 'modal'}}
+                        <a class="btn btn-danger btn-xs"
+                           data-toggle="busy-request"
+                           data-confirm="{{item.install_config.uninstall_operate.request_confirm || ('确认要卸载 <code>'+ item.package +'</code> 插件吗？<div class=text-danger>卸载后可能会影响系统正常使用，请谨慎操作！</div>')}}"
+                           data-confirm-ok="卸载"
+                           data-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
+                           data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
+                        {{else}}
+                        <a class="btn btn-danger btn-xs"
+                           data-toggle="busy-modal"
+                           data-ok="卸载"
+                           data-size="{{item.install_config.uninstall_operate.modal_size || ''}}"
+                           data-form-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
+                           data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
+                        {{/if}}
+                        {{/if}}
+
+                        {{if !item.can_setting && !item.can_install && !item.can_uninstall}}
+                        -
+                        {{/if}}
+                    </script>
+                </th>
             </tr>
         </thead>
     </table>
-
-    <script type="text/html" id="name">
-        <div class="text-left">
-            {{if item.homepage}}
-            <a href="{{item.homepage}}" title="点击查看教程" target="_blank">{{value}}</a>
-            {{else}}
-            {{value}}
-            {{/if}}
-        </div>
-    </script>
-
-    <script type="text/html" id="description">
-        <div class="text-left text-gray min-width-240 text-wrap">{{@ value || '<div class="text-center">暂无</div>'}}</div>
-    </script>
-
-    <script type="text/html" id="authors">
-        {{each value vo}}
-            <a class="btn btn-outline-primary btn-xs" href="mailto:{{vo.email}}" data-toggle="tooltip" title="{{vo.email}}">{{vo.name}}</a>
-        {{/each}}
-    </script>
-
-    <script type="text/html" id="package">
-        <code>{{value}}</code>
-    </script>
-
-
-    <script type="text/html" id="version">
-        <span class="badge badge-secondary">{{value}}</span>
-    </script>
-
-    <script type="text/html" id="operate">
-        {{if item.can_install}}
-            {{if item.install_config.install_operate.type !== 'modal'}}
-                 <a class="btn btn-success btn-xs"
-                    data-toggle="busy-request"
-                    data-confirm="{{item.install_config.install_operate.request_confirm || ('确认要安装 <code>'+ item.package +'</code> 插件吗？')}}"
-                    data-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
-                    data-confirm-ok="安装"
-                    data-url="{:url('install?package=')}{{item.package}}">安装</a>
-                {{else}}
-                 <a class="btn btn-success btn-xs"
-                    data-toggle="busy-modal"
-                    data-ok="安装"
-                    data-size="{{item.install_config.install_operate.modal_size || ''}}"
-                    data-form-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
-                    data-url="{:url('install?package=')}{{item.package}}">安装</a>
-            {{/if}}
-        {{/if}}
-
-        {{if item.can_setting}}
-        <a class="btn btn-default btn-xs"
-           data-toggle="busy-modal"
-           data-type="{{item.setting_config.type || 'form'}}"
-           data-form-on-success="{{item.setting_config.success || '@modal.close'}}"
-           data-size="{{item.setting_config.size || ''}}"
-           data-footer="{{item.setting_config.footer ? 'true' : 'false'}}"
-           data-padding="{{item.setting_config.padding || ''}}"
-           data-border-top="{{item.setting_config.border_top}}"
-           data-border-bottom="{{item.setting_config.border_bottom}}"
-           data-height="{{item.setting_config.height}}"
-           data-url="{:url('setting?package=')}{{item.package}}"><i class="fa fa-cog"></i> 设置</a>
-        {{/if}}
-        
-        {{if item.can_uninstall}}
-            {{if item.install_config.uninstall_operate.type !== 'modal'}}
-                <a class="btn btn-danger btn-xs"
-                   data-toggle="busy-request"
-                   data-confirm="{{item.install_config.uninstall_operate.request_confirm || ('确认要卸载 <code>'+ item.package +'</code> 插件吗？<div class=text-danger>卸载后可能会影响系统正常使用，请谨慎操作！</div>')}}"
-                   data-confirm-ok="卸载"
-                   data-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
-                   data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
-                {{else}}
-                <a class="btn btn-danger btn-xs"
-                   data-toggle="busy-modal"
-                   data-ok="卸载"
-                   data-size="{{item.install_config.uninstall_operate.modal_size || ''}}"
-                   data-form-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
-                   data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
-            {{/if}}
-        {{/if}}
-        
-        {{if !item.can_setting && !item.can_install && !item.can_uninstall}}
-        -
-        {{/if}}
-    </script>
-</block>
-<block name="foot">
 </block>

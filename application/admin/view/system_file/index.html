@@ -128,30 +128,70 @@
             <thead>
                 <tr>
                     <th class="text-center" width="40" data-checkbox="true"></th>
-                    <th class="text-center" width="60" data-field="id" data-searchable="false" data-sortable="true">ID
+                    <th class="text-center" width="60" data-field="id" data-title="ID" data-searchable="false" data-sortable="true"></th>
+                    <th class="text-center" data-field="name" data-title="文件名" data-halign="center" data-formatter="@" data-align="left" data-click-to-select="false" data-events="busyAdmin.data.nameEvents">
+                        <script type="text/html">
+                            <div class="width-20 height-20 pull-left cursor-zoom-in" style="background: #FFF url({{item.icon}}) no-repeat center center / cover;"></div>
+                            <div class="width-10 height-20 pull-left"></div>
+
+                            <div class="text-line-1">
+                                {{if item.pending}}
+                                <span class="text-gray">{{value}}</span>
+                                {{else}}
+                                <a href="{{item.url}}" target="_blank">{{value}}</a>
+                                {{/if}}
+                            </div>
+
+                            {{if item.is_image}}
+                            <img data-src="{{item.url}}" class="preview-img hidden"/>
+                            {{/if}}
+                        </script>
                     </th>
-                    <th class="text-center" data-field="name" data-halign="center" data-formatter="@" data-align="left" data-click-to-select="false" data-events="busyAdmin.data.nameEvents">
-                        文件名
+                    <th class="text-center" width="240" data-visible="false" data-field="hash" data-title="文件哈希" data-formatter="@" data-sortable="true">
+                        <script type="text/html">
+                            <span class="text-gray">{{value}}</span>
+                        </script>
                     </th>
-                    <th class="text-center" width="240" data-field="hash" data-formatter="@" data-sortable="true">文件哈希
+                    <th class="text-center" width="80" data-field="client_name" data-title="客户端" data-visible="false"></th>
+                    <th class="text-center" width="80" data-field="type_name" data-title="类型" data-visible="false"></th>
+                    <th class="text-center" width="80" data-field="class_name" data-title="分类"></th>
+                    <th class="text-center" width="80" data-field="extension" data-title="扩展名" data-sortable="true" data-visible="false"></th>
+                    <th class="text-center" width="80" data-field="format_size" data-title="大小" data-sortable="true" data-formatter="@">
+                        <script type="text/html">
+                            <div class="text-right text-muted size-12">{{value}}</div>
+                        </script>
                     </th>
-                    <th class="text-center" width="80" data-field="client_name">客户端</th>
-                    <th class="text-center" width="80" data-field="type_name">类型</th>
-                    <th class="text-center" width="80" data-field="class_name">分类</th>
-                    <th class="text-center" width="80" data-field="extension" data-sortable="true">扩展名</th>
-                    <th class="text-center" width="80" data-field="format_size" data-formatter="@" data-sortable="true">
-                        大小
+                    <th class="text-center" width="80" data-field="fast" data-title="上传方式" data-formatter="@">
+                        <script type="text/html">
+                            {{if item.pending}}
+                            <span class="text-warning">等待中</span>
+                            {{else}}
+                            {{if value}}
+                            <b class="text-success">秒传</b>
+                            {{else}}
+                            <b class="text-info">普通</b>
+                            {{/if}}
+                            {{/if}}
+                        </script>
                     </th>
-                    <th class="text-center" width="80" data-field="fast" data-formatter="@">上传方式</th>
-                    <th class="text-center" width="80" data-field="disk_name">存储方式</th>
-                    <th class="text-center" width="80" data-field="user_id" data-sortable="true">用户ID
-                    </th>
-                    <th class="text-center" width="80" data-field="format_create_time" data-formatter="@" data-sortable="true">
-                        上传时间
+                    <th class="text-center" width="80" data-field="disk_name" data-title="存储方式"></th>
+                    <th class="text-center" width="80" data-field="user_id" data-title="用户ID" data-sortable="true"></th>
+                    <th class="text-center" width="80" data-field="format_create_time" data-title="上传时间" data-sortable="true" data-formatter="@">
+                        <script type="text/html">
+                            <span class="text-gray">{{value}}</span>
+                        </script>
                     </th>
                     <ba:access value="delete">
-                        <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
-                            操作
+                        <th class="text-center" width="60" data-title="操作" data-formatter="@" data-click-to-select="false">
+                            <script type="text/html">
+                                <ba:access value="delete">
+                                    <a class="btn btn-danger btn-xs"
+                                       href="{:url('delete?id=')}{{item.id}}"
+                                       data-toggle="busy-request"
+                                       data-confirm="确认要删除该文件吗？"
+                                       data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
+                                </ba:access>
+                            </script>
                         </th>
                     </ba:access>
                 </tr>
@@ -175,60 +215,6 @@
             </ba:access>
         </div>
     </div>
-
-    <script type="text/html" id="name">
-        <div class="width-20 height-20 pull-left cursor-zoom-in" style="background: #FFF url({{item.icon}}) no-repeat center center / cover;"></div>
-        <div class="width-10 height-20 pull-left"></div>
-
-        <div class="text-line-1">
-            {{if item.pending}}
-            <span class="text-gray">{{value}}</span>
-            {{else}}
-            <a href="{{item.url}}" target="_blank">{{value}}</a>
-            {{/if}}
-        </div>
-
-        {{if item.is_image}}
-        <img data-src="{{item.url}}" class="preview-img hidden"/>
-        {{/if}}
-    </script>
-
-
-    <script type="text/html" id="hash">
-        <span class="text-gray">{{value}}</span>
-    </script>
-
-
-    <script type="text/html" id="format_size">
-        <div class="text-right text-muted size-12">{{value}}</div>
-    </script>
-
-
-    <script type="text/html" id="format_create_time">
-        <span class="text-gray">{{value}}</span>
-    </script>
-
-    <script type="text/html" id="fast">
-        {{if item.pending}}
-        <span class="text-warning">等待中</span>
-        {{else}}
-        {{if value}}
-        <b class="text-success">秒传</b>
-        {{else}}
-        <b class="text-info">普通</b>
-        {{/if}}
-        {{/if}}
-    </script>
-
-    <script type="text/html" id="operate">
-        <ba:access value="delete">
-            <a class="btn btn-danger btn-xs"
-               href="{:url('delete?id=')}{{item.id}}"
-               data-toggle="busy-request"
-               data-confirm="确认要删除该文件吗？"
-               data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
-        </ba:access>
-    </script>
 </block>
 <block name="foot">
     <script>
@@ -236,7 +222,9 @@
             var $table       = $('#fileTable');
             var $imageViewer = $('#fileTableImageViewer');
             $table.on(busyAdmin.e.tablePostBody, function () {
-                $imageViewer.baImageViewer('update');
+                $imageViewer.baImageViewer('ready', function () {
+                    this.update();
+                });
             });
 
             busyAdmin.data.uploadHidden = function () {

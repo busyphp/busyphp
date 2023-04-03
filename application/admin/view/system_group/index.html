@@ -24,7 +24,7 @@
            data-fixed-right-number="1"
            data-fixed-number="3"
            data-tree-show-field="name"
-           data-state="{$url.controller}{$url.action}"
+           data-state="__ROUTE__"
            data-tree-state="true"
            data-pagination="false"
            data-height="true">
@@ -32,22 +32,63 @@
             <tr>
                 <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
                 <ba:access value="sort">
-                    <th class="text-center" width="60" data-field="sort" data-formatter="@" data-click-to-select="false">
-                        排序
+                    <th class="text-center" width="60" data-field="sort" data-title="排序" data-formatter="@" data-click-to-select="false">
+                        <script type="text/html">
+                            <input type="text" class="form-control input-xs text-center" value="{{value}}" data-bind="sort"/>
+                        </script>
                     </th>
                 </ba:access>
-                <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
-                <th class="text-center" data-field="name" data-halign="center" data-align="left" data-click-to-select="false" data-formatter="@">
-                    角色名称
+                <th class="text-center" width="60" data-field="id" data-title="ID" data-searchable="false"></th>
+                <th class="text-center" data-field="name" data-title="角色名称" data-halign="center" data-align="left" data-click-to-select="false" data-formatter="@">
+                    <script type="text/html">
+                        {{value}}
+
+                        {{if item.system}}
+                        <kbd>系统角色</kbd>
+                        {{/if}}
+                    </script>
                 </th>
                 <ba:access value="change_status">
-                    <th class="text-center" width="80" data-field="status" data-align="center" data-formatter="@">
-                        状态
+                    <th class="text-center" width="80" data-field="status" data-title="状态" data-align="center" data-formatter="@">
+                        <script type="text/html">
+                            {{if !item.system}}
+                            <input type="checkbox" class="switch input-xs primary" data-toggle="busy-checkbox" data-url="{:url('change_status?id=')}{{item.id}}" title="启用,禁用" {{value ? 'checked': ''}}/>
+                            {{else}}
+                            -
+                            {{/if}}
+                        </script>
                     </th>
                 </ba:access>
-                <th class="text-center" width="100" data-field="default_menu_name" data-searchable="false">默认菜单</th>
-                <th class="text-center" width="120" data-field="operate" data-formatter="@" data-click-to-select="false">
-                    操作
+                <th class="text-center" width="100" data-field="default_menu_name" data-title="默认菜单" data-searchable="false"></th>
+                <th class="text-center" width="120" data-title="操作" data-formatter="@" data-click-to-select="false">
+                    <script type="text/html">
+                        <ba:access value="add">
+                            <a class="btn btn-default btn-xs"
+                               data-toggle="busy-modal"
+                               data-url="{:url('add?id=')}{{item.id}}"
+                               data-ok="添加角色"
+                               data-form-on-success="@table.reload">
+                                <i class="fa fa-plus"></i>
+                                添加
+                            </a>
+                        </ba:access>
+                        <ba:access value="edit">
+                            <a class="btn btn-success btn-xs"
+                               href="{:url('edit?id=')}{{item.id}}"
+                               data-toggle="busy-modal"
+                               data-ok="修改角色"
+                               data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
+                        </ba:access>
+                        {{if !item.system}}
+                        <ba:access value="delete">
+                            <a class="btn btn-danger btn-xs"
+                               href="{:url('delete?id=')}{{item.id}}"
+                               data-toggle="busy-request"
+                               data-confirm="确认要删除该角色吗？"
+                               data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
+                        </ba:access>
+                        {{/if}}
+                    </script>
                 </th>
             </tr>
         </thead>
@@ -91,55 +132,6 @@
             </ba:access>
         </div>
     </div>
-
-    <script type="text/html" id="sort">
-        <input type="text" class="form-control input-xs text-center" value="{{value}}" data-bind="sort"/>
-    </script>
-
-    <script type="text/html" id="name">
-        {{value}}
-
-        {{if item.system}}
-        <kbd>系统角色</kbd>
-        {{/if}}
-    </script>
-
-    <script type="text/html" id="status">
-        {{if !item.system}}
-        <input type="checkbox" class="switch input-xs primary" data-toggle="busy-checkbox" data-url="{:url('change_status?id=')}{{item.id}}" title="启用,禁用" {{value ? 'checked': ''}}/>
-        {{else}}
-        -
-        {{/if}}
-    </script>
-
-    <script type="text/html" id="operate">
-        <ba:access value="add">
-            <a class="btn btn-default btn-xs"
-               data-toggle="busy-modal"
-               data-url="{:url('add?id=')}{{item.id}}"
-               data-ok="添加角色"
-               data-form-on-success="@table.reload">
-                <i class="fa fa-plus"></i>
-                添加
-            </a>
-        </ba:access>
-        <ba:access value="edit">
-            <a class="btn btn-success btn-xs"
-               href="{:url('edit?id=')}{{item.id}}"
-               data-toggle="busy-modal"
-               data-ok="修改角色"
-               data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
-        </ba:access>
-        {{if !item.system}}
-        <ba:access value="delete">
-            <a class="btn btn-danger btn-xs"
-               href="{:url('delete?id=')}{{item.id}}"
-               data-toggle="busy-request"
-               data-confirm="确认要删除该角色吗？"
-               data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
-        </ba:access>
-        {{/if}}
-    </script>
 </block>
 <block name="foot">
     <script>

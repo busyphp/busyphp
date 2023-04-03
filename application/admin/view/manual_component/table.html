@@ -32,7 +32,6 @@
 | data-model | string | `否` | - | 设置自动获取数据的模型类名称 |
 | data-model-extend | boolean | `否` | `false` | 查询模型的数据是否包涵扩展数据 |
 | data-state | string,boolean | `否` | `false` | 是否记录表格内状态，设为`string`为记录状态的参数名称，防止和其它表格冲突。默认为当前URL |
-| data-state-key | string | `否` | `document.URL` | 记录状态的参数名称，防止和其它表格冲突。默认为当前URL，优先于 `data-state` 设置 |
 | 分页:title |  |  |  |  |
 | data-pagination | boolean | 否 | `true` | 设置是否显示分页 |
 | 搜索:title |  |  |  |  |
@@ -98,7 +97,6 @@
 | 隐藏/显示:title |  |  |  |  |
 | data-visible | boolean | 否 | `true` | 设置是否显示该列 |
 | data-show-columns | boolean | 否 | `true` | 是否允许列隐藏显示控制 |
-| data-column-title | string | 否 | - | 指定控制列显示隐藏的选项名称，默认使用`title` |
 | data-switchable | boolean | 否 | `true` | 是否允许该列被用户自定义显示隐藏 |
 | 排序:title |  |  |  |  |
 | data-sortable | boolean | 否 | `false` | 指定是否启用列排序 |
@@ -192,16 +190,16 @@
                data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>">
             <thead>
                 <tr>
-                    <th data-field="id">ID</th>
-                    <th data-field="name">操作名称</th>
-                    <th data-field="format_create_time">创建时间</th>
-                    <th data-field="operate" data-align="center" data-formatter="@">操作</th>
+                    <th data-field="id" data-title="ID"></th>
+                    <th data-field="name" data-title="操作名称"></th>
+                    <th data-field="format_create_time" data-title="创建时间"></th>
+                    <th data-field="operate" data-title="操作" data-align="center" data-formatter="@">
+                        <template>
+                            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload"><i class="fa fa-plus"></i></a>
+                        </template>
+                    </th>
                 </tr>
             </thead>
         </table>
-        
-        <script type="text/html" id="operate">
-            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-method="post" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload"><i class="fa fa-plus"></i></a>
-        </script>
     </template>
 </block>

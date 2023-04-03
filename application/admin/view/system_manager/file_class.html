@@ -1,7 +1,7 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="panel panel-default">
-        <include file="system_manager/nav" />
+        <include file="system_manager/nav"/>
         <div class="panel-body">
             <table class="table table-hover table-bordered"
                    data-toggle="busy-table"
@@ -9,60 +9,50 @@
                    data-url="{:url('file_class')}">
                 <thead>
                     <tr>
-                        <th data-field="name" data-align="center" width="100">名称</th>
-                        <th data-field="var" data-align="center" width="100" data-formatter="@#file_class_var">标识
+                        <th data-field="name" data-title="名称" data-align="center" width="100"></th>
+                        <th data-field="var" data-title="标识" data-align="center" width="100" data-formatter="@">
+                            <script type="text/html">
+                                <span class="badge badge-primary">{{value}}</span>
+                            </script>
                         </th>
-                        <th data-field="extensions" data-halign="center" data-align="left" data-formatter="@#file_class_extensions">
-                            格式限制
+                        <th data-field="extensions" data-title="格式限制" data-halign="center" data-align="left" data-formatter="@">
+                            <script type="text/html">
+                                {{if value}}
+                                <div class="text-wrap">{{value}}</div>
+                                {{else}}
+                                <kbd>继承</kbd>
+                                {{/if}}
+                            </script>
                         </th>
-                        <th data-field="mimetype" width="150" data-align="center" data-formatter="@#file_class_mimetype">
-                            Mime限制
+                        <th data-field="mimetype" data-title="Mime限制" width="150" data-align="center" data-formatter="@">
+                            <script type="text/html">
+                                <div class="text-wrap">{{value || '-'}}</div>
+                            </script>
                         </th>
-                        <th data-field="max_size" data-align="center" width="100" data-formatter="@#file_class_max_size">
-                            大小限制
+                        <th data-field="max_size" data-title="大小限制" data-align="center" width="100" data-formatter="@">
+                            <script type="text/html">
+                                {{if value > 0}}
+                                {{value}}MB
+                                {{else}}
+                                <kbd>继承</kbd>
+                                {{/if}}
+                            </script>
                         </th>
-                        <th data-field="operate" data-align="center" data-formatter="@#file_class_operate" width="60">
-                            操作
+                        <th data-title="操作" data-align="center" data-formatter="@" width="60">
+                            <script type="text/html">
+                                <a class="btn btn-success btn-xs"
+                                   data-toggle="busy-modal"
+                                   data-ok="设置"
+                                   data-url="{:url('file_class?action=edit&id=')}{{item.id}}"
+                                   data-size="lg"
+                                   data-form-on-success="@table.reload">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            </script>
                         </th>
                     </tr>
                 </thead>
             </table>
-
-            <script id="file_class_var" type="text/html">
-                <span class="badge badge-primary">{{value}}</span>
-            </script>
-
-            <script id="file_class_extensions" type="text/html">
-                {{if value}}
-                <div class="text-wrap">{{value}}</div>
-                {{else}}
-                <kbd>继承</kbd>
-                {{/if}}
-            </script>
-
-            <script id="file_class_mimetype" type="text/html">
-                <div class="text-wrap">{{value || '-'}}</div>
-            </script>
-
-            <script id="file_class_max_size" type="text/html">
-                {{if value > 0}}
-                {{value}}MB
-                {{else}}
-                <kbd>继承</kbd>
-                {{/if}}
-            </script>
-
-            <script id="file_class_operate" type="text/html">
-                <a class="btn btn-success btn-xs"
-                   data-toggle="busy-modal"
-                   data-ok="设置"
-                   data-url="{:url('file_class?action=edit&id=')}{{item.id}}"
-                   data-size="lg"
-                   data-form-on-success="@table.reload">
-                    <i class="fa fa-pencil"></i>
-                </a>
-            </script>
-
             <div class="space-15"></div>
             <div class="text-gray">
                 说明：文件分类请通过 <span class="badge">开发模式</span> 创建。

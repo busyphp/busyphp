@@ -9,7 +9,7 @@
 
     <table class="table table-bordered table-striped table-hover"
            data-toggle="busy-table"
-           data-state="{$url.controller}{$url.action}"
+           data-state="__ROUTE__"
            data-search="#searchBar"
            data-show-columns="true"
            data-show-print="true"
@@ -27,18 +27,40 @@
         <thead>
             <tr>
                 <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
-                <th class="text-center" width="60" data-field="id" data-searchable="false">ID</th>
-                <th class="text-center" data-field="name" data-halign="center" data-align="left" data-formatter="@">
-                    配置名称
+                <th class="text-center" width="60" data-field="id" data-title="ID" data-searchable="false"></th>
+                <th class="text-center" data-field="name" data-title="配置名称" data-halign="center" data-align="left" data-formatter="@">
+                    <script type="text/html">
+                        {{value}}
+                        {{if item.system}}
+                        <kbd>系统配置</kbd>
+                        {{/if}}
+                    </script>
                 </th>
-                <th class="text-center" width="120" data-field="type" data-align="center" data-formatter="@">配置标识</th>
-                <th class="text-center" width="60" data-field="operate" data-formatter="@" data-click-to-select="false">
-                    操作
+                <th class="text-center" width="120" data-field="type" data-title="配置标识" data-align="center" data-formatter="@">
+                    <script type="text/html">
+                        <span class="badge badge-primary">{{value}}</span>
+                    </script>
+                </th>
+                <th class="text-center" width="60" data-title="操作" data-formatter="@" data-click-to-select="false">
+                    <script type="text/html">
+                        <a class="btn btn-success btn-xs"
+                           href="{:url('edit?id=')}{{item.id}}"
+                           data-toggle="busy-modal"
+                           data-ok="修改配置"
+                           data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
+
+                        {{if !item.system}}
+                        <a class="btn btn-danger btn-xs"
+                           href="{:url('delete?id=')}{{item.id}}"
+                           data-toggle="busy-request"
+                           data-confirm="确认要删除该配置吗？"
+                           data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
+                        {{/if}}
+                    </script>
                 </th>
             </tr>
         </thead>
     </table>
-
 
     <div class="hide">
         <div id="tableToolbar">
@@ -57,39 +79,11 @@
                data-disabled="true"
                data-method="post"
                data-on-success="@table.reload">
-                    <i class="fa fa-trash"></i>
-                    删除
-                </a>
+                <i class="fa fa-trash"></i>
+                删除
+            </a>
         </div>
     </div>
-
-
-    <script type="text/html" id="name">
-        {{value}}
-        {{if item.system}}
-        <kbd>系统配置</kbd>
-        {{/if}}
-    </script>
-
-    <script type="text/html" id="type">
-        <span class="badge badge-primary">{{value}}</span>
-    </script>
-
-    <script type="text/html" id="operate">
-        <a class="btn btn-success btn-xs"
-           href="{:url('edit?id=')}{{item.id}}"
-           data-toggle="busy-modal"
-           data-ok="修改配置"
-           data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
-
-        {{if !item.system}}
-        <a class="btn btn-danger btn-xs"
-           href="{:url('delete?id=')}{{item.id}}"
-           data-toggle="busy-request"
-           data-confirm="确认要删除该配置吗？"
-           data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
-        {{/if}}
-    </script>
 </block>
 <block name="foot">
     <script>
