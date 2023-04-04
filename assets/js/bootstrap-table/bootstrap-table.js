@@ -1,3 +1,7 @@
+/**
+ * 该文件版本已于官方不一致
+ * 请搜索 busyAdmin 查看修改的内容进行校对
+ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('jquery')) :
   typeof define === 'function' && define.amd ? define(['jquery'], factory) :

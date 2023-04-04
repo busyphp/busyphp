@@ -1,3 +1,7 @@
+/**
+ * 该文件版本已于官方不一致
+ * 请搜索 busyAdmin 查看修改的内容进行校对
+ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
   typeof define === 'function' && define.amd ? define(['jquery'], factory) :
@@ -1218,7 +1222,7 @@
           }
 
           if (this.$el.closest('.bootstrap-table').hasClass('fullscreen')) {
-            // 移除全屏控制
+            // busyAdmin 移除全屏控制
             //stickyHeaderOffsetLeft = 0;
             //stickyHeaderOffsetRight = 0;
             // width = '100%';
