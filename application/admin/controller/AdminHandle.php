@@ -11,6 +11,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\helper\ArrayHelper;
+use Closure;
 use stdClass;
 use think\Container;
 use think\exception\Handle;
@@ -160,8 +161,18 @@ class AdminHandle extends Handle
         $publicSetting   = PublicSetting::instance();
         $pageTitleSuffix = ' - ' . $adminSetting->getTitle();
         $requires        = $app->config->get('app.admin.requires', '');
-        $requires        = is_callable($requires) ? Container::getInstance()->invokeFunction($requires) : $requires;
-        $data['system']  = [
+        if ($requires instanceof Closure) {
+            $requires = Container::getInstance()->invokeFunction($requires);
+        }
+        $printCss = $app->config->get('app.admin.print_css', '');
+        if ($printCss instanceof Closure) {
+            $printCss = Container::getInstance()->invokeFunction($printCss);
+        }
+        $printStyle = $app->config->get('app.admin.print_style', '');
+        if ($printStyle instanceof Closure) {
+            $printStyle = Container::getInstance()->invokeFunction($printStyle);
+        }
+        $data['system'] = [
             'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
             'page_title_suffix' => $pageTitleSuffix,
@@ -195,7 +206,7 @@ class AdminHandle extends Handle
                     'editor'        => [
                         'ueConfigUrl' => (string) url('common.ueditor/runtime?js=1&noext')->suffix(false),
                     ],
-                    'modal' => [
+                    'modal'         => [
                         'cancel_right' => $app->config->get('app.admin.modal_cancel_right', false),
                     ],
                     'topBar'        => [
@@ -220,6 +231,10 @@ class AdminHandle extends Handle
                         'remote' => $data['url']['app']
                     ],
                     'watermark'     => $adminSetting->getWatermark(),
+                    'print'         => [
+                        'css'   => $printCss,
+                        'style' => $printStyle
+                    ]
                 ]
             ], JSON_UNESCAPED_UNICODE)
         ];

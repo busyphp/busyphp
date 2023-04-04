@@ -1,0 +1,140 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-print"` 来触发
+
+```html
+<input type="text" data-toggle="busy-print" />
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-type | string | `否` | `html` | 打印方式，可选项：<br />`html` : 原生HTML打印, <br /> `capture` :将对应HTML节点转为图片后打印<br /> `pdf` : 打印PDF文件<br />`image` : 打印图片文件 |
+| data-target | string,string[] | `否` | - | 打印类型不同，内容不同<br />`html,capture` : 要打印的html节点，支持jquery选择器<br />`pdf` :PDF文件URL或Base64的PDF字符串<br />`image` : 图片文件URL或Base64的图片字符串 |
+| data-base64 | boolean | `否` | `false` | 打印的PDF是否base64字符串 |
+| data-header | string | `否` | - | 自定义打印头，支持打印方式：`image`, `capture` |
+| data-header-string | string | `否` | `font-weight: 300;` | 自定义打印头的css样式 |
+| data-title | string | `否` | - | 定义打印页面标题 |
+| data-css | string,string[] | `否` | - | 自定义打印css样式文件URL |
+| data-style | string | `否` | - | 自定义打印css样式 |
+| data-print-options | object | `否` | - | 自定义`printJs`配置，[参考](https://printjs.crabbly.com/) |
+| data-capture-scale | number | `否` | `2` | HTML节点转图片，清晰度不够可设置放大倍数 |
+| data-capture-options | object | `否` | - | 自定义`html2canvas`配置以设置HTML节点转图片的效果，[参考](https://html2canvas.hertzen.com/configuration) |
+
+### 使用示例
+
+#### 基本示例
+
+```demo:实例
+#demo1
+```
+
+#### 打印PDF文件
+
+```demo:实例
+#demo2
+```
+
+#### 打印图片文件
+
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+
+    <template id="demo1" class="hide">
+        <style>
+            #demo1Table { max-width: none!important; width: 210mm;}
+            #demo1Table th,
+            #demo1Table td { border-color: #000!important; color: black!important;}
+        </style>
+        <div class="table-responsive">
+            <table class="table table-bordered print-table" id="demo1Table">
+                <tbody>
+                    <tr>
+                        <th width="15%">姓名</th>
+                        <td>张三</td>
+                        <th width="15%">身份证号</th>
+                        <td>12345678912345678</td>
+                    </tr>
+                    <tr>
+                        <th width="15%">性别</th>
+                        <td>男</td>
+                        <th width="15%">名族</th>
+                        <td>汉族</td>
+                    </tr>
+                    <tr>
+                        <th width="15%">地址</th>
+                        <td>北京市海淀区</td>
+                        <th width="15%">户籍地</th>
+                        <td>南天门</td>
+                    </tr>
+                    <tr>
+                        <th width="15%">个人介绍</th>
+                        <td colspan="3">通过按钮关联本表格实现打印<br/><br/><br/><br/><br/><br/></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn btn-primary"
+                data-title="test"
+                data-type="pages"
+                data-toggle="busy-print"
+                data-target="#demo1Table">
+            打印
+        </button>
+        <button class="btn btn-primary"
+                data-toggle="busy-print"
+                data-type="capture"
+                data-target="#demo1Table">
+            转图片后打印
+        </button>
+    </template>
+
+    <template id="demo2" class="hide">
+        PDF文件：
+        <a href="{$skin.images}print.pdf" target="_blank">print.pdf</a>
+        <hr/>
+        <button class="btn btn-primary"
+                data-target="{$skin.images}print.pdf"
+                data-type="pdf"
+                data-toggle="busy-print">
+            打印print.pdf
+        </button>
+    </template>
+
+    <script type="text/html" id="demo3" class="hide">
+        图片文件：
+        <a href="{$skin.images}login/1.jpg" target="_blank">1.jpg</a>，
+        <a href="{$skin.images}login/2.jpg" target="_blank">2.jpg</a>，
+        <a href="{$skin.images}login/3.jpg" target="_blank">3.jpg</a>
+        <hr/>
+        <button class="btn btn-primary"
+                data-target='{$skin.images}login/1.jpg'
+                data-type="image"
+                data-toggle="busy-print">
+            打印1.jpg
+        </button>
+        <button class="btn btn-primary"
+                data-target='["{$skin.images}login/1.jpg", "{$skin.images}login/2.jpg", "{$skin.images}login/3.jpg"]'
+                data-type="image"
+                data-toggle="busy-print">
+            打印1.jpg,2.jpg,3.jpg
+        </button>
+    </script>
+</block>

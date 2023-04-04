@@ -385,6 +385,17 @@ class ComponentController extends InsideController
     }
     
     
+    
+    /**
+     * 打印
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-print')]
+    public function print() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
     /**
      * 日历
      */
