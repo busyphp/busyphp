@@ -41,11 +41,8 @@
 | data-show-search-clear-button | boolean | 否 | `true` | 默认搜索框是否显示清空按钮 |
 | 工具栏按钮:title |  |  |  |  |
 | data-show-columns | boolean | 否 | `false` | 是否显示列筛选 |
-| data-show-print | boolean | 否 | `false` | 是否显示打印选项 |
 | data-show-fullscreen | boolean | 否 | `false` | 是否显示全屏按钮，`目前不兼容，谨慎使用` |
 | data-show-toggle | boolean | 否 | `false` | 是否显示列切换视图按钮 |
-| data-show-export | boolean | 否 | `false` | 是否显示导出选项 |
-| data-export-types | string | 否 | `excel` | 导出类型，多个用英文逗号分割，支持：`excel`, `csv`, `xml`, `json`, `txt` |
 | data-show-button-text | boolean | 否 | `false` | 是否显示工具栏按钮文本 |
 | data-toolbar | string | 否 | - | 设置自定义工具栏的jQuery选择器 |
 | data-buttons | string,Function | 否 | - | 设置自定义按钮的回调方法 |
@@ -71,6 +68,19 @@
 | data-fixed-columns | boolean | 否 | `false` | 是否启用固定列功能 |
 | data-fixed-number | number | 否 | 0 | 设置固定左侧的多少列 |
 | data-fixed-right-number | number | 否 | 0 | 设置固定右侧的多少列 |
+| 打印:title |  |  |  |  |
+| data-show-print | boolean | 否 | `false` | 是否显示打印选项 |
+| data-print-as-filtered-and-sorted-on-ui | boolean | 否 | `true` | 当为true时，在UI上按排序和筛选的方式打印表格 |
+| data-print-page-builder | Function | 否 | - | 自定义打印的页面内容 |
+| data-print-sort-column | string | 否 | - | 设置打印要排序的列字段名 |
+| data-print-sort-order | string | 否 | `asc` | 有效值：“asc”、“desc”。仅当设置了printSortColumn时才相关 |
+| 导出:title |  |  |  |  |
+| data-show-export | boolean | 否 | `false` | 是否显示导出选项 |
+| data-export-types | string | 否 | `excel` | 导出类型，多个用英文逗号分割，支持：`excel`, `csv`, `xml`, `json`, `txt` |
+| data-export-data-type | string | 否 | `basic` | 导出数据类型，支持：“basic”、“all”、“selected” |
+| data-export-footer | boolean | 否 | `false` | 是否导出表页脚 |
+| data-export-options | object | 否 | `{}` | 参考 [tableExport.jquery.plugin](https://github.com/hhurz/tableExport.jquery.plugin#options) 手册 |
+
 
 ### 列属性
 
@@ -113,6 +123,12 @@
 | 样式:title |  |  |  |  |
 | data-cell-style | string,Function | 否 | - | 设置列样式回调方法，支持 `window全局变量名称`，返回 `{classes: '类名', css: '样式'}` |
 | data-row-style | string,Function | 否 | - | 设置行样式回调方法，支持 `window全局变量名称`，返回 `{classes: '类名', css: '样式'}` |
+| 打印:title |  |  |  |  |
+| data-print-ignore | boolean | 否 | `false` | 打印时强制隐藏该列 |
+| data-print-filter | boolean | 否 | `false` | set value to filter the printed data by this column. |
+| 导出:title |  |  |  |  |
+| data-force-export | boolean | 否 | `false` | 可强制导出隐藏列 |
+| data-force-hide | boolean | 否 | `false` | 导出时可强制隐藏某一列 |
 
 ### 自定义`data-toolbar`中的元素属性
 
