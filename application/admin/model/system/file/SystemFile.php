@@ -56,7 +56,7 @@ class SystemFile extends Model implements ContainerInterface
      * 图片
      * @var string
      * @icon fa fa-file-image-o
-     * @types jpg,jpeg,png,gif,bmp,webp
+     * @types jpg,jpeg,png,gif,bmp,webp,ico
      */
     const FILE_TYPE_IMAGE = 'image';
     

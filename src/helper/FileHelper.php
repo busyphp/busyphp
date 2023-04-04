@@ -113,7 +113,8 @@ class FileHelper
         'jpc',
         'xbm',
         'wbmp',
-        'webp'
+        'webp',
+        'ico'
     ];
     
     /**
@@ -126,7 +127,8 @@ class FileHelper
         'png',
         'gif',
         'bmp',
-        'webp'
+        'webp',
+        'ico'
     ];
     
     /**
