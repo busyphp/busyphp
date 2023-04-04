@@ -30,11 +30,15 @@
            data-height="true">
         <thead>
             <tr>
-                <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
+                <th class="text-center" width="40" data-checkbox="true" data-print-ignore="true" data-formatter="busyAdmin.data.checkboxState"></th>
                 <ba:access value="sort">
                     <th class="text-center" width="60" data-field="sort" data-title="排序" data-formatter="@" data-click-to-select="false">
                         <script type="text/html">
+                            {{if is_print}}
+                            {{value}}
+                            {{else}}
                             <input type="text" class="form-control input-xs text-center" value="{{value}}" data-bind="sort"/>
+                            {{/if}}
                         </script>
                     </th>
                 </ba:access>
@@ -51,16 +55,20 @@
                 <ba:access value="change_status">
                     <th class="text-center" width="80" data-field="status" data-title="状态" data-align="center" data-formatter="@">
                         <script type="text/html">
+                            {{if is_print}}
+                            {{value ? '启用' : '禁用'}}
+                            {{else}}
                             {{if !item.system}}
                             <input type="checkbox" class="switch input-xs primary" data-toggle="busy-checkbox" data-url="{:url('change_status?id=')}{{item.id}}" title="启用,禁用" {{value ? 'checked': ''}}/>
                             {{else}}
                             -
                             {{/if}}
+                            {{/if}}
                         </script>
                     </th>
                 </ba:access>
                 <th class="text-center" width="100" data-field="default_menu_name" data-title="默认菜单" data-searchable="false"></th>
-                <th class="text-center" width="120" data-title="操作" data-formatter="@" data-click-to-select="false">
+                <th class="text-center" width="120" data-title="操作" data-print-ignore="true" data-formatter="@" data-click-to-select="false">
                     <script type="text/html">
                         <ba:access value="add">
                             <a class="btn btn-default btn-xs"

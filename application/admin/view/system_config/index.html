@@ -26,7 +26,7 @@
            data-height="true">
         <thead>
             <tr>
-                <th class="text-center" width="40" data-checkbox="true" data-formatter="busyAdmin.data.checkboxState"></th>
+                <th class="text-center" width="40" data-checkbox="true" data-print-ignore="true" data-formatter="busyAdmin.data.checkboxState"></th>
                 <th class="text-center" width="60" data-field="id" data-title="ID" data-searchable="false"></th>
                 <th class="text-center" data-field="name" data-title="配置名称" data-halign="center" data-align="left" data-formatter="@">
                     <script type="text/html">
@@ -41,7 +41,7 @@
                         <span class="badge badge-primary">{{value}}</span>
                     </script>
                 </th>
-                <th class="text-center" width="60" data-title="操作" data-formatter="@" data-click-to-select="false">
+                <th class="text-center" width="60" data-title="操作" data-print-ignore="true" data-formatter="@" data-click-to-select="false">
                     <script type="text/html">
                         <a class="btn btn-success btn-xs"
                            href="{:url('edit?id=')}{{item.id}}"

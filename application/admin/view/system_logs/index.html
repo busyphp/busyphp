@@ -64,22 +64,30 @@
                 <th class="text-center" data-field="name" data-title="操作名称" data-halign="center" data-align="left"></th>
                 <th class="text-center" width="150" data-field="url" data-title="操作地址" data-align="center" data-formatter="@">
                     <script type="text/html">
+                        {{if is_print}}
+                        {{value}}
+                        {{else}}
                         <div class="input-group input-group-xs">
                             <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
                             <div class="input-group-btn">
                                 <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
                             </div>
                         </div>
+                        {{/if}}
                     </script>
                 </th>
                 <th class="text-center" width="150" data-field="ip" data-title="IP" data-formatter="@">
                     <script type="text/html">
+                        {{if is_print}}
+                        {{value}}
+                        {{else}}
                         <div class="input-group input-group-xs">
                             <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
                             <div class="input-group-btn">
                                 <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
                             </div>
                         </div>
+                        {{/if}}
                     </script>
                 </th>
                 <th class="text-center" width="100" data-field="type_name" data-title="操作类型"></th>
@@ -92,7 +100,7 @@
                 </th>
                 <th class="text-center" width="150" data-field="format_create_time" data-title="操作时间" data-sortable="true"></th>
                 <ba:access value="detail">
-                    <th class="text-center" width="80" data-title="操作" data-formatter="@">
+                    <th class="text-center" width="80" data-print-ignore="true"  data-title="操作" data-formatter="@">
                         <script type="text/html">
                             <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.<?=SystemLogsField::id();?>}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
                         </script>

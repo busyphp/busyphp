@@ -14,6 +14,9 @@
            data-search="true"
            data-search-align="left"
            data-show-columns="true"
+           data-show-print="true"
+           data-show-refresh="true"
+           data-show-export="true"
            data-url="{$url.self}"
            data-pagination="false"
            data-fixed-columns="true"
@@ -55,7 +58,7 @@
                         <span class="badge badge-secondary">{{value}}</span>
                     </script>
                 </th>
-                <th class="text-center" width="60" data-field="operate" data-title="操作" data-valign="top" data-formatter="@">
+                <th class="text-center" width="60" data-title="操作" data-print-ignore="true" data-valign="top" data-formatter="@">
                     <script type="text/html">
                         {{if item.can_install}}
                         {{if item.install_config.install_operate.type !== 'modal'}}
