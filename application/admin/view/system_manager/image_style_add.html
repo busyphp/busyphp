@@ -377,7 +377,17 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">水印图片</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" :name="'content['+ key +'][attr][image]'" v-model="item.attr.image" data-toggle="busy-upload" data-select="false" data-upload-name="上传水印" data-server="{:url('image_style_upload_watermark')}" data-params='{"disk": "{$disk}"}'/>
+                                    <input :name="'content['+ key +'][attr][image]'"
+                                           class="form-control"
+                                           data-allow-extensions="png"
+                                           data-allow-mimetypes="image/png"
+                                           data-params='{"disk": "{$disk}"}'
+                                           data-select="false"
+                                           data-server="{:url('image_style_upload_watermark')}"
+                                           data-toggle="busy-upload"
+                                           title="水印"
+                                           type="text"
+                                           v-model="item.attr.image"/>
                                 </div>
                             </div>
                             <div class="form-group">

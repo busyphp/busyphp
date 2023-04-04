@@ -17,13 +17,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">浏览器图标</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text"
-                               class="form-control"
-                               name="data[favicon]"
-                               placeholder="上传网站图标"
-                               value="{$info.favicon|default=''}"
-                               data-toggle="busy-upload"
+                        <input class="form-control"
                                data-class-value="system_favicon"
+                               data-toggle="busy-upload"
+                               data-allow-extensions="png,ico"
+                               data-allow-mimetypes="image/*"
+                               name="data[favicon]"
+                               placeholder="上传浏览器图标"
+                               title="图标"
+                               type="text"
+                               value="{$info.favicon|default=''}"
                         />
                         <span class="help-block">建议上传 <code>128x128</code> 的 ico 或 png 图片，可以通过<a href="https://www.bitbug.net/" target="_blank">ICON</a>在线制作 ico 文件</span>
                     </div>
@@ -55,7 +58,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">错误占位图</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[img_error_placeholder]" placeholder="上传错误占位图片" value="{$info.img_error_placeholder|default=''}" data-toggle="busy-upload" data-class-value="system_img_error_placeholder"/>
+                        <input class="form-control"
+                               data-class-value="system_img_error_placeholder"
+                               data-toggle="busy-upload"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               name="data[img_error_placeholder]"
+                               placeholder="上传错误占位图片"
+                               title="占位图"
+                               type="text"
+                               value="{$info.img_error_placeholder|default=''}"/>
                         <span class="help-block">设置错误占位图，当图片不存在或图片显示失败时将使用该图片替代</span>
                     </div>
                 </div>

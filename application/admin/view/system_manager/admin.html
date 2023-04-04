@@ -17,7 +17,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 col-md-2 control-label">管理面板LOGO</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[logo_horizontal]" data-toggle="busy-upload" placeholder="请上传管理面板LOGO" value="{$info.logo_horizontal|default=''}" data-class-value="system_logo_horizontal"/>
+                        <input class="form-control"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               data-class-value="system_logo_horizontal"
+                               data-toggle="busy-upload"
+                               name="data[logo_horizontal]"
+                               placeholder="请上传管理面板LOGO"
+                               title="LOGO"
+                               type="text"
+                               value="{$info.logo_horizontal|default=''}"/>
                         <span class="help-block">设置管理面板Logo，建议尺寸：<code>420×80像素</code> 设置后将显示在管理面板的左上角，此时管理面板名称将不显示。</span>
                     </div>
                 </div>
@@ -25,7 +34,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 col-md-2 control-label">管理面板图标</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[logo_icon]" data-toggle="busy-upload" placeholder="请上传管理面板图标" value="{$info.logo_icon|default=''}" data-class-value="system_logo_icon"/>
+                        <input class="form-control"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               data-class-value="system_logo_icon"
+                               data-toggle="busy-upload"
+                               name="data[logo_icon]"
+                               placeholder="请上传管理面板图标"
+                               title="图标"
+                               type="text"
+                               value="{$info.logo_icon|default=''}"/>
                         <span class="help-block">设置管理面板图标，建议尺寸：<code>68×68像素</code> 设置后将在管理面板激活迷你菜单的时候的显示，此时管理面板Logo将不显示。</span>
                     </div>
                 </div>
@@ -33,7 +51,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 col-md-2 control-label">登录页背景图</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[login_bg]" data-toggle="busy-upload" placeholder="请上传登录页背景图" value="{$info.login_bg|default=''}" data-class-value="system_login_bg"/>
+                        <input class="form-control"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               data-class-value="system_login_bg"
+                               data-toggle="busy-upload"
+                               name="data[login_bg]"
+                               placeholder="请上传登录页背景图"
+                               title="背景"
+                               type="text"
+                               value="{$info.login_bg|default=''}"/>
                         <span class="help-block">设置管理面板登录页背景图，设置后登录页将显示该背景图。</span>
                     </div>
                 </div>
@@ -231,7 +258,17 @@
                 <div class="form-group">
                     <label class="col-sm-2 col-md-2 control-label">水印图片上传</label>
                     <div class="col-sm-10 col-md-8">
-                        <input type="text" class="form-control" name="data[watermark][image]" data-toggle="busy-upload" placeholder="上传水印图片" value="{$info.watermark.image|default=''}" data-class-value="system_admin_watermark" data-preview-watermark="image"/>
+                        <input class="form-control"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               data-class-value="system_admin_watermark"
+                               data-preview-watermark="image"
+                               data-toggle="busy-upload"
+                               name="data[watermark][image]"
+                               placeholder="上传水印图片"
+                               title="水印"
+                               type="text"
+                               value="{$info.watermark.image|default=''}"/>
                         <span class="help-block">设置水印图片，建议尺寸：<code>100×33像素</code> 设置后将同时显示该图片水印。</span>
                     </div>
                 </div>
