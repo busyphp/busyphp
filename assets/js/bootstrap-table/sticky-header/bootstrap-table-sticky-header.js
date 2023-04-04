@@ -1093,7 +1093,7 @@
         // deep clone header, using source header affects tbody>td width
 
         this.$stickyContainer = this.$tableBody.find('.sticky-header-container');
-        this.$stickyBegin = this.$tableBody.find('.sticky_anchor_begin');
+        this.$stickyBegin = this.$tableBody.find('.sticky_anchor_begin'); // TODO busyAdmin 这里偶尔会出现错误
         this.$stickyEnd = this.$tableBody.find('.sticky_anchor_end');
         this.$stickyHeader = this.$header.clone(true, true); // render sticky on window scroll or resize
 
@@ -1196,9 +1196,11 @@
 
         var top = $__default['default'](window).scrollTop(); // top anchor scroll position, minus header height
 
-        var start = this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY; // bottom anchor scroll position, minus header height, minus sticky height
+        // busyAdmin 修复 this.$stickyBegin 偶尔为空
+        var start = this.$stickyBegin ? this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY : 0; // bottom anchor scroll position, minus header height, minus sticky height
 
-        var end = this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height(); // show sticky when top anchor touches header, and when bottom anchor not exceeded
+        // busyAdmin 修复 this.$stickyEnd 偶尔为空
+        var end = this.$stickyEnd ? this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height() : 0; // show sticky when top anchor touches header, and when bottom anchor not exceeded
 
         if (top > start && top <= end) {
           // ensure clone and source column widths are the same
