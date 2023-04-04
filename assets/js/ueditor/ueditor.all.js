@@ -2,9 +2,11 @@
  * UEditor
  * version: ueditor
  * build: Wed Aug 10 2016 11:06:02 GMT+0800 (CST)
- * 该版本已进行调整，直接覆盖需要慎重
  */
-
+/**
+ * 该文件版本已于官方不一致
+ * 请搜索 busyAdmin 查看修改的内容进行校对
+ */
 (function(){
 
 // editor.js
@@ -23970,13 +23972,8 @@ UE.plugin.register('autosave', function (){
                     key = ( me.container.parentNode.id || 'ue-common' ) + _suffix;
                 }
 
-                // busyphp: 调整
-                if (me.options.autoSaveKey) {
-                    saveKey = me.options.autoSaveKey + _suffix;
-                } else {
-                    //页面地址+编辑器ID 保持唯一
-                    saveKey = ( location.protocol + location.host + location.pathname ).replace( /[.:\/]/g, '_' ) + key;
-                }
+                //页面地址+编辑器ID 保持唯一
+                saveKey = ( location.protocol + location.host + location.pathname ).replace( /[.:\/]/g, '_' ) + key;
             },
 
             'contentchange': function () {
