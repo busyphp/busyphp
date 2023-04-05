@@ -193,7 +193,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 绑定值
         foreach (self::getValueBindFieldMap() as $name => $bind) {
-            self::setPropertyValue($obj, $name, $data[$bind->getField()]);
+            if (isset($data[$bind->getField()])) {
+                self::setPropertyValue($obj, $name, $data[$bind->getField()]);
+            }
         }
         
         // 后置操作
