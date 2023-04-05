@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\image\driver;
 
+use BusyPHP\App;
 use BusyPHP\exception\ClassNotImplementsException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\FileHelper;
@@ -89,7 +90,7 @@ class Local extends Driver
     
     /** @var array */
     protected $config = [
-        'font_list'           => [],
+        'image_font_list'     => [],
         'image_style_manager' => ''
     ];
     
@@ -107,7 +108,36 @@ class Local extends Driver
      */
     public function getFontList() : array
     {
-        return $this->config['font_list'] ?? [];
+        return array_merge($this->config['image_font_list'] ?? [], [
+            [
+                'path' => ':zhttfs/1.ttf',
+                'name' => '方正大黑简体(中/英文)'
+            ],
+            [
+                'path' => ':ttfs/1.ttf',
+                'name' => '3x5(英)'
+            ],
+            [
+                'path' => ':ttfs/2.ttf',
+                'name' => '13_Misa(英)'
+            ],
+            [
+                'path' => ':ttfs/3.ttf',
+                'name' => 'Add_Cityboy(英)'
+            ],
+            [
+                'path' => ':ttfs/4.ttf',
+                'name' => 'Airbus Special(英)'
+            ],
+            [
+                'path' => ':ttfs/5.ttf',
+                'name' => 'Yahoo(英)'
+            ],
+            [
+                'path' => ':ttfs/6.ttf',
+                'name' => 'Stencil Four(英)'
+            ]
+        ]);
     }
     
     
@@ -639,11 +669,20 @@ class Local extends Driver
                             $color    = new Color($this->parameter->getColor());
                             $color    = $color->format('array');
                             $color[3] = $this->parameter->getOpacity() / 100;
+                            $fontFile = $this->parameter->getFont();
+                            
+                            // 拼接字体
+                            if (str_starts_with($fontFile, ':')) {
+                                $fontFile = App::getInstance()->getFrameworkPath('captcha/' . substr($fontFile, 1));
+                            } elseif (!is_file($fontFile)) {
+                                $fontFile = App::getInstance()
+                                        ->getRootPath() . ltrim(str_replace('\\', '/', $fontFile), '/');
+                            }
                             
                             // 预计算水印尺寸
                             $font = Local::instanceFont($image, $this->parameter->getText());
                             $font->size($this->parameter->getFontsize());
-                            $font->file(app()->getPublicPath('汉仪元隆黑60W.ttf'));
+                            $font->file($fontFile);
                             $font->angle($this->parameter->getRotate());
                             $textBox     = $font->getBoxSize();
                             $waterWidth  = $textBox['width'];
@@ -665,8 +704,8 @@ class Local extends Driver
                                 while ($x < $width) {
                                     $y = 0;
                                     while ($y < $height) {
-                                        $image->text($this->parameter->getText(), $x, $y, function(AbstractFont $font) use ($color) {
-                                            $font->file(app()->getPublicPath('汉仪元隆黑60W.ttf'));
+                                        $image->text($this->parameter->getText(), $x, $y, function(AbstractFont $font) use ($color, $fontFile) {
+                                            $font->file($fontFile);
                                             $font->size($this->parameter->getFontsize());
                                             $font->color($color);
                                             $font->angle(-$this->parameter->getRotate());
