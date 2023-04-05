@@ -1,6 +1,6 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div class="panel panel-default">
+    <div class="panel panel-default" id="demo4Panel">
         <div class="panel-heading">
             <h3 class="panel-title">{$system.page_title}</h3>
         </div>
@@ -22,16 +22,20 @@
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-type | string | `否` | `html` | 打印方式，可选项：<br />`html` : 原生HTML打印, <br /> `capture` :将对应HTML节点转为图片后打印<br /> `pdf` : 打印PDF文件<br />`image` : 打印图片文件 |
-| data-target | string,string[] | `否` | - | 打印类型不同，内容不同<br />`html,capture` : 要打印的html节点，支持jquery选择器<br />`pdf` :PDF文件URL或Base64的PDF字符串<br />`image` : 图片文件URL或Base64的图片字符串 |
+| data-type | string | `否` | `html` | 打印方式，可选项：<br />`html` : 原生HTML打印, <br /> `capture` : 将对应HTML节点转为图片后打印<br />`export` : 将对应的HTML节点导出为PDF文件<br /> `pdf` : 打印PDF文件<br />`image` : 打印图片文件 |
+| data-target | string,string[] | `否` | - | 打印类型不同，内容不同<br />`html,capture,export` : 要打印的html节点，支持jquery选择器<br />`pdf` :PDF文件URL或Base64的PDF字符串<br />`image` : 图片文件URL或Base64的图片字符串 |
 | data-base64 | boolean | `否` | `false` | 打印的PDF是否base64字符串 |
 | data-header | string | `否` | - | 自定义打印头，支持打印方式：`image`, `capture` |
 | data-header-string | string | `否` | `font-weight: 300;` | 自定义打印头的css样式 |
-| data-title | string | `否` | - | 定义打印页面标题 |
-| data-css | string,string[] | `否` | - | 自定义打印css样式文件URL |
-| data-style | string | `否` | - | 自定义打印css样式 |
+| data-title | string | `否` | - | 定义打印页面标题，如果`data-type="export"` 为导出的文件名称 |
+| data-css | string,string[] | `否` | - | 自定义打印css样式文件URL，支持打印方式：`html` |
+| data-style | string | `否` | - | 自定义打印css样式，支持打印方式：`html`  |
+| data-width | number | `否` | `210` | 导出为PDF时的页面宽度，默认为A4纸的宽度  |
+| data-height | number | `否` | `297` | 导出为PDF时的页面高度，默认为A4纸的高度  |
+| data-padding | number | `否` | `10` | 导出为PDF时的页面边距，默认为10mm  |
+| data-unit | string | `否` | `mm` | 导出为PDF时的尺寸单位，默认为mm  |
 | data-print-options | object | `否` | - | 自定义`printJs`配置，[参考](https://printjs.crabbly.com/) |
-| data-capture-scale | number | `否` | `2` | HTML节点转图片，清晰度不够可设置放大倍数 |
+| data-capture-scale | number | `否` | `2` | HTML节点转图片，清晰度不够可设置放大倍数，支持打印方式：`capture,export` |
 | data-capture-options | object | `否` | - | 自定义`html2canvas`配置以设置HTML节点转图片的效果，[参考](https://html2canvas.hertzen.com/configuration) |
 
 ### 使用示例
@@ -52,6 +56,12 @@
 
 ```demo:实例
 #demo3
+```
+
+#### 导出为PDF
+
+```demo:实例
+#demo4
 ```
             </script>
         </div>
@@ -137,4 +147,13 @@
             打印1.jpg,2.jpg,3.jpg
         </button>
     </script>
+
+    <template id="demo4" class="hide">
+        <button class="btn btn-primary"
+                data-target="#demo4Panel"
+                data-type="export"
+                data-toggle="busy-print">
+            将整页导出为PDF
+        </button>
+    </template>
 </block>
