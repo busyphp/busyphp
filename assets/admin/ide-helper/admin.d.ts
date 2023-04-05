@@ -98,67 +98,71 @@ declare namespace busyAdmin {
         /**
          * 页面准备完成触发，此时基本元素还没有完全展示出来
          */
-        appReady: string,
+        appReady: "ba:app-ready",
         /**
          * 应用销毁前执行
          */
-        appBeforeDestroy: string,
+        appBeforeDestroy: "ba:app-before-destroy",
+        /**
+         * 清理系统缓存执行
+         */
+        appClearCache: "ba:app-clear-cache",
         /**
          * 页面准备就绪触发，基本元素都已经完全展示出来
          */
-        appReadies: string,
-        /**
-         * 页面离开前触发，单页返回false阻止离开页面，原生通过 修改 event.returnValue 阻止页面离开
-         */
-        routeBeforeLeave: string,
+        appReadies: "ba:app-readies",
         /**
          * 单页发起请求前触发，返回false阻止请求
          */
-        appReqBefore: string,
+        appReqBefore: "ba:app-req-before",
         /**
          * 单页请求完成触发，返回false阻止成功和失败执行
          */
-        appReqComplete: string,
+        appReqComplete: "ba:app-req-complete",
         /**
          * 单页请求错误触发，返回false阻止渲染错误页面
          */
-        appReqError: string,
+        appReqError: "ba:app-req-error",
         /**
          * 单页请求成功触发，返回false阻止渲染页面
          */
-        appReqSuccess: string,
+        appReqSuccess: "ba:app-req-success",
         /**
          * 单页渲染完成前触发，此时原来的页面内容还未消失，返回false阻止继续渲染
          */
-        appRenderBefore: string,
+        appRenderBefore: "ba:app-render-before",
         /**
          * 单页渲染完毕触发，此时插件可能还没有准备完成
          */
-        appRenderSuccess: string,
+        appRenderSuccess: "ba:app-render-success",
         /**
          * 单页渲染完成触发(所有插件准备完成后)
          */
-        appComplete: string,
+        appComplete: "ba:app-complete",
         /**
          * 插件准备完成触发
          */
-        appPluginReady: string,
+        appPluginReady: "ba:app-plugin-ready",
         /**
          * 退出登录成功
          */
-        appLoginOuted: string,
+        appLoginOuted: "ba:app-login-outed",
         /**
          * 登录成功
          */
-        appLoginSucceed: string,
+        appLoginSucceed: "ba:app-login-succeed",
+        /**
+         * 页面离开前触发，单页返回false阻止离开页面，原生通过 修改 event.returnValue 阻止页面离开
+         */
+        routeBeforeLeave: "ba:app-req-before",
         /**
          * 单页前进后退触发
          */
-        routePopState: string,
+        routePopState: "ba:route-pop-state",
         /**
          * 单页前进后退决定不调度后触发
          */
-        routeNoDispatch: string,
+        routeNoDispatch: "ba:route-no-dispatch",
 
         //+======================================================================
         //+ Request
@@ -166,19 +170,19 @@ declare namespace busyAdmin {
         /**
          * 请求前回调
          */
-        requestBefore: string,
+        requestBefore: "ba:request-before",
         /**
          * 请求完成回调
          */
-        requestComplete: string,
+        requestComplete: "ba:request-complete",
         /**
          * 请求成功回调
          */
-        requestSuccess: string,
+        requestSuccess: "ba:request-success",
         /**
          * 请求失败回调
          */
-        requestError: string,
+        requestError: "ba:request-error",
 
         //+======================================================================
         //+ Form
@@ -186,23 +190,23 @@ declare namespace busyAdmin {
         /**
          * 提交前验证事件，会在confirm对话框显示前触发
          */
-        formCheck: string,
+        formCheck: "ba:form-check",
         /**
          * 请求前触发
          */
-        formBefore: string,
+        formBefore: "ba:form-before",
         /**
          * 请求完成触发
          */
-        formComplete: string,
+        formComplete: "ba:form-complete",
         /**
          * 请求成功触发
          */
-        formSuccess: string,
+        formSuccess: "ba:form-success",
         /**
          * 请求失败触发
          */
-        formError: string,
+        formError: "ba:form-error",
 
         //+======================================================================
         //+ Modal
@@ -210,35 +214,35 @@ declare namespace busyAdmin {
         /**
          * 模态框内容渲染前触发
          */
-        modalRenderBefore: string,
+        modalRenderBefore: "ba:modal-render-before",
         /**
          * 模态框准备完成，显示前触发
          */
-        modalReady: string,
+        modalReady: "ba:modal-ready",
         /**
          * 模态框刚显示触发
          */
-        modalShow: string,
+        modalShow: "ba:modal-show",
         /**
          * 模态框完全显示出来触发
          */
-        modalShown: string,
+        modalShown: "ba:modal-shown",
         /**
          * 模态框隐藏触发
          */
-        modalHide: string,
+        modalHide: "ba:modal-hide",
         /**
          * 模态框完全隐藏触发
          */
-        modalHided: string,
+        modalHided: "ba:modal-hidden",
         /**
          * 确定按钮点击回调
          */
-        modalOk: string,
+        modalOk: "ba:modal-ok",
         /**
          * 取消按钮点击回调
          */
-        modalCancel: string,
+        modalCancel: "ba:modal-cancel",
 
         //+======================================================================
         //+ Table
@@ -246,119 +250,115 @@ declare namespace busyAdmin {
         /**
          * 当用选中一行时触发
          */
-        tableCheck: string,
+        tableCheck: "ba:table-check",
         /**
          * 选中所有行时触发
          */
-        tableCheckAll: string,
+        tableCheckAll: "ba:table-check-all",
         /**
          * 选中某些行时触发
          */
-        tableCheckSome: string,
+        tableCheckSome: "ba:table-check-some",
         /**
          * 点击单元格时触发
          */
-        tableClickCell: string,
+        tableClickCell: "ba:table-click-cell",
         /**
          * 点击行时触发
          */
-        tableClickRow: string,
+        tableClickRow: "ba:table-click-row",
         /**
          * 单击详细信息图标折叠详细信息视图时触发
          */
-        tableCollapseRow: string,
+        tableCollapseRow: "ba:table-collapse-row",
         /**
          * 当切换列可见时触发
          */
-        tableColumnSwitch: string,
+        tableColumnSwitch: "ba:table-column-switch",
         /**
          * 双击单元格时触发
          */
-        tableDblClickCell: string,
+        tableDblClickCell: "ba:table-dbl-click-cell",
         /**
          * 双击行时触发
          */
-        tableDblClickRow: string,
+        tableDblClickRow: "ba:table-dbl-click-row",
         /**
          * 单击详细信息图标以展开详细信息视图时触发
          */
-        tableExpandRow: string,
+        tableExpandRow: "ba:table-expand-row",
         /**
          * 加载远程数据错误时触发
          */
-        tableLoadError: string,
+        tableLoadError: "ba:table-load-error",
         /**
          * 加载远程数据成功时触发
          */
-        tableLoadSuccess: string,
+        tableLoadSuccess: "ba:table-load-success",
         /**
          * 更改页码或页面大小时触发
          */
-        tablePageChange: string,
+        tablePageChange: "ba:table-page-change",
         /**
          * 在表格结构数据初始化完成后触发
          */
-        tableDataInit: string,
+        tableDataInit: "ba:table-data-init",
         /**
          * 在表格主体准备完成后触发
          */
-        tableBodyReady: string,
+        tablePostBody: "ba:table-post-body",
         /**
          * 在表格footer准备完成后触发
          */
-        tableFooterReady: string,
+        tablePostFooter: "ba:table-post-footer",
         /**
          * 在表格header准备完成后触发
          */
-        tableHeaderReady: string,
+        tablePostHeader: "ba:table-post-header",
         /**
          * 在表格初始化完成之前触发
          */
-        tablePreBody: string,
+        tablePreBody: "ba:table-pre-body",
         /**
          * 刷新表格后触发
          */
-        tableRefresh: string,
+        tableRefresh: "ba:table-refresh",
         /**
          * 刷新选项后初始化表之前触发
          */
-        tableRefreshOptions: string,
+        tableRefreshOptions: "ba:table-refresh-options",
         /**
          * 重置视图后触发
          */
-        tableReset: string,
+        tableResetView: "ba:table-reset-view",
         /**
          * 搜索表时触发
          */
-        tableSearch: string,
+        tableSearchView: "ba:table-search-view",
         /**
          * 滚动表格时触发
          */
-        tableScroll: string,
+        tableScrollBody: "ba:table-scroll-body",
         /**
          * 对列进行排序时触发
          */
-        tableSort: string,
+        tableSortView: "ba:table-sort-view",
         /**
          * 切换表格视图时触发
          */
-        tableToggle: string,
+        tableToggle: "ba:table-toggle",
         /**
          * 取消选中时触发
          */
-        tableUncheck: string,
+        tableUncheck: "ba:table-uncheck",
         /**
          * 取消全部选中是触发
          */
-        tableUncheckAll: string,
+        tableUncheckAll: "ba:table-uncheck-all",
         /**
          * 取消选中某些行时触发
          */
-        tableUncheckSome: string,
-        /**
-         * 表格表尾按钮点击事件
-         */
-        tableFooterBtnClick: string,
+        tableUncheckSome: "ba:table-uncheck-some",
 
 
         //+======================================================================
@@ -367,31 +367,31 @@ declare namespace busyAdmin {
         /**
          * 所有事件绑定后触发
          */
-        treeInit: string,
+        treeInit: "ba:tree-init",
         /**
          * 加载开始之前触发
          */
-        treeLoading: string,
+        treeLoading: "ba:tree-loading",
         /**
          * 销毁前触发
          */
-        treeDestroy: string,
+        treeDestroy: "ba:tree-destroy",
         /**
          * 首次加载根节点后触发
          */
-        treeLoaded: string,
+        treeLoaded: "ba:tree-loaded",
         /**
          * 所有节点加载完毕后触发
          */
-        treeReady: string,
+        treeReady: "ba:tree-ready",
         /**
          * 加载节点后触发
          */
-        treeLoadNode: string,
+        treeLoadNode: "ba:tree-load-node",
         /**
          * 加载所有节点完成后触发
          */
-        treeLoadAll: string,
+        treeLoadAll: "ba:tree-load-all",
         /**
          * 插入新数据时触发
          */
@@ -399,59 +399,59 @@ declare namespace busyAdmin {
         /**
          * 节点重绘后触发
          */
-        treeRedraw: string,
+        treeRedraw: "ba:tree-redraw",
         /**
          * 当一个节点即将被打开时触发
          */
-        treeBeforeOpen: string,
+        treeBeforeOpen: "ba:tree-before-open",
         /**
          * 打开节点时触发（如果有动画，则尚未完成）
          */
-        treeOpenNode: string,
+        treeOpenNode: "ba:tree-open-node",
         /**
          * 当节点打开且动画完成时触发
          */
-        treeAfterOpen: string,
+        treeAfterOpen: "ba:tree-after-open",
         /**
          * 当节点关闭时触发（如果有动画还没有完成）
          */
-        treeCloseNode: string,
+        treeCloseNode: "ba:tree-close-node",
         /**
          * 当节点关闭且动画完成时触发
          */
-        treeAfterClose: string,
+        treeAfterClose: "ba:tree-after-close",
         /**
          * 执行openAll方法后触发
          */
-        treeOpenAll: string,
+        treeOpenAll: "ba:tree-open-all",
         /**
          * 执行closeAll方法后触发
          */
-        treeCloseAll: string,
+        treeCloseAll: "ba:tree-close-all",
         /**
          * 启用节点时触发
          */
-        treeEnableNode: string,
+        treeEnableNode: "ba:tree-enable-node",
         /**
          * 节点被禁用时触发
          */
-        treeDisableNode: string,
+        treeDisableNode: "ba:tree-disable-node",
         /**
          * 隐藏节点时触发
          */
-        treeHideNode: string,
+        treeHideNode: "ba:tree-hide-node",
         /**
          * 显示节点时触发
          */
-        treeShowNone: string,
+        treeShowNone: "ba:tree-show-node",
         /**
          * 当所有节点都隐藏时触发
          */
-        treeHideAll: string,
+        treeHideAll: "ba:tree-hide-all",
         /**
          * 显示所有节点时触发
          */
-        treeShowAll: string,
+        treeShowAll: "ba:tree-show-all",
         /**
          * 当用户点击或交互节点时触发
          */
@@ -459,111 +459,111 @@ declare namespace busyAdmin {
         /**
          * 当节点悬停时触发
          */
-        treeHoverNode: string,
+        treeHoverNode: "ba:tree-hover-node",
         /**
          * 当节点不再悬停时触发
          */
-        treeDeHoverNode: string,
+        treeDeHoverNode: "ba:tree-dehover-node",
         /**
          * 选择节点时触发
          */
-        treeSelectNode: string,
+        treeSelectNode: "ba:tree-select-node",
         /**
          * 选择更改时触发
          */
-        treeChanged: string,
+        treeChanged: "ba:tree-changed",
         /**
          * 取消选择节点时触发
          */
-        treeDeSelectNode: string,
+        treeDeSelectNode: "ba:tree-deselect-node",
         /**
          * 选择所有节点时触发
          */
-        treeSelectAll: string,
+        treeSelectAll: "ba:tree-select-all",
         /**
          * 取消选择所有节点时触发
          */
-        treeDeSelectAll: string,
+        treeDeSelectAll: "ba:tree-deselect-all",
         /**
          * set_state完成时触发
          */
-        treeSetState: string,
+        treeSetState: "ba:tree-set-state",
         /**
          * 刷新完成时触发
          */
-        treeRefresh: string,
+        treeRefresh: "ba:tree-refresh",
         /**
          * 节点刷新时触发
          */
-        treeRefreshNode: string,
+        treeRefreshNode: "ba:tree-refresh-node",
         /**
          * 当节点 id 值改变时触发
          */
-        treeSetId: string,
+        treeSetId: "ba:tree-set-id",
         /**
          * 当节点文本值更改时触发
          */
-        treeSetText: string,
+        treeSetText: "ba:tree-set-text",
         /**
          * 创建节点时触发
          */
-        treeCreateNode: string,
+        treeCreateNode: "ba:tree-create-node",
         /**
          * 重命名节点时触发
          */
-        treeRenameNode: string,
+        treeRenameNode: "ba:tree-rename-node",
         /**
          * 删除节点时触发
          */
-        treeDeleteNode: string,
+        treeDeleteNode: "ba:tree-delete-node",
         /**
          * 移动节点时触发
          */
-        treeMoveNode: string,
+        treeMoveNode: "ba:tree-move-node",
         /**
          * 复制节点时触发
          */
-        treeCopyNode: string,
+        treeCopyNode: "ba:tree-copy-node",
         /**
          * 当节点被添加到缓冲区进行移动时触发
          */
-        treeCut: string,
+        treeCut: "ba:tree-cut",
         /**
          * 当节点被添加到缓冲区进行复制时触发
          */
-        treeCopy: string,
+        treeCopy: "ba:tree-copy",
         /**
          * 调用粘贴时触发
          */
-        treePaste: string,
+        treePaste: "ba:tree-paste",
         /**
          * 当复制/剪切缓冲区被清除时触发
          */
-        treeClearBuffer: string,
+        treeClearBuffer: "ba:tree-clear-buffer",
         /**
          * 当节点的复选框被禁用时触发
          */
-        treeDisableCheckbox: string,
+        treeDisableCheckbox: "ba:tree-disable-checkbox",
         /**
          * 当节点的复选框被禁用时触发
          */
-        treeEnableCheckbox: string,
+        treeEnableCheckbox: "ba:tree-enable-checkbox",
         /**
          * 选中节点时触发（仅当复选框设置中的 tie_selection 为 false 时）
          */
-        treeCheckNode: string,
+        treeCheckNode: "ba:tree-check-node",
         /**
          * 取消选中节点时触发（仅当复选框设置中的 tie_selection 为 false 时）
          */
-        treeUnCheckNode: string,
+        treeUncheckNode: "ba:tree-uncheck-node",
         /**
          * 检查所有节点时触发（仅当复选框设置中的 tie_selection 为 false 时）
          */
-        treeCheckAll: string,
+        treeCheckAll: "ba:tree-check-all",
         /**
          * 取消选中所有节点时触发（仅当复选框设置中的 tie_selection 为 false 时）
          */
-        treeUnCheckAll: string,
+        treeUncheckAll: "ba:tree-uncheck-node",
 
 
         //+======================================================================
@@ -879,6 +879,64 @@ declare namespace busyAdmin {
          * 更新时触发
          */
         rangeSliderUpdate: string,
+
+        //+======================================================================
+        //+ Video
+        //+======================================================================
+        videoCanplaythrough: "ba:video-canplaythrough"
+        videoEnded: "ba:video-ended"
+        videoError: "ba:video-error"
+        videoLoadedmetadata: "ba:video-loadedmetadata"
+        videoLoadstart: "ba:video-loadstart"
+        videoPause: "ba:video-pause"
+        videoPlay: "ba:video-play"
+        videoPlaying: "ba:video-playing"
+        videoProgress: "ba:video-progress"
+        videoRatechange: "ba:video-ratechange"
+        videoReady: "ba:video-ready"
+        videoSeeked: "ba:video-seeked"
+        videoSeeking: "ba:video-seeking"
+        videoStalled: "ba:video-stalled"
+        videoTimeupdate: "ba:video-timeupdate"
+        videoVolumechange: "ba:video-volumechange"
+        videoWaiting: "ba:video-waiting"
+
+        audioAbort: "ba:audio-abort"
+        audioCanplay: "ba:audio-canplay"
+        audioCanplaythrough: "ba:audio-canplaythrough"
+        audioDestroy: "ba:audio-destroy"
+        audioDurationchange: "ba:audio-durationchange"
+        audioEmptied: "ba:audio-emptied"
+        audioEnded: "ba:audio-ended"
+        audioError: "ba:audio-error"
+        audioListadd: "ba:audio-listadd"
+        audioListclear: "ba:audio-listclear"
+        audioListhide: "ba:audio-listhide"
+        audioListremove: "ba:audio-listremove"
+        audioListshow: "ba:audio-listshow"
+        audioListswitch: "ba:audio-listswitch"
+        audioLoadeddata: "ba:audio-loadeddata"
+        audioLoadedmetadata: "ba:audio-loadedmetadata"
+        audioLoadstart: "ba:audio-loadstart"
+        audioLrchide: "ba:audio-lrchide"
+        audioLrcshow: "ba:audio-lrcshow"
+        audioMozaudioavailable: "ba:audio-mozaudioavailable"
+        audioNoticehide: "ba:audio-noticehide"
+        audioNoticeshow: "ba:audio-noticeshow"
+        audioPause: "ba:audio-pause"
+        audioPlay: "ba:audio-play"
+        audioPlaying: "ba:audio-playing"
+        audioProgress: "ba:audio-progress"
+        audioRatechange: "ba:audio-ratechange"
+        audioSeeked: "ba:audio-seeked"
+        audioSeeking: "ba:audio-seeking"
+        audioStalled: "ba:audio-stalled"
+        audioSuspend: "ba:audio-suspend"
+        audioTimeupdate: "ba:audio-timeupdate"
+        audioVolumechange: "ba:audio-volumechange"
+        audioWaiting: "ba:audio-waiting"
+
+        printExportData: "ba:print-export-data"
     }
 
     /**
