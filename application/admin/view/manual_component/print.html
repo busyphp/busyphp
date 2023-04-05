@@ -34,6 +34,7 @@
 | data-height | number | `否` | `297` | 导出为PDF时的页面高度，默认为A4纸的高度  |
 | data-padding | number | `否` | `10` | 导出为PDF时的页面边距，默认为10mm  |
 | data-unit | string | `否` | `mm` | 导出为PDF时的尺寸单位，默认为mm  |
+| data-download | string | `否` | `true` | 导出为PDF时是否允许下载  |
 | data-print-options | object | `否` | - | 自定义`printJs`配置，[参考](https://printjs.crabbly.com/) |
 | data-capture-scale | number | `否` | `2` | HTML节点转图片，清晰度不够可设置放大倍数，支持打印方式：`capture,export` |
 | data-capture-options | object | `否` | - | 自定义`html2canvas`配置以设置HTML节点转图片的效果，[参考](https://html2canvas.hertzen.com/configuration) |
@@ -150,10 +151,20 @@
 
     <template id="demo4" class="hide">
         <button class="btn btn-primary"
+                id="demo4Btn"
                 data-target="#demo4Panel"
                 data-type="export"
                 data-toggle="busy-print">
             将整页导出为PDF
         </button>
+        
+        <script>
+            $(function () {
+                // 监听事件以上传到服务器
+                $('#demo4Btn').on(busyAdmin.e.printExportData, function (e, pdf, filename) {
+                    console.log(pdf.output('blob'), filename);
+                });
+            });
+        </script>
     </template>
 </block>
