@@ -2,7 +2,6 @@
 <block name="content">
     <?php
     
-    use BusyPHP\app\admin\model\system\logs\SystemLogsField;
     use BusyPHP\helper\AppHelper;
     
     ?>
@@ -11,7 +10,7 @@
          data-toggle="busy-search-bar"
          data-url="{$url.self}"
          data-accurate-show="true"
-         data-fields="<?=SystemLogsField::name()?>:操作名称,<?=SystemLogsField::username()?>:操作用户名,<?=SystemLogsField::userId()?>:操作用户ID">
+         data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
         <script type="text/html" data-search-id="left">
             <div class="form-group">
                 <div class="input-group">
@@ -102,7 +101,7 @@
                 <ba:access value="detail">
                     <th class="text-center" width="80" data-print-ignore="true"  data-title="操作" data-formatter="@">
                         <script type="text/html">
-                            <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.<?=SystemLogsField::id();?>}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
+                            <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.id}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
                         </script>
                     </th>
                 </ba:access>
