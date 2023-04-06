@@ -535,7 +535,6 @@ class Captcha
         ob_start();
         imagepng($this->resource);
         $content = (string) ob_get_clean();
-        ob_end_clean();
         imagedestroy($this->resource);
         
         return $dataUri ? ('data:image/png;base64,' . base64_encode($content)) : $content;
