@@ -26,6 +26,7 @@
 		"ext-fileinfo"              : "*",
 		"ext-openssl"               : "*",
 		"psr/container"             : "1.1.1",
+		"psr/cache"                 : "^2.0",
 		"guzzlehttp/guzzle"         : "7.5.0",
 		"topthink/framework"        : "6.1.1",
 		"topthink/think-filesystem" : "2.0.0",
