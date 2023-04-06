@@ -480,7 +480,7 @@ class SystemMenu extends Model implements ContainerInterface
                             // 路由转发
                             $controller       = AppHelper::trimController($controller === '' ? $reflect->getShortName() : $controller);
                             $sourceController = AppHelper::trimController($reflect->getShortName());
-                            if ($controller != $sourceController) {
+                            if ($menuRoutes) {
                                 $routes[$controller] = [
                                     'classname'  => $reflect->name,
                                     'controller' => $sourceController,
@@ -583,6 +583,7 @@ class SystemMenu extends Model implements ContainerInterface
             // 转发到类
             if ($item['class']) {
                 $class = $container->getAlias($item['classname']);
+                trace($name . '/' . $pattern . '=' . $class);
                 Route::rule($name . '/' . $pattern, $class . '@' . $pattern)->append([
                     Service::ROUTE_VAR_TYPE    => Service::ROUTE_TYPE_PLUGIN,
                     Service::ROUTE_VAR_CONTROL => $name
