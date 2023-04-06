@@ -583,7 +583,6 @@ class SystemMenu extends Model implements ContainerInterface
             // 转发到类
             if ($item['class']) {
                 $class = $container->getAlias($item['classname']);
-                trace($name . '/' . $pattern . '=' . $class);
                 Route::rule($name . '/' . $pattern, $class . '@' . $pattern)->append([
                     Service::ROUTE_VAR_TYPE    => Service::ROUTE_TYPE_PLUGIN,
                     Service::ROUTE_VAR_CONTROL => $name
