@@ -256,14 +256,19 @@ class ArrayHelper extends Arr
     
     /**
      * 将字符串按规定分隔符拆分
-     * @param string $separator
-     * @param mixed  $string
-     * @param int    $minLength
+     * @param string   $separator 分隔符
+     * @param mixed    $string 切割的字符串
+     * @param int      $minLength 最小数组长度
+     * @param int|null $limit 切割限制次数
      * @return array
      */
-    public static function split(string $separator, mixed $string, int $minLength) : array
+    public static function split(string $separator, mixed $string, int $minLength, ?int $limit = null) : array
     {
-        $arr    = explode($separator, (string) $string);
+        if (!is_null($limit)) {
+            $arr = explode($separator, (string) $string, $limit);
+        } else {
+            $arr = explode($separator, (string) $string);
+        }
         $length = count($arr);
         for ($i = $length; $i < $minLength; $i++) {
             $arr[$i] = '';
