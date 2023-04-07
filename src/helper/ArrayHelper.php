@@ -271,7 +271,7 @@ class ArrayHelper extends Arr
         }
         $length = count($arr);
         for ($i = $length; $i < $minLength; $i++) {
-            $arr[$i] = '';
+            $arr[] = '';
         }
         
         return $arr;
