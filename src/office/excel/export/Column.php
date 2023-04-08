@@ -125,8 +125,8 @@ class Column
             $export = $attr['export'];
             if ($export) {
                 $title = $export->getName();
-                if (!$this->letter && $letter = $export->getLetter()) {
-                    $this->letter($letter);
+                if (!$this->letter) {
+                    $this->letter($export->getLetter());
                 }
                 if (!$this->filter) {
                     $this->filter = $export->getFilter();
