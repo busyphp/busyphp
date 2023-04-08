@@ -50,6 +50,12 @@ class Export
      */
     private string $dataType;
     
+    /**
+     * 是否自动换行
+     * @var bool
+     */
+    private bool $wrapText;
+    
     
     /**
      * 构造函数
@@ -59,8 +65,9 @@ class Export
      * @param string               $numberFormat 数字格式化选项
      * @param bool                 $image 是否图片
      * @param string               $dataType 明确导出的数据类型
+     * @param bool                 $wrapText 是否自动换行
      */
-    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false, string $dataType = '')
+    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false, string $dataType = '', bool $wrapText = false)
     {
         $this->name         = $name;
         $this->filter       = $filter;
@@ -68,6 +75,7 @@ class Export
         $this->image        = $image;
         $this->letter       = strtoupper($letter);
         $this->dataType     = $dataType;
+        $this->wrapText     = $wrapText;
     }
     
     
@@ -143,5 +151,15 @@ class Export
     public function getDataType() : string
     {
         return $this->dataType;
+    }
+    
+    
+    /**
+     * 是否自动换行
+     * @return bool
+     */
+    public function isWrapText() : bool
+    {
+        return $this->wrapText;
     }
 }
