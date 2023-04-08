@@ -14,7 +14,6 @@ use BusyPHP\office\excel\export\parameter\FilterParameter;
 use BusyPHP\office\excel\export\parameter\RowParameter;
 use BusyPHP\office\excel\export\parameter\SheetParameter;
 use Closure;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
