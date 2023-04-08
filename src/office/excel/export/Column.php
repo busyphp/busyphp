@@ -112,10 +112,10 @@ class Column
      */
     public function __construct(string $letter, Entity|string $field, string $name = '', callable|string|null $filter = null)
     {
-        $this->letter = strtoupper(trim($letter));
         $this->field  = $field;
-        $this->name   = trim($name);
+        $this->name   = $name;
         $this->filter = $filter;
+        $this->letter($letter);
         
         $title = '';
         if ($this->field instanceof Entity) {
@@ -189,7 +189,7 @@ class Column
      */
     public function letter(string $letter) : static
     {
-        $this->letter = $letter;
+        $this->letter = strtoupper($letter);
         
         return $this;
     }
