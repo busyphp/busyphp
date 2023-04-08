@@ -5,6 +5,7 @@ namespace BusyPHP\office\excel\export;
 
 use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\Entity;
+use BusyPHP\office\excel\export\parameter\FilterParameter;
 
 /**
  * 导出列配置
@@ -59,10 +60,19 @@ class Column
     
     /**
      * 快速实例化
-     * @param string               $letter 所在列字母
-     * @param Entity|string        $field 数据字段名称，支持 "." 链接访问下级数据
-     * @param string               $name 显示名称
-     * @param callable|string|null $filter 过滤器
+     * @param string                                                                            $letter 所在列字母
+     * @param Entity|string                                                                     $field 数据字段名称，支持 "." 链接访问下级数据
+     * @param string                                                                            $name 显示名称
+     * @param callable(mixed $value, mixed $data, FilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
+     * - {@see mixed} $value 当前要过滤的值<br />
+     * - {@see mixed} $data 当前数据<br />
+     * - {@see FilterParameter} $parameter 过滤参数<br /><br />
+     * <b>示例：</b><br />
+     * <pre>
+     * {@see Column::init}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see FilterParameter} $parameter) {
+     * });
+     * </pre>
+     * </p>
      * @return static
      */
     public static function init(string $letter, Entity|string $field, string $name = '', callable|string|null $filter = null) : static
@@ -73,10 +83,19 @@ class Column
     
     /**
      * 构造函数
-     * @param string               $letter 所在列字母
-     * @param Entity|string        $field 数据字段名称
-     * @param string               $name 显示名称
-     * @param callable|string|null $filter 过滤器
+     * @param string                                                                            $letter 所在列字母
+     * @param Entity|string                                                                     $field 数据字段名称
+     * @param string                                                                            $name 显示名称
+     * @param callable(mixed $value, mixed $data, FilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
+     * - {@see mixed} $value 当前要过滤的值<br />
+     * - {@see mixed} $data 当前数据<br />
+     * - {@see FilterParameter} $parameter 过滤参数<br /><br />
+     * <b>示例：</b><br />
+     * <pre>
+     * new {@see Column}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see FilterParameter} $parameter) {
+     * });
+     * </pre>
+     * </p>
      */
     public function __construct(string $letter, Entity|string $field, string $name = '', callable|string|null $filter = null)
     {
@@ -135,19 +154,20 @@ class Column
     
     /**
      * 获取过滤器
-     * @return callable|string|null
+     * @return mixed
      */
-    public function getFilter() : callable|string|null
+    public function getFilter() : mixed
     {
         return $this->filter;
     }
     
     
     /**
+     * 设置字母
      * @param string $letter
      * @return static
      */
-    public function setLetter(string $letter) : static
+    public function letter(string $letter) : static
     {
         $this->letter = $letter;
         
@@ -162,6 +182,24 @@ class Column
     public function getLetter() : string
     {
         return $this->letter;
+    }
+    
+    
+    /**
+     * 生成单元格下标
+     * @param int         $rowIndex 所在行
+     * @param Column|null $toColumn 结束列对象
+     * @param int|null    $toRowIndex 结束列所在行，默认取所在行
+     * @return string
+     */
+    public function cellIndex(int $rowIndex, Column $toColumn = null, int $toRowIndex = null) : string
+    {
+        $cell = $this->getLetter() . $rowIndex;
+        if ($toColumn) {
+            $cell .= ':' . $toColumn->cellIndex(is_null($toRowIndex) ? $rowIndex : $toRowIndex);
+        }
+        
+        return $cell;
     }
     
     

@@ -8,8 +8,9 @@ use BusyPHP\model\annotation\field\Export;
 use BusyPHP\office\excel\Helper;
 use BusyPHP\office\excel\export\parameter\CellParameter;
 use BusyPHP\office\excel\export\parameter\RowParameter;
-use BusyPHP\office\excel\export\parameter\HandleParameter;
+use BusyPHP\office\excel\export\parameter\SheetParameter;
 use Closure;
+use RuntimeException;
 use think\Collection;
 
 /**
@@ -57,6 +58,12 @@ class Sheet
     protected bool $autoLetterLock = false;
     
     /**
+     * 是否已排序
+     * @var bool
+     */
+    protected bool $letterSortLock = false;
+    
+    /**
      * 行处理回调
      * @var Closure|null
      */
@@ -73,6 +80,18 @@ class Sheet
      * @var Closure|null
      */
     protected ?Closure $handle = null;
+    
+    /**
+     * 第一列
+     * @var Column|null
+     */
+    protected ?Column $first = null;
+    
+    /**
+     * 最后一列
+     * @var Column|null
+     */
+    protected ?Column $last = null;
     
     
     /**
@@ -196,17 +215,17 @@ class Sheet
     
     /**
      * 设置工作集处理回调
-     * @param Closure(HandleParameter):void|null $callback 回调参数： <p>
-     * - {@see HandleParameter} $parameter 工作集参数<br /><br />
+     * @param Closure(SheetParameter):void|null $callback 回调参数： <p>
+     * - {@see SheetParameter} $parameter 工作集参数<br /><br />
      * <b>示例</b>：<br />
      * <pre>
-     * $this->sheet(function({@see HandleParameter} $parameter) {
+     * $this->sheet(function({@see SheetParameter} $parameter) {
      * })
      * </pre>
      * </p>
      * @return $this
      */
-    public function handle(?Closure $callback) : static
+    public function sheet(?Closure $callback) : static
     {
         $this->handle = $callback;
         
@@ -228,6 +247,7 @@ class Sheet
     
     
     /**
+     * 获取工作集表格
      * @return string
      */
     public function getTitle() : string
@@ -237,6 +257,7 @@ class Sheet
     
     
     /**
+     * 获取起始行下标
      * @return int
      */
     public function getStartRow() : int
@@ -246,7 +267,9 @@ class Sheet
     
     
     /**
+     * 获取单元格处理回调
      * @return Closure|null
+     * @internal
      */
     public function getCell() : ?Closure
     {
@@ -255,7 +278,9 @@ class Sheet
     
     
     /**
+     * 获取行处理回调
      * @return Closure|null
+     * @internal
      */
     public function getRow() : ?Closure
     {
@@ -264,6 +289,7 @@ class Sheet
     
     
     /**
+     * 获取所有列
      * @return Column[]
      */
     public function getColumns() : array
@@ -272,7 +298,42 @@ class Sheet
             $this->autoLetterLock = true;
             $letters              = Helper::letters();
             foreach ($this->columns as $i => $column) {
-                $column->setLetter($letters[$i]);
+                $column->letter($letters[$i]);
+            }
+        }
+        
+        // 排序
+        if (!$this->letterSortLock) {
+            $this->letterSortLock = true;
+            
+            $columns = [];
+            $count   = count($this->columns);
+            foreach ($this->columns as $i => $column) {
+                if (!$letter = $column->getLetter()) {
+                    throw new RuntimeException(sprintf('第%s列未指定字母', $i));
+                }
+                if ('' === $column->getField()) {
+                    throw new RuntimeException(sprintf('第%s列未指定字段', $i));
+                }
+                
+                if ($i === 0) {
+                    $this->first = $column;
+                } elseif ($i === $count - 1) {
+                    $this->last = $column;
+                }
+                
+                $columns[$letter] = $column;
+            }
+            ksort($columns);
+            $this->columns = array_values($columns);
+            
+            if ($this->columns) {
+                $this->first = $this->columns[0];
+                
+                $count = count($this->columns);
+                if ($count > 1) {
+                    $this->last = $this->columns[$count - 1];
+                }
             }
         }
         
@@ -281,15 +342,121 @@ class Sheet
     
     
     /**
-     * @return array
+     * 获取第一列
+     * @return Column|null
      */
-    public function getList() : array
+    public function getFirst() : ?Column
     {
-        return $this->list instanceof Collection ? $this->list->all() : $this->list;
+        $this->getColumns();
+        
+        return $this->first;
     }
     
     
     /**
+     * 获取最后一列
+     * @return Column|null
+     */
+    public function getLast() : ?Column
+    {
+        $this->getColumns();
+        
+        return $this->last;
+    }
+    
+    
+    /**
+     * 获取数据的开始行
+     * @return int
+     */
+    public function getDataStartRow() : int
+    {
+        return $this->getStartRow() + 1;
+    }
+    
+    
+    /**
+     * 获取数据的结束行
+     * @return int
+     */
+    public function getDataEndRow() : int
+    {
+        return $this->getStartRow() + count($this->getList());
+    }
+    
+    
+    /**
+     * 获取指定行的单元格范围
+     * @param int $rowIndex
+     * @return string
+     */
+    public function getRowRange(int $rowIndex) : string
+    {
+        if (!$first = $this->getFirst()) {
+            throw new RuntimeException('未设置导出列');
+        }
+        
+        return $first->cellIndex($rowIndex, $this->getLast());
+    }
+    
+    
+    /**
+     * 获取从开始行到指定行的单元格范围
+     * @param int|null $rowIndex 默认为全部范围
+     * @return string
+     */
+    public function getAllRange(int $rowIndex = null) : string
+    {
+        if (!$first = $this->getFirst()) {
+            throw new RuntimeException('未设置导出列');
+        }
+        
+        $rowIndex = is_null($rowIndex) ? $this->getDataEndRow() : $rowIndex;
+        
+        return $first->cellIndex($this->getStartRow(), $this->getLast(), $rowIndex);
+    }
+    
+    
+    /**
+     * 获取标题栏的单元格范围
+     * @return string
+     */
+    public function getHeadRange() : string
+    {
+        return $this->getRowRange($this->getStartRow());
+    }
+    
+    
+    /**
+     * 获取数据行的单元格范围
+     * @return string
+     */
+    public function getDataRange() : string
+    {
+        if (!$first = $this->getFirst()) {
+            throw new RuntimeException('未设置导出列');
+        }
+        
+        return $first->cellIndex($this->getDataStartRow(), $this->getLast(), $this->getDataEndRow());
+    }
+    
+    
+    /**
+     * 获取数据
+     * @return array
+     */
+    public function getList() : array
+    {
+        if ($this->list instanceof Collection) {
+            $this->list = $this->list->all();
+        }
+        
+        return $this->list;
+    }
+    
+    
+    /**
+     * 获取工作集处理回调
      * @return Closure|null
      */
     public function getHandle() : ?Closure
@@ -335,7 +502,7 @@ class Sheet
         }
         
         foreach ($columnList as $i => $item) {
-            $item->setLetter($newLetters[$i]);
+            $item->letter($newLetters[$i]);
             $columns[] = $item;
         }
         unset($columnList, $newLetters, $letters);

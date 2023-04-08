@@ -7,13 +7,13 @@ use BusyPHP\office\excel\export\Sheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * 导出行处理回调参数
+ * 导出工作集处理回调参数
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2023/4/6 20:42 RowParameter.php $
- * @see Sheet::row()
+ * @version $Id: 2023/4/6 20:46 SheetParameter.php $
+ * @see Sheet::sheet()
  */
-class RowParameter
+class SheetParameter
 {
     /**
      * 当前工作集对象
@@ -22,7 +22,7 @@ class RowParameter
     public Worksheet $worksheet;
     
     /**
-     * 当前所在行
+     * 最新可用的行
      * @var int
      */
     public int $rowIndex;

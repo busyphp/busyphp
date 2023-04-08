@@ -6,12 +6,13 @@ namespace BusyPHP\office\excel;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Model;
 use BusyPHP\office\excel\export\Column;
+use BusyPHP\office\excel\export\parameter\HandleParameter;
 use BusyPHP\office\excel\export\Sheet;
 use BusyPHP\office\excel\export\interfaces\SheetInterface;
 use BusyPHP\office\excel\export\parameter\CellParameter;
 use BusyPHP\office\excel\export\parameter\FilterParameter;
 use BusyPHP\office\excel\export\parameter\RowParameter;
-use BusyPHP\office\excel\export\parameter\HandleParameter;
+use BusyPHP\office\excel\export\parameter\SheetParameter;
 use Closure;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -167,7 +168,14 @@ class Export
     
     /**
      * 设置导出处理回调
-     * @param Closure|null $handle
+     * @param Closure(HandleParameter $parameter):void|null $handle 回调参数：<p>
+     * - {@see HandleParameter} $parameter 参数对象<br /><br />
+     * <b>示例</b>：<br />
+     * <pre>
+     * $this->handle(function({@see HandleParameter} $parameter) {
+     * })
+     * </pre>
+     * </p>
      * @return $this
      */
     public function handle(?Closure $handle) : static
@@ -204,13 +212,13 @@ class Export
         
         // 设置标题栏
         foreach ($columns as $column) {
-            $sheet->setCellValue(sprintf('%s%s', $column->getLetter(), $begin), $column->getName());
+            $sheet->setCellValue($column->cellIndex($begin), $column->getName());
         }
         
         $rowIndex = $begin + 1;
         foreach ($config->getList() as $item) {
             foreach ($columns as $column) {
-                $cellIndex = sprintf('%s%s', $column->getLetter(), $rowIndex);
+                $cellIndex = $column->cellIndex($rowIndex);
                 $value     = ArrayHelper::get($item, $column->getField());
                 $filter    = $column->getFilter();
                 $drawing   = null;
@@ -271,7 +279,7 @@ class Export
             
             // 行回调
             if (($row = $config->getRow()) instanceof Closure) {
-                call_user_func($row, $item, new RowParameter($sheet, $rowIndex));
+                call_user_func($row, $item, new RowParameter($sheet, $config, $rowIndex));
             }
             
             $rowIndex++;
@@ -279,7 +287,7 @@ class Export
         
         // 处理回调
         if (($call = $config->getHandle()) instanceof Closure) {
-            call_user_func($call, new HandleParameter($sheet, $config->getList(), $rowIndex));
+            call_user_func($call, new SheetParameter($sheet, $config, $rowIndex));
         }
         
         return $this;
@@ -295,10 +303,11 @@ class Export
         foreach ($this->sheets as $index => $sheet) {
             $this->create($index, $sheet);
         }
+        $this->spread->setActiveSheetIndex(0);
         
         // 处理回调
         if ($this->handle instanceof Closure) {
-            call_user_func($this->handle, $this->spread);
+            call_user_func($this->handle, new HandleParameter($this->spread, $this->sheets));
         }
         
         return IOFactory::createWriter($this->spread, ucfirst($this->type));
