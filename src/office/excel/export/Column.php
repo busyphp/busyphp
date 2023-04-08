@@ -126,7 +126,7 @@ class Column
             if ($export) {
                 $title = $export->getName();
                 if (!$this->letter && $letter = $export->getLetter()) {
-                    $this->letter = $letter;
+                    $this->letter($letter);
                 }
                 if (!$this->filter) {
                     $this->filter = $export->getFilter();
