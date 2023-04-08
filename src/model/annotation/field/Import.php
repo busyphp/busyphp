@@ -95,7 +95,7 @@ class Import
      */
     public function getSplit() : array
     {
-        if (is_array($this->split)) {
+        if (!is_array($this->split)) {
             $this->split = [
                 'delimiter' => $this->split,
             ];
