@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\office\excel\export\parameter;
 
-use BusyPHP\office\excel\export\Column;
+use BusyPHP\office\excel\export\ExportColumn;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -11,10 +11,10 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * 导出单元格处理回调参数
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2023/4/6 20:40 CellParameter.php $
- * @see Sheet::cell()
+ * @version $Id: 2023/4/6 20:40 ExportCellParameter.php $
+ * @see ExportSheet::cell()
  */
-class CellParameter
+class ExportCellParameter
 {
     /**
      * 当前工作集对象
@@ -30,9 +30,9 @@ class CellParameter
     
     /**
      * 列对象
-     * @var Column
+     * @var ExportColumn
      */
-    public Column $column;
+    public ExportColumn $column;
     
     /**
      * 当前所在列
@@ -47,7 +47,7 @@ class CellParameter
     public int $rowIndex;
     
     
-    public function __construct(Worksheet $worksheet, array $drawings, Column $column, string $cellIndex, int $rowIndex)
+    public function __construct(Worksheet $worksheet, array $drawings, ExportColumn $column, string $cellIndex, int $rowIndex)
     {
         $this->worksheet = $worksheet;
         $this->drawings  = $drawings;

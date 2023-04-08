@@ -4,16 +4,16 @@ declare(strict_types = 1);
 namespace BusyPHP\office\excel\export;
 
 use BusyPHP\model\Entity;
-use BusyPHP\office\excel\export\parameter\FilterParameter;
+use BusyPHP\office\excel\export\parameter\ExportFilterParameter;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 /**
  * 导出列配置
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2023/4/6 12:05 Column.php $
+ * @version $Id: 2023/4/6 12:05 ExportColumn.php $
  */
-class Column
+class ExportColumn
 {
     /** @var string 强制转为字符串 */
     public const FILTER_STRING = ':string';
@@ -72,16 +72,16 @@ class Column
     
     /**
      * 快速实例化
-     * @param string                                                                            $letter 所在列字母
-     * @param Entity|string                                                                     $field 数据字段名称，支持 "." 链接访问下级数据
-     * @param string                                                                            $name 显示名称
-     * @param callable(mixed $value, mixed $data, FilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
+     * @param string                                                                                  $letter 所在列字母
+     * @param Entity|string                                                                           $field 数据字段名称，支持 "." 链接访问下级数据
+     * @param string                                                                                  $name 显示名称
+     * @param callable(mixed $value, mixed $data, ExportFilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
      * - {@see mixed} $value 当前要过滤的值<br />
      * - {@see mixed} $data 当前数据<br />
-     * - {@see FilterParameter} $parameter 过滤参数<br /><br />
+     * - {@see ExportFilterParameter} $parameter 过滤参数<br /><br />
      * <b>示例：</b><br />
      * <pre>
-     * {@see Column::init}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see FilterParameter} $parameter) {
+     * {@see ExportColumn::init}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see ExportFilterParameter} $parameter) {
      * });
      * </pre>
      * </p>
@@ -95,16 +95,16 @@ class Column
     
     /**
      * 构造函数
-     * @param string                                                                            $letter 所在列字母
-     * @param Entity|string                                                                     $field 数据字段名称
-     * @param string                                                                            $name 显示名称
-     * @param callable(mixed $value, mixed $data, FilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
+     * @param string                                                                                  $letter 所在列字母
+     * @param Entity|string                                                                           $field 数据字段名称
+     * @param string                                                                                  $name 显示名称
+     * @param callable(mixed $value, mixed $data, ExportFilterParameter $parameter):mixed|string|null $filter 过滤器，回调参数：<p>
      * - {@see mixed} $value 当前要过滤的值<br />
      * - {@see mixed} $data 当前数据<br />
-     * - {@see FilterParameter} $parameter 过滤参数<br /><br />
+     * - {@see ExportFilterParameter} $parameter 过滤参数<br /><br />
      * <b>示例：</b><br />
      * <pre>
-     * new {@see Column}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see FilterParameter} $parameter) {
+     * new {@see ExportColumn}('A', 'name', '姓名', function({@see mixed} $value, {@see mixed} $data, {@see ExportFilterParameter} $parameter) {
      * });
      * </pre>
      * </p>
@@ -204,12 +204,12 @@ class Column
     
     /**
      * 生成单元格下标
-     * @param int         $rowIndex 所在行
-     * @param Column|null $toColumn 结束列对象
-     * @param int|null    $toRowIndex 结束列所在行，默认取所在行
+     * @param int               $rowIndex 所在行
+     * @param ExportColumn|null $toColumn 结束列对象
+     * @param int|null          $toRowIndex 结束列所在行，默认取所在行
      * @return string
      */
-    public function cellIndex(int $rowIndex, Column $toColumn = null, int $toRowIndex = null) : string
+    public function cellIndex(int $rowIndex, ExportColumn $toColumn = null, int $toRowIndex = null) : string
     {
         $cell = $this->getLetter() . $rowIndex;
         if ($toColumn) {

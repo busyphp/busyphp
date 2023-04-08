@@ -5,14 +5,14 @@ namespace BusyPHP\office\excel;
 
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Model;
-use BusyPHP\office\excel\export\Column;
-use BusyPHP\office\excel\export\parameter\HandleParameter;
-use BusyPHP\office\excel\export\Sheet;
-use BusyPHP\office\excel\export\interfaces\SheetInterface;
-use BusyPHP\office\excel\export\parameter\CellParameter;
-use BusyPHP\office\excel\export\parameter\FilterParameter;
-use BusyPHP\office\excel\export\parameter\RowParameter;
-use BusyPHP\office\excel\export\parameter\SheetParameter;
+use BusyPHP\office\excel\export\ExportColumn;
+use BusyPHP\office\excel\export\parameter\ExportHandleParameter;
+use BusyPHP\office\excel\export\ExportSheet;
+use BusyPHP\office\excel\export\interfaces\ExportSheetInterface;
+use BusyPHP\office\excel\export\parameter\ExportCellParameter;
+use BusyPHP\office\excel\export\parameter\ExportFilterParameter;
+use BusyPHP\office\excel\export\parameter\ExportRowParameter;
+use BusyPHP\office\excel\export\parameter\ExportSheetParameter;
 use Closure;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -67,7 +67,7 @@ class Export
     
     /**
      * 工作集集合
-     * @var Sheet[]
+     * @var ExportSheet[]
      */
     protected array $sheets = [];
     
@@ -86,11 +86,11 @@ class Export
     
     /**
      * 快速实例化
-     * @param Sheet|SheetInterface|Model|null $sheet 工作集对象或模型
+     * @param ExportSheet|ExportSheetInterface|Model|null $sheet 工作集对象或模型
      * @return static
      * @throws Throwable
      */
-    public static function init(Sheet|SheetInterface|Model|null $sheet = null) : static
+    public static function init(ExportSheet|ExportSheetInterface|Model|null $sheet = null) : static
     {
         return Container::getInstance()->make(self::class, [$sheet], true);
     }
@@ -127,25 +127,25 @@ class Export
     
     /**
      * 添加工作集
-     * @param Sheet|SheetInterface|Model $sheet 工作集对象或工作集接口
+     * @param ExportSheet|ExportSheetInterface|Model $sheet 工作集对象或工作集接口
      * @return static
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function add(Sheet|SheetInterface|Model $sheet) : static
+    public function add(ExportSheet|ExportSheetInterface|Model $sheet) : static
     {
         $columns = [];
         $model   = null;
         if ($sheet instanceof Model) {
             $model   = $sheet;
-            $columns = Sheet::getColumnsByModel($sheet);
+            $columns = ExportSheet::getColumnsByModel($sheet);
         }
         
         // 实现了接口
-        if ($sheet instanceof SheetInterface) {
-            $sheet->initExcelExportSheet($sheet = Sheet::init($columns));
+        if ($sheet instanceof ExportSheetInterface) {
+            $sheet->initExcelExportSheet($sheet = ExportSheet::init($columns));
         } elseif ($model) {
-            $sheet = Sheet::init($columns);
+            $sheet = ExportSheet::init($columns);
         }
         
         // 模型自动填充数据
@@ -168,11 +168,11 @@ class Export
     
     /**
      * 设置导出处理回调
-     * @param Closure(HandleParameter $parameter):void|null $handle 回调参数：<p>
-     * - {@see HandleParameter} $parameter 参数对象<br /><br />
+     * @param Closure(ExportHandleParameter $parameter):void|null $handle 回调参数：<p>
+     * - {@see ExportHandleParameter} $parameter 参数对象<br /><br />
      * <b>示例</b>：<br />
      * <pre>
-     * $this->handle(function({@see HandleParameter} $parameter) {
+     * $this->handle(function({@see ExportHandleParameter} $parameter) {
      * })
      * </pre>
      * </p>
@@ -188,12 +188,12 @@ class Export
     
     /**
      * 构建一个Sheet的数据
-     * @param int   $index sheet下标，从0开始
-     * @param Sheet $config sheet配置
+     * @param int         $index sheet下标，从0开始
+     * @param ExportSheet $config sheet配置
      * @return static
      * @throws Exception
      */
-    protected function create(int $index, Sheet $config) : static
+    protected function create(int $index, ExportSheet $config) : static
     {
         $columns = $config->getColumns();
         $begin   = max($config->getStartRow(), 1);
@@ -224,11 +224,11 @@ class Export
                 $drawing   = null;
                 switch (true) {
                     // 字符串
-                    case $filter === Column::FILTER_STRING:
+                    case $filter === ExportColumn::FILTER_STRING:
                         $value = (string) $value;
                     break;
                     // 日期
-                    case $filter === Column::FILTER_DATE && $value !== 0:
+                    case $filter === ExportColumn::FILTER_DATE && $value !== 0:
                         $value = Date::PHPToExcel($value);
                     break;
                     // 函数过滤
@@ -237,7 +237,7 @@ class Export
                     break;
                     // 自定义过滤
                     case is_callable($filter):
-                        $value = call_user_func($filter, $value, $item, new FilterParameter($column, $cellIndex, $rowIndex));
+                        $value = call_user_func($filter, $value, $item, new ExportFilterParameter($column, $cellIndex, $rowIndex));
                     break;
                 }
                 
@@ -271,7 +271,7 @@ class Export
                 
                 // 单元格回调
                 if (($cell = $config->getCell()) instanceof Closure) {
-                    call_user_func($cell, $value, $item, new CellParameter($sheet, $drawings, $column, $cellIndex, $rowIndex));
+                    call_user_func($cell, $value, $item, new ExportCellParameter($sheet, $drawings, $column, $cellIndex, $rowIndex));
                 }
                 
                 // 写入图片
@@ -289,7 +289,7 @@ class Export
             
             // 行回调
             if (($row = $config->getRow()) instanceof Closure) {
-                call_user_func($row, $item, new RowParameter($sheet, $config, $rowIndex));
+                call_user_func($row, $item, new ExportRowParameter($sheet, $config, $rowIndex));
             }
             
             $rowIndex++;
@@ -297,7 +297,7 @@ class Export
         
         // 处理回调
         if (($call = $config->getHandle()) instanceof Closure) {
-            call_user_func($call, new SheetParameter($sheet, $config, $rowIndex));
+            call_user_func($call, new ExportSheetParameter($sheet, $config, $rowIndex));
         }
         
         return $this;
@@ -317,7 +317,7 @@ class Export
         
         // 处理回调
         if ($this->handle instanceof Closure) {
-            call_user_func($this->handle, new HandleParameter($this->spread, $this->sheets));
+            call_user_func($this->handle, new ExportHandleParameter($this->spread, $this->sheets));
         }
         
         return IOFactory::createWriter($this->spread, ucfirst($this->type));

@@ -3,16 +3,16 @@ declare(strict_types = 1);
 
 namespace BusyPHP\office\excel\export\parameter;
 
-use BusyPHP\office\excel\export\Column;
+use BusyPHP\office\excel\export\ExportColumn;
 
 /**
  * 导出过滤回调参数
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2023/4/7 20:14 FilterParameter.php $
- * @see Column::$filter
+ * @version $Id: 2023/4/7 20:14 ExportFilterParameter.php $
+ * @see ExportColumn::$filter
  */
-class FilterParameter
+class ExportFilterParameter
 {
     /**
      * 当前所在行
@@ -22,9 +22,9 @@ class FilterParameter
     
     /**
      * 当前所在列对象
-     * @var Column
+     * @var ExportColumn
      */
-    public Column $column;
+    public ExportColumn $column;
     
     /**
      * 当前单元格下标
@@ -34,11 +34,11 @@ class FilterParameter
     
     
     /**
-     * @param Column $column
-     * @param string $cellIndex
-     * @param int    $rowIndex
+     * @param ExportColumn $column
+     * @param string       $cellIndex
+     * @param int          $rowIndex
      */
-    public function __construct(Column $column, string $cellIndex, int $rowIndex)
+    public function __construct(ExportColumn $column, string $cellIndex, int $rowIndex)
     {
         $this->rowIndex  = $rowIndex;
         $this->column    = $column;

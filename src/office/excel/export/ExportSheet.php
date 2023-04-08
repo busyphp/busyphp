@@ -6,9 +6,9 @@ namespace BusyPHP\office\excel\export;
 use BusyPHP\Model;
 use BusyPHP\model\annotation\field\Export;
 use BusyPHP\office\excel\Helper;
-use BusyPHP\office\excel\export\parameter\CellParameter;
-use BusyPHP\office\excel\export\parameter\RowParameter;
-use BusyPHP\office\excel\export\parameter\SheetParameter;
+use BusyPHP\office\excel\export\parameter\ExportCellParameter;
+use BusyPHP\office\excel\export\parameter\ExportRowParameter;
+use BusyPHP\office\excel\export\parameter\ExportSheetParameter;
 use Closure;
 use RuntimeException;
 use think\Collection;
@@ -17,13 +17,13 @@ use think\Collection;
  * 导出工作集配置
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2023/4/6 15:31 Sheet.php $
+ * @version $Id: 2023/4/6 15:31 ExportSheet.php $
  */
-class Sheet
+class ExportSheet
 {
     /**
      * 导出列配置
-     * @var Column[]
+     * @var ExportColumn[]
      */
     protected array $columns;
     
@@ -83,20 +83,20 @@ class Sheet
     
     /**
      * 第一列
-     * @var Column|null
+     * @var ExportColumn|null
      */
-    protected ?Column $first = null;
+    protected ?ExportColumn $first = null;
     
     /**
      * 最后一列
-     * @var Column|null
+     * @var ExportColumn|null
      */
-    protected ?Column $last = null;
+    protected ?ExportColumn $last = null;
     
     
     /**
      * 初始化
-     * @param Column[]         $columns 导出列配置
+     * @param ExportColumn[]   $columns 导出列配置
      * @param array|Collection $list 导出数据
      * @return static
      */
@@ -108,7 +108,7 @@ class Sheet
     
     /**
      * 构造函数
-     * @param Column[]         $columns 导出列配置
+     * @param ExportColumn[]   $columns 导出列配置
      * @param array|Collection $list 导出数据
      */
     public function __construct(array $columns = [], array|Collection $list = [])
@@ -172,13 +172,13 @@ class Sheet
     
     /**
      * 设置单元格处理回调
-     * @param Closure(mixed $value, mixed $data, CellParameter $parameter):void|null $callback 回调参数： <p>
+     * @param Closure(mixed $value, mixed $data, ExportCellParameter $parameter):void|null $callback 回调参数： <p>
      * - {@see mixed} $value 当前单元格的值<br />
      * - {@see mixed} $data 当前数据<br />
-     * - {@see CellParameter} $parameter 单元格参数<br /><br />
+     * - {@see ExportCellParameter} $parameter 单元格参数<br /><br />
      * <b>示例</b>：<br />
      * <pre>
-     * $this->call(function({@see mixed} $value, {@see mixed} $data, {@see CellParameter} $parameter) {
+     * $this->call(function({@see mixed} $value, {@see mixed} $data, {@see ExportCellParameter} $parameter) {
      * })
      * </pre>
      * </p>
@@ -194,12 +194,12 @@ class Sheet
     
     /**
      * 设置行处理回调
-     * @param Closure(mixed $value, mixed $data, RowParameter $parameter):void|null $callback 回调参数： <p>
+     * @param Closure(mixed $value, mixed $data, ExportRowParameter $parameter):void|null $callback 回调参数： <p>
      * - {@see mixed} $data 当前数据<br />
-     * - {@see RowParameter} $parameter 行参数<br /><br />
+     * - {@see ExportRowParameter} $parameter 行参数<br /><br />
      * <b>示例</b>：<br />
      * <pre>
-     * $this->row(function({@see mixed} $data, {@see RowParameter} $parameter) {
+     * $this->row(function({@see mixed} $data, {@see ExportRowParameter} $parameter) {
      * })
      * </pre>
      * </p>
@@ -215,11 +215,11 @@ class Sheet
     
     /**
      * 设置工作集处理回调
-     * @param Closure(SheetParameter):void|null $callback 回调参数： <p>
-     * - {@see SheetParameter} $parameter 工作集参数<br /><br />
+     * @param Closure(ExportSheetParameter):void|null $callback 回调参数： <p>
+     * - {@see ExportSheetParameter} $parameter 工作集参数<br /><br />
      * <b>示例</b>：<br />
      * <pre>
-     * $this->sheet(function({@see SheetParameter} $parameter) {
+     * $this->sheet(function({@see ExportSheetParameter} $parameter) {
      * })
      * </pre>
      * </p>
@@ -290,7 +290,7 @@ class Sheet
     
     /**
      * 获取所有列
-     * @return Column[]
+     * @return ExportColumn[]
      */
     public function getColumns() : array
     {
@@ -343,9 +343,9 @@ class Sheet
     
     /**
      * 获取第一列
-     * @return Column|null
+     * @return ExportColumn|null
      */
-    public function getFirst() : ?Column
+    public function getFirst() : ?ExportColumn
     {
         $this->getColumns();
         
@@ -355,9 +355,9 @@ class Sheet
     
     /**
      * 获取最后一列
-     * @return Column|null
+     * @return ExportColumn|null
      */
-    public function getLast() : ?Column
+    public function getLast() : ?ExportColumn
     {
         $this->getColumns();
         
@@ -466,9 +466,9 @@ class Sheet
     
     
     /**
-     * 通过模型获取导出列选项
+     * 通过模型获取导出列选项集合
      * @param Model $model
-     * @return Column[]
+     * @return ExportColumn[]
      */
     public static function getColumnsByModel(Model $model) : array
     {
@@ -479,8 +479,7 @@ class Sheet
         $deleteList = [];
         foreach ($fieldClass::getPropertyAttrs() as $name => $attr) {
             /** @var Export $export */
-            $export = $attr['export'] ?? null;
-            if (!$export) {
+            if (!$export = $attr['export']) {
                 continue;
             }
             
@@ -488,9 +487,9 @@ class Sheet
                 if (false !== $index = array_search($letter, $letters, true)) {
                     $deleteList[] = $index;
                 }
-                $columns[] = Column::init($letter, $fieldClass::$name());
+                $columns[] = ExportColumn::init($letter, $fieldClass::$name());
             } else {
-                $columnList[] = Column::init('', $fieldClass::$name());
+                $columnList[] = ExportColumn::init('', $fieldClass::$name());
             }
         }
         
