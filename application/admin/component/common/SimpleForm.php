@@ -7,9 +7,9 @@ use BusyPHP\App;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
-use BusyPHP\office\excel\ExcelExport;
-use BusyPHP\office\excel\export\ExportSheet;
-use BusyPHP\office\excel\export\interfaces\ExcelExportSheetInterface;
+use BusyPHP\office\excel\Export;
+use BusyPHP\office\excel\export\Sheet;
+use BusyPHP\office\excel\export\interfaces\SheetInterface;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use LogicException;
@@ -145,22 +145,22 @@ class SimpleForm implements ContainerInterface
     
     /**
      * 导出
-     * @param Model[]|ExportSheet[]|ExcelExportSheetInterface[] $sheets 其它模型或工作集
-     * @param string                                            $filename 导出文件名
-     * @param string                                            $type 导出类型
-     * @param Closure(Spreadsheet):void|null                    $handle 导出工作集处理回调
+     * @param Model[]|Sheet[]|SheetInterface[] $sheets 其它模型或工作集
+     * @param string                           $filename 导出文件名
+     * @param string                           $type 导出类型
+     * @param Closure(Spreadsheet):void|null   $handle 导出工作集处理回调
      * @throws Throwable
      */
-    public function export(array $sheets = [], string $filename = '', string $type = ExcelExport::TYPE_XLSX, ?Closure $handle = null) : Response
+    public function export(array $sheets = [], string $filename = '', string $type = Export::TYPE_XLSX, ?Closure $handle = null) : Response
     {
         $model  = $this->getModel();
-        $export = ExcelExport::init($model);
+        $export = Export::init($model);
         foreach ($sheets as $item) {
             $export->add($item);
         }
         
         return $export
-            ->type($type ?: ExcelExport::TYPE_XLSX)
+            ->type($type ?: Export::TYPE_XLSX)
             ->handle($handle)
             ->response($filename === '' ? sprintf("%s_%s", $model->getName(), date('YmdHis')) : $filename);
     }
