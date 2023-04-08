@@ -7,11 +7,18 @@ use BusyPHP\App;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
+use BusyPHP\office\excel\ExcelExport;
+use BusyPHP\office\excel\export\ExportSheet;
+use BusyPHP\office\excel\export\interfaces\ExcelExportSheetInterface;
 use BusyPHP\traits\ContainerDefine;
+use Closure;
 use LogicException;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use think\db\exception\DbException;
 use think\exception\InvalidArgumentException;
 use think\Request;
+use think\Response;
+use Throwable;
 
 /**
  * 常规表单操作
@@ -24,19 +31,19 @@ class SimpleForm implements ContainerInterface
     use ContainerDefine;
     
     /**
-     * @var Model
+     * @var Model|null
      */
-    protected $model;
+    protected ?Model $model;
     
     /**
      * @var App
      */
-    protected $app;
+    protected App $app;
     
     /**
      * @var Request
      */
-    protected $request;
+    protected Request $request;
     
     
     /**
@@ -109,14 +116,14 @@ class SimpleForm implements ContainerInterface
      * @param string|array  $data 处理的数据或HTTP请求参数名称
      * @param string|bool   $empty 是否检测批处理数据为空或批处理数据为空的错误提示
      * @param callable|null $callback 自定义处理回调，默认为执行删除
-     * @return array
+     * @return array 批处理返回结果集
      * @throws DbException
      */
     public function batch(string|array $data, string|bool $empty = true, callable $callback = null) : array
     {
         $data = is_string($data) ? $this->request->param("$data/a", [], 'trim') : $data;
-        if ($empty && !$data) {
-            throw new InvalidArgumentException((is_bool($empty) || !$empty) ? '缺少删除条件' : $empty);
+        if (($empty || $empty === '') && !$data) {
+            throw new InvalidArgumentException((is_bool($empty) || $empty === '') ? '缺少删除条件' : $empty);
         }
         
         $result = [];
@@ -133,6 +140,29 @@ class SimpleForm implements ContainerInterface
         }
         
         return $result;
+    }
+    
+    
+    /**
+     * 导出
+     * @param Model[]|ExportSheet[]|ExcelExportSheetInterface[] $sheets 其它模型或工作集
+     * @param string                                            $filename 导出文件名
+     * @param string                                            $type 导出类型
+     * @param Closure(Spreadsheet):void|null                    $handle 导出工作集处理回调
+     * @throws Throwable
+     */
+    public function export(array $sheets = [], string $filename = '', string $type = ExcelExport::TYPE_XLSX, ?Closure $handle = null) : Response
+    {
+        $model  = $this->getModel();
+        $export = ExcelExport::init($model);
+        foreach ($sheets as $item) {
+            $export->add($item);
+        }
+        
+        return $export
+            ->type($type ?: ExcelExport::TYPE_XLSX)
+            ->handle($handle)
+            ->response($filename === '' ? sprintf("%s_%s", $model->getName(), date('YmdHis')) : $filename);
     }
     
     

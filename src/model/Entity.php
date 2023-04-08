@@ -3,7 +3,13 @@ declare(strict_types = 1);
 
 namespace BusyPHP\model;
 
+use BusyPHP\helper\ReflectionNamedType;
 use BusyPHP\helper\StringHelper;
+use BusyPHP\model\annotation\field\Export;
+use BusyPHP\model\annotation\field\Filter;
+use BusyPHP\model\annotation\field\Format;
+use BusyPHP\model\annotation\field\Validator;
+use ReflectionProperty;
 use think\db\Raw;
 
 /**
@@ -37,6 +43,12 @@ class Entity
      * @var string
      */
     private string $alias;
+    
+    /**
+     * 所属字段类
+     * @var class-string<Field>
+     */
+    private string $fieldClass;
     
     /**
      * 值
@@ -77,17 +89,19 @@ class Entity
     
     /**
      * Entity constructor.
-     * @param string $name 类属性名称
-     * @param string $field 字段名称
-     * @param string $alias 数据表别名
-     * @param bool   $virtual 是否虚拟字段
+     * @param string              $name 类属性名称
+     * @param string              $field 字段名称
+     * @param string              $alias 数据表别名
+     * @param class-string<Field> $class 所属字段类
+     * @param bool                $virtual 是否虚拟字段
      */
-    public function __construct(string $name, string $field, string $alias, bool $virtual = false)
+    public function __construct(string $name, string $field, string $alias, string $class, bool $virtual = false)
     {
-        $this->name    = $name;
-        $this->field   = $field;
-        $this->virtual = $virtual;
-        $this->alias   = $alias;
+        $this->name       = $name;
+        $this->field      = $field;
+        $this->virtual    = $virtual;
+        $this->alias      = $alias;
+        $this->fieldClass = $class;
     }
     
     
@@ -306,6 +320,26 @@ class Entity
         $this->value = null;
         
         return $this;
+    }
+    
+    
+    /**
+     * 获取对应字段类
+     * @return class-string<Field>|Field
+     */
+    public function getFieldClass() : string
+    {
+        return $this->fieldClass;
+    }
+    
+    
+    /**
+     * 获取属性
+     * @return array{title: string, name: string, field: string|false, field_type: string, types: array<ReflectionNamedType>, var_type: string, filter: array<Filter>, format: ?Format, validate: array<Validator>, access: int, property: ReflectionProperty, export: ?Export}
+     */
+    public function getPropertyAttr() : array
+    {
+        return $this->getFieldClass()::getPropertyAttrs($this->name);
     }
     
     
