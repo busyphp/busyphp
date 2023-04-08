@@ -44,6 +44,12 @@ class Export
      */
     private string $letter;
     
+    /**
+     * 导出的数据类型
+     * @var string
+     */
+    private string $dataType;
+    
     
     /**
      * 构造函数
@@ -52,14 +58,16 @@ class Export
      * @param string|callable|null $filter 导出过滤回调
      * @param string               $numberFormat 数字格式化选项
      * @param bool                 $image 是否图片
+     * @param string               $dataType 明确导出的数据类型
      */
-    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false)
+    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false, string $dataType = '')
     {
         $this->name         = $name;
         $this->filter       = $filter;
         $this->numberFormat = $numberFormat;
         $this->image        = $image;
         $this->letter       = strtoupper($letter);
+        $this->dataType     = $dataType;
     }
     
     
@@ -125,5 +133,15 @@ class Export
     public function isImage() : bool
     {
         return $this->image;
+    }
+    
+    
+    /**
+     * 获取导出的数据类型
+     * @return string
+     */
+    public function getDataType() : string
+    {
+        return $this->dataType;
     }
 }
