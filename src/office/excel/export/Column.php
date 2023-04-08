@@ -122,8 +122,7 @@ class Column
             $title = $attr['title'];
             
             // 使用导出配置
-            $export = $attr['export'];
-            if ($export) {
+            if ($export = $attr['export']) {
                 $title = $export->getName();
                 if (!$this->letter) {
                     $this->letter($export->getLetter());
