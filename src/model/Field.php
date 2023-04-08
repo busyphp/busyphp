@@ -15,6 +15,7 @@ use BusyPHP\Model;
 use BusyPHP\model\annotation\field\AutoTimestamp;
 use BusyPHP\model\annotation\field\BindModel;
 use BusyPHP\model\annotation\field\Column;
+use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Format;
 use BusyPHP\model\annotation\field\Ignore;
@@ -71,17 +72,17 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 属性的字段名称 */
     private const ATTR_FIELD = 'field';
     
+    /** @var string 属性的字段类型 */
+    private const ATTR_FIELD_TYPE = 'field_type';
+    
     /** @var string 属性名称 */
     private const ATTR_NAME = 'name';
     
-    /** @var string 属性输出重命名 */
-    private const ATTR_RENAME = 'rename';
-    
-    /** @var string 属性输出忽略 */
-    private const ATTR_IGNORE = 'ignore';
-    
     /** @var string 属性验证规则 */
     private const ATTR_VALIDATE = 'validate';
+    
+    /** @var string 导出字段 */
+    private const ATTR_EXPORT = 'export';
     
     /** @var string 输出属性格式注解 */
     private const MAP_TO_ARRAY_FORMAT = 'to_array_format';
@@ -344,7 +345,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * @param string|null $property
      * @return array[]|array{title: string, name: string, field: string|false, type: array<ReflectionNamedType>, filter: array<callable>, ignore: array, property: ReflectionProperty}
      */
-    protected static function getPropertyAttrs(string $property = null) : ?array
+    public static function getPropertyAttrs(string $property = null) : ?array
     {
         if (!isset(self::$propertyMap[static::class])) {
             $class             = ClassHelper::getReflectionClass(static::class);
@@ -440,6 +441,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 $readonly  = false;
                 $fieldType = '';
                 $feature   = 0;
+                $export    = null;
                 if ($type instanceof ReflectionNamedType) {
                     $types = [$type];
                 } elseif ($type instanceof ReflectionUnionType) {
@@ -544,6 +546,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                         case $attributeName === ValueBindField::class:
                             $valueBindFieldMap[$name] = $attribute->newInstance();
                         break;
+                        
+                        // 导出
+                        case $attributeName === Export::class:
+                            /** @var Export $export */
+                            $export = $attribute->newInstance();
+                        break;
                     }
                 }
                 
@@ -551,6 +559,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 $title = $titleMap[$name] ?? '';
                 $title = $title === '' ? $attr[ClassHelper::ATTR_NAME] : $title;
                 $title = $title === '' ? $name : $title;
+                
+                // 导出名称
+                $export?->setName($title);
                 
                 // 属性类型
                 $varType = 'mixed';
@@ -600,20 +611,19 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     }
                 }
                 
-                
                 $data[$name] = [
-                    self::ATTR_TITLE    => $title,
-                    self::ATTR_NAME     => $name,
-                    self::ATTR_FIELD    => $fieldMap[$name] ?? false,
-                    self::ATTR_TYPES    => $types,
-                    self::ATTR_VAR_TYPE => $varType,
-                    self::ATTR_FILTER   => $filterMap[$name] ?? [],
-                    self::ATTR_RENAME   => $toRenameMap[$name] ?? [],
-                    self::ATTR_IGNORE   => $toHiddenList[$name] ?? [],
-                    self::ATTR_FORMAT   => $formatMap[$name] ?? null,
-                    self::ATTR_VALIDATE => $validateMap[$name] ?? [],
-                    self::ATTR_ACCESS   => $access,
-                    self::ATTR_PROPERTY => $item
+                    self::ATTR_TITLE      => $title,
+                    self::ATTR_NAME       => $name,
+                    self::ATTR_FIELD      => $fieldMap[$name] ?? false,
+                    self::ATTR_TYPES      => $types,
+                    self::ATTR_VAR_TYPE   => $varType,
+                    self::ATTR_FIELD_TYPE => $fieldType,
+                    self::ATTR_FILTER     => $filterMap[$name] ?? [],
+                    self::ATTR_FORMAT     => $formatMap[$name] ?? null,
+                    self::ATTR_VALIDATE   => $validateMap[$name] ?? [],
+                    self::ATTR_ACCESS     => $access,
+                    self::ATTR_PROPERTY   => $item,
+                    self::ATTR_EXPORT     => $export,
                 ];
             }
             
@@ -914,7 +924,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         
         if ($field) {
-            $entity = new Entity($name, $field, self::getModelParams()['alias'], $virtual);
+            $entity = new Entity($name, $field, self::getModelParams()['alias'], static::class, $virtual);
             
             // 设置条件
             switch (count($arguments)) {
