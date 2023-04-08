@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace BusyPHP\office\excel\export;
 
-use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\Entity;
 use BusyPHP\office\excel\export\parameter\FilterParameter;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -123,7 +122,6 @@ class Column
             $title = $attr['title'];
             
             // 使用导出配置
-            /** @var Export $export */
             $export = $attr['export'];
             if ($export) {
                 $title = $export->getName();
