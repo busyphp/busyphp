@@ -56,6 +56,12 @@ class Export
      */
     private bool $wrapText;
     
+    /**
+     * 是否支持导入
+     * @var bool
+     */
+    private bool $import;
+    
     
     /**
      * 构造函数
@@ -67,15 +73,16 @@ class Export
      * @param string               $dataType 明确导出的数据类型
      * @param bool                 $wrapText 是否自动换行
      */
-    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false, string $dataType = '', bool $wrapText = false)
+    public function __construct(string $letter = '', string $name = '', string|callable|null $filter = null, string $numberFormat = '', bool $image = false, string $dataType = '', bool $wrapText = false, bool $import = true)
     {
         $this->name         = $name;
         $this->filter       = $filter;
         $this->numberFormat = $numberFormat;
         $this->image        = $image;
-        $this->letter       = strtoupper($letter);
+        $this->letter       = $letter;
         $this->dataType     = $dataType;
         $this->wrapText     = $wrapText;
+        $this->import       = $import;
     }
     
     
@@ -85,7 +92,7 @@ class Export
      */
     public function getLetter() : string
     {
-        return $this->letter;
+        return strtoupper($this->letter);
     }
     
     
@@ -161,5 +168,15 @@ class Export
     public function isWrapText() : bool
     {
         return $this->wrapText;
+    }
+    
+    
+    /**
+     * 是否支持导入
+     * @return bool
+     */
+    public function isImport() : bool
+    {
+        return $this->import;
     }
 }

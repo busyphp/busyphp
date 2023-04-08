@@ -8,6 +8,7 @@ use BusyPHP\helper\StringHelper;
 use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Format;
+use BusyPHP\model\annotation\field\Import;
 use BusyPHP\model\annotation\field\Validator;
 use ReflectionProperty;
 use think\db\Raw;
@@ -335,7 +336,7 @@ class Entity
     
     /**
      * 获取属性
-     * @return array{title: string, name: string, field: string|false, field_type: string, types: array<ReflectionNamedType>, var_type: string, filter: array<Filter>, format: ?Format, validate: array<Validator>, access: int, property: ReflectionProperty, export: ?Export}
+     * @return array{title: string, name: string, field: string|false, field_type: string, types: array<ReflectionNamedType>, var_type: string, filter: array<Filter>, format: ?Format, validate: array<Validator>, access: int, property: ReflectionProperty, export: ?Export, import: ?Import}
      */
     public function getPropertyAttr() : array
     {

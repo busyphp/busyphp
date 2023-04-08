@@ -19,6 +19,7 @@ use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Format;
 use BusyPHP\model\annotation\field\Ignore;
+use BusyPHP\model\annotation\field\Import;
 use BusyPHP\model\annotation\field\SoftDelete;
 use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\ToArrayHidden;
@@ -83,6 +84,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /** @var string 导出字段 */
     private const ATTR_EXPORT = 'export';
+    
+    /** @var string 导入字段 */
+    private const ATTR_IMPORT = 'import';
     
     /** @var string 输出属性格式注解 */
     private const MAP_TO_ARRAY_FORMAT = 'to_array_format';
@@ -442,6 +446,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 $fieldType = '';
                 $feature   = 0;
                 $export    = null;
+                $import    = null;
                 if ($type instanceof ReflectionNamedType) {
                     $types = [$type];
                 } elseif ($type instanceof ReflectionUnionType) {
@@ -552,6 +557,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                             /** @var Export $export */
                             $export = $attribute->newInstance();
                         break;
+                        
+                        // 导入
+                        case $attributeName === Import::class:
+                            $import = $attribute->newInstance();
+                        break;
                     }
                 }
                 
@@ -624,6 +634,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     self::ATTR_ACCESS     => $access,
                     self::ATTR_PROPERTY   => $item,
                     self::ATTR_EXPORT     => $export,
+                    self::ATTR_IMPORT     => $import,
                 ];
             }
             
