@@ -14,6 +14,7 @@ use BusyPHP\office\excel\export\parameter\FilterParameter;
 use BusyPHP\office\excel\export\parameter\RowParameter;
 use BusyPHP\office\excel\export\parameter\SheetParameter;
 use Closure;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -225,7 +226,7 @@ class Export
                 switch (true) {
                     // 字符串
                     case $filter === Column::FILTER_STRING:
-                        $value = sprintf("%s\t", $value);
+                        $value = (string) $value;
                     break;
                     // 日期
                     case $filter === Column::FILTER_DATE && $value !== 0:
@@ -251,11 +252,21 @@ class Export
                         $drawings[] = $drawing;
                     }
                 } else {
-                    $style = $sheet->setCellValue($cellIndex, $value)->getStyle($cellIndex);
+                    if ($type = $column->getDataType()) {
+                        $sheet->setCellValueExplicit($cellIndex, $value, $type);
+                    } else {
+                        $sheet->setCellValue($cellIndex, $value);
+                    }
                     
                     // 格式化
+                    $style = $sheet->getStyle($cellIndex);
                     if ($numberFormat = $column->getNumberFormat()) {
                         $style->getNumberFormat()->setFormatCode($numberFormat);
+                    }
+                    
+                    // 自动换行
+                    if ($column->isWrapText()) {
+                        $style->getAlignment()->setWrapText(true);
                     }
                 }
                 

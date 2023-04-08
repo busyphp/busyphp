@@ -6,6 +6,7 @@ namespace BusyPHP\office\excel\export;
 use BusyPHP\model\annotation\field\Export;
 use BusyPHP\model\Entity;
 use BusyPHP\office\excel\export\parameter\FilterParameter;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 /**
  * 导出列配置
@@ -52,10 +53,22 @@ class Column
     protected string $numberFormat = '';
     
     /**
+     * 数据类型
+     * @var string
+     */
+    protected string $dataType = '';
+    
+    /**
      * 是否图片
      * @var bool
      */
     protected bool $image = false;
+    
+    /**
+     * 是否自动换行
+     * @var bool
+     */
+    protected bool $wrapText = false;
     
     
     /**
@@ -122,12 +135,19 @@ class Column
                 }
                 $this->numberFormat($export->getNumberFormat());
                 $this->image($export->isImage());
+                $this->dataType($export->getDataType());
+                $this->wrapText($export->isWrapText());
             }
             $this->field = $this->field->name();
         }
         
         if ($this->name === '') {
             $this->name = $title === '' ? $this->field : $title;
+        }
+        
+        // 默认数据格式
+        if (!$this->dataType && $this->filter === self::FILTER_STRING) {
+            $this->dataType(DataType::TYPE_STRING);
         }
     }
     
@@ -246,5 +266,51 @@ class Column
     public function isImage() : bool
     {
         return $this->image;
+    }
+    
+    
+    /**
+     * 设置数据类型
+     * @param string $dataType
+     * @return static
+     */
+    public function dataType(string $dataType) : static
+    {
+        $this->dataType = $dataType;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 获取数据类型
+     * @return string
+     */
+    public function getDataType() : string
+    {
+        return $this->dataType;
+    }
+    
+    
+    /**
+     * 设置是否自动换行
+     * @param bool $wrapText
+     * @return static
+     */
+    public function wrapText(bool $wrapText) : static
+    {
+        $this->wrapText = $wrapText;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 是否自动换行
+     * @return bool
+     */
+    public function isWrapText() : bool
+    {
+        return $this->wrapText;
     }
 }
