@@ -84,7 +84,7 @@ class Import
      *
      * <b>示例</b>
      * <pre>
-     * $this->on({@see Import::EVENT_SAVE_SUCCESS}, function({@see array} $data) {
+     * $this->on({@see Import::EVENT_SAVE_SUCCESS}, function({@see mixed} $data) {
      * })
      * </pre>
      * @var string
@@ -98,7 +98,7 @@ class Import
      *
      * <b>示例</b>
      * <pre>
-     * $this->on({@see Import::EVENT_SAVE_ERROR}, function({@see array} $data, {@see Throwable} $error) {
+     * $this->on({@see Import::EVENT_SAVE_ERROR}, function({@see mixed} $data, {@see Throwable} $error) {
      * })
      * </pre>
      * @var string
