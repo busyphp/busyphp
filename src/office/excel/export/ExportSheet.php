@@ -5,6 +5,7 @@ namespace BusyPHP\office\excel\export;
 
 use BusyPHP\Model;
 use BusyPHP\model\annotation\field\Export;
+use BusyPHP\office\excel\export\interfaces\ExportSheetInterface;
 use BusyPHP\office\excel\Helper;
 use BusyPHP\office\excel\export\parameter\ExportCellParameter;
 use BusyPHP\office\excel\export\parameter\ExportRowParameter;
@@ -12,6 +13,8 @@ use BusyPHP\office\excel\export\parameter\ExportSheetParameter;
 use Closure;
 use RuntimeException;
 use think\Collection;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 
 /**
  * 导出工作集配置
@@ -25,7 +28,7 @@ class ExportSheet
      * 导出列配置
      * @var ExportColumn[]
      */
-    protected array $columns;
+    protected array $columns = [];
     
     /**
      * 数据集
@@ -81,14 +84,32 @@ class ExportSheet
      */
     protected ?ExportColumn $last = null;
     
+    /**
+     * 指定模型
+     * @var Model|null
+     */
+    protected ?Model $model = null;
+    
+    /**
+     * 接口
+     * @var ExportSheetInterface|null
+     */
+    protected ?ExportSheetInterface $api = null;
+    
+    /**
+     * 数据是否已呈现
+     * @var bool
+     */
+    protected bool $listed = false;
+    
     
     /**
      * 初始化
-     * @param ExportColumn[]   $columns 导出列配置
-     * @param array|Collection $list 导出数据
+     * @param ExportColumn[]|ExportSheetInterface|Model $columns 导出列配置
+     * @param array|Collection                          $list 导出数据
      * @return static
      */
-    public static function init(array $columns = [], array|Collection $list = []) : static
+    public static function init(mixed $columns = [], array|Collection $list = []) : static
     {
         return new static($columns, $list);
     }
@@ -96,13 +117,27 @@ class ExportSheet
     
     /**
      * 构造函数
-     * @param ExportColumn[]   $columns 导出列配置
-     * @param array|Collection $list 导出数据
+     * @param ExportColumn[]|ExportSheetInterface|Model $columns 导出列配置
+     * @param array|Collection                          $list 导出数据
      */
-    public function __construct(array $columns = [], array|Collection $list = [])
+    public function __construct(mixed $columns = [], array|Collection $list = [])
     {
-        $this->columns = $columns;
-        $this->list    = $list;
+        $this->list = $list;
+        if ($columns instanceof ExportSheetInterface) {
+            $this->api = $columns;
+            $this->api->initExcelExportSheet($this);
+        }
+        
+        if ($columns instanceof Model) {
+            $this->model = $columns;
+            if (!$this->columns) {
+                $this->columns(static::getColumnsByModel($this->model));
+            }
+        }
+        
+        if (!$this->columns && is_array($columns)) {
+            $this->columns($columns);
+        }
     }
     
     
@@ -390,11 +425,27 @@ class ExportSheet
     /**
      * 获取数据
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function getList() : array
     {
-        if ($this->list instanceof Collection) {
-            $this->list = $this->list->all();
+        if (!$this->listed) {
+            $this->listed = true;
+            
+            // 从模型取数据
+            if (!$this->list && $this->model) {
+                // 排序
+                if (!$this->model->getOptions('order')) {
+                    $this->model->order($this->model->getPk(), 'desc');
+                }
+                
+                $this->list = $this->model->selectList();
+            }
+            
+            if ($this->list instanceof Collection) {
+                $this->list = $this->list->all();
+            }
         }
         
         return $this->list;
@@ -408,6 +459,26 @@ class ExportSheet
     public function getHandle() : ?Closure
     {
         return $this->handle;
+    }
+    
+    
+    /**
+     * 获取接口
+     * @return ExportSheetInterface|null
+     */
+    public function getApi() : ?ExportSheetInterface
+    {
+        return $this->api;
+    }
+    
+    
+    /**
+     * 获取模型
+     * @return Model|null
+     */
+    public function getModel() : ?Model
+    {
+        return $this->model;
     }
     
     

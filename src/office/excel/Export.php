@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\office\excel;
 
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\LogHelper;
 use BusyPHP\Model;
 use BusyPHP\office\excel\export\ExportColumn;
 use BusyPHP\office\excel\export\parameter\ExportHandleParameter;
@@ -60,6 +61,79 @@ class Export
     const TYPE_MPDF = 'mpdf';
     
     /**
+     * 行写入完成事件，闭包参数：
+     * - {@see ExportSheet} $sheet 当前工作集对象
+     * - {@see int} $sheetIndex 当前工作集下标
+     * - {@see mixed} $data 写入的数据
+     * - {@see int} $index 写入的数据下标
+     * - {@see int} $rowIndex 写入的行
+     *
+     * <b>示例</b>
+     * <pre>
+     * $this->on({@see Import::EVENT_ROW_WRITTEN}, function({@see ExportSheet} $sheet, {@see int} $sheetIndex, {@see mixed} $data, {@see int} $index, {@see int} $rowIndex) {
+     * })
+     * </pre>
+     * @var string
+     */
+    const EVENT_ROW_WRITTEN = 'row_written';
+    
+    /**
+     * 工作集开始写入事件，闭包参数：
+     * - {@see ExportSheet} $sheet 当前工作集对象
+     * - {@see int} $sheetIndex 当前工作集下标
+     *
+     * <b>示例</b>
+     * <pre>
+     * $this->on({@see Import::EVENT_SHEET_START}, function({@see ExportSheet} $sheet, {@see int} $sheetIndex) {
+     * })
+     * </pre>
+     * @var string
+     */
+    const EVENT_SHEET_START = 'sheet_start';
+    
+    /**
+     * 工作集写入完成事件，闭包参数：
+     * - {@see ExportSheet} $sheet 当前工作集对象
+     * - {@see int} $sheetIndex 当前工作集下标
+     *
+     * <b>示例</b>
+     * <pre>
+     * $this->on({@see Import::EVENT_SHEET_WRITTEN}, function({@see ExportSheet} $sheet, {@see int} $sheetIndex) {
+     * })
+     * </pre>
+     * @var string
+     */
+    const EVENT_SHEET_WRITTEN = 'sheet_written';
+    
+    /**
+     * 开始导出事件，闭包参数：
+     * - {@see string} $filename 导出的文件名
+     * - {@see ExportSheet}[] $sheets 所有写入的工作集对象集合
+     *
+     * <b>示例</b>
+     * <pre>
+     * $this->on({@see Import::EVENT_START}, function({@see string} $filename, {@see ExportSheet}[] $sheets) {
+     * })
+     * </pre>
+     * @var string
+     */
+    const EVENT_START = 'start';
+    
+    /**
+     * 导出完成事件，闭包参数：
+     * - {@see string} $filename 导出的文件名
+     * - {@see ExportSheet}[] $sheets 所有写入的工作集对象集合
+     *
+     * <b>示例</b>
+     * <pre>
+     * $this->on({@see Import::EVENT_EXPORTED}, function({@see string} $filename, {@see ExportSheet}[] $sheets) {
+     * })
+     * </pre>
+     * @var string
+     */
+    const EVENT_EXPORTED = 'exported';
+    
+    /**
      * 导出类型
      * @var string
      */
@@ -83,6 +157,12 @@ class Export
      */
     protected ?Closure $handle = null;
     
+    /**
+     * 事件
+     * @var array
+     */
+    protected array $events = [];
+    
     
     /**
      * 快速实例化
@@ -98,9 +178,7 @@ class Export
     
     /**
      * 构造函数
-     * @param null $sheet 工作集对象或模型
-     * @throws DataNotFoundException
-     * @throws DbException
+     * @param ExportSheet|ExportSheetInterface|Model|null $sheet 工作集对象或模型
      */
     public function __construct($sheet = null)
     {
@@ -129,38 +207,59 @@ class Export
      * 添加工作集
      * @param ExportSheet|ExportSheetInterface|Model $sheet 工作集对象或工作集接口
      * @return static
-     * @throws DataNotFoundException
-     * @throws DbException
      */
     public function add(ExportSheet|ExportSheetInterface|Model $sheet) : static
     {
-        $columns = [];
-        $model   = null;
-        if ($sheet instanceof Model) {
-            $model   = $sheet;
-            $columns = ExportSheet::getColumnsByModel($sheet);
-        }
-        
-        // 实现了接口
-        if ($sheet instanceof ExportSheetInterface) {
-            $sheet->initExcelExportSheet($sheet = ExportSheet::init($columns));
-        } elseif ($model) {
-            $sheet = ExportSheet::init($columns);
-        }
-        
-        // 模型自动填充数据
-        if ($model) {
-            // 排序
-            if (!$model->getOptions('order')) {
-                $model->order($model->getPk(), 'desc');
-            }
-            // 查找数据
-            if (!$sheet->getList()) {
-                $sheet->list($model->selectList());
-            }
+        if (!$sheet instanceof ExportSheet) {
+            $sheet = ExportSheet::init($sheet);
         }
         
         $this->sheets[] = $sheet;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 监听事件
+     * @param string|array $event 事件名称
+     * @param Closure|null $callback 事件回调
+     * @return $this
+     */
+    public function on(string|array $event, ?Closure $callback = null) : static
+    {
+        if (is_array($event)) {
+            foreach ($event as $k => $v) {
+                $this->on($k, $v);
+            }
+        } else {
+            $this->events[$event][] = $callback;
+        }
+        
+        return $this;
+    }
+    
+    
+    /**
+     * 触发事件
+     * @param string $event
+     * @param array  $args
+     * @return static
+     * @internal
+     */
+    protected function trigger(string $event, array $args) : static
+    {
+        foreach ($this->events[$event] ?? [] as $item) {
+            if (!$item instanceof Closure) {
+                continue;
+            }
+            
+            try {
+                call_user_func_array($item, $args);
+            } catch (Throwable $e) {
+                LogHelper::default()->tag($event, __METHOD__)->error($e);
+            }
+        }
         
         return $this;
     }
@@ -191,6 +290,8 @@ class Export
      * @param int         $index sheet下标，从0开始
      * @param ExportSheet $config sheet配置
      * @return static
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Exception
      */
     protected function create(int $index, ExportSheet $config) : static
@@ -216,7 +317,7 @@ class Export
         }
         
         $rowIndex = $begin + 1;
-        foreach ($config->getList() as $item) {
+        foreach ($config->getList() as $i => $item) {
             foreach ($columns as $column) {
                 $cellIndex = $column->cellIndex($rowIndex);
                 $value     = ArrayHelper::get($item, $column->getField());
@@ -292,6 +393,9 @@ class Export
                 call_user_func($row, $item, new ExportRowParameter($sheet, $config, $rowIndex));
             }
             
+            // 触发行写入完成事件
+            $this->trigger(self::EVENT_ROW_WRITTEN, [$config, $index, $item, $i, $rowIndex]);
+            
             $rowIndex++;
         }
         
@@ -306,13 +410,19 @@ class Export
     
     /**
      * 构建Excel
+     * @return IWriter
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Exception
      */
     protected function build() : IWriter
     {
         foreach ($this->sheets as $index => $sheet) {
+            $this->trigger(self::EVENT_SHEET_START, [$sheet, $index]);
             $this->create($index, $sheet);
+            $this->trigger(self::EVENT_SHEET_WRITTEN, [$sheet, $index]);
         }
+        
         $this->spread->setActiveSheetIndex(0);
         
         // 处理回调
@@ -370,10 +480,15 @@ class Export
      * 响应
      * @param string $filename 下载的文件名
      * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Exception
      */
     public function response(string $filename) : Response
     {
+        $args = [$filename = $this->getFilename($filename), $this->sheets];
+        $this->trigger(self::EVENT_START, $args);
+        
         ob_start();
         $this->build()->save('php://output');
         $content = ob_get_clean();
@@ -381,8 +496,9 @@ class Export
         $response = new File($content);
         $response->isContent(true);
         $response->expire(0);
-        $response->name($this->getFilename($filename));
+        $response->name($filename);
         $response->mimeType($this->getMimetype());
+        $this->trigger(self::EVENT_EXPORTED, $args);
         
         return $response;
     }
@@ -392,11 +508,16 @@ class Export
      * 保存
      * @param string $filename 保存的文件路径
      * @return string 保存的文件路径
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Exception
      */
     public function save(string $filename) : string
     {
-        $this->build()->save($filename = $this->getFilename($filename));
+        $args = [$filename = $this->getFilename($filename), $this->sheets];
+        $this->trigger(self::EVENT_START, $args);
+        $this->build()->save($filename);
+        $this->trigger(self::EVENT_EXPORTED, $args);
         
         return $filename;
     }

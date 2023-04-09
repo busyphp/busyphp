@@ -25,7 +25,7 @@ class ExportSheetParameter
      * 最新可用的行
      * @var int
      */
-    public int $rowIndex;
+    public int $nextRowIndex;
     
     /**
      * 工作集配置
@@ -37,12 +37,12 @@ class ExportSheetParameter
     /**
      * @param Worksheet   $worksheet
      * @param ExportSheet $sheet
-     * @param int         $rowIndex
+     * @param int         $nextRowIndex
      */
-    public function __construct(Worksheet $worksheet, ExportSheet $sheet, int $rowIndex)
+    public function __construct(Worksheet $worksheet, ExportSheet $sheet, int $nextRowIndex)
     {
-        $this->worksheet = $worksheet;
-        $this->rowIndex  = $rowIndex;
-        $this->sheet     = $sheet;
+        $this->worksheet    = $worksheet;
+        $this->nextRowIndex = $nextRowIndex;
+        $this->sheet        = $sheet;
     }
 }
