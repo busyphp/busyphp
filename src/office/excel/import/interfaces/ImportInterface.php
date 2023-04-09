@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\office\excel\import\interfaces;
 
+use BusyPHP\office\excel\import\ImportResult;
 use BusyPHP\office\excel\import\parameter\ImportInitParameter;
 use BusyPHP\office\excel\import\parameter\ImportSaveParameter;
 
@@ -24,6 +25,7 @@ interface ImportInterface
     /**
      * 保存导入的数据
      * @param ImportSaveParameter $parameter
+     * @return ImportResult
      */
-    public function saveExcelImport(ImportSaveParameter $parameter);
+    public function saveExcelImport(ImportSaveParameter $parameter) : ImportResult;
 }

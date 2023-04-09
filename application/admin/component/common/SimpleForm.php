@@ -11,9 +11,12 @@ use BusyPHP\office\excel\Export;
 use BusyPHP\office\excel\export\ExportSheet;
 use BusyPHP\office\excel\export\interfaces\ExportSheetInterface;
 use BusyPHP\office\excel\Import;
+use BusyPHP\office\excel\import\ImportResult;
+use BusyPHP\office\excel\import\parameter\ImportInitParameter;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use LogicException;
+use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use think\db\exception\DbException;
 use think\exception\InvalidArgumentException;
@@ -169,17 +172,23 @@ class SimpleForm implements ContainerInterface
     
     /**
      * 导入
-     * @param string $path 导入的文件路径
-     * @return array
-     * @throws Throwable
+     * @param string                                            $path 导入的文件路径
+     * @param Closure(ImportInitParameter $parameter):void|null $init 导入初始化回调
+     * @return ImportResult
+     * @throws Exception
      */
-    public function import(string $path) : array
+    public function import(string $path, ?Closure $init = null) : ImportResult
     {
         if (!is_file($path)) {
             $path = App::urlToPath($path);
         }
         
-        return Import::init($path, $this->getModel())->fetch();
+        $import = Import::init($path, $this->getModel());
+        if ($init instanceof Closure) {
+            call_user_func($init, new ImportInitParameter($import));
+        }
+        
+        return $import->fetch();
     }
     
     

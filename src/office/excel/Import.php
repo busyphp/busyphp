@@ -13,6 +13,7 @@ use BusyPHP\model\annotation\field\Import as FieldImport;
 use BusyPHP\model\Field;
 use BusyPHP\office\excel\import\ImportColumn;
 use BusyPHP\office\excel\import\ImportException;
+use BusyPHP\office\excel\import\ImportResult;
 use BusyPHP\office\excel\import\interfaces\ImportInterface;
 use BusyPHP\office\excel\import\parameter\ImportFilterParameter;
 use BusyPHP\office\excel\import\parameter\ImportInitParameter;
@@ -114,7 +115,7 @@ class Import
      * 导入列配置
      * @var ImportColumn[]
      */
-    protected array $columns;
+    protected array $columns = [];
     
     /**
      * 数据开始行
@@ -193,10 +194,14 @@ class Import
         
         if ($columns instanceof Model) {
             $this->model = $columns;
-            $columns     = static::getColumnsByModel($this->model);
+            if (!$this->columns) {
+                $this->columns(static::getColumnsByModel($this->model));
+            }
         }
         
-        $this->columns = is_array($columns) ? $columns : [];
+        if (!$this->columns && is_array($columns)) {
+            $this->columns($columns);
+        }
     }
     
     
@@ -322,10 +327,10 @@ class Import
     /**
      * 读取数据
      * @param class-string<T> $class
-     * @return T[]
+     * @return ImportResult
      * @throws Exception
      */
-    public function fetch(string $class = '') : array
+    public function fetch(string $class = '') : ImportResult
     {
         // 解析的类
         if ($class) {
@@ -474,19 +479,26 @@ class Import
         
         // 实现了接口
         if ($this->api) {
-            $this->api->saveExcelImport(new ImportSaveParameter($this, $list));
+            $result = $this->api->saveExcelImport(new ImportSaveParameter($this, $list));
         } elseif ($this->model) {
+            $result = new ImportResult(0, 0);
             foreach ($list as $item) {
                 try {
                     $this->model->validate($item, $this->model::SCENE_CREATE)->insert();
+                    $result->successTotal++;
                     $this->triggerSaved(true, $item);
                 } catch (Throwable $e) {
+                    $result->errorTotal++;
                     $this->triggerSaved(false, $item, $e);
                 }
             }
+        } else {
+            $result = new ImportResult(0, 0);
         }
         
-        return $list;
+        $result->list = $list;
+        
+        return $result;
     }
     
     
