@@ -17,7 +17,6 @@ use Closure;
  * @method $this add(ImportColumn $column) 添加导入列配置
  * @method $this start(int $row) 设置从第几行开始读
  * @method $this sheet(int $index) 设置读取的工作集下标
- * @method $this autoLetter(bool $auto) 是否自动创建字母
  * @method $this row(?Closure $callback) 设置行处理回调
  * @method $this list(?Closure $callback) 设置总数据处理回调
  * @see ImportInterface::initExcelImport()
@@ -33,7 +32,6 @@ class ImportInitParameter
         'add',
         'start',
         'sheet',
-        'autoLetter',
         'row',
         'list',
     ];
