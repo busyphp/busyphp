@@ -46,18 +46,6 @@ class ExportSheet
     protected int $startRow = 1;
     
     /**
-     * 是否自动字母
-     * @var bool
-     */
-    protected bool $autoLetter = false;
-    
-    /**
-     * 是否已赋值自动字母
-     * @var bool
-     */
-    protected bool $autoLetterLock = false;
-    
-    /**
      * 是否已排序
      * @var bool
      */
@@ -234,19 +222,6 @@ class ExportSheet
     
     
     /**
-     * 设置是否自动字母
-     * @param bool $auto
-     * @return static
-     */
-    public function autoLetter(bool $auto) : static
-    {
-        $this->autoLetter = $auto;
-        
-        return $this;
-    }
-    
-    
-    /**
      * 获取工作集表格
      * @return string
      */
@@ -294,39 +269,10 @@ class ExportSheet
      */
     public function getColumns() : array
     {
-        if (!$this->autoLetterLock && $this->autoLetter) {
-            $this->autoLetterLock = true;
-            $letters              = Helper::letters();
-            foreach ($this->columns as $i => $column) {
-                $column->letter($letters[$i]);
-            }
-        }
-        
         // 排序
         if (!$this->letterSortLock) {
             $this->letterSortLock = true;
-            
-            $columns = [];
-            $count   = count($this->columns);
-            foreach ($this->columns as $i => $column) {
-                if (!$letter = $column->getLetter()) {
-                    throw new RuntimeException(sprintf('第%s列未指定字母', $i));
-                }
-                if ('' === $column->getField()) {
-                    throw new RuntimeException(sprintf('第%s列未指定字段', $i));
-                }
-                
-                if ($i === 0) {
-                    $this->first = $column;
-                } elseif ($i === $count - 1) {
-                    $this->last = $column;
-                }
-                
-                $columns[$letter] = $column;
-            }
-            ksort($columns);
-            $this->columns = array_values($columns);
-            
+            $this->columns        = Helper::fullLetterAndSortColumns($this->columns);
             if ($this->columns) {
                 $this->first = $this->columns[0];
                 
@@ -474,37 +420,13 @@ class ExportSheet
     {
         $columns    = [];
         $fieldClass = $model->getFieldClass();
-        $letters    = Helper::letters();
-        $columnList = [];
-        $deleteList = [];
         foreach ($fieldClass::getPropertyAttrs() as $name => $attr) {
             /** @var Export $export */
             if (!$export = $attr['export']) {
                 continue;
             }
-            
-            if ($letter = $export->getLetter()) {
-                if (false !== $index = array_search($letter, $letters, true)) {
-                    $deleteList[] = $index;
-                }
-                $columns[] = ExportColumn::init($letter, $fieldClass::$name());
-            } else {
-                $columnList[] = ExportColumn::init('', $fieldClass::$name());
-            }
+            $columns[] = ExportColumn::init($export->getLetter(), $fieldClass::$name());
         }
-        
-        $newLetters = [];
-        foreach ($letters as $i => $letter) {
-            if (!in_array($i, $deleteList, true)) {
-                $newLetters[] = $letter;
-            }
-        }
-        
-        foreach ($columnList as $i => $item) {
-            $item->letter($newLetters[$i]);
-            $columns[] = $item;
-        }
-        unset($columnList, $newLetters, $letters);
         
         return $columns;
     }
