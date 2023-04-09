@@ -312,13 +312,19 @@ class Import
     
     /**
      * 监听事件
-     * @param string  $event
-     * @param Closure $callback
+     * @param string|array $event 事件名称
+     * @param Closure|null $callback 事件回调
      * @return $this
      */
-    public function on(string $event, Closure $callback) : static
+    public function on(string|array $event, ?Closure $callback = null) : static
     {
-        $this->events[$event][] = $callback;
+        if (is_array($event)) {
+            foreach ($event as $k => $v) {
+                $this->on($k, $v);
+            }
+        } else {
+            $this->events[$event][] = $callback;
+        }
         
         return $this;
     }
