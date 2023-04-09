@@ -280,4 +280,11 @@ namespace PHPSTORM_META {
         \BusyPHP\office\excel\Import::EVENT_SAVE_SUCCESS |
         \BusyPHP\office\excel\Import::EVENT_SAVE_ERROR
     );
+    expectedArguments(\BusyPHP\office\excel\Export::on(), 0,
+        \BusyPHP\office\excel\Export::EVENT_ROW_WRITTEN |
+        \BusyPHP\office\excel\Export::EVENT_SHEET_START |
+        \BusyPHP\office\excel\Export::EVENT_SHEET_WRITTEN |
+        \BusyPHP\office\excel\Export::EVENT_START |
+        \BusyPHP\office\excel\Export::EVENT_EXPORTED
+    );
 }
