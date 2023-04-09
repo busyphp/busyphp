@@ -10,14 +10,13 @@ use BusyPHP\model\Entity;
 use BusyPHP\office\excel\Export;
 use BusyPHP\office\excel\export\ExportSheet;
 use BusyPHP\office\excel\export\interfaces\ExportSheetInterface;
+use BusyPHP\office\excel\export\parameter\ExportHandleParameter;
 use BusyPHP\office\excel\Import;
 use BusyPHP\office\excel\import\ImportResult;
 use BusyPHP\office\excel\import\parameter\ImportInitParameter;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use LogicException;
-use PhpOffice\PhpSpreadsheet\Exception;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use think\db\exception\DbException;
 use think\exception\InvalidArgumentException;
 use think\Request;
@@ -149,24 +148,43 @@ class SimpleForm implements ContainerInterface
     
     /**
      * 导出
-     * @param Model[]|ExportSheet[]|ExportSheetInterface[] $sheets 其它模型或工作集
-     * @param string                                       $filename 导出文件名
-     * @param string                                       $type 导出类型
-     * @param Closure(Spreadsheet):void|null               $handle 导出工作集处理回调
+     * @param Model[]|ExportSheet[]|ExportSheetInterface[]        $sheets 其它模型集合或工作集配置集合
+     * @param string                                              $filename 导出的文件名
+     * @param string                                              $type 导出的文件类型
+     * @param Closure(ExportSheet[] $sheets):void|null            $init 工作集配置初始化回调
+     * @param Closure(ExportHandleParameter $parameter):void|null $handle 导出最终处理回调
+     * @param array<string, callable>                             $events 导出事件监听
+     * @param bool                                                $save 是否保存
+     * @return Response|string 响应或保存的文件地址
      * @throws Throwable
      */
-    public function export(array $sheets = [], string $filename = '', string $type = Export::TYPE_XLSX, ?Closure $handle = null) : Response
+    public function export(array $sheets = [], string $filename = '', string $type = Export::TYPE_XLSX, ?Closure $init = null, ?Closure $handle = null, array $events = [], bool $save = false) : Response|string
     {
         $model  = $this->getModel();
-        $export = Export::init($model);
-        foreach ($sheets as $item) {
+        $export = Export::init();
+        
+        array_unshift($sheets, $model);
+        foreach ($sheets as &$item) {
+            if (!$item instanceof ExportSheet) {
+                $item = ExportSheet::init($item);
+            }
             $export->add($item);
         }
         
-        return $export
-            ->type($type ?: Export::TYPE_XLSX)
-            ->handle($handle)
-            ->response($filename === '' ? sprintf("%s_%s", $model->getName(), date('YmdHis')) : $filename);
+        // 初始化工作集配置回调
+        if ($init instanceof Closure) {
+            call_user_func($init, $sheets);
+        }
+        
+        $export->type($type ?: Export::TYPE_XLSX);
+        $export->handle($handle);
+        $export->on($events);
+        
+        if ($save) {
+            return $export->save($filename);
+        } else {
+            return $export->response($filename === '' ? sprintf("%s_%s", $model->getName(), date('YmdHis')) : $filename);
+        }
     }
     
     
@@ -174,10 +192,11 @@ class SimpleForm implements ContainerInterface
      * 导入
      * @param string                                            $path 导入的文件路径
      * @param Closure(ImportInitParameter $parameter):void|null $init 导入初始化回调
+     * @param array<string,callable>                            $events 导入事件监听
      * @return ImportResult
-     * @throws Exception
+     * @throws Throwable
      */
-    public function import(string $path, ?Closure $init = null) : ImportResult
+    public function import(string $path, ?Closure $init = null, array $events = []) : ImportResult
     {
         if (!is_file($path)) {
             $path = App::urlToPath($path);
@@ -188,7 +207,7 @@ class SimpleForm implements ContainerInterface
             call_user_func($init, new ImportInitParameter($import));
         }
         
-        return $import->fetch();
+        return $import->on($events)->fetch();
     }
     
     
