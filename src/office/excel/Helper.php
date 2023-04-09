@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace BusyPHP\office\excel;
 
+use BusyPHP\office\excel\export\ExportColumn;
+use BusyPHP\office\excel\import\ImportColumn;
+
 /**
  * Excel辅助类
  * @author busy^life <busy.life@qq.com>
@@ -29,5 +32,51 @@ class Helper
         }
         
         return $list;
+    }
+    
+    
+    /**
+     * 填充字母并排序
+     * @param ExportColumn[]|ImportColumn[] $columns
+     * @return ExportColumn[]|ImportColumn[]
+     */
+    public static function fullLetterAndSortColumns(array $columns) : array
+    {
+        $letters    = self::letters();
+        $deleteList = [];
+        $columnList = [];
+        $newColumns = [];
+        foreach ($columns as $column) {
+            $letter = $column->getLetter();
+            if ($letter) {
+                $newColumns[] = $column;
+                if (false !== $index = array_search($letter, $letters, true)) {
+                    $deleteList[] = $index;
+                }
+            } else {
+                $columnList[] = $column;
+            }
+        }
+        
+        $newLetters = [];
+        foreach ($letters as $i => $letter) {
+            if (!in_array($i, $deleteList, true)) {
+                $newLetters[] = $letter;
+            }
+        }
+        
+        foreach ($columnList as $i => $item) {
+            $item->letter($newLetters[$i]);
+            $newColumns[] = $item;
+        }
+        
+        $columnMap = [];
+        foreach ($newColumns as $column) {
+            $columnMap[$column->getLetter()] = $column;
+        }
+        ksort($columnMap);
+        unset($columnList, $newLetters, $letters);
+        
+        return array_values($columnMap);
     }
 }
