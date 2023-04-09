@@ -10,6 +10,7 @@ use BusyPHP\model\Entity;
 use BusyPHP\office\excel\Export;
 use BusyPHP\office\excel\export\ExportSheet;
 use BusyPHP\office\excel\export\interfaces\ExportSheetInterface;
+use BusyPHP\office\excel\Import;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use LogicException;
@@ -163,6 +164,22 @@ class SimpleForm implements ContainerInterface
             ->type($type ?: Export::TYPE_XLSX)
             ->handle($handle)
             ->response($filename === '' ? sprintf("%s_%s", $model->getName(), date('YmdHis')) : $filename);
+    }
+    
+    
+    /**
+     * 导入
+     * @param string $path 导入的文件路径
+     * @return array
+     * @throws Throwable
+     */
+    public function import(string $path) : array
+    {
+        if (!is_file($path)) {
+            $path = App::urlToPath($path);
+        }
+        
+        return Import::init($path, $this->getModel())->fetch();
     }
     
     

@@ -180,4 +180,104 @@ namespace PHPSTORM_META {
     registerArgumentsSet('order_types', 'desc' | 'asc');
     expectedArguments(\think\db\BaseQuery::order(), 1, argumentsSet('order_types'));
     expectedArguments(\BusyPHP\Model::order(), 1, argumentsSet('order_types'));
+    
+    expectedArguments(\BusyPHP\office\excel\Export::type(), 0,
+        \BusyPHP\office\excel\Export::TYPE_XLSX |
+        \BusyPHP\office\excel\Export::TYPE_XLS |
+        \BusyPHP\office\excel\Export::TYPE_CSV |
+        \BusyPHP\office\excel\Export::TYPE_ODS |
+        \BusyPHP\office\excel\Export::TYPE_HTML |
+        \BusyPHP\office\excel\Export::TYPE_MPDF |
+        \BusyPHP\office\excel\Export::TYPE_TCPDF |
+        \BusyPHP\office\excel\Export::TYPE_DOMPDF
+    );
+    
+    registerArgumentsSet(
+        'excel_number_format',
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_GENERAL |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_0 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_0 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_YYYYMMDD |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_DDMMYYYY |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_DMYSLASH |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_DMYMINUS |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_DMMINUS |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_MYMINUS |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_XLSX14 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_XLSX15 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_XLSX16 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_XLSX17 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_XLSX22 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_DATETIME |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME1 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME2 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME3 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME4 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME5 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME6 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME7 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_TIME8 |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_YYYYMMDDSLASH |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_USD_INTEGER |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_USD |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR_INTEGER |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_ACCOUNTING_USD |
+        \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_ACCOUNTING_EUR
+    );
+    
+    registerArgumentsSet(
+        'excel_data_type',
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING2,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_BOOL,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NULL,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_INLINE,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_ERROR,
+        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_ISO_DATE,
+    );
+    
+    registerArgumentsSet(
+        'excel_export_column_filter',
+        \BusyPHP\office\excel\export\ExportColumn::FILTER_STRING |
+        \BusyPHP\office\excel\export\ExportColumn::FILTER_DATE
+    );
+    
+    expectedArguments(\BusyPHP\office\excel\export\ExportColumn::__construct(), 3, argumentsSet('excel_export_column_filter'));
+    expectedArguments(\BusyPHP\office\excel\export\ExportColumn::init(), 3, argumentsSet('excel_export_column_filter'));
+    expectedArguments(\BusyPHP\office\excel\export\ExportColumn::numberFormat(), 0, argumentsSet('excel_number_format'));
+    expectedArguments(\BusyPHP\office\excel\export\ExportColumn::dataType(), 0,argumentsSet('excel_data_type'));
+    expectedArguments(\BusyPHP\model\annotation\field\Export::__construct(), 2, argumentsSet('excel_export_column_filter'));
+    expectedArguments(\BusyPHP\model\annotation\field\Export::__construct(), 3, argumentsSet('excel_number_format'));
+    expectedArguments(\BusyPHP\model\annotation\field\Export::__construct(), 5,argumentsSet('excel_data_type'));
+    
+    registerArgumentsSet(
+        'excel_import_column_filter',
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_INT |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_FLOAT |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_BOOL |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_DATE |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_TIMESTAMP |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_SPLIT |
+        \BusyPHP\office\excel\import\ImportColumn::FILTER_TRIM
+    );
+    expectedArguments(\BusyPHP\office\excel\import\ImportColumn::init(), 2, argumentsSet('excel_import_column_filter'));
+    expectedArguments(\BusyPHP\office\excel\import\ImportColumn::__construct(), 2, argumentsSet('excel_import_column_filter'));
+    expectedArguments(\BusyPHP\model\annotation\field\Import::__construct(), 1, argumentsSet('excel_import_column_filter'));
+    expectedArguments(\BusyPHP\office\excel\Import::on(), 0,
+        \BusyPHP\office\excel\Import::EVENT_ROW_SUCCESS |
+        \BusyPHP\office\excel\Import::EVENT_ROW_ERROR |
+        \BusyPHP\office\excel\Import::EVENT_LIST_HANDLED |
+        \BusyPHP\office\excel\Import::EVENT_SAVE_SUCCESS |
+        \BusyPHP\office\excel\Import::EVENT_SAVE_ERROR
+    );
 }
