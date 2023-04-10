@@ -32,6 +32,10 @@ class Serialize extends Format
      */
     public function decode(string $data) : mixed
     {
+        if (!$this->serialized($data)) {
+            return $data;
+        }
+        
         return unserialize($data);
     }
     
