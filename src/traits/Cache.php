@@ -17,12 +17,13 @@ trait Cache
 {
     /**
      * 获取静态缓存
-     * @param string $name 缓存名称
+     * @param string     $name 缓存名称
+     * @param mixed|null $default 默认值
      * @return mixed
      */
-    public function getCache($name) : mixed
+    public function getCache($name, mixed $default = null) : mixed
     {
-        return CacheHelper::get(static::class, $name);
+        return CacheHelper::get(static::class, $name, $default);
     }
     
     
