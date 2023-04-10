@@ -17,13 +17,13 @@ class CacheHelper
 {
     /**
      * 写入缓存
-     * @param mixed                                   $tag 缓存标签
+     * @param object|string                           $tag 缓存标签
      * @param string                                  $name 缓存名称
      * @param mixed                                   $value 缓存内容
      * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
      * @return bool
      */
-    public static function set($tag, string $name, $value, $expire = null) : bool
+    public static function set(object|string $tag, string $name, mixed $value, int|DateTimeInterface|DateInterval|null $expire = null) : bool
     {
         $tag = static::tag($tag);
         
@@ -33,13 +33,13 @@ class CacheHelper
     
     /**
      * 如果不存在则写入缓存
-     * @param mixed                                   $tag 缓存标签
+     * @param object|string                           $tag 缓存标签
      * @param string                                  $name 缓存名称
      * @param mixed                                   $value 缓存内容
      * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
      * @return mixed
      */
-    public static function remember($tag, string $name, $value, $expire = null)
+    public static function remember(object|string $tag, string $name, mixed $value, int|DateTimeInterface|DateInterval|null $expire = null) : mixed
     {
         $tag = static::tag($tag);
         
@@ -49,11 +49,11 @@ class CacheHelper
     
     /**
      * 追加缓存名称到标签
-     * @param mixed  $tag 缓存标签
-     * @param string $name 缓存名称
+     * @param object|string $tag 缓存标签
+     * @param string        $name 缓存名称
      * @return void
      */
-    public static function append($tag, string $name) : void
+    public static function append(object|string $tag, string $name) : void
     {
         $tag = static::tag($tag);
         
@@ -63,12 +63,12 @@ class CacheHelper
     
     /**
      * 批量设置缓存
-     * @param mixed                                   $tag 缓存标签
-     * @param array{string,mixed}                     $values 缓存集合
+     * @param object|string                           $tag 缓存标签
+     * @param array<string,mixed>                     $values 缓存集合
      * @param int|DateTimeInterface|DateInterval|null $expire 有效时间（秒）
      * @return bool
      */
-    public static function setMultiple($tag, array $values, $expire = null) : bool
+    public static function setMultiple(object|string $tag, array $values, int|DateTimeInterface|DateInterval|null $expire = null) : bool
     {
         foreach ($values as $key => $val) {
             if (false === static::set($tag, $key, $expire)) {
@@ -82,12 +82,12 @@ class CacheHelper
     
     /**
      * 批量获取缓存
-     * @param mixed $tag 缓存标签
-     * @param array $keys 缓存名称集合
-     * @param mixed $default 默认值
+     * @param object|string $tag 缓存标签
+     * @param string[]      $keys 缓存名称集合
+     * @param mixed         $default 默认值
      * @return iterable
      */
-    public static function getMultiple($tag, array $keys, $default = null) : iterable
+    public static function getMultiple(object|string $tag, array $keys, mixed $default = null) : iterable
     {
         $result = [];
         foreach ($keys as $key) {
@@ -100,11 +100,11 @@ class CacheHelper
     
     /**
      * 批量删除缓存
-     * @param mixed $tag 缓存标签
-     * @param array $keys 缓存名称集合
+     * @param object|string $tag 缓存标签
+     * @param string[]      $keys 缓存名称集合
      * @return bool
      */
-    public static function deleteMultiple($tag, array $keys) : bool
+    public static function deleteMultiple(object|string $tag, array $keys) : bool
     {
         foreach ($keys as $key) {
             $result = static::delete($tag, $key);
@@ -120,12 +120,12 @@ class CacheHelper
     
     /**
      * 获取缓存
-     * @param mixed  $tag 缓存标签
-     * @param string $name 缓存名称
-     * @param mixed  $default 默认值
+     * @param object|string $tag 缓存标签
+     * @param string        $name 缓存名称
+     * @param mixed         $default 默认值
      * @return mixed
      */
-    public static function get($tag, string $name, $default = null)
+    public static function get(object|string $tag, string $name, mixed $default = null) : mixed
     {
         return Cache::get(static::name(static::tag($tag), $name), $default);
     }
@@ -133,11 +133,11 @@ class CacheHelper
     
     /**
      * 判断缓存是否存在
-     * @param mixed  $tag 缓存标签
-     * @param string $name 缓存名称
+     * @param object|string $tag 缓存标签
+     * @param string        $name 缓存名称
      * @return bool
      */
-    public static function has($tag, string $name) : bool
+    public static function has(object|string $tag, string $name) : bool
     {
         return Cache::has(static::name(static::tag($tag), $name));
     }
@@ -145,10 +145,11 @@ class CacheHelper
     
     /**
      * 删除缓存
-     * @param mixed  $tag 缓存标签
-     * @param string $name 缓存名称
+     * @param object|string $tag 缓存标签
+     * @param string        $name 缓存名称
+     * @return bool
      */
-    public static function delete($tag, string $name) : bool
+    public static function delete(object|string $tag, string $name) : bool
     {
         return Cache::delete(static::name(static::tag($tag), $name));
     }
@@ -156,10 +157,10 @@ class CacheHelper
     
     /**
      * 清理缓存
-     * @param mixed $tag 缓存标签
+     * @param object|string $tag 缓存标签
      * @return bool
      */
-    public static function clear($tag) : bool
+    public static function clear(object|string $tag) : bool
     {
         return Cache::tag(static::tag($tag))->clear();
     }
@@ -177,10 +178,10 @@ class CacheHelper
     
     /**
      * 获取缓存名称
-     * @param mixed  $tag 缓存标签
-     * @param string $name 缓存名称
+     * @param object|string $tag 缓存标签
+     * @param string        $name 缓存名称
      */
-    public static function getCacheKey($tag, string $name) : string
+    public static function getCacheKey(object|string $tag, string $name) : string
     {
         return Cache::getCacheKey(static::name(static::tag($tag), $name));
     }
@@ -188,10 +189,10 @@ class CacheHelper
     
     /**
      * 获取标签名称
-     * @param mixed $tag 缓存标签
+     * @param object|string $tag 缓存标签
      * @return string
      */
-    public static function getTagKey($tag) : string
+    public static function getTagKey(object|string $tag) : string
     {
         return Cache::getCacheKey(Cache::getTagKey(static::tag($tag)));
     }
@@ -199,10 +200,10 @@ class CacheHelper
     
     /**
      * 生成TAG
-     * @param mixed $tag 缓存标签
+     * @param object|string $tag 缓存标签
      * @return string
      */
-    protected static function tag($tag) : string
+    protected static function tag(object|string $tag) : string
     {
         if (is_object($tag)) {
             $tag = get_class($tag);
@@ -218,7 +219,7 @@ class CacheHelper
      * @param string $name 缓存名称
      * @return string
      */
-    protected static function name($tag, string $name) : string
+    protected static function name(object|string $tag, string $name) : string
     {
         return $tag . '/' . $name;
     }
