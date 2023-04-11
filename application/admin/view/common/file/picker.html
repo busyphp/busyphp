@@ -748,24 +748,25 @@
                     // 执行单个删除
                     doDelete : function ($target, item, callback) {
                         var me = this;
-                        $target.baRequest({
-                            clickHandler : false,
-                            onSuccess    : function () {
-                                var deleteItem = null;
-                                me.selected_list.map(function (vo) {
-                                    if (vo.id === item.id) {
-                                        deleteItem = vo
+                        $target
+                            .baRequest({
+                                onSuccess : function () {
+                                    var deleteItem = null;
+                                    me.selected_list.map(function (vo) {
+                                        if (vo.id === item.id) {
+                                            deleteItem = vo
+                                        }
+                                    });
+                                    if (deleteItem) {
+                                        me.setSelected(deleteItem, false);
                                     }
-                                });
-                                if (deleteItem) {
-                                    me.setSelected(deleteItem, false);
+
+                                    me.load();
+
+                                    return true;
                                 }
-
-                                me.load();
-
-                                return true;
-                            }
-                        });
+                            })
+                            .baRequest('show');
                     },
                 }
             });
