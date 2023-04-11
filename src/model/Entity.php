@@ -355,7 +355,7 @@ class Entity
      * @param mixed $field
      * @return array|string
      */
-    public static function parse(mixed $field) : array|string
+    public static function parse(mixed $field) : mixed
     {
         if (is_array($field)) {
             foreach ($field as $key => $item) {
