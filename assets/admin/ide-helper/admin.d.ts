@@ -2052,6 +2052,13 @@ declare namespace busyAdmin {
          */
         prompt(title: string, value: string | [string], type: BusyAdminDialogSelectType | LayerOptions | BusyAdminDialogPromptCallback, ok: BusyAdminDialogPromptCallback | BusyAdminDialogCallback, cancel?: BusyAdminDialogCallback): number;
 
+
+        /**
+         * 关闭layer对话框
+         * @param index
+         */
+        close(index: number);
+
         /**
          * Toast提示
          * @param message 消息
