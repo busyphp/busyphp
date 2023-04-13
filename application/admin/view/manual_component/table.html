@@ -211,7 +211,7 @@
                     <th data-field="format_create_time" data-title="创建时间"></th>
                     <th data-field="operate" data-title="操作" data-align="center" data-formatter="@">
                         <template>
-                            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload"><i class="fa fa-plus"></i></a>
+                            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload|@modal.close"><i class="fa fa-plus"></i></a>
                         </template>
                     </th>
                 </tr>
