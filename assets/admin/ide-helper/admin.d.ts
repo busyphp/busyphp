@@ -2012,14 +2012,20 @@ declare namespace busyAdmin {
 
     interface BusyAdminDialogResult {
         /**
-         * 关闭回调
+         * 监听结束事件
          * @param callback
          */
-        onClose(callback: BusyAdminDialogCloseCallback) : BusyAdminDialogResult;
+        onEnd(callback: BusyAdminDialogCloseCallback): BusyAdminDialogResult;
+
+        /**
+         * 是否已显示
+         */
+        isShown(): boolean;
+
         /**
          * 关闭对话框
          */
-        close() : void;
+        close(): void;
 
         /**
          * 获取对话框下标
