@@ -123,6 +123,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      */
     #[Validator(name: Validator::REQUIRE, msg: '输入:attribute以确认')]
     #[Validator(name: Validator::CONFIRM, rule: 'password', msg: ':attribute和登录密码不一致')]
+    #[Ignore]
     private $confirmPassword;
     
     /**
