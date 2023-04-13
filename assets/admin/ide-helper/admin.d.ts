@@ -2010,6 +2010,23 @@ declare namespace busyAdmin {
         | "warn"
         | "warning";
 
+    interface BusyAdminDialogResult {
+        /**
+         * 关闭回调
+         * @param callback
+         */
+        onClose(callback: BusyAdminDialogCloseCallback) : BusyAdminDialogResult;
+        /**
+         * 关闭对话框
+         */
+        close() : void;
+
+        /**
+         * 获取对话框下标
+         */
+        getIndex(): number;
+    }
+
     interface BusyAdminDialog {
         /**
          * Alert弹窗
@@ -2017,21 +2034,21 @@ declare namespace busyAdmin {
          * @param type 消息图标或layer配置或成功回调
          * @param ok 成功回调
          */
-        alert(message: string, type?: BusyAdminDialogIcon | LayerOptions | null | BusyAdminDialogCallback, ok?: BusyAdminDialogCallback): number;
+        alert(message: string, type?: BusyAdminDialogIcon | LayerOptions | null | BusyAdminDialogCallback, ok?: BusyAdminDialogCallback): BusyAdminDialogResult;
 
         /**
          * 成功Alert
          * @param message 消息
          * @param ok 回调
          */
-        alertSuccess(message: string, ok?: BusyAdminDialogCallback): number;
+        alertSuccess(message: string, ok?: BusyAdminDialogCallback): BusyAdminDialogResult;
 
         /**
          * 失败Alert
          * @param message 消息
          * @param ok 回调
          */
-        alertError(message: string, ok?: BusyAdminDialogCallback): number;
+        alertError(message: string, ok?: BusyAdminDialogCallback): BusyAdminDialogResult;
 
         /**
          * Confirm弹窗
@@ -2040,7 +2057,7 @@ declare namespace busyAdmin {
          * @param ok 确定回调或取消回调
          * @param cancel 取消回调
          */
-        confirm(message: string, type?: BusyAdminDialogIcon | LayerOptions | null | BusyAdminDialogCallback, ok?: BusyAdminDialogCallback, cancel?: BusyAdminDialogCallback): number;
+        confirm(message: string, type?: BusyAdminDialogIcon | LayerOptions | null | BusyAdminDialogCallback, ok?: BusyAdminDialogCallback, cancel?: BusyAdminDialogCallback): BusyAdminDialogResult;
 
         /**
          * Prompt输入对话框
@@ -2050,14 +2067,7 @@ declare namespace busyAdmin {
          * @param ok 确定回调或取消回调
          * @param cancel 取消回调
          */
-        prompt(title: string, value: string | [string], type: BusyAdminDialogSelectType | LayerOptions | BusyAdminDialogPromptCallback, ok: BusyAdminDialogPromptCallback | BusyAdminDialogCallback, cancel?: BusyAdminDialogCallback): number;
-
-
-        /**
-         * 关闭layer对话框
-         * @param index
-         */
-        close(index: number);
+        prompt(title: string, value: string | [string], type: BusyAdminDialogSelectType | LayerOptions | BusyAdminDialogPromptCallback, ok: BusyAdminDialogPromptCallback | BusyAdminDialogCallback, cancel?: BusyAdminDialogCallback): BusyAdminDialogResult;
 
         /**
          * Toast提示
@@ -2065,21 +2075,21 @@ declare namespace busyAdmin {
          * @param long 是否长提示 或 配置 或 关闭回调
          * @param close 关闭回调
          */
-        toast(message: string, long?: boolean | LayerOptions | BusyAdminDialogCloseCallback, close?: BusyAdminDialogCloseCallback): number;
+        toast(message: string, long?: boolean | LayerOptions | BusyAdminDialogCloseCallback, close?: BusyAdminDialogCloseCallback): BusyAdminDialogResult;
 
         /**
          * 成功Toast提示
          * @param message 消息
          * @param close 关闭回调
          */
-        toastSuccess(message: string, close?: BusyAdminDialogCloseCallback): number;
+        toastSuccess(message: string, close?: BusyAdminDialogCloseCallback): BusyAdminDialogResult;
 
         /**
          * 失败Toast提示
          * @param message 消息
          * @param close 关闭回调
          */
-        toastError(message: string, close?: BusyAdminDialogCloseCallback): number;
+        toastError(message: string, close?: BusyAdminDialogCloseCallback): BusyAdminDialogResult;
 
         /**
          * 提示成功
@@ -2189,6 +2199,11 @@ declare namespace busyAdmin {
          * 关闭对话框
          */
         close(): void;
+
+        /**
+         * 获取对话框下标
+         */
+        getIndex(): number;
     }
 
     /**
@@ -2244,6 +2259,11 @@ declare namespace busyAdmin {
          * 关闭对话框
          */
         close(): void;
+
+        /**
+         * 获取对话框下标
+         */
+        getIndex(): number;
     }
 
     interface BusyAdminDialogPending {
@@ -2388,6 +2408,7 @@ declare namespace busyAdmin {
 
         /**
          * 执行回调
+         * @param plugin 调用本方法的插件对象
          * @param callback 回调方法或window全局方法
          * @param context 上下文
          * @param args 附加参数
@@ -2397,7 +2418,7 @@ declare namespace busyAdmin {
          * @param preventResult 回调返回什么内容才阻止callback传递
          * @param preventResultIsType 返回的内容按照类型拦截
          */
-        execCallback(callback: string | (() => any), context?: any, args?: [any], $target?: any, event?: string, prevent?: Boolean | null, preventResult?: any, preventResultIsType?: boolean): any;
+        execCallback(plugin: object, callback: string | (() => any), context?: any, args?: [any], $target?: any, event?: string, prevent?: Boolean | null, preventResult?: any, preventResultIsType?: boolean): any;
 
         /**
          * 强制转为Int数值
