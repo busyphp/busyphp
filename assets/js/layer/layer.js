@@ -2,6 +2,9 @@
  * layer - 通用 Web 弹出层组件
  * MIT Licensed
  */
+/**
+ * 警告：文件已修改，搜索 busyAdmin查看
+ */
 
 ;!function (window, undefined) {
     "use strict";
@@ -1375,6 +1378,11 @@
             return o.index;
         };
     };
+
+    // busyAdmin 暴漏接口 start ->
+    layer.Constructor = Class;
+    layer.Constructor.container = ready;
+    // <- busyAdmin end
 
     //加载方式
     window.layui && layui.define ? (
