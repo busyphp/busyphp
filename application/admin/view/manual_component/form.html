@@ -28,8 +28,8 @@
 | data-pending-message | string | 否 | `请稍后...` | loading提示内容 |
 | data-method | string | 否 | `post` | 提交方式，`get`，`post`，不设置默认取`form`标签的`method`属性 |
 | data-action | string | 否 | - | 提交的地址，不设置默认取`form`标签的`action`属性 |
-| 表单验证，扩展自 [自动验证]({:url('form_verify')}) 组件，请使用 `data-verify-*`进行验证配置 :title |  |  |  |  |
-| data-verify | boolean | 否 | `true` | 是否开启表单验证 |
+| 表单验证，扩展自 [自动验证]({:url('form_verify')}) 组件，请使用 `data-validate-*`进行验证配置 :title |  |  |  |  |
+| data-validate | boolean | 否 | `true` | 是否开启表单验证 |
 | 回调方法:title |  |  |  |  |
 | data-on-check | string | 否 | - | 表单验证回调，返回`false`阻止提交 |
 | data-on-before | string | 否 | - | 表单提交前回调，返回`false`阻止提交，可以通过该回调修改提交参数 |
@@ -57,6 +57,11 @@
 #### 验证提示风格
 ```demo:实例
 #demo4
+```
+
+#### 模态框中打开
+```demo:实例
+#demo5
 ```
             </script>
         </div>
@@ -101,7 +106,7 @@
     </template>
 
     <template class="hide" id="demo3">
-        <form data-toggle="busy-form" data-verify="false" data-on-success="@form.reset">
+        <form data-toggle="busy-form" data-validate="false" data-on-success="@form.reset">
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">账号</div>
@@ -137,4 +142,34 @@
             <button type="reset" class="btn btn-default">重置</button>
         </form>
     </template>
+    
+    <script id="demo5" type="text/html">
+        <a class="btn btn-primary"
+           data-toggle="busy-modal"
+           data-form-validate="false"
+           data-cancel="重置"
+           data-on-cancel="@form.reset|@:false"
+           data-content="#modalContent">
+            打开模态框
+        </a>
+        <template id="modalContent">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">账号</div>
+                    <input type="text" class="form-control" name="username" required placeholder="请输入账号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">密码</div>
+                    <input type="password" class="form-control" name="password" required placeholder="请输入密码"/>
+                </div>
+            </div>
+        </template>
+    </script>
+    <script>
+        busyAdmin.data.test = function () {
+            return false;
+        }
+    </script>
 </block>
