@@ -7,8 +7,8 @@
             <label class="col-sm-2 control-label required">角色组</label>
             <div class="col-sm-9">
                 <div id="treeGroupIds"
-                     data-verify-required="true"
-                     data-verify-msg="请选择角色组"
+                     data-validate-required="true"
+                     data-validate-msg="请选择角色组"
                      data-toggle="busy-tree"
                      data-url="{:url('group_tree_data?user_id=' . ($info['id'] ?? 0))}"
                      data-checkbox="true"

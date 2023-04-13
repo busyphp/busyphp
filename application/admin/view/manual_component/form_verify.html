@@ -12,10 +12,10 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-toggle="busy-verify"` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-validate"` 来触发
 
 ```html
-<form data-toggle="busy-verify">...</form>
+<form data-toggle="busy-validate">...</form>
 ```
 
 ### 表单元素属性
@@ -25,7 +25,7 @@
 | 基本:title |  |  |  |  |
 | data-rule-required | boolean | 否 | - | 是否必填项 |
 | data-msg | string | 否 | - | 必填项未填写的消息提示，默认使用`placeholder`属性 |
-| data-verify-msg-target | string | 否 | - | 设置错误提示的容器jQuery选择器，如："#username_error" |
+| data-error-target | string | 否 | - | 设置错误提示的容器jQuery选择器，如："#username_error" |
 | 相同:title |  |  |  |  |
 | data-rule-equalTo | string | 否 | - | 如："#password"。输入值必须和 #password 相同,通常用于密码验证 |
 | data-msg-equalTo | string | 否 | - | 输入的内容于对应的内容不相同时的消息 |
@@ -76,8 +76,8 @@
         </div>
     </div>
 
-    <template class="hide" id="demo1">
-        <form data-toggle="busy-verify" class="form-horizontal">
+    <script type="text/html" class="hide" id="demo1">
+        <form busy-validate class="form-horizontal">
             <div class="form-group">
                 <label class="col-sm-2 control-label">账号</label>
                 <div class="col-sm-6">
@@ -87,9 +87,11 @@
                            data-rule-enNumLine="true"
                            data-rule-remote="__SELF__"
                            data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
-                           data-opt-remote-exclude-value="1"
+                           data-opt-remote-exclude-value=""
                            required
+                           data-error-target="#username_error"
                            placeholder="请输入账号"/>
+                    <div id="username_error"></div>
                 </div>
             </div>
             <div class="form-group">
@@ -274,12 +276,12 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label">树形组件</label>
                 <div class="col-sm-10">
-                    <div data-verify-required="true"
-                         data-verify-minlength="3"
-                         data-verify-maxlength="3"
-                         data-verify-msg="请选择该项"
-                         data-verify-msg-minlength="至少需要选择{0}项"
-                         data-verify-msg-maxlength="最多能选择{0}项"
+                    <div data-validate-required="true"
+                         data-validate-minlength="3"
+                         data-validate-maxlength="3"
+                         data-validate-msg="请选择该项"
+                         data-validate-msg-minlength="至少需要选择{0}项"
+                         data-validate-msg-maxlength="最多能选择{0}项"
                          data-toggle="busy-tree"
                          data-name="tree_id"
                          data-checkbox="true"
@@ -339,5 +341,5 @@
                 </div>
             </div>
         </form>
-    </template>
+    </script>
 </block>
