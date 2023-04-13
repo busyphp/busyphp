@@ -81,7 +81,7 @@ modal.close()
 | data-on-cancel | string | 否 | - | 取消按钮点击事件，不指定的情况下执行 `hide()` |
 | `data-type="form"` 自动表单，扩展自 [自动表单]({:url('form')}) 组件，请使用 `data-form-*` 进行配置:title |  |  |  |  |
 | data-form-on-success | string | 否 | `@modal.close` | 表单提交成功操作回调，支持`原组件`语法及`本组件`语法如下：<br />`@modal.close`：关闭模态框<br />`@modal.reload`：重载模态框(针对远程页面有效)<br />`@table.reload`：关闭模态框，并刷新表格(针对 `data-toggle="busy-modal"` 在[数据表格]({:url('table')})内) |
-| `data-type="form"` 表单验证，扩展自 [自动验证]({:url('form_verify')}) 组件，请使用 `data-verify-*` 进行验证配置 :title |  |  |  |  |
+| `data-type="form"` 表单验证，扩展自 [自动验证]({:url('form_verify')}) 组件，请使用 `data-validate-*` 进行验证配置 :title |  |  |  |  |
 
 ### 自定义按钮结构
 ```js
@@ -168,17 +168,18 @@ var buttons = [
     <template class="hide" id="demo4">
         <a class="btn btn-primary"
            data-toggle="busy-modal"
-           data-verify-error-popup="true"
            data-content="#demo4_template">打开静态表单</a>
         <script type="text/html" id="demo4_template">
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">账号</div>
                     <input type="text" class="form-control" required placeholder="请输入账号"/>
-                    <div class="input-group-btn"><a class="btn btn-secondary" data-toggle="busy-modal"
-                                                    data-verify-error-popup="true"
-                                                    data-size="sm"
-                                                    data-content="#demo4_template">继续打开</a></div>
+                    <div class="input-group-btn">
+                        <a class="btn btn-secondary"
+                           data-toggle="busy-modal"
+                           data-size="sm"
+                           data-content="#demo4_template">继续打开</a>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
