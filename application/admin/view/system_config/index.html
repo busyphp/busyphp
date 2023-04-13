@@ -47,7 +47,7 @@
                            href="{:url('edit?id=')}{{item.id}}"
                            data-toggle="busy-modal"
                            data-ok="修改配置"
-                           data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
+                           data-form-on-success="@table.reload|@modal.close"><i class="fa fa-pencil"></i></a>
 
                         {{if !item.system}}
                         <a class="btn btn-danger btn-xs"
@@ -68,7 +68,7 @@
                data-toggle="busy-modal"
                data-url="{:url('add')}"
                data-ok="添加配置"
-               data-form-on-success="@table.reload">
+               data-form-on-success="@table.reload|@modal.close">
                 <i class="fa fa-plus"></i>
                 添加
             </a>

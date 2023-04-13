@@ -42,7 +42,7 @@
                                        data-toggle="busy-modal"
                                        data-size="lg"
                                        data-ok="修改图片样式"
-                                       data-form-on-success="@table.reload"><i class="fa fa-pencil"></i></a>
+                                       data-form-on-success="@table.reload|@modal.close"><i class="fa fa-pencil"></i></a>
                                 </ba:access>
                                 <ba:access value="image_style_delete">
                                     <a class="btn btn-danger btn-xs"
@@ -65,7 +65,7 @@
                            data-url="{:url('image_style_add?disk='. $disk)}"
                            data-ok="添加图片样式"
                            data-size="lg"
-                           data-form-on-success="@table.reload">
+                           data-form-on-success="@table.reload|@modal.close">
                             <i class="fa fa-plus"></i>
                             添加
                         </a>

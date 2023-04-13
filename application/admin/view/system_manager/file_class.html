@@ -45,7 +45,7 @@
                                    data-ok="设置"
                                    data-url="{:url('file_class?action=edit&id=')}{{item.id}}"
                                    data-size="lg"
-                                   data-form-on-success="@table.reload">
+                                   data-form-on-success="@table.reload|@modal.close">
                                     <i class="fa fa-pencil"></i>
                                 </a>
                             </script>

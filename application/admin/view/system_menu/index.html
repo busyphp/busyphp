@@ -90,7 +90,7 @@
                            data-toggle="busy-modal"
                            data-size="lg"
                            data-ok="添加菜单"
-                           data-form-on-success="@table.reload|@app.loadInfo">
+                           data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
                             <i class="fa fa-plus"></i>
                             添加
                         </a>
@@ -100,7 +100,7 @@
                            data-toggle="busy-modal"
                            data-size="lg"
                            data-ok="修改菜单"
-                           data-form-on-success="@table.reload|@app.loadInfo">
+                           data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
                             <i class="fa fa-pencil"></i>
                         </a>
                         {{if !item.system}}
@@ -120,7 +120,7 @@
                data-size="lg"
                data-ok="添加菜单"
                data-url="{:url('add')}"
-               data-form-on-success="@table.reload|@app.loadInfo">
+               data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
                 <i class="fa fa-plus"></i>
                 添加
             </a>

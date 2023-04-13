@@ -73,7 +73,7 @@
                            data-toggle="busy-modal"
                            data-ok="安装"
                            data-size="{{item.install_config.install_operate.modal_size || ''}}"
-                           data-form-on-success="{{item.install_config.install_operate.success || '@table.reload'}}"
+                           data-form-on-success="{{item.install_config.install_operate.success || '@table.reload|@modal.close'}}"
                            data-url="{:url('install?package=')}{{item.package}}">安装</a>
                         {{/if}}
                         {{/if}}
@@ -105,7 +105,7 @@
                            data-toggle="busy-modal"
                            data-ok="卸载"
                            data-size="{{item.install_config.uninstall_operate.modal_size || ''}}"
-                           data-form-on-success="{{item.install_config.uninstall_operate.success || '@table.reload'}}"
+                           data-form-on-success="{{item.install_config.uninstall_operate.success || '@table.reload|@modal.close'}}"
                            data-url="{:url('uninstall?package=')}{{item.package}}">卸载</a>
                         {{/if}}
                         {{/if}}
