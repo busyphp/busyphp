@@ -818,7 +818,7 @@ declare namespace busyAdmin {
         /**
          * 自定创建错误标签事件，返回false阻止系统创建标签
          */
-        verifyErrorPlacement: string,
+        validateErrorPlacement: string,
 
         //+======================================================================
         //+ iconPicker
@@ -2624,14 +2624,6 @@ declare namespace busyAdmin {
          * 刷新
          */
         reload();
-
-        /**
-         * 解析响应操作
-         * @param result
-         * @param operate
-         * @param after
-         */
-        parseRespOperate(result: BusyAdminResponseResult, operate: any, after?: ((operate: string) => void));
     }
 
 
