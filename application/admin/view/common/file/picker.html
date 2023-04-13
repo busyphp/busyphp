@@ -666,7 +666,7 @@
                             delete item.disabled;
                             delete item.delete_confirm;
                         });
-                        busyAdmin.helper.execCallback(opt.success, me.picker.element, [this.selected_list], me.picker.$element, busyAdmin.e.filePickerSuccess);
+                        busyAdmin.helper.execCallback(modal, opt.success, me.picker.element, [this.selected_list], me.picker.$element, busyAdmin.e.filePickerSuccess);
                         modal.close();
                     },
 
