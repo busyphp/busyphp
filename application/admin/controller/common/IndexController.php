@@ -3,15 +3,18 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\common;
 
+use BusyPHP\app\admin\component\common\ConsoleLog;
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\message\Todo;
 use BusyPHP\app\admin\component\message\Notice;
+use BusyPHP\app\admin\component\message\Todo;
+use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\helper\ArrayHelper;
 use Closure;
+use RuntimeException;
 use stdClass;
 use think\Response;
 use Throwable;
@@ -56,14 +59,12 @@ class IndexController extends InsideController
         // 自动响应JS组件数据
         Driver::autoResponse();
         
-        switch (Driver::getRequestName()) {
-            case 'AppInfo':
-                return $this->buildAppInfo();
-            case 'AppMessage':
-                return $this->buildAppMessage($this->get('type/s', 'trim'), $this->get('action/s', 'trim'));
-            default:
-                return $this->renderIndex();
-        }
+        return match (Driver::getRequestName()) {
+            'AppInfo'    => $this->buildAppInfo(),
+            'AppMessage' => $this->buildAppMessage($this->get('type/s', 'trim'), $this->get('action/s', 'trim')),
+            'ConsoleLog' => $this->buildConsoleLog($this->param('id/s', 'trim')),
+            default      => $this->renderIndex(),
+        };
     }
     
     
@@ -193,7 +194,7 @@ class IndexController extends InsideController
                 'theme'            => $this->adminUser->theme,
             ],
             'data'           => $data ?: new stdClass(),
-    
+            
             // 消息启用状态
             'message_notice' => Notice::instance()->isEnable(),
             'message_todo'   => Todo::instance()->isEnable(),
@@ -312,6 +313,24 @@ class IndexController extends InsideController
                     'total'        => $noticeTotal + $todoTotal
                 ]);
         }
+    }
+    
+    
+    /**
+     * 构建 ConsoleLog
+     * @param string $id 日志ID
+     * @return Response
+     */
+    protected function buildConsoleLog(string $id) : Response
+    {
+        if (!$id) {
+            throw new RuntimeException('日志ID不能为空', AdminHandle::CODE_NEED_EMPTY_CONSOLE_LOG);
+        }
+        if (!$log = ConsoleLog::get($id)) {
+            throw new RuntimeException('无法获取日志', AdminHandle::CODE_NEED_EMPTY_CONSOLE_LOG);
+        }
+        
+        return $this->success($log);
     }
     
     

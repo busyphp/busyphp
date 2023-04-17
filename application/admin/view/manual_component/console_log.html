@@ -1,0 +1,54 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default" id="demo4Panel">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-console-log"` 来触发
+
+```html
+<a type="text" data-toggle="busy-console-log" />
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-id | string | `是` | - | 日志ID |
+| data-title | string | `否` | - | 对话框标题 |
+| data-ok | string,false | `否` | `完成` | 确认按钮名称或不显示确认按钮 |
+| data-ok-url | string | `否` | - | 点击确认按钮跳转的URL |
+| data-ok-blank | string | `否` | - | 是否新建窗口打开要跳转的URL |
+| data-cancel | string | `否` | `关闭` | 关闭按钮名称 |
+| data-on-ok | string,Function | `否` | - | 确认回调 |
+| data-on-cancel | string,Function | `否` | - | 取消回调 |
+| data-on-hide | string,Function | `否` | - | 对话框关闭回调 |
+
+### 使用示例
+
+#### 基本示例
+
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+
+    <script type="text/html" id="demo1" class="hide">
+        <button class="btn btn-primary"
+                busy-request
+                busy-request-url="{:url('system_task/optimize')}"
+                busy-request-on-success="@console-log|@:false">
+            优化数据表
+        </button>
+    </script>
+</block>

@@ -34,6 +34,9 @@ class AdminHandle extends Handle
     /** @var int 需要登录 */
     const CODE_NEED_LOGIN = 3020001;
     
+    /** @var int 无法获取控制台日志 */
+    const CODE_NEED_EMPTY_CONSOLE_LOG = 4010001;
+    
     
     /**
      * 处理数据渲染
@@ -234,6 +237,9 @@ class AdminHandle extends Handle
                     'print'         => [
                         'css'   => $printCss,
                         'style' => $printStyle
+                    ],
+                    'consoleLog'    => [
+                        'url' => $data['url']['app']
                     ]
                 ]
             ], JSON_UNESCAPED_UNICODE)
