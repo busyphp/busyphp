@@ -287,4 +287,22 @@ namespace PHPSTORM_META {
         \BusyPHP\office\excel\Export::EVENT_START |
         \BusyPHP\office\excel\Export::EVENT_EXPORTED
     );
+    
+    registerArgumentsSet(
+        'log_level',
+        \think\Log::EMERGENCY |
+        \think\Log::ALERT |
+        \think\Log::CRITICAL |
+        \think\Log::ERROR |
+        \think\Log::WARNING |
+        \think\Log::NOTICE |
+        \think\Log::INFO |
+        \think\Log::DEBUG |
+        \think\Log::SQL
+    );
+    expectedArguments(\BusyPHP\helper\LogHelper::record(), 1, argumentsSet('log_level'));
+    expectedArguments(\BusyPHP\helper\LogHelper::write(), 1, argumentsSet('log_level'));
+    expectedArguments(\think\Log::log(), 0, argumentsSet('log_level'));
+    expectedArguments(\think\Log::write(), 1, argumentsSet('log_level'));
+    expectedArguments(\think\Log::record(), 1, argumentsSet('log_level'));
 }
