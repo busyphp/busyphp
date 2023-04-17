@@ -135,17 +135,12 @@ class FilterHelper
     public static function searchWord($string, $replaceSpace = true) : string
     {
         $string = trim((string) $string);
-        if (!$string) {
-            return $string;
-        }
-        $string = self::nowrap($string);
-        $string = str_replace(['%', '_'], ['\%', '\_'], $string);
-        $array  = ["\t", "\r\n", "\r", "\n"];
+        $string = str_replace(['%', '_', "'", '\\'], ['\%', '\_', "\'", '\\\\'], $string);
         if ($replaceSpace) {
-            $array[] = ' ';
+            return str_replace(' ', '%', $string);
         }
         
-        return str_replace($array, '%', $string);
+        return $string;
     }
     
     
