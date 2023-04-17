@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app;
 
 use BusyPHP\App;
+use BusyPHP\app\admin\command\Task;
 use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\app\admin\controller\common\ErrorController;
 use BusyPHP\app\admin\controller\common\FileController;
@@ -45,6 +46,8 @@ class Service extends ThinkService
     
     public function boot() : void
     {
+        $this->commands([Task::class]);
+        
         // 注入验证码token
         Captcha::maker(function(Captcha $captcha) {
             $captcha->token(CaptchaSetting::instance()->getToken());

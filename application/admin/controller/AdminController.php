@@ -3,6 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\controller;
 
+use BusyPHP\App;
+use BusyPHP\app\admin\component\common\Task;
 use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
 use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
@@ -11,6 +13,7 @@ use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\model\system\task\SystemTaskInterface;
 use BusyPHP\Controller;
 use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\FileHelper;
@@ -18,6 +21,7 @@ use FilesystemIterator;
 use SplFileInfo;
 use think\exception\HttpResponseException;
 use think\facade\Event;
+use think\facade\Route;
 use think\Response;
 use think\route\Url;
 use Throwable;
@@ -80,6 +84,20 @@ abstract class AdminController extends Controller
      * @var bool
      */
     private bool $saveOperate = true;
+    
+    
+    public function __construct(App $app)
+    {
+        // 注入任务相关处理
+        Task::maker(Task::MAKER_LOG, function(int $type, string $name, string $result) {
+            $this->log()->record($type, $name, $result);
+        });
+        Task::maker(Task::MAKER_DOWNLOAD_URL, function(string $id, string $filename, string $mimetype) {
+            return Route::buildUrl('system_task/download', ['id' => $id, 'name' => $filename, 'mimetype' => $mimetype]);
+        });
+        
+        parent::__construct($app);
+    }
     
     
     /**
@@ -158,6 +176,21 @@ abstract class AdminController extends Controller
     protected function log($type = '', string $value = '') : SystemLogs
     {
         return SystemLogs::init()->setUser($this->adminUserId, $this->adminUsername)->setClass($type, $value);
+    }
+    
+    
+    /**
+     * 创建异步任务操作
+     * @param class-string<SystemTaskInterface> $class 任务处理类
+     * @param mixed                             $data 任务处理数据
+     * @param string                            $title 任务标题
+     * @param int                               $later 延迟执行秒数
+     * @param int                               $loop 循环间隔秒数
+     * @return Task
+     */
+    protected function task(string $class, mixed $data = null, string $title = '', int $later = 0, int $loop = 0) : Task
+    {
+        return Task::init($class, $data, $title, $later, $loop);
     }
     
     
