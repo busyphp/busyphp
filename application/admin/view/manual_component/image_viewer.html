@@ -45,7 +45,7 @@
 
 
 ### 使用示例
-            
+
 #### 单图-Img标签预览
 
 ```demo:实例
@@ -92,14 +92,16 @@
 <a class="btn btn-success" data-toggle="busy-image-viewer" data-src="{$skin.images}login/1.jpg" data-alt="一朵美丽的花儿">预览图片</a>
     </textarea>
 
-    <textarea class="hide" id="demo4">
-<a class="btn btn-success" id="demo4_btn" data-toggle="busy-image-viewer" data-src="{$skin.images}login/1.jpg" data-alt="一朵美丽的花儿" data-click-handler="false">预览图片</a>
-<script>
-$(function () {
-    $('#demo4_btn').on('click', function () {
-        $(this).baImageViewer('show')
-    });
-});
-</script>
-    </textarea>
+    <template class="hide" id="demo4">
+        <a class="btn btn-success" id="demo4_btn" data-src="{$skin.images}login/1.jpg" data-alt="一朵美丽的花儿">预览图片</a>
+        <script>
+            $(function () {
+                $('#demo4_btn').on('click', function () {
+                    $(this).baImageViewer({
+                        clickHandler: false
+                    })
+                });
+            });
+        </script>
+    </template>
 </block>

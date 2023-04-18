@@ -154,7 +154,7 @@
              id="demo1_file"></div>
     </template>
 
-    <template class="hide" id="demo2">
+    <script type="text/html" class="hide" id="demo2">
         <h5>图片上传</h5>
         <div id="demo2_banner" title="图片"
              data-toggle="busy-upload"
@@ -171,7 +171,7 @@
              data-auto="false"
              data-name="demo2_file"
              data-value='[{"url":"{$skin.images}login/1.jpg"},{"url":"{$skin.images}login/2.jpg"},{"url":"{$skin.images}login/3.jpg"}]'></div>
-    </template>
+    </script>
 
     <template class="hide" id="demo3">
         <h5>图片上传</h5>
@@ -198,7 +198,8 @@
         <h5>头像上传</h5>
         <div style="width: 150px;" id="demo3_avatar" data-toggle="busy-upload"
              data-type="card"
-             data-class-type="avatar"
+             data-allow-extensions="jpg,jpeg,png,webp,gif"
+             data-allow-mimetypes="image/*"
              data-card-type="circle"
              data-card-icon="fa fa-image"
              data-auto="false"

@@ -68,14 +68,14 @@
 <a href="javascript:;" class="btn btn-success" data-toggle="busy-video-viewer" data-src="http://vjs.zencdn.net/v/oceans.webm" data-autoplay="true">点击播放</a>
     </textarea>
     
-    <textarea class="hide" id="demo3">
-<a href="javascript:;" class="btn btn-success" id="demo3_btn" data-toggle="busy-video-viewer" data-src="http://vjs.zencdn.net/v/oceans.webm" data-click-handler="false">点击播放</a>
-<script>
-$(function () {
-    $('#demo3_btn').on('click', function () {
-        $(this).baVideoViewer('show')
-    });
-});
-</script>
-    </textarea>
+    <template class="hide" id="demo3">
+        <a href="javascript:;" class="btn btn-success" id="demo3_btn" data-src="http://vjs.zencdn.net/v/oceans.webm" data-click-handler="false">点击播放</a>
+        <script>
+            $(function () {
+                $('#demo3_btn').on('click', function () {
+                    $(this).baVideoViewer()
+                });
+            });
+        </script>
+    </template>
 </block>
