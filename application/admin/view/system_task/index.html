@@ -165,7 +165,7 @@
                     <script type="text/html">
                         <div class="text-left flex flex-align-center">
                             <div>
-                                <ba-if value="item.started">
+                                <ba-if value="item.started || item.wait">
                                     <b class="badge badge-dark width-20 height-40 text-wrap flex flex-align-center">等待</b>
                                     <ba-elseif value="value"/>
                                     <b class="badge badge-success width-20 height-40 text-wrap flex flex-align-center">成功</b>
