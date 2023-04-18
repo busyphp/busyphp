@@ -69,6 +69,13 @@ modal.close()
 | data-height | number | 否 | - | 设置对话框内容高度，超出后将显示滚动条 |
 | data-buttons | string | 否 | - | 自定义按钮`window全局变量名称` |
 | data-zindex | number | 否 | `auto` | 定义modal层级 |
+| 数据选择:title |  |  |  |  |
+| data-select | string | 否 | - | 定义选择modal内的数据，可选：`baTable` - 选择baTable表格的选项 |
+| data-select-tip | string | 否 | - | 未选择时的提示 |
+| data-select-min | number | 否 | `1` | 至少选择多少项 |
+| data-select-min-tip | string | 否 | - | 至少选择多少项提示 |
+| data-select-max | number | 否 | `0` | 最多允许选择多少项 |
+| data-select-max-tip | string | 否 | `0` | 最多允许选择多少项提示 |
 | 确认按钮:title |  |  |  |  |
 | data-ok | boolean,string | 否 | `确定` | 设置确认按钮的文本内容，`false`则不显示 |
 | data-ok-skin | string | 否 | `btn-primary` | 确定按钮css类名 |
@@ -121,7 +128,7 @@ var buttons = [
 #demo2
 ```
 
-#### 加载远程页面
+#### 加载远程页面(选择)
 ```demo:实例
 #demo3
 ```
@@ -162,7 +169,21 @@ var buttons = [
            data-border-top="false"
            data-border-bottom="false"
            data-type="page"
+           data-on-ok="getSelects"
+           data-select="baTable"
+           data-select-min="2"
+           data-select-max="2"
            data-url="{:url('?action=demo3')}">打开页面</a>
+        <script>
+            busyAdmin.data.getSelects  = function (modal, result){
+                var ids = [];
+                result.map(function (item) {
+                    ids.push(item.id)
+                });
+                console.log(result);
+                busyAdmin.dialog.alert('已选择：' + ids.join(','))
+            }
+        </script>
     </template>
 
     <template class="hide" id="demo4">
