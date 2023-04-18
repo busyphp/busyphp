@@ -74,7 +74,7 @@
             <script type="text/html" data-search-id="toolbar">
                 <div class="btn-group">
                     <ba:access value="upload">
-                        <a class="btn btn-success" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="uploadHidden" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i>
+                        <a class="btn btn-success" data-toggle="busy-modal" data-footer="false" data-backdrop="static" data-on-hidden="@table.reload" data-type="page" data-url="{:url('upload')}"><i class="fa fa-upload"></i>
                             上传文件</a>
                     </ba:access>
 
@@ -88,7 +88,7 @@
                                        data-url="{:url('clear_invalid')}"
                                        data-confirm="确认要清理无效的文件吗？<br /><div class=text-danger>本操作可以清理超过48小时未上传成功的文件</div>"
                                        data-method="post"
-                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理无效文件</a>
+                                       data-on-success="@table.reload"><i class="fa fa-trash"></i> 清理无效文件</a>
                                 </li>
                             </ba:access>
                             <ba:access value="clear_repeat">
@@ -96,7 +96,7 @@
                                        data-url="{:url('clear_repeat')}"
                                        data-confirm="确认要清理重复的文件吗？"
                                        data-method="post"
-                                       data-on-success="busyAdmin.data.uploadHidden"><i class="fa fa-trash"></i> 清理重复文件</a>
+                                       data-on-success="@table.reload"><i class="fa fa-trash"></i> 清理重复文件</a>
                                 </li>
                             </ba:access>
                         </ul>
@@ -226,10 +226,6 @@
                     this.update();
                 });
             });
-
-            busyAdmin.data.uploadHidden = function () {
-                $table.baTable('refresh');
-            };
 
             busyAdmin.data.nameEvents = {
                 'click .cursor-zoom-in' : function (e, value, row, index) {
