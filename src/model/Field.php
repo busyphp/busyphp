@@ -176,7 +176,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      * @param array|static $data 数据
      * @return static
      */
-    public static function parse($data) : self
+    public static function parse(array|Field $data) : static
     {
         if ($data instanceof static) {
             $data->onParseAfter();
