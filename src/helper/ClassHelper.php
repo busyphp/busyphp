@@ -557,15 +557,30 @@ class ClassHelper
     /**
      * 获取ReflectionProperty类型
      * @param ReflectionProperty $property
+     * @param bool               $builtin
      * @return \ReflectionNamedType[]
      */
-    public static function getReflectionNamedTypes(ReflectionProperty $property) : array
+    public static function getReflectionNamedTypes(ReflectionProperty $property, bool $builtin = false) : array
     {
         $type = $property->getType();
         if ($type instanceof ReflectionUnionType) {
-            return $type->getTypes();
+            $types = $type->getTypes();
+        } else {
+            $types = [$type];
         }
         
-        return [$type];
+        if ($builtin) {
+            $array = [];
+            foreach ($types as $type) {
+                if ($type->isBuiltin()) {
+                    continue;
+                }
+                $array[] = $type;
+            }
+            
+            return $array;
+        }
+        
+        return $types;
     }
 }
