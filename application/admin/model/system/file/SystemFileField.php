@@ -46,6 +46,7 @@ use think\validate\ValidateRule;
  * @method static Entity extension(mixed $op = null, mixed $condition = null) 文件扩展名
  * @method static Entity name(mixed $op = null, mixed $condition = null) 文件名
  * @method static Entity hash(mixed $op = null, mixed $condition = null) 文件的哈希值
+ * @method static Entity uniqueId(mixed $op = null, mixed $condition = null) 文件的唯一码
  * @method static Entity width(mixed $op = null, mixed $condition = null) 文件宽度[像素]
  * @method static Entity height(mixed $op = null, mixed $condition = null) 文件高度[像素]
  * @method static Entity typeName($op = null, $value = null) 附件类型名称;
@@ -75,6 +76,7 @@ use think\validate\ValidateRule;
  * @method $this setExtension(mixed $extension) 设置文件扩展名
  * @method $this setName(mixed $name) 设置文件名
  * @method $this setHash(mixed $hash) 设置文件的哈希值
+ * @method $this setUniqueId(mixed $uniqueId) 设置文件的唯一码
  * @method $this setWidth(mixed $width) 设置文件宽度[像素]
  * @method $this setHeight(mixed $height) 设置文件高度[像素]
  */
@@ -208,6 +210,14 @@ class SystemFileField extends Field implements ModelValidateInterface
     #[Validator(name: Validator::REQUIRE)]
     #[Filter(filter: 'trim')]
     public $hash;
+    
+    /**
+     * 文件唯一码
+     * @var string
+     */
+    #[Validator(name: Validator::REQUIRE)]
+    #[Filter(filter: 'trim')]
+    public $uniqueId;
     
     /**
      * 文件宽度
