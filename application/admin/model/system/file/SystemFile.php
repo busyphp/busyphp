@@ -43,6 +43,7 @@ use Throwable;
  * @method SystemFileField[] indexList(string|Entity $key = '')
  * @method SystemFileField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
  * @method SystemFileField|null findInfoByHash(string $hash)
+ * @method SystemFileField|null findInfoByUniqueId(string $uniqueId)
  * @method SystemFileField|null findInfoByPath(string $path)
  * @method SystemFileField|null findInfoByUrlHash(string $urlHash)
  * @method SystemFileField|null findInfoByUrl(string $url)
@@ -251,6 +252,18 @@ class SystemFile extends Model implements ContainerInterface
     
     
     /**
+     * 生成文件唯一码
+     * @param string $hash
+     * @param string $imageStyle
+     * @return string
+     */
+    public static function createUniqueId(string $hash, string $imageStyle) : string
+    {
+        return md5($hash . '@' . $imageStyle);
+    }
+    
+    
+    /**
      * 添加文件
      * @param SystemFileField $data
      * @return SystemFileField
@@ -337,7 +350,7 @@ class SystemFile extends Model implements ContainerInterface
             $info = $this->lock(true)->getInfo($id);
             
             // 没有相同的文件才真实的删除
-            if (!$this->where(SystemFileField::urlHash(md5($info->url)))
+            if (!$this->where(SystemFileField::uniqueId($info->uniqueId))
                 ->where(SystemFileField::id('<>', $info->id))
                 ->find()) {
                 try {
@@ -361,7 +374,7 @@ class SystemFile extends Model implements ContainerInterface
     public function clearRepeat() : int
     {
         $min = $this->field(SystemFileField::id()->exp('min')->as('min_id'))
-            ->group(SystemFileField::urlHash())
+            ->group(SystemFileField::uniqueId())
             ->buildSql();
         $sql = $this->field('t.min_id')->table($min)->alias('t')->buildSql(false);
         
@@ -441,28 +454,43 @@ class SystemFile extends Model implements ContainerInterface
             // 处理图片
             $extension  = strtolower(pathinfo($result->getPath(), PATHINFO_EXTENSION));
             $imageStyle = $storage->getImageStyle($parameter->getClassType(), $disk);
-            if (in_array($extension, array_keys(FormatParameter::getFormats())) && $imageStyle !== '') {
+            $styleRule  = '';
+            if (array_key_exists($extension, FormatParameter::getFormats()) && $imageStyle !== '') {
                 $imageResult = Image::path($result->getPath())->style($imageStyle)->disk($filesystem)->save();
                 $result->setFilesize($imageResult->getSize());
                 $result->setWidth($imageResult->getWidth());
                 $result->setHeight($imageResult->getHeight());
+                $styleRule = $filesystem->image()->getStyleByCache($imageStyle)->rule;
             }
             
-            // 插入到数据库
-            $data = SystemFileField::init();
-            $data->setName($result->getBasename());
-            $data->setUrl($filesystem->url($result->getPath()));
-            $data->setSize($result->getFilesize());
-            $data->setMimeType($result->getMimetype());
-            $data->setHash($result->getMd5());
-            $data->setWidth($result->getWidth());
-            $data->setHeight($result->getHeight());
-            $data->setPath($result->getPath());
-            $data->setUserId($parameter->getUserId());
-            $data->setClassValue($parameter->getClassValue());
-            $data->setClassType($parameter->getClassType());
-            $data->setExtension($extension);
-            $data->setDisk($disk);
+            // 秒传
+            $uniqueId = static::createUniqueId($result->getMd5(), $styleRule);
+            if ($info = $this->where(SystemFileField::disk($disk))->whereComplete()->findInfoByUniqueId($uniqueId)) {
+                $data = clone $info;
+                $data->setId(null);
+                $data->setUserId($parameter->getUserId());
+                $data->setClassType($parameter->getClassType());
+                $data->setClassValue($parameter->getClassValue());
+                $data->setName($result->getBasename());
+                $data->setFast(true);
+                $data->setPending(false);
+            } else {
+                $data = SystemFileField::init();
+                $data->setName($result->getBasename());
+                $data->setUrl($filesystem->url($result->getPath()));
+                $data->setSize($result->getFilesize());
+                $data->setMimeType($result->getMimetype());
+                $data->setHash($result->getMd5());
+                $data->setUniqueId($uniqueId);
+                $data->setWidth($result->getWidth());
+                $data->setHeight($result->getHeight());
+                $data->setPath($result->getPath());
+                $data->setUserId($parameter->getUserId());
+                $data->setClassValue($parameter->getClassValue());
+                $data->setClassType($parameter->getClassType());
+                $data->setExtension($extension);
+                $data->setDisk($disk);
+            }
             
             return $this->create($data);
         } catch (Throwable $e) {
@@ -470,6 +498,11 @@ class SystemFile extends Model implements ContainerInterface
             $filesystem->delete($result->getPath());
             
             throw $e;
+        } finally {
+            // 秒传则删除当前上传的文件
+            if (isset($info)) {
+                $filesystem->delete($result->getPath());
+            }
         }
     }
     
@@ -505,8 +538,17 @@ class SystemFile extends Model implements ContainerInterface
         $disk       = $parameter->getDisk() ?: $setting->getDisk();
         $filesystem = Filesystem::disk($disk);
         
+        // 处理图片
+        $extension  = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $imageStyle = $setting->getImageStyle($classType, $disk);
+        $styleRule  = '';
+        if (array_key_exists($extension, FormatParameter::getFormats()) && $imageStyle !== '') {
+            $styleRule = $filesystem->image()->getStyleByCache($imageStyle)->rule;
+        }
+        
         // 查询是否可以秒传
-        if ($info = $this->where(SystemFileField::disk($disk))->whereComplete()->findInfoByHash($md5)) {
+        $uniqueId = static::createUniqueId($md5, $styleRule);
+        if ($info = $this->where(SystemFileField::disk($disk))->whereComplete()->findInfoByUniqueId($uniqueId)) {
             $path = $info->path;
             $fast = Filesystem::disk($info->disk)->fileExists($path);
         }
@@ -522,7 +564,6 @@ class SystemFile extends Model implements ContainerInterface
             $data->setFast(true);
             $data->setPending(false);
         } else {
-            $extension = pathinfo($filename, PATHINFO_EXTENSION);
             FileHelper::checkExtension($setting->getAllowExtensions($classType), $extension);
             FileHelper::checkFilesize($setting->getMaxSize($classType), $filesize);
             if ($mimetype) {
@@ -541,6 +582,7 @@ class SystemFile extends Model implements ContainerInterface
             $data->setDisk($disk);
             $data->setPath($path ?: static::createFilename($classType, $classValue, $userId, $filename, $extension));
             $data->setUrl($filesystem->url($data->path));
+            $data->setUniqueId($uniqueId);
             $data->setFast(false);
             $data->setPending(true);
         }
@@ -595,7 +637,7 @@ class SystemFile extends Model implements ContainerInterface
             
             // 处理图片
             $imageStyle = $setting->getImageStyle($info->classType, $info->disk);
-            if (in_array($info->extension, array_keys(FormatParameter::getFormats())) && $imageStyle !== '') {
+            if (array_key_exists($info->extension, FormatParameter::getFormats()) && $imageStyle !== '') {
                 $imageResult = Image::path($info->path)->disk($filesystem)->style($imageStyle)->save();
                 $data->setWidth($imageResult->getWidth());
                 $data->setHeight($imageResult->getHeight());
