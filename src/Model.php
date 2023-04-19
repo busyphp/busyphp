@@ -853,7 +853,7 @@ abstract class Model extends Query
                     $field[$key] = $value;
                 }
             } else {
-                $field = $field::parse($data);
+                $field = $field::init($data);
             }
             $validate = $field::getValidate();
         } elseif (is_string($validate)) {
