@@ -168,7 +168,7 @@ class ManagerController extends InsideController
         // 分类设置
         if ($this->isPost()) {
             SystemFileClass::init()
-                ->modify(SystemFileClassField::parse($this->post()), SystemFileClass::SCENE_USER_SET);
+                ->modify(SystemFileClassField::init($this->post()), SystemFileClass::SCENE_USER_SET);
             $this->log()->record(self::LOG_UPDATE, '分类上传设置');
             $this->updateCache();
             

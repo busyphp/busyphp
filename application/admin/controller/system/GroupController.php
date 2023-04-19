@@ -79,7 +79,7 @@ class GroupController extends InsideController
     {
         // 添加
         if ($this->isPost()) {
-            $this->model->create(AdminGroupField::parse($this->parseData()));
+            $this->model->create(AdminGroupField::init($this->parseData()));
             $this->log()->record(self::LOG_INSERT, '添加管理角色');
             
             return $this->success('添加成功');
@@ -110,7 +110,7 @@ class GroupController extends InsideController
     {
         // 修改
         if ($this->isPost()) {
-            $this->model->modify(AdminGroupField::parse($this->parseData()));
+            $this->model->modify(AdminGroupField::init($this->parseData()));
             $this->log()->record(self::LOG_UPDATE, '修改管理角色');
             
             return $this->success('修改成功');

@@ -65,7 +65,7 @@ class ConfigController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->create(SystemConfigField::parse($this->post()));
+            $this->model->create(SystemConfigField::init($this->post()));
             $this->log()->record(self::LOG_INSERT, '增加系统配置');
             
             return $this->success('添加成功');
@@ -86,7 +86,7 @@ class ConfigController extends InsideController
     public function edit() : Response
     {
         if ($this->isPost()) {
-            $this->model->modify(SystemConfigField::parse($this->post()));
+            $this->model->modify(SystemConfigField::init($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改系统配置');
             
             return $this->success('修改成功');

@@ -77,7 +77,7 @@ class FileClassController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->create(SystemFileClassField::parse($this->post()));
+            $this->model->create(SystemFileClassField::init($this->post()));
             $this->log()->record(self::LOG_INSERT, '增加文件分类');
             
             return $this->success('添加成功');
@@ -103,7 +103,7 @@ class FileClassController extends InsideController
     public function edit() : Response
     {
         if ($this->isPost()) {
-            $this->model->modify(SystemFileClassField::parse($this->post()));
+            $this->model->modify(SystemFileClassField::init($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改文件分类');
             
             return $this->success('修改成功');

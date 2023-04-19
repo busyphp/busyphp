@@ -115,7 +115,7 @@ class UserController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->create(AdminUserField::parse($this->post()));
+            $this->model->create(AdminUserField::init($this->post()));
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
             
             return $this->success('添加成功');
@@ -147,7 +147,7 @@ class UserController extends InsideController
                 throw new RuntimeException('不能禁用自己');
             }
             
-            $this->model->modify(AdminUserField::parse($this->post()));
+            $this->model->modify(AdminUserField::init($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改管理员');
             
             return $this->success('修改成功');
@@ -225,7 +225,7 @@ class UserController extends InsideController
     public function password() : Response
     {
         if ($this->isPost()) {
-            $this->model->modify(AdminUserField::parse($this->post()), AdminUser::SCENE_PASSWORD);
+            $this->model->modify(AdminUserField::init($this->post()), AdminUser::SCENE_PASSWORD);
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
             
             return $this->success('修改成功');

@@ -87,7 +87,7 @@ class MenuController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->create(SystemMenuField::parse($this->parseData()));
+            $this->model->create(SystemMenuField::init($this->parseData()));
             $this->updateCache();
             $this->log()->record(self::LOG_INSERT, '添加系统菜单');
             
@@ -124,7 +124,7 @@ class MenuController extends InsideController
     public function edit() : Response
     {
         if ($this->isPost()) {
-            $this->model->modify(SystemMenuField::parse($this->parseData()));
+            $this->model->modify(SystemMenuField::init($this->parseData()));
             $this->updateCache();
             $this->log()->record(self::LOG_UPDATE, '修改系统菜单');
             

@@ -30,7 +30,7 @@ class UserController extends InsideController
     {
         if ($this->isPost()) {
             AdminUser::init()->modify(
-                AdminUserField::parse($this->post())->setId($this->adminUserId),
+                AdminUserField::init($this->post())->setId($this->adminUserId),
                 AdminUser::SCENE_PROFILE
             );
             $this->log()->record(self::LOG_UPDATE, '修改个人资料');
@@ -65,7 +65,7 @@ class UserController extends InsideController
             }
             
             AdminUser::init()->modify(
-                AdminUserField::parse($this->post())->setId($this->adminUserId),
+                AdminUserField::init($this->post())->setId($this->adminUserId),
                 AdminUser::SCENE_PASSWORD
             );
             $this->log()
