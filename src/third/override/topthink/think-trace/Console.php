@@ -107,7 +107,7 @@ class Console
         }
         $js = <<<JS
 
-<script type='text/javascript'>
+<script type='text/javascript' id="think_trace_console_script">
 {$lines}
 </script>
 JS;
