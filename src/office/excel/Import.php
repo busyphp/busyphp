@@ -14,6 +14,7 @@ use BusyPHP\model\Field;
 use BusyPHP\office\excel\import\ImportColumn;
 use BusyPHP\office\excel\import\ImportException;
 use BusyPHP\office\excel\import\ImportResult;
+use BusyPHP\office\excel\import\interfaces\ImportFetchClassInterface;
 use BusyPHP\office\excel\import\interfaces\ImportInterface;
 use BusyPHP\office\excel\import\parameter\ImportFilterParameter;
 use BusyPHP\office\excel\import\parameter\ImportInitParameter;
@@ -339,14 +340,7 @@ class Import
     public function fetch(string $class = '') : ImportResult
     {
         // 解析的类
-        if ($class) {
-            if (!class_exists($class)) {
-                throw new ClassNotFoundException($class);
-            }
-            if (!method_exists($class, 'parse')) {
-                throw new MethodNotFoundException($class, 'parse');
-            }
-        } elseif ($this->model) {
+        if (!$class && $this->model) {
             $class = $this->model->getFieldClass();
         }
         
@@ -457,8 +451,11 @@ class Import
                     
                     // 转为对象
                     if ($class && !$item instanceof $class) {
-                        /** @var Field $class */
-                        $item = $class::parse($item);
+                        if ($class instanceof Field) {
+                            $item = $class::init($item);
+                        } elseif ($class instanceof ImportFetchClassInterface) {
+                            $item = $class::onExcelImportFetchRowToThis($item);
+                        }
                     }
                     
                     $list[] = $item;
