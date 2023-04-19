@@ -3,7 +3,7 @@
 namespace BusyPHP\app\admin\model\system\plugin;
 
 use BusyPHP\App;
-use BusyPHP\command\InstallCommand;
+use BusyPHP\command\Publish;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
@@ -159,7 +159,7 @@ class SystemPlugin extends Model implements ContainerInterface
     public static function getPluginList() : array
     {
         $list = [];
-        foreach (InstallCommand::packages(App::getInstance()->debug() ? './composer.json' : '') as $item) {
+        foreach (Publish::packages(App::getInstance()->debug() ? './composer.json' : '') as $item) {
             $manager = $item['manager'] ?? [];
             if (!$manager) {
                 continue;
