@@ -12,6 +12,7 @@ use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
+use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\TransHelper;
 use BusyPHP\model\ArrayOption;
@@ -34,6 +35,11 @@ class FileController extends InsideController
     protected $model;
     
     /**
+     * @var SystemFileClass
+     */
+    protected $fileClassModel;
+    
+    /**
      * 文件管理默认时间范围
      * @var string
      */
@@ -45,6 +51,7 @@ class FileController extends InsideController
         parent::initialize($checkLogin);
         
         $this->model          = SystemFile::init();
+        $this->fileClassModel = SystemFileClass::init();
         $this->indexTimeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
     }
     
@@ -73,7 +80,7 @@ class FileController extends InsideController
                     $option->deleteIfEmpty('client');
                     $option->deleteIfEmpty('disk');
                     $option->deleteIfEmpty('class_type');
-    
+                    
                     if ($type) {
                         $option->set('type', $type);
                     }
@@ -100,11 +107,47 @@ class FileController extends InsideController
                 ->response();
         }
         
-        $this->assign('cate_options', TransHelper::toOptionHtml(SystemFileClass::instance()->getList(), '', SystemFileClassField::name(), SystemFileClassField::var()));
-        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
-        $this->assign('time', $this->indexTimeRange);
-        $this->assign('types', SystemFile::class()::getTypes());
+        // 客户端选项
+        $clientOptions = AppHelper::getList();
+        array_unshift($clientOptions, [
+            'name' => '不限',
+            'dir'  => ''
+        ]);
+        $clientOptions[] = [
+            'name' => AppHelper::CLI_CLIENT_NAME,
+            'dir'  => AppHelper::CLI_CLIENT_KEY
+        ];
+        $this->assign('client_options', $clientOptions);
+        
+        // 分类选项
+        $cateOptions = $this->fileClassModel->getList();
+        array_unshift($cateOptions, [
+            'name' => '不限',
+            'var'  => ''
+        ]);
+        $this->assign('cate_options', $cateOptions);
+        
+        // 类型选项
+        $types = $this->model::getTypes();
+        $types = [
+                '' => [
+                    'name' => '全部',
+                    'icon' => 'fa fa-ellipsis-h'
+                ]
+            ] + $types;
+        
+        $this->assign('types', $types);
         $this->assign('type', $type);
+        
+        // 磁盘选项
+        $disks = StorageSetting::class()::getDisks();
+        array_unshift($disks, [
+            'name' => '不限',
+            'type' => ''
+        ]);
+        $this->assign('disks', $disks);
+        $this->assign('upload_types', ['不限', '普通', '秒传', '等待中']);
+        $this->assign('time', $this->indexTimeRange);
         
         return $this->insideDisplay();
     }

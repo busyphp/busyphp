@@ -8,11 +8,11 @@
     <div class="panel panel-default no-margin-bottom">
         <div class="panel-heading">文件类型</div>
         <div class="list-group file-types">
-            <a class="list-group-item{$type=='' ? ' active':''}" data-close href="{:url('')}"><i class="fa fa-ellipsis-h"></i>
-                全部</a>
             <foreach name="types" key="index" item="vo">
-                <a class="list-group-item{$type==$index ? ' active':''}" data-close href="{:url('?type=' . $index)}"><i class="{$vo.icon}"></i>
-                    {$vo.name}</a>
+                <a class="list-group-item{$type==$index ? ' active':''}" data-close href="{:url('?type=' . $index)}">
+                    <i class="{$vo.icon}"></i>
+                    {$vo.name}
+                </a>
             </foreach>
         </div>
     </div>
@@ -35,7 +35,7 @@
                 <div class="input-group">
                     <div class="input-group-addon">文件分类</div>
                     <select class="form-control" name="static[class_type]">
-                        {$cate_options}
+                        <?=\BusyPHP\helper\TransHelper::toOptionHtml($cate_options, '', 'name', 'var')?>
                     </select>
                 </div>
             </div>
@@ -43,9 +43,7 @@
                 <div class="input-group">
                     <div class="input-group-addon">客户端</div>
                     <select class="form-control" name="static[client]">
-                        <option value="">不限</option>
-                        {$client_options}
-                        <option value="<?=\BusyPHP\helper\AppHelper::CLI_CLIENT_KEY;?>"><?=\BusyPHP\helper\AppHelper::CLI_CLIENT_NAME;?></option>
+                        <?=\BusyPHP\helper\TransHelper::toOptionHtml($client_options, '', 'name', 'dir')?>
                     </select>
                 </div>
             </div>
@@ -53,10 +51,7 @@
                 <div class="input-group">
                     <div class="input-group-addon">上传方式</div>
                     <select class="form-control" name="static[upload_type]">
-                        <option value="0">不限</option>
-                        <option value="1">普通</option>
-                        <option value="2">秒传</option>
-                        <option value="3">等待中</option>
+                        <?=\BusyPHP\helper\TransHelper::toOptionHtml($upload_types)?>
                     </select>
                 </div>
             </div>
@@ -65,7 +60,7 @@
                     <div class="input-group-addon">存储方式</div>
                     <select class="form-control" name="static[disk]">
                         <option value="">不限</option>
-                        <?=\BusyPHP\helper\TransHelper::toOptionHtml(\BusyPHP\app\admin\setting\StorageSetting::class()::getDisks(), '', 'name', 'type')?>
+                        <?=\BusyPHP\helper\TransHelper::toOptionHtml($disks, '', 'name', 'type')?>
                     </select>
                 </div>
             </div>
@@ -135,16 +130,16 @@
                             <div class="width-10 height-20 pull-left"></div>
 
                             <div class="text-line-1">
-                                {{if item.pending}}
-                                <span class="text-gray">{{value}}</span>
-                                {{else}}
-                                <a href="{{item.url}}" target="_blank">{{value}}</a>
-                                {{/if}}
+                                <ba-if value="item.pending">
+                                    <span class="text-gray">{{value}}</span>
+                                    <ba-else />
+                                    <a href="{{item.url}}" target="_blank">{{value}}</a>
+                                </ba-if>
                             </div>
 
-                            {{if item.is_image}}
-                            <img data-src="{{item.url}}" class="preview-img hidden"/>
-                            {{/if}}
+                            <ba-if value="item.is_image">
+                                <img data-src="{{item.url}}" class="preview-img hidden"/>
+                            </ba-if>
                         </script>
                     </th>
                     <th class="text-center" width="240" data-visible="false" data-field="hash" data-title="文件哈希" data-formatter="@" data-sortable="true">
@@ -163,15 +158,13 @@
                     </th>
                     <th class="text-center" width="80" data-field="fast" data-title="上传方式" data-formatter="@">
                         <script type="text/html">
-                            {{if item.pending}}
-                            <span class="text-warning">等待中</span>
-                            {{else}}
-                            {{if value}}
-                            <b class="text-success">秒传</b>
-                            {{else}}
-                            <b class="text-info">普通</b>
-                            {{/if}}
-                            {{/if}}
+                            <ba-if value="item.pending">
+                                <span class="text-warning">等待中</span>
+                                <ba-elseif value="value" />
+                                <b class="text-success">秒传</b>
+                                <ba-else />
+                                <b class="text-info">普通</b>
+                            </ba-if>
                         </script>
                     </th>
                     <th class="text-center" width="80" data-field="disk_name" data-title="存储方式"></th>
