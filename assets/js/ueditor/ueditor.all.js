@@ -9927,24 +9927,34 @@ var LocalStorage = UE.LocalStorage = (function () {
 
     var ROOTKEY = 'ueditor_preference';
 
+    // busyAdmin 2023.4.19 新增自定义缓存键
+    UE.Editor.prototype.getPreferencesKey = function () {
+        var key = this.options.preferencesKey || ROOTKEY;
+        if (typeof key === 'function') {
+            key = key();
+        }
+        return key;
+    };
+
     UE.Editor.prototype.setPreferences = function(key,value){
+        console.log(this);
         var obj = {};
         if (utils.isString(key)) {
             obj[ key ] = value;
         } else {
             obj = key;
         }
-        var data = LocalStorage.getLocalData(ROOTKEY);
+        var data = LocalStorage.getLocalData(this.getPreferencesKey());
         if (data && (data = utils.str2json(data))) {
             utils.extend(data, obj);
         } else {
             data = obj;
         }
-        data && LocalStorage.saveLocalData(ROOTKEY, utils.json2str(data));
+        data && LocalStorage.saveLocalData(this.getPreferencesKey(), utils.json2str(data));
     };
 
     UE.Editor.prototype.getPreferences = function(key){
-        var data = LocalStorage.getLocalData(ROOTKEY);
+        var data = LocalStorage.getLocalData(this.getPreferencesKey());
         if (data && (data = utils.str2json(data))) {
             return key ? data[key] : data
         }
@@ -9952,12 +9962,12 @@ var LocalStorage = UE.LocalStorage = (function () {
     };
 
     UE.Editor.prototype.removePreferences = function (key) {
-        var data = LocalStorage.getLocalData(ROOTKEY);
+        var data = LocalStorage.getLocalData(this.getPreferencesKey());
         if (data && (data = utils.str2json(data))) {
             data[key] = undefined;
             delete data[key]
         }
-        data && LocalStorage.saveLocalData(ROOTKEY, utils.json2str(data));
+        data && LocalStorage.saveLocalData(this.getPreferencesKey(), utils.json2str(data));
     };
 
 })();
