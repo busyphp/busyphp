@@ -214,9 +214,9 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
         $this->parentHash = $this->parentPath ? md5(StringHelper::snake($this->parentPath)) : '';
         $this->paramList  = FilterHelper::trimArray(explode(',', $this->params) ?: []);
         
-        if (0 === strpos($this->path, '#')) {
+        if (str_starts_with($this->path, '#')) {
             $this->url = '';
-        } elseif (false !== strpos($this->path, '://')) {
+        } elseif (str_contains($this->path, '://')) {
             $this->url = $this->path;
         } else {
             $this->url = Route::buildUrl('/' . ltrim($this->routePath, '/'))->build();
