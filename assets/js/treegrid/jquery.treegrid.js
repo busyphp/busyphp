@@ -160,7 +160,9 @@
             if (tree.data('first_init') === undefined) {
                 var status;
                 if ($(this).treegrid('getSetting', 'saveStateMethod') === 'local') {
-                    var stateList = JSON.parse(localStorage.getItem('ba.treegrid') || '{}') || {};
+                    // busyAdmin 2023.4.19
+                    // $(this).treegrid('getSetting', 'saveStateKey')
+                    var stateList = JSON.parse(localStorage.getItem($(this).treegrid('getSetting', 'saveStateKey') || 'ba.treegrid') || '{}') || {};
                     status = !stateList.hasOwnProperty(tree.treegrid('getSetting', 'saveStateName'));
                 } else {
                     status = $.cookie(tree.treegrid('getSetting', 'saveStateName')) === undefined;
@@ -181,7 +183,11 @@
             switch ($this.treegrid('getSetting', 'saveStateMethod')) {
                 case 'local':
                     var stateName        = $this.treegrid('getSetting', 'saveStateName');
-                    var stateList        = JSON.parse(localStorage.getItem('ba.treegrid') || '{}') || {};
+
+                    // busyAdmin 2023.4.19
+                    // $(this).treegrid('getSetting', 'saveStateKey')
+                    var stateKey         = $this.treegrid('getSetting', 'saveStateKey') || 'ba.treegrid';
+                    var stateList        = JSON.parse(localStorage.getItem(stateKey) || '{}') || {};
                     stateList[stateName] = stateList[stateName] || [];
 
                     if ($this.treegrid('isExpanded')) {
@@ -194,7 +200,7 @@
                         }
                     }
 
-                    localStorage.setItem('ba.treegrid', JSON.stringify(stateList));
+                    localStorage.setItem(stateKey, JSON.stringify(stateList));
                     break;
                 default:
                     var stateArrayString = $.cookie($this.treegrid('getSetting', 'saveStateName')) || '';
@@ -225,7 +231,10 @@
             switch ($this.treegrid('getSetting', 'saveStateMethod')) {
                 case 'local':
                     var stateName = $this.treegrid('getSetting', 'saveStateName');
-                    var stateList = JSON.parse(localStorage.getItem('ba.treegrid') || '{}') || {};
+
+                    // busyAdmin 2023.4.19
+                    // $(this).treegrid('getSetting', 'saveStateKey')
+                    var stateList = JSON.parse(localStorage.getItem($this.treegrid('getSetting', 'saveStateKey') || 'ba.treegrid') || '{}') || {};
                     stateArray    = stateList[stateName] || [];
                     break;
                 default:
