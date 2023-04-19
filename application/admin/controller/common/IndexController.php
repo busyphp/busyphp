@@ -121,7 +121,7 @@ class IndexController extends InsideController
                     'data-toggle'     => 'busy-request',
                     'data-url'        => (string) url('system_manager/cache_clear'),
                     'data-confirm'    => '确认要清理缓存吗？<br /><span class="text-warning">当系统发生错误的时候可以通过该方法尝试性修复</span>',
-                    'data-on-success' => 'busyAdmin.app.clearCache'
+                    'data-on-success' => '!busyAdmin.app.clearCache'
                 ]
             ];
         }
