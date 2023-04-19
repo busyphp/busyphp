@@ -20,10 +20,10 @@ use ZipArchive;
  * Composer安装指令
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2020/6/6 下午9:49 下午 Install.php $
+ * @version $Id: 2020/6/6 下午9:49 下午 Publish.php $
  * @property App $app
  */
-class InstallCommand extends Command
+class Publish extends Command
 {
     /**
      * @var array
@@ -34,9 +34,9 @@ class InstallCommand extends Command
     protected function configure()
     {
         // 指令配置
-        $this->setName('bp:install')
+        $this->setName('bp:publish')
             ->addOption('dev', 'd', Option::VALUE_OPTIONAL, 'composer.json path', null)
-            ->setDescription('BusyPHP Framework composer install command');
+            ->setDescription('Publish any publishable assets from vendor packages for BusyPHP');
     }
     
     

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP\command;
 
+use BusyPHP\App;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -12,8 +13,9 @@ use think\console\Output;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/12 下午6:43 下午 Version.php $
+ * @property App $app
  */
-class VersionCommand extends Command
+class Version extends Command
 {
     protected function configure()
     {

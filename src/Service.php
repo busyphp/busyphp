@@ -3,8 +3,8 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
-use BusyPHP\command\InstallCommand;
-use BusyPHP\command\VersionCommand;
+use BusyPHP\command\Publish;
+use BusyPHP\command\Version;
 use BusyPHP\facade\Captcha;
 use BusyPHP\facade\QrCode;
 use BusyPHP\image\driver\Local;
@@ -84,10 +84,7 @@ class Service extends ThinkService
         });
         
         // 绑定命令行
-        $this->commands([
-            'bp:install' => InstallCommand::class,
-            'bp:version' => VersionCommand::class,
-        ]);
+        $this->commands([Publish::class, Version::class]);
         
         // 多应用支持
         $this->app->event->listen(HttpRun::class, function() {
