@@ -151,11 +151,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 快速实例化
+     * @param array $data 初始数据
      * @return static
      */
-    public static function init() : self
+    public static function init(array $data = []) : self
     {
-        return new static();
+        return new static($data);
     }
     
     
@@ -183,18 +184,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             return $data;
         }
         
-        $obj = static::init();
-        foreach ($data as $name => $value) {
-            if (is_numeric($name)) {
-                continue;
-            }
-            
-            if ($property = self::getPropertyName($name)) {
-                $data[$name] = self::setPropertyValue($obj, $property, $value);
-            } else {
-                $obj->{$name} = $value;
-            }
-        }
+        $obj = static::init($data);
         
         // 绑定值
         foreach (self::getValueBindFieldMap() as $name => $bind) {
@@ -964,9 +954,22 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 构造函数
+     * @param array $data 初始数据
      */
-    public function __construct()
+    public function __construct(array $data = [])
     {
+        foreach ($data as $name => $value) {
+            if (is_numeric($name)) {
+                continue;
+            }
+            
+            if ($property = self::getPropertyName($name)) {
+                self::setPropertyValue($this, $property, $value);
+            } else {
+                $this->{$name} = $value;
+            }
+        }
+        
         if (!empty(static::$maker)) {
             foreach (static::$maker as $maker) {
                 call_user_func($maker, $this);
