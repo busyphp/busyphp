@@ -10,6 +10,7 @@ use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+use ReflectionUnionType;
 use Reflector;
 use RuntimeException;
 use Throwable;
@@ -550,5 +551,21 @@ class ClassHelper
         } catch (ReflectionException $e) {
             throw new RuntimeException($e->getMessage());
         }
+    }
+    
+    
+    /**
+     * 获取ReflectionProperty类型
+     * @param ReflectionProperty $property
+     * @return \ReflectionNamedType[]
+     */
+    public static function getReflectionNamedTypes(ReflectionProperty $property) : array
+    {
+        $type = $property->getType();
+        if ($type instanceof ReflectionUnionType) {
+            return $type->getTypes();
+        }
+        
+        return [$type];
     }
 }
