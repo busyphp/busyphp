@@ -121,7 +121,7 @@ class IndexController extends InsideController
                     'data-toggle'     => 'busy-request',
                     'data-url'        => (string) url('system_manager/cache_clear'),
                     'data-confirm'    => '确认要清理缓存吗？<br /><span class="text-warning">当系统发生错误的时候可以通过该方法尝试性修复</span>',
-                    'data-on-success' => '!busyAdmin.app.clearCache'
+                    'data-on-success' => '@app.reload|@!busyAdmin.app.clearCache'
                 ]
             ];
         }
@@ -160,7 +160,7 @@ class IndexController extends InsideController
                 'data-toggle'     => 'busy-request',
                 'data-url'        => (string) url('admin_out'),
                 'data-confirm'    => '确认要退出登录吗？',
-                'data-on-success' => 'busyAdmin.app._outLogin',
+                'data-on-success' => '!busyAdmin.app.outLogin',
             ]
         ];
         
@@ -182,16 +182,15 @@ class IndexController extends InsideController
             'username'       => $this->adminUsername,
             'user_dropdowns' => $dropList,
             'user'           => [
-                'id'               => $this->adminUser->id,
-                'username'         => $this->adminUser->username,
-                'phone'            => $this->adminUser->phone,
-                'qq'               => $this->adminUser->qq,
-                'email'            => $this->adminUser->email,
-                'group_names'      => $this->adminUser->groupNames,
-                'group_rule_ids'   => $this->adminUser->groupRuleIds,
-                'group_rule_paths' => $this->adminUser->groupRulePaths,
-                'system'           => $this->adminUser->system,
-                'theme'            => $this->adminUser->theme,
+                'id'       => $this->adminUser->id,
+                'username' => $this->adminUser->username,
+                'phone'    => $this->adminUser->phone,
+                'qq'       => $this->adminUser->qq,
+                'email'    => $this->adminUser->email,
+                'groups'   => $this->adminUser->groupNames,
+                'rules'    => $this->adminUser->groupRulePaths,
+                'system'   => $this->adminUser->system,
+                'theme'    => $this->adminUser->theme,
             ],
             'data'           => $data ?: new stdClass(),
             

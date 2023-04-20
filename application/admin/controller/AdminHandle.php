@@ -182,7 +182,7 @@ class AdminHandle extends Handle
             'favicon'           => $publicSetting->getFavicon(),
             'logo_icon'         => $adminSetting->getLogoIcon(),
             'logo_horizontal'   => $adminSetting->getLogoHorizontal(),
-            'user'              => $adminUser ?? null,
+            'user'              => $adminUser,
             'breadcrumb'        => $breadcrumb,
             'frame_config'      => json_encode([
                 'root'       => $data['url']['app'],
@@ -202,6 +202,7 @@ class AdminHandle extends Handle
                         'navMode'         => $theme['nav_mode'],
                         'pageTitleSuffix' => $pageTitleSuffix,
                         'operateTipStyle' => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
+                        'login'           => !!$adminUser,
                     ],
                     'upload'        => [
                         'configUrl' => (string) url('common.file/config?noext')->suffix(false),
