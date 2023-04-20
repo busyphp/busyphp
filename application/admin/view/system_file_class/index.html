@@ -30,7 +30,6 @@
            data-toolbar="#tableToolbar"
            data-route="true"
            data-url="{$url.self}"
-           data-click-to-select="true"
            data-fixed-columns="true"
            data-fixed-right-number="1"
            data-fixed-number="3"
@@ -38,7 +37,7 @@
         <thead>
             <tr>
                 <th class="text-center" width="40" data-checkbox="true" data-print-ignore="true" data-formatter="busyAdmin.data.checkboxState"></th>
-                <th class="text-center" width="60" data-field="sort" data-title="排序" data-formatter="@" data-click-to-select="false">
+                <th class="text-center" width="60" data-field="sort" data-title="排序" data-formatter="@">
                     <script type="text/html">
                         {{if is_print}}
                         {{value}}
@@ -62,7 +61,7 @@
                         <span class="badge badge-primary">{{value}}</span>
                     </script>
                 </th>
-                <th class="text-center" width="60" data-print-ignore="true" data-title="操作" data-formatter="@" data-click-to-select="false">
+                <th class="text-center" width="60" data-print-ignore="true" data-title="操作" data-formatter="@">
                     <script type="text/html">
                         <a class="btn btn-success btn-xs"
                            href="{:url('edit?id=')}{{item.id}}"
