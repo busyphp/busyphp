@@ -1320,7 +1320,8 @@
           return;
         }
 
-        if (args[0] === 'post-header') {
+        // busyAdmin add reset-view 修复全屏切换操作存在 sticky-header 时样式错误BUG
+        if (args[0] === 'post-header' || args[0] === 'reset-view') {
           this.initFixedColumnsHeader();
         } else if (args[0] === 'scroll-body') {
           if (this.needFixedColumns && this.options.fixedNumber) {
@@ -1422,7 +1423,7 @@
 
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           this.$fixedHeaderRight = initFixedHeader(this.$fixedColumnsRight, true);
-          this.$fixedHeaderRight.scrollLeft(this.$fixedHeaderRight.find('> table').width()); // busyAdmin
+          this.$fixedHeaderRight.scrollLeft(this.$fixedHeaderRight.find('> table').width()); // busyAdmin 修复切换每页显示条数，右侧固定列会重置的bug
         } else if (this.$fixedColumnsRight) {
           this.$fixedColumnsRight.html('').css('width', '');
         }
@@ -1438,12 +1439,13 @@
         var initFixedBody = function initFixedBody($fixedColumns, $fixedHeader) {
           $fixedColumns.find('.fixed-table-body').remove();
           $fixedColumns.append(_this3.$tableBody.clone(true));
+          $fixedColumns.find('.fixed-table-body table').removeAttr('id'); // busyAdmin remove attr id
           var $fixedBody = $fixedColumns.find('.fixed-table-body');
 
           var tableBody = _this3.$tableBody.get(0);
 
           var scrollHeight = tableBody.scrollWidth > tableBody.clientWidth ? Utils.getScrollBarWidth() : 0;
-          var height = _this3.$tableContainer.outerHeight(true) - scrollHeight - 3; // busyAdmin 修复高度超出问题
+          var height = _this3.$tableContainer.outerHeight(true) - _this3.$tableFooter.height() - scrollHeight - 3; // busyAdmin fix height
           $fixedColumns.css({
             height: height
           });
@@ -1459,7 +1461,7 @@
 
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           this.$fixedBodyRight = initFixedBody(this.$fixedColumnsRight, this.$fixedHeaderRight);
-          this.$fixedBodyRight.scrollLeft(this.$fixedBodyRight.find('> table').width()); // busyAdmin
+          this.$fixedBodyRight.scrollLeft(this.$fixedBodyRight.find('> table').width()); // busyAdmin 修复切换每页显示条数，右侧固定列会重置的bug
           this.$fixedBodyRight.css('overflow-y', this.options.height ? 'auto' : 'hidden');
         }
       }
@@ -1481,7 +1483,7 @@
           width += this.$header.find("th[data-field=\"".concat(visibleFields[i], "\"]")).outerWidth(true);
         }
 
-        return width + marginRight; // busyAdmin 修复宽度问题
+        return width + marginRight - 1; // busyAdmin fix width
       }
     }, {
       key: "initFixedColumnsEvents",
