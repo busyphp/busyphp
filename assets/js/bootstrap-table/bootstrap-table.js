@@ -5556,7 +5556,8 @@
               text = '<div class="card-view"></div>';
             }
           } else {
-            text = "<td".concat(id_).concat(class_).concat(style_).concat(data_).concat(rowspan_).concat(colspan_).concat(title_, ">").concat(value, "</td>");
+            // busyAdmin add div.ba--cell
+            text = "<td".concat(id_).concat(class_).concat(style_).concat(data_).concat(rowspan_).concat(colspan_).concat(title_, "><div class='ba--cell'>").concat(value, "</div></td>");
           }
 
           html.push(text);
@@ -6100,11 +6101,17 @@
           html.push(detailTemplate);
         }
 
+        // busyAdmin 复制 columns 以计算宽度
+        var columnList = this.columns.map(function (item) {
+            return item;
+        }), columnIndex = -1;
+
         var _iterator4 = _createForOfIteratorHelper(this.columns),
             _step4;
 
         try {
           for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            columnIndex++;
             var column = _step4.value;
             var falign = '';
             var valign = '';
@@ -6138,18 +6145,35 @@
               class_ = Utils.sprintf(' class="%s"', column['class'] ? [column['class'], style.classes].join(' ') : style.classes);
             }
 
-            html.push('<th', class_, Utils.sprintf(' style="%s"', falign + valign + csses.concat().join('; ')));
+            html.push('<th', class_);
             var colspan = 0;
 
             if (this.footerData && this.footerData.length > 0) {
               colspan = this.footerData[0]["_".concat(column.field, "_colspan")] || 0;
             }
 
+            var width = 0, jCol, j;
+
             if (colspan) {
+              for (j = 0; j <= colspan; j++) {
+                jCol = columnList.shift();
+                if (jCol) {
+                  console.log(jCol.field, parseFloat(jCol.width));
+                  width += parseFloat(jCol.width);
+                }
+              }
+
               html.push(" colspan=\"".concat(colspan, "\" "));
+            } else {
+              jCol = columnList.shift();
+              if (jCol) {
+                width = parseFloat(jCol.width);
+              }
             }
 
-            html.push('>');
+            width = Utils.sprintf('width: %s; ', (column.checkbox || column.radio) && !width ? !column.showSelectTitle ? '36px' : undefined : width ? width + column.widthUnit : undefined);
+
+            html.push(Utils.sprintf(' style="%s"', falign + valign + width + csses.concat().join('; ')), '>');
             html.push('<div class="th-inner">');
             var value = '';
 
