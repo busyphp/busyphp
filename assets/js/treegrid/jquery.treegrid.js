@@ -109,12 +109,17 @@
         initExpander            : function () {
             var $this    = $(this);
             var cell     = $this.find('td').get($this.treegrid('getSetting', 'treeColumn'));
+
+            // busyAdmin 支持自定义容器
+            var selector = $this.treegrid('getSetting', 'container');
+            var container= selector ? $(cell).find(selector)[0] : cell;
+
             var tpl      = $this.treegrid('getSetting', 'expanderTemplate');
             var expander = $this.treegrid('getSetting', 'getExpander').apply(this);
             if (expander) {
                 expander.remove();
             }
-            $(tpl).prependTo(cell).click(function () {
+            $(tpl).prependTo(container).click(function () {
                 $($(this).closest('tr')).treegrid('toggle');
             });
             return $this;
