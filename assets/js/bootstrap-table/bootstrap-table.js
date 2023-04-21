@@ -6152,13 +6152,13 @@
               colspan = this.footerData[0]["_".concat(column.field, "_colspan")] || 0;
             }
 
+            // busyAdmin 增加footer宽度控制
             var width = 0, jCol, j;
 
             if (colspan) {
               for (j = 0; j <= colspan; j++) {
                 jCol = columnList.shift();
-                if (jCol) {
-                  console.log(jCol.field, parseFloat(jCol.width));
+                if (jCol && jCol.visible) {
                   width += parseFloat(jCol.width);
                 }
               }
@@ -6166,7 +6166,7 @@
               html.push(" colspan=\"".concat(colspan, "\" "));
             } else {
               jCol = columnList.shift();
-              if (jCol) {
+              if (jCol && jCol.visible) {
                 width = parseFloat(jCol.width);
               }
             }
