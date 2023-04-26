@@ -1,0 +1,221 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用，本组件只介绍常用方法及本组件定制的方法，其它请参考：[官方手册](https://aui.github.io/art-template/zh-cn/docs/)
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-template"` 来触发
+
+```html
+<div data-toggle="busy-template"></div>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-data | string,object,Function | `是` | `{}` | 渲染的数据 |
+| data-template | string,jQueryElement | 否 | - | 指定渲染的模版选择器 |
+| data-on-done | string,Function | 否 | - | 渲染成功回调 |
+
+### 语法
+
+#### 输出
+
+##### 标准语法
+
+```html
+{{value}}
+{{data.key}}
+{{data['key']}}
+{{a ? b : c}}
+{{a || b}}
+{{a + b}}
+```
+
+##### 原始语法
+
+```html
+<%= value %>
+<%= data.key %>
+<%= data['key'] %>
+<%= a ? b : c %>
+<%= a || b %>
+<%= a + b %>
+```
+
+#### 原文输出
+
+##### 标准语法
+
+```html
+{{@ value }}
+```
+
+##### 原始语法
+
+```html
+<%- value %>
+```
+
+#### 条件
+
+##### 定制语法
+
+```html
+<ba-if value="条件"> ... </ba-if>
+<ba-if value="条件"> ... <ba-elseif value="条件2" /> ... </ba-if>
+<ba-if value="条件"> ... <ba-elseif value="条件2" /> ... <ba-else /> ... </ba-if>
+
+由于浏览器有补全自闭合标签的功能，所以强烈建议写闭合标签
+
+<ba-if value="条件"> ... </ba-if>
+<ba-if value="条件"> ... <ba-elseif value="条件2"></ba-elseif> ... </ba-if>
+<ba-if value="条件"> ... <ba-elseif value="条件2"></ba-elseif> ... <ba-else></ba-else> ... </ba-if>
+```
+
+##### 标准语法
+
+```html
+{{if value}} ... {{/if}}
+{{if v1}} ... {{else if v2}} ... {{/if}}
+```
+
+##### 原始语法
+
+```html
+<% if (value) { %> ... <% } %>
+<% if (v1) { %> ... <% } else if (v2) { %> ... <% } %>
+```
+
+
+#### 循环
+
+##### 定制语法
+
+```html
+<ba-each value="list item key">
+{{key}} {{item}}
+</ba-each>
+```
+
+##### 标准语法
+
+```html
+{{each list item key}}
+    {{key}} {{item}}
+{{/each}}
+```
+
+##### 原始语法
+
+```html
+<% for(var i = 0; i < list.length; i++){ %>
+    <%= i %> <%= list[i] %>
+<% } %>
+```
+
+### 使用示例
+
+#### 输出
+```demo:实例
+#demo1
+```
+
+#### 条件
+
+```demo:实例
+#demo2
+```
+
+#### 循环
+
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+    
+    <template class="hidden" id="demo1">
+<button class="btn btn-primary" onclick="$('#demo1Template').baTemplate('apply')">重新渲染</button>
+
+<hr />
+
+<div id="demo1Template" data-toggle="busy-template" data-data='demo1Data'>
+    {{ value }}
+</div>
+
+<script>
+    busyAdmin.data.demo1Data = function () {
+        return {
+            value: 'ok' + busyAdmin.helper.random()
+        };
+    }
+</script>
+    </template>
+    
+    <template class="hidden" id="demo2">
+<button class="btn btn-primary" onclick="$('#demo2Template').baTemplate('apply')">重新渲染</button>
+
+<hr />
+
+<div id="demo2Template" data-toggle="busy-template" data-data='demo2Data'>
+    {{ status ? '条件为true' : '条件为false' }}
+    
+    <ba-if value="status">
+        <div class="alert alert-success">成功</div>
+        <ba-else></ba-else>
+        <div class="alert alert-danger">失败</div>
+    </ba-if>
+</div>
+
+<script>
+    busyAdmin.data.demo2Status = false;
+    busyAdmin.data.demo2Data = function () {
+        busyAdmin.data.demo2Status = !busyAdmin.data.demo2Status;
+        
+        return {
+            status: busyAdmin.data.demo2Status
+        };
+    }
+</script>
+    </template>
+    
+    <template class="hidden" id="demo3">
+<button class="btn btn-primary" onclick="$('#demo3Template').baTemplate('apply')">重新渲染</button>
+
+<hr />
+
+<div id="demo3Template" data-toggle="busy-template" data-data='demo3Data'>
+    <ul>
+        <ba-each value="list item index">
+            <li>{{index}} {{item.id}}: {{item.name}}</li>
+        </ba-each>
+    </ul>
+</div>
+
+<script>
+    busyAdmin.data.demo3Data = function () {
+        var list = [];
+        for (var i = 0; i < 10; i++) {
+            list.push({
+                id: i + 1,
+                name: busyAdmin.helper.random(6)
+            })
+        }
+        return {
+            list: list
+        };
+    }
+</script>
+    </template>
+</block>

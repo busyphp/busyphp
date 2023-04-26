@@ -453,4 +453,15 @@ class ComponentController extends InsideController
     {
         return $this->insideDisplay();
     }
+    
+    
+    /**
+     * 模版引擎
+     * @return Response
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-code')]
+    public function template() : Response
+    {
+        return $this->insideDisplay();
+    }
 }
