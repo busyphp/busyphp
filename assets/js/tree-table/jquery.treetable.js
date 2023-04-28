@@ -93,6 +93,11 @@
         this._showChildren();
       }
 
+      // busyAdmin: onNodeExpanded
+      if (this.initialized && this.settings.onNodeExpanded != null) {
+        this.settings.onNodeExpanded.apply(this);
+      }
+
       this.expander.attr("title", this.settings.stringCollapse);
 
       return this;
@@ -457,6 +462,7 @@
         onInitialized: null,
         onNodeCollapse: null,
         onNodeExpand: null,
+        onNodeExpanded: null,
         onNodeInitialized: null
       }, options);
 
