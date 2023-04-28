@@ -1246,7 +1246,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             } else {
                 $key = $property;
                 if ($toFormat = self::getToFormatAnnotation()) {
-                    $key = $toFormat->build($property, self::getPropertyAttrs($property)[self::ATTR_FIELD]);
+                    $field = self::getPropertyAttrs($property)[self::ATTR_FIELD] ?? null;
+                    if ($field) {
+                        $key = $toFormat->build($property, $field);
+                    }
                 }
                 $array[$key] = $value;
             }
