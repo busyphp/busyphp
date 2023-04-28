@@ -3,44 +3,26 @@ table.treetable span.indenter {
   margin: 0;
   padding: 0;
   text-align: right;
+
+  /* Disable text selection of nodes (for better D&D UX) */
   user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -o-user-select: none;
   -webkit-user-select: none;
+
+  /* Force content-box box model for indenter (Bootstrap compatibility) */
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+
+  width: 19px;
 }
+
 table.treetable span.indenter a {
   background-position: left center;
   background-repeat: no-repeat;
   display: inline-block;
   text-decoration: none;
   width: 19px;
-}
-table.treetable span.indenter {
-  background: url(images/menu-3.png) repeat-x 0 center;
-  display: block;
-  height: 30px;
-  float: left;
-  width: auto;
-  margin-left: 10px;
-}
-table.treetable span.indenter i { display: block; width: 18px; height: 30px;}
-table.treetable .td-item span.indenter i{
-  background: url(images/menu-2.png) no-repeat right center;
-}
-table.treetable .td-last span.indenter i {
-  background: url(images/menu-1.png) no-repeat right center;
-}
-table.treetable span.folder,
-table.treetable span.file {
-  float: left;
-  display: block;
-  line-height: 30px;
-  padding-bottom: 0!important;
-  padding-top: 0!important;
-}
-table.treetable td {
-  height: 28px;
-  padding: 0 5px!important;
-  vertical-align: middle!important;
 }

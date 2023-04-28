@@ -5,6 +5,10 @@
  * Copyright 2013, Ludo van den Boom
  * Dual licensed under the MIT or GPL Version 2 licenses.
  */
+/**
+ * 版本已发生变化，替换要谨慎
+ * 搜索 busyAdmin: 查看
+ */
 (function($) {
   var Node, Tree, methods;
 
@@ -26,11 +30,12 @@
       }
 
       this.treeCell = $(this.row.children(this.settings.columnElType)[this.settings.column]);
+      this.container = this.settings.container ? this.treeCell.find(this.settings.container) : this.treeCell; // busyAdmin: container
       this.expander = $(this.settings.expanderTemplate);
       this.indenter = $(this.settings.indenterTemplate);
       this.children = [];
       this.initialized = false;
-      this.treeCell.prepend(this.indenter);
+      this.container.prepend(this.indenter); // busyAdmin: container
     }
 
     Node.prototype.addChild = function(child) {
@@ -52,7 +57,8 @@
         return this;
       }
 
-      this.row.removeClass("expanded").addClass("collapsed");
+      // busyAdmin: expandedClassName collapsedClassName
+      this.row.removeClass(this.settings.expandedClassName).addClass(this.settings.collapsedClassName);
 
       this._hideChildren();
       this.expander.attr("title", this.settings.stringExpand);
@@ -65,7 +71,8 @@
     };
 
     Node.prototype.collapsed = function() {
-      return this.row.hasClass("collapsed");
+      // busyAdmin: collapsedClassName
+      return this.row.hasClass(this.settings.collapsedClassName);
     };
 
     // TODO destroy: remove event handlers, expander, indenter, etc.
@@ -75,7 +82,8 @@
         return this;
       }
 
-      this.row.removeClass("collapsed").addClass("expanded");
+      // busyAdmin: collapsedClassName expandedClassName
+      this.row.removeClass(this.settings.collapsedClassName).addClass(this.settings.expandedClassName);
 
       if (this.initialized && this.settings.onNodeExpand != null) {
         this.settings.onNodeExpand.apply(this);
@@ -91,7 +99,8 @@
     };
 
     Node.prototype.expanded = function() {
-      return this.row.hasClass("expanded");
+      // busyAdmin: expandedClassName
+      return this.row.hasClass(this.settings.expandedClassName);
     };
 
     Node.prototype.hide = function() {
@@ -109,9 +118,10 @@
     };
 
     Node.prototype.updateBranchLeafClass = function(){
-      this.row.removeClass('branch');
-      this.row.removeClass('leaf');
-      this.row.addClass(this.isBranchNode() ? 'branch' : 'leaf');
+      // busyAdmin: branchClassName leafClassName
+      this.row.removeClass(this.settings.branchClassName);
+      this.row.removeClass(this.settings.leafClassName);
+      this.row.addClass(this.isBranchNode() ? this.settings.branchClassName : this.settings.leafClassName);
     };
 
     Node.prototype.level = function() {
@@ -143,7 +153,7 @@
         };
 
         this.indenter.html(this.expander);
-        target = settings.clickableNodeNames === true ? this.treeCell : this.expander;
+        target = settings.clickableNodeNames === true ? this.container : this.expander; // busyAdmin: container
 
         target.off("click.treetable").on("click.treetable", handler);
         target.off("keydown.treetable").on("keydown.treetable", function(e) {
@@ -424,6 +434,7 @@
       var settings;
 
       settings = $.extend({
+        container: null,
         branchAttr: "ttBranch",
         clickableNodeNames: false,
         column: 0,
@@ -437,6 +448,10 @@
         parentIdAttr: "ttParentId", // maps to data-tt-parent-id
         stringExpand: "Expand",
         stringCollapse: "Collapse",
+        collapsedClassName: 'collapsed', // busyAdmin: collapsedClassName
+        expandedClassName: 'expanded', // busyAdmin: expandedClassName
+        branchClassName: 'branch', // busyAdmin: branchClassName
+        leafClassName: 'leaf', // busyAdmin: leafClassName
 
         // Events
         onInitialized: null,
