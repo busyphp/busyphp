@@ -6,10 +6,6 @@
  * @author wenzhixin <wenzhixin2010@gmail.com> (http://wenzhixin.net.cn/)
  * @license MIT
  */
-/**
- * 该文件版本已于官方不一致
- * 请搜索 busyAdmin 查看修改的内容进行校对
- */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
   typeof define === 'function' && define.amd ? define(['jquery'], factory) :
@@ -2321,7 +2317,7 @@
         var _this2 = this;
         var formatValue = function formatValue(row, i, column) {
           var value_ = Utils.getItemField(row, column.field, _this2.options.escape, column.escape);
-          var value = Utils.calculateObjectValue(column, column.printFormatter || column.formatter, [value_, row, i, column.field, 'print'], value_); // busyAdmin 增加 field 和 打印标识
+          var value = Utils.calculateObjectValue(column, column.printFormatter || column.formatter, [value_, row, i], value_);
           return typeof value === 'undefined' || value === null ? _this3.options.undefinedText : value;
         };
         var buildTable = function buildTable(data, columnsArray) {
