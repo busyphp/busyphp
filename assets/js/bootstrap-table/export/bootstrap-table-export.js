@@ -1,3 +1,7 @@
+/**
+ * 该文件已发生改变，覆盖要谨慎
+ * 搜索 busyAdmin:
+ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
   typeof define === 'function' && define.amd ? define(['jquery'], factory) :
@@ -1902,11 +1906,13 @@
     csv: 'CSV',
     txt: 'TXT',
     sql: 'SQL',
-    doc: 'MS-Word',
-    excel: 'MS-Excel',
-    xlsx: 'MS-Excel (OpenXML)',
+    doc: 'Word',
+    excel: 'Excel',
+
+    // busyAdmin: 禁用
+    /*xlsx: 'MS-Excel (OpenXML)',
     powerpoint: 'MS-Powerpoint',
-    pdf: 'PDF'
+    pdf: 'PDF'*/
   };
   $__default['default'].extend($__default['default'].fn.bootstrapTable.defaults, {
     showExport: false,
