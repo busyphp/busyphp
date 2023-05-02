@@ -2129,7 +2129,14 @@
             }
           });
 
-          if (typeof o.exportOptions.fileName === 'function') {
+          // busyAdmin: exportFilename
+          if (_this2.options.exportFilename) {
+            if (typeof _this2.options.exportFilename === 'function') {
+              options.fileName = _this2.options.exportFilename();
+            } else {
+              options.fileName = _this2.options.exportFilename;
+            }
+          } else if (typeof o.exportOptions.fileName === 'function') {
             options.fileName = o.exportOptions.fileName();
           }
 
