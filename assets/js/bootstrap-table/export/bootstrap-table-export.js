@@ -1907,11 +1907,11 @@
     txt: 'TXT',
     sql: 'SQL',
     doc: 'Word',
-    excel: 'Excel',
+    excel: 'Xls',
+    xlsx: 'Excel',
 
     // busyAdmin: 禁用
-    /*xlsx: 'MS-Excel (OpenXML)',
-    powerpoint: 'MS-Powerpoint',
+    /*powerpoint: 'MS-Powerpoint',
     pdf: 'PDF'*/
   };
   $__default['default'].extend($__default['default'].fn.bootstrapTable.defaults, {
@@ -2007,7 +2007,7 @@
 
         (_get2 = _get(_getPrototypeOf(_class.prototype), "initToolbar", this)).call.apply(_get2, [this].concat(args));
 
-        this.$export = this.$toolbar.find('>.columns div.export');
+        this.$export = this.$toolbar.find('.columns div.export'); // busyAdmin: 适配对toolbar的调整
 
         if (!this.options.showExport) {
           return;
