@@ -3233,7 +3233,9 @@
     'refresh-options.bs.table': 'onRefreshOptions',
     'reset-view.bs.table': 'onResetView',
     'refresh.bs.table': 'onRefresh',
-    'scroll-body.bs.table': 'onScrollBody'
+    'scroll-body.bs.table': 'onScrollBody',
+    'init-table-after.bs.table':'onInitTableAfter', // busyAdmin: add initTable() 结束时触发
+    'before-refresh.bs.table':'onBeforeRefresh', // busyAdmin: add refresh() 开始时触发
   };
   Object.assign(DEFAULTS, EN);
   var Constants = {
@@ -3962,6 +3964,7 @@
       this.$el_ = this.$el.clone();
       this.timeoutId_ = 0;
       this.timeoutFooter_ = 0;
+      this.tableIndex = BootstrapTable.INDEX++; // busyAdmin: add tableIndex
     }
 
     _createClass(BootstrapTable, [{
@@ -4044,7 +4047,28 @@
         this.$tableBody.append(this.$el);
         this.$container.after('<div class="clearfix"></div>');
         this.$el.addClass(this.options.classes);
+        this.$el.addClass('ba--table'); // busyAdmin: 添加 .ba--table 方便精准控制样式
         this.$tableLoading.addClass(this.options.classes);
+
+        // busyAdmin: 添加垂直滚动条的上下补丁
+        this.$tableHeaderPatch = $('<div class="ba--patch ba--head"/>').hide();
+        this.$tableFooterPatch = $('<div class="ba--patch ba--foot"/>').hide();
+        this.$tableContainer.append(this.$tableHeaderPatch).append(this.$tableFooterPatch);
+
+        // busyAdmin: 添加容器样式
+        if (this.$el.hasClass('table-bordered')) {
+          this.$container.addClass('ba--table-bordered');
+        }
+        // busyAdmin: 使用 table-layout: fixed 布局
+        if (this.options.fixedLayout || this.$el.hasClass('table-fixed')) {
+          this.$container.addClass('ba--fixed-layout');
+        }
+        if (this.options.bordered) {
+          this.$container.addClass('ba--bordered');
+        }
+        if (this.$el.hasClass('table-dark')) {
+          this.$container.addClass('ba--table-dark');
+        }
 
         if (this.options.height) {
           this.$tableContainer.addClass('fixed-height');
@@ -4053,7 +4077,8 @@
             this.$tableContainer.addClass('has-footer');
           }
 
-          if (this.options.classes.split(' ').includes('table-bordered')) {
+          // busyAdmin: 改为 hasClass
+          if (this.$el.hasClass('table-bordered')) {
             this.$tableBody.append('<div class="fixed-table-border"></div>');
             this.$tableBorder = this.$tableBody.find('.fixed-table-border');
             this.$tableLoading.addClass('fixed-table-border');
@@ -4076,6 +4101,14 @@
           this.$header.addClass(this.options.theadClasses);
         }
 
+        // busyAdmin: 添加header样式至容器
+        (this.$header.attr('class') || '').split(' ').map(function (item) {
+          item = item.trim();
+          if (item) {
+            _this.$container.addClass('ba--table-' + item);
+          }
+        });
+
         this._headerTrClasses = [];
         this._headerTrStyles = [];
         this.$header.find('tr').each(function (i, el) {
@@ -4089,7 +4122,6 @@
             }
 
             column.push($__default['default'].extend({}, {
-              $node: $th, // busyAdmin 增加$node节点
               title: $th.html(),
               class: $th.attr('class'),
               titleTooltip: $th.attr('title'),
@@ -4151,6 +4183,9 @@
         } else {
           this.$tableFooter.show();
         }
+
+        // busyAdmin: add event init-table-after
+        this.trigger('init-table-after');
       }
     }, {
       key: "initHeader",
@@ -4309,8 +4344,8 @@
             }
           }
         });
-        var resizeEvent = Utils.getEventName('resize.bootstrap-table', this.$el.attr('id'));
-        $__default['default'](window).off(resizeEvent);
+        this._resizeEvent = Utils.getEventName('resize.bootstrap-table', this.$el.attr('id')); // busyAdmin: this._resizeEvent
+        $__default['default'](window).off(this._resizeEvent);
 
         if (!this.options.showHeader || this.options.cardView) {
           this.$header.hide();
@@ -4322,8 +4357,12 @@
           this.$tableLoading.css('top', this.$header.outerHeight() + 1); // Assign the correct sortable arrow
 
           this.getCaret();
-          $__default['default'](window).on(resizeEvent, function () {
-            return _this2.resetView();
+          $__default['default'](window).on(this._resizeEvent, function () {
+            // busyAdmin: 使用延迟
+            clearTimeout(_this2._resizeTimeId);
+            _this2._resizeTimeId = setTimeout(function () {
+              _this2.resetView();
+            }, 50);
           });
         }
 
@@ -5525,6 +5564,8 @@
             value = Utils.calculateObjectValue(column, column.searchHighlightFormatter, [value, _this7.searchText], defValue);
           }
 
+          data_ += ' data-field="'+ field +'"'; // busyAdmin: add data-field
+
           if (item["_".concat(field, "_data")] && !Utils.isEmptyObject(item["_".concat(field, "_data")])) {
             for (var _i11 = 0, _Object$entries10 = Object.entries(item["_".concat(field, "_data")]); _i11 < _Object$entries10.length; _i11++) {
               var _Object$entries10$_i = _slicedToArray(_Object$entries10[_i11], 2),
@@ -5532,7 +5573,7 @@
                   _v = _Object$entries10$_i[1];
 
               // ignore data-index
-              if (_k === 'index') {
+              if (_k === 'index' || _k === 'field') {
                 return;
               }
 
@@ -5556,8 +5597,8 @@
               text = '<div class="card-view"></div>';
             }
           } else {
-            // busyAdmin add div.ba--cell
-            text = "<td".concat(id_).concat(class_).concat(style_).concat(data_).concat(rowspan_).concat(colspan_).concat(title_, "><div class='ba--cell'>").concat(value, "</div></td>");
+            // busyAdmin: add div.ba-cell
+            text = "<td".concat(id_).concat(class_).concat(style_).concat(data_).concat(rowspan_).concat(colspan_).concat(title_, "><div class='ba-cell'>").concat(value, "</div></td>");
           }
 
           html.push(text);
@@ -5648,6 +5689,51 @@
         if (this.options.sidePagination !== 'server') {
           this.options.totalRows = data.length;
         }
+
+        // busyAdmin: 监听表格内data-bind进行数据绑定
+        this.$body.off('input.bs.table change.bs.table').on('input.bs.table change.bs.table', '[data-bind]', function (e) {
+          var $this = $(this);
+          var data  = $this.data();
+          var $tr   = $this.closest('tr[data-index]');
+          if (!$tr.length) {
+            return;
+          }
+
+          var field;
+          if (typeof data.bindField === 'string' && data.bindField !== '') {
+            field = data.bindField;
+          } else {
+            field = $this.closest('td[data-field]').data('field');
+          }
+          if (field === '') {
+            return;
+          }
+
+          var value = $this.val();
+          if ($this.is(':checkbox')) {
+            if (data.bind === 'boolean') {
+              value = $this.prop('checked');
+            } else if (data.bind === 'int') {
+              value = $this.prop('checked') ? 1 : 0;
+            } else {
+              value = $this.prop('checked') ? $this.val() : ''
+            }
+          } else {
+            if (data.bind === 'boolean') {
+              if (value.toLowerCase() === 'true') {
+                  value = true;
+              } else if (value.toLowerCase() === 'false') {
+                  value = false;
+              } else {
+                  value = !!value;
+              }
+            } else if (data.bind === 'int' || data.bind === 'float') {
+              value = +(value || 0);
+            }
+          }
+
+          _this8.data[$tr.data('index')][field] = value;
+        });
 
         this.trigger('post-body', data);
       }
@@ -5764,7 +5850,7 @@
       }
     }, {
       key: "initServer",
-      value: function initServer(silent, query, url) {
+      value: function initServer(silent, query, url, getData) {
         var _this10 = this;
 
         var data = {};
@@ -5837,6 +5923,11 @@
 
         if (data === false) {
           return;
+        }
+
+        // busyAdmin: getData
+        if (getData) {
+          return data;
         }
 
         if (!silent) {
@@ -5927,6 +6018,18 @@
         this.$selectItem.each(function (i, el) {
           $__default['default'](el).closest('tr')[$__default['default'](el).prop('checked') ? 'addClass' : 'removeClass']('selected');
         });
+
+        // busyAdmin: 增加全选框的半选状态和全选/非全选状态切换
+        var $checkAll = this.$container.find('[name="btSelectAll"]');
+        if (this.$selectItem.filter(':enabled').filter(':checked').length && !checkAll) {
+          $checkAll.addClass('indeterminate').each(function () {
+            this.indeterminate = true;
+          });
+        } else {
+          $checkAll.removeClass('indeterminate').each(function () {
+            this.indeterminate = false;
+          });
+        }
       }
     }, {
       key: "updateRows",
@@ -6008,8 +6111,7 @@
           return;
         }
 
-        var fixedBody = this.$tableBody.get(0);
-        var scrollWidth = fixedBody.scrollWidth > fixedBody.clientWidth && fixedBody.scrollHeight > fixedBody.clientHeight + this.$header.outerHeight() ? Utils.getScrollBarWidth() : 0;
+        // busyAdmin: 位置A
         this.$el.css('margin-top', -this.$header.outerHeight());
         var focused = $__default['default'](':focus');
 
@@ -6029,10 +6131,23 @@
           }
         }
 
+        // busyAdmin: 从位置A移动到此处，因为尺寸计算收到 this.$el.css('margin-top') 影响
+        var fixedBody = this.$tableBody.get(0);
+        var scrollWidth = fixedBody.scrollWidth > fixedBody.clientWidth && fixedBody.scrollHeight > fixedBody.clientHeight ? Utils.getScrollBarWidth() : 0; // busyAdmin: 移除  + this.$header.outerHeight() 因为实际高度已经包含
+        var table = this.$tableHeader.find('table');
         this.$header_ = this.$header.clone(true, true);
         this.$selectAll_ = this.$header_.find('[name="btSelectAll"]');
-        this.$tableHeader.css('margin-right', scrollWidth).find('table').css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$header_);
+        this.$tableHeader.css('margin-right', scrollWidth);
+        table.css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$header_);
         this.$tableLoading.css('width', this.$el.outerWidth());
+
+        // busyAdmin: 增加垂直滚动条上面的补丁块以美化样式
+        if (scrollWidth > 0 || this.$tableHeader.width() > table.outerWidth()) {
+          this.$tableHeaderPatch.css({width: Utils.getScrollBarWidth(), height: this.$tableHeader.height()}).show()
+        } else {
+          this.$tableHeaderPatch.hide();
+        }
+
         var focusedTemp = $__default['default']('.focus-temp:visible:eq(0)');
 
         if (focusedTemp.length > 0) {
@@ -6101,7 +6216,7 @@
           html.push(detailTemplate);
         }
 
-        // busyAdmin 复制 columns 以计算宽度
+        // busyAdmin: 复制 columns 以计算宽度
         var columnList = this.columns.map(function (item) {
             return item;
         }), columnIndex = -1;
@@ -6152,7 +6267,7 @@
               colspan = this.footerData[0]["_".concat(column.field, "_colspan")] || 0;
             }
 
-            // busyAdmin 增加footer宽度控制
+            // busyAdmin: 增加footer宽度控制
             var width = 0, jCol, j;
 
             if (colspan) {
@@ -6210,6 +6325,22 @@
         this.trigger('post-footer', this.$tableFooter);
       }
     }, {
+      // busyAdmin: 增加 resetFooter 方法
+      key: "resetFooter",
+      value: function resetFooter() {
+        var _this13 = this;
+
+        if (!this._resetFooterInit) {
+          this._resetFooterInit = true;
+          this.fitFooter();
+        }
+
+        clearTimeout(this._fitFooterTimer);
+        this._fitFooterTimer = setTimeout(function () {
+          return _this13.fitFooter();
+        }, this.$el.is(':hidden') ? 100 : 0);
+      }
+    }, {
       key: "fitFooter",
       value: function fitFooter() {
         var _this15 = this;
@@ -6222,8 +6353,18 @@
         }
 
         var fixedBody = this.$tableBody.get(0);
-        var scrollWidth = fixedBody.scrollWidth > fixedBody.clientWidth && fixedBody.scrollHeight > fixedBody.clientHeight + this.$header.outerHeight() ? Utils.getScrollBarWidth() : 0;
-        this.$tableFooter.css('margin-right', scrollWidth).find('table').css('width', this.$el.outerWidth()).attr('class', this.$el.attr('class'));
+        var scrollWidth = fixedBody.scrollWidth > fixedBody.clientWidth && fixedBody.scrollHeight > fixedBody.clientHeight ? Utils.getScrollBarWidth() : 0; // busyAdmin: 移除 " + this.$header.outerHeight() "，因为clientHeight已经包含 this.$header 的高度
+        var table = this.$tableFooter.find('table');
+        this.$tableFooter.css('margin-right', scrollWidth);
+        table.css('width', this.$el.outerWidth()).attr('class', this.$el.attr('class'));
+
+        // busyAdmin: 增加垂直滚动条下面的补丁块以美化样式
+        if (scrollWidth > 0 || this.$tableFooter.width() > table.outerWidth()) {
+          this.$tableFooterPatch.css({width: Utils.getScrollBarWidth(), height: this.$tableFooter.height()}).show()
+        } else {
+          this.$tableFooterPatch.hide();
+        }
+
         var $ths = this.$tableFooter.find('th');
         var $tr = this.$body.find('>tr:first-child:not(.no-records-found)');
         $ths.find('.fht-cell').width('auto');
@@ -7019,6 +7160,9 @@
     }, {
       key: "refresh",
       value: function refresh(params) {
+        // busyAdmin: add before-refresh event
+        this.trigger('before-refresh', this);
+
         if (params && params.url) {
           this.options.url = params.url;
         }
@@ -7041,6 +7185,13 @@
         this.$container.next().remove();
         this.$container.remove();
         this.$el.html(this.$el_.html()).css('margin-top', '0').attr('class', this.$el_.attr('class') || ''); // reset the class
+
+        // busyAdmin: add
+        clearTimeout(this._fitFooterTimer);
+        clearTimeout(this._resizeTimeId);
+        if (this._resizeEvent) {
+          $__default['default'](window).off(this._resizeEvent);
+        }
       }
     }, {
       key: "resetView",
@@ -7065,7 +7216,9 @@
 
         if (!this.options.cardView && this.options.showFooter) {
           this.$tableFooter.show();
-          this.fitFooter();
+
+          // busyAdmin: fitFooter 改为新增的 resetFooter
+          this.resetFooter();
 
           if (this.options.height) {
             padding += this.$tableFooter.outerHeight(true);
@@ -7075,29 +7228,54 @@
         if (this.$container.hasClass('fullscreen')) {
           this.$tableContainer.css('height', '');
           this.$tableContainer.css('width', '');
-        } else if (this.options.height) {
+        }
+
+        // busyAdmin: 拆分else if为if
+        if (this.options.height) {
           if (this.$tableBorder) {
             this.$tableBorder.css('width', '');
             this.$tableBorder.css('height', '');
           }
 
+          // busyAdmin: 全屏的情况下，按照容器的高度计算
+          var trueHeight = this.options.height;
+          if (this.$container.hasClass('fullscreen')) {
+            trueHeight = this.$container.height();
+          }
+
           var toolbarHeight = this.$toolbar.outerHeight(true);
           var paginationHeight = this.$pagination.outerHeight(true);
-          var height = this.options.height - toolbarHeight - paginationHeight;
+          var height = trueHeight - toolbarHeight - paginationHeight;
           var $bodyTable = this.$tableBody.find('>table');
-          var tableHeight = $bodyTable.outerHeight();
+          var tableHeight = $bodyTable.outerHeight(); // 滚动容器内table的高度
+          var footerHeight = this.options.cardView ? 0 : this.$tableFooter.outerHeight(); // busyAdmin: 计算footer的高度
           this.$tableContainer.css('height', "".concat(height, "px"));
 
+          // busyAdmin: 添加了 options.tableBorderExtra 配置以配合样式调整
+          // busyAdmin: 要减去footer的高度
+          var tableBorderExtra = $.isNumeric(this.options.tableBorderExtra) ? this.options.tableBorderExtra : 2;
+          var tableBorderHeight = height - tableHeight - footerHeight - tableBorderExtra;
+
+          // busyAdmin: 由于innerWidth会出现小数点，所以差值大于等于1像素说明出现了滚动条
+          var barWidth = 0;
+          if (this.$tableBody[0].scrollWidth - this.$tableBody.innerWidth() >= 1) {
+            barWidth = Utils.getScrollBarWidth();
+            tableBorderHeight = tableBorderHeight - barWidth;
+          }
+
+          // busyAdmin: 添加 .ba--less 代表列表内容高度小于容器高度，并且由于ba-less会导致 $tableBody 高度发生变化，所以重新计算 tableBorderHeight
+          this.$tableBody.toggleClass('ba--less', tableBorderHeight > 0);
+          tableBorderHeight = height - $bodyTable.outerHeight() - footerHeight - tableBorderExtra - barWidth;
+
           if (this.$tableBorder && $bodyTable.is(':visible')) {
-            var tableBorderHeight = height - tableHeight - 2;
-
-            if (this.$tableBody[0].scrollWidth - this.$tableBody.innerWidth()) {
-              tableBorderHeight -= Utils.getScrollBarWidth();
-            }
-
             this.$tableBorder.css('width', "".concat($bodyTable.outerWidth(), "px"));
             this.$tableBorder.css('height', "".concat(tableBorderHeight, "px"));
           }
+        }
+
+        // busyAdmin: 添加 horizontalScroll 滚动监听，否则固定高度时，没有scroll-body事件
+        else {
+          this.horizontalScroll();
         }
 
         if (this.options.cardView) {
@@ -7145,7 +7323,32 @@
     }, {
       key: "toggleFullscreen",
       value: function toggleFullscreen() {
-        this.$el.closest('.bootstrap-table').toggleClass('fullscreen');
+
+        // busyAdmin: 保存初始值，用于全屏退出后恢复
+        if (!this._fullscreenOpts) {
+          this._fullscreenOpts = {
+            stickyHeaderOffsetY     : this.options.stickyHeaderOffsetY,
+            stickyHeaderOffsetLeft  : this.options.stickyHeaderOffsetLeft,
+            stickyHeaderOffsetRight : this.options.stickyHeaderOffsetRight,
+          };
+        }
+
+        this.$container.toggleClass('fullscreen');
+
+        // busyAdmin: 不是全屏则恢复初始值
+        if (!this.$container.hasClass('fullscreen')) {
+          this.options.stickyHeaderOffsetY     = this._fullscreenOpts.stickyHeaderOffsetY;
+          this.options.stickyHeaderOffsetLeft  = this._fullscreenOpts.stickyHeaderOffsetLeft;
+          this.options.stickyHeaderOffsetRight = this._fullscreenOpts.stickyHeaderOffsetRight;
+        } else {
+          var left  = parseInt((this.$container.css('padding-left') || '0').replace('px', ''));
+          var right = parseInt((this.$container.css('padding-right') || '0').replace('px', '')) + Utils.getScrollBarWidth();
+
+          this.options.stickyHeaderOffsetY     = -1;
+          this.options.stickyHeaderOffsetLeft  = left;
+          this.options.stickyHeaderOffsetRight = right;
+        }
+
         this.resetView();
       }
     }, {
@@ -7377,6 +7580,7 @@
   BootstrapTable.COLUMN_DEFAULTS = Constants.COLUMN_DEFAULTS;
   BootstrapTable.METHODS = Constants.METHODS;
   BootstrapTable.EVENTS = Constants.EVENTS; // BOOTSTRAP TABLE PLUGIN DEFINITION
+  BootstrapTable.INDEX = 0; // busyAdmin: INDEX
   // =======================
 
   $__default['default'].BootstrapTable = BootstrapTable;
