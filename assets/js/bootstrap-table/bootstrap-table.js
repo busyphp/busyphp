@@ -6318,7 +6318,7 @@
               hidden = !visible;
             }
 
-            if (hidden || !(column.field in (this.footerData[0] || {}))) {
+            if (hidden || this.footerData && this.footerData.length > 0 && !(column.field in this.footerData[0])) {
               continue;
             }
 
