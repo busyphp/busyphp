@@ -1,3 +1,6 @@
+interface jQuery{
+
+}
 declare namespace busyAdmin {
     //+======================================================================
     //+ 核心库名称
@@ -46,13 +49,11 @@ declare namespace busyAdmin {
         "imageViewer": "imageViewer",
         "sortable": "sortable",
         "dragtable": "dragtable",
-        "treegrid": "treegrid",
         "bootstrapTable": "bootstrapTable",
         "bootstrapTableReorderColumns": "bootstrapTableReorderColumns",
         "bootstrapTableResizable": "bootstrapTableResizable",
         "bootstrapTableReorderRows": "bootstrapTableReorderRows",
         "bootstrapTableStickyHeader": "bootstrapTableStickyHeader",
-        "bootstrapTableTree": "bootstrapTableTree",
         "bootstrapTablePrint": "bootstrapTablePrint",
         "bootstrapTableFixedColumns": "bootstrapTableFixedColumns",
         "bootstrapTableExport": "bootstrapTableExport",
@@ -207,6 +208,14 @@ declare namespace busyAdmin {
          * 请求失败触发
          */
         formError: "ba:form-error",
+        /**
+         * 子控件开始准备
+         */
+        formPrepare: "ba:form-prepare",
+        /**
+         * 子控件准备完成
+         */
+        formReady: "ba:form-ready",
 
         //+======================================================================
         //+ Modal
@@ -359,6 +368,7 @@ declare namespace busyAdmin {
          * 取消选中某些行时触发
          */
         tableUncheckSome: "ba:table-uncheck-some",
+        tableResumeUrl: "ba:table-resume-url"
 
 
         //+======================================================================
@@ -1059,6 +1069,12 @@ declare namespace busyAdmin {
     var require: (modules: [string], callback: () => void) => void;
 
     /**
+     * Require
+     * 按顺序加载
+     */
+    var requireQueue: (modules: [string|{module: string, exports: string}], callback: (...args) => void) => void;
+
+    /**
      * Define
      */
     var define: (name: string | [string] | (() => void), modules?: [string] | (() => void), callback?: () => void) => void;
@@ -1138,6 +1154,8 @@ declare namespace busyAdmin {
     }
 
     interface BusyAdminApp {
+        $contentSide: jQuery,
+
         /**
          * 准备完成
          * @param callback
@@ -2472,11 +2490,12 @@ declare namespace busyAdmin {
 
         /**
          * 触发插件准备完成事件
-         * @param {jQuery} $element jQuery对象
-         * @param {String} pluginName  插件名称
-         * @param {?[]} context 插件上下文
+         * @param {object} $element jQuery对象
+         * @param {object} plugin  插件对象
+         * @param {string} optionEvent 插件上下文
+         * @param {string|object} jQueryEvent 插件上下文
          */
-        triggerPluginReady($element: object, pluginName: string, context: any);
+        triggerPluginReady($element: object, plugin: object, optionEvent: string, jQueryEvent: string|Object);
 
         /**
          * 类继承实现
