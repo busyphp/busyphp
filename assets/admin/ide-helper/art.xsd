@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.harter.cn/busyphp/ide-helper/art.xsd"
+           xmlns="http://www.harter.cn/busyphp/ide-helper/art.xsd"
+           elementFormDefault="qualified">
+
+    <!-- if条件 -->
+    <xs:element name="if" type="attrs">
+        <xs:annotation>
+            <xs:documentation>if条件</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <!-- else if条件 -->
+    <xs:element name="elseif" type="attrs">
+        <xs:annotation>
+            <xs:documentation>else if条件</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <!-- 设置变量 -->
+    <xs:element name="set" type="attrs">
+        <xs:annotation>
+            <xs:documentation>设置变量</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="attrs">
+        <xs:attribute name="value" use="required" type="xs:string" default="">
+            <xs:annotation>
+                <xs:documentation>JS语法</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>
