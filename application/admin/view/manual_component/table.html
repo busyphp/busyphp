@@ -98,7 +98,8 @@
 | data-title | string | 否 | - | 指定列名称 |
 | data-field | string | 否 | - | 指定列字段 |
 | data-width | number | 否 | - | 设置该列的宽度 |
-| data-width-unit | string | 否 | `px` | 设置列宽度单位，支持各种css单位 |
+| data-min-width | number | 否 | `80` | 对应列的最小宽度，与 `width` 的区别是 `width` 是固定的，`min-width` 会把剩余宽度按比例分配给设置了 `min-width` 的列 |
+| data-show-overflow | boolean | 否 | `false` | 设置强制内容溢出隐藏，鼠标移动到内容上显示提示 |
 | 单选/多选:title |  |  |  |  |
 | data-checkbox | boolean | 否 | - | 指定列是否checkbox复选框 |
 | data-checkbox-enabled | boolean | 否 | `true` | 是否启用checkbox复选框 |
@@ -437,7 +438,7 @@
 </div>
     </template>
     <template class="hide" id="demo3">
-<div data-toggle="busy-table" data-height="240" data-show-footer="true" data-show-columns="true">
+<div data-toggle="busy-table" data-height="340" data-show-footer="true" data-show-columns="true">
     <table class="table-hover table-striped table-bordered">
         <thead>
             <tr>
@@ -1214,8 +1215,8 @@
                 <th data-checkbox="true"></th>
                 <th width="60" data-field="id" data-title="ID" data-sortable="true"></th>
                 <th class="text-center" data-min-width="200" data-field="name" data-title="操作名称" data-halign="center" data-align="left"></th>
-                <th class="text-center" data-min-width="100" data-field="url" data-title="操作地址" data-align="center"></th>
-                <th class="text-center" width="150" data-field="ip" data-title="IP"></th>
+                <th class="text-center text-line-1" data-min-width="100" data-field="url" data-title="操作地址" data-align="center"></th>
+                <th class="text-center" width="150" data-valign="bottom" data-field="ip" data-title="IP"></th>
                 <th class="text-center" width="100" data-field="type_name" data-title="操作类型"></th>
                 <th class="text-center" width="100" data-field="client_name" data-title="客户端"></th>
                 <th class="text-center" width="120" data-field="username" data-title="用户" data-sortable="true"></th>
