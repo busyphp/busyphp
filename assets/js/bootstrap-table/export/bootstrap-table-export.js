@@ -1907,8 +1907,8 @@
     txt: 'TXT',
     sql: 'SQL',
     doc: 'Word',
-    excel: 'Xls',
-    xlsx: 'Excel',
+    excel: 'EXCEL-XLS',
+    xlsx: 'EXCEL-XLSX',
 
     // busyAdmin: 禁用
     /*powerpoint: 'MS-Powerpoint',
