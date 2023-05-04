@@ -4903,7 +4903,7 @@
               _this4.onSearch({
                 currentTarget: event.currentTarget
               });
-            }, opts.searchTimeOut);
+            }, opts.searchOnEnterKey ? 0 : opts.searchTimeOut); // busyAdmin: if searchOnEnterKey timeout
           });
         }; // Fix #4516: this.showSearchClearButton is for extensions
 
@@ -7430,8 +7430,17 @@
         var $search = Utils.getSearchInput(this);
         $search.val(text || '');
         this.onSearch({
-          currentTarget: $search
+          currentTarget: $search[0] // busyAdmin: fix to HTMLElement
         });
+      }
+    }, {
+      // busyAdmin: add doSearch
+      key: "doSearch",
+      value: function doSearch() {
+        var $search = Utils.getSearchInput(this);
+        this.onSearch({
+          currentTarget: $search[0]
+        })
       }
     }, {
       key: "filterBy",
