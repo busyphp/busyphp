@@ -2389,6 +2389,8 @@
         if (column.searchable && that.options.filterTemplate[nameControl]) {
           html.push(that.options.filterTemplate[nameControl](that, column.field, column.filterControlPlaceholder ? column.filterControlPlaceholder : '', column.filterDefault));
         }
+
+        html.push('</div>'); // busyAdmin: fix add end tag
       }
 
       if (!column.filterControl && '' !== column.filterDefault && 'undefined' !== typeof column.filterDefault) {
