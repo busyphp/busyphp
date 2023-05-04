@@ -12,10 +12,10 @@
 
 ### 使用
 
-通过在`table`标签上加上自定义属性 `data-toggle="busy-table"` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-table"` 来触发
 
 ```html
-<table data-toggle="busy-table"></table>
+<div data-toggle="busy-table"><table></table></div>
 ```
 
 ### 标签属性
@@ -57,8 +57,14 @@
 | data-select-item-name | string | 否 | `id[]` | 指定checkbox或radio的name属性 |
 | 树结构:title |  |  |  |  |
 | data-tree-show-field | string | 否 | - | 指定树结构显示的字段，设置后表格将展示树状结构 |
-| data-parent-id-field | string | 否 | `parent_id` | 指定树结构依赖字段名称 |
 | data-tree-state | boolean | 否 | `false` | 是否记录树结构状态 |
+| data-tree-indent | number | 否 | `16` | 设置子节点缩进的距离(单位:像素) |
+| data-tree-lazy | boolean | 否 | `false` | 设置是否懒加载子节点 |
+| data-tree-load | string|Function | 否 | - | 设置子节点加载器 |
+| data-id-field | string | 否 | `id` | 设置节点的ID字段名 |
+| data-parent-field | string | 否 | `parent_id` | 设置子节点定义的父节点ID的字段名 |
+| data-parent-root | string | 否 | `0` | 设置根节点默认值 |
+| data-parent-has-children-field | string | 否 | `has_children` | 设置判断节点是否还有子节点的字段名 |
 | 固定表头:title |  |  |  |  |
 | data-sticky-header | boolean | 否 | `false` | 是否启用滚动固定表头 |
 | data-sticky-header-offset-y | number | 否 | 0 | 滚动固定表头的上偏移 |
@@ -152,70 +158,1093 @@
 
 | 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
 | - | :-: | :--: | :-: | - |
-| data-bind | boolean,string | 否 | - | 针对表单元素有效，设置后，表单元素内容发生改变，对应的单元格数据也会发生改变 |
+| data-bind | string | 否 | - | 针对表单元素有效，定义绑定的数据类型，默认为string，可选值：`int`, `boolean`, `float` |
+| data-bind-field | string | 否 | - | 定义绑定的字段 |
 
 ### 使用示例
 
-#### HTML表格
+#### 基本示例
 ```demo:实例
 #demo1
 ```
 
-#### Ajax表格
+#### 边框与条纹
 ```demo:实例
 #demo2
+```
+
+#### 固定表头
+只要给组件标签加上 `data-height` 属性即可实现固定表头的表格，而不需要额外的代码。
+```demo:实例
+#demo3
+```
+
+#### 固定列
+横向内容过多时，可选择固定列。
+```demo:实例
+#demo4
+```
+
+#### 固定列和表头
+横纵内容过多时，可选择固定列和表头。
+```demo:实例
+#demo5
+```
+
+#### 多级表头
+数据结构比较复杂的时候，可使用多级表头来展现数据的层次关系。
+```demo:实例
+#demo6
+```
+
+#### 单选
+```demo:实例
+#demo7
+```
+
+#### 多选
+```demo:实例
+#demo8
+```
+
+#### 排序
+```demo:实例
+#demo9
+```
+
+#### 自定义列表模板
+
+> 通过给 `th` 标签设置自定义属性 `data-formatter="@(field)"` 即可使用自定义列表模版
+
+----------
+
+**支持变量**：<br />
+- `value` 当前值
+- `item` 当前行数据
+- `field` 当前字段名称
+- `index` 当前行下标
+- `is_print` 是否打印
+
+----------
+
+**赋值 `data-formatter="@"`**
+
+系统会查找在 `table > thead > th` 标签内包含自定义属性 `[type="text/html"]`, `[type="text/template"]` 或标签 `<template>` 的模版标签作为渲染模版。
+
+```HTML
+<table>
+    <thead>
+        <tr>
+            <th data-formatter="@" data-title="姓名">
+                <script type="text/html">
+                {{value}} {{item}} {{field}} {{index}} {{is_print}}
+                <\/script>
+            </th>
+        </tr>
+    </thead>
+</table>
+```
+
+----------
+
+**赋值 `data-formatter="@field"`**
+
+系统会查找组件标签内包含 `data-template="formatter@field"` 的模版标签作为渲染模版。
+
+```HTML
+<div data-toggle="busy-table">
+    <table>
+        <thead>
+            <tr>
+                <th data-formatter="@name">姓名</th>
+            </tr>
+        </thead>
+    </table>
+    <script type="text/html" data-template="formatter@name">
+        {{value}} {{item}} {{field}} {{index}} {{is_print}}
+    <\/script>
+</div>
+```
+
+----------
+
+```demo:实例
+#demo10
+```
+
+#### 展开行
+
+> 通过给组件标签设置自定义属性 `data-detail-formatter="@"` 即可使用展开行模板。
+
+-----------
+
+**支持变量**：<br />
+- `index` 当前行下标
+- `item` 当前行数据
+
+-----------
+
+**赋值 `data-detail-formatter="@"`**
+
+系统会查找组件标签内包含自定义属性 `data-template="detail"` 的模版标签作为渲染模版。
+
+```HTML
+<div data-toggle="busy-table" data-detail-formatter="@">
+    <table></table>
+    <script type="text/html" data-template="detail">
+    {{item}} {{index}}
+    <\/script>
+</div>
+```
+
+-----------
+
+```demo:实例
+#demo11
+```
+
+#### 树形数据与懒加载
+
+> 通过给组件标签设置自定义属性 `data-tree-show-field="field"` 即可使用树形数据
+
+##### 静态数据
+
+```demo:实例
+#demo12
+```
+
+##### 懒加载
+
+```demo:实例
+#demo13
+```
+
+#### 表尾合计行
+
+> 通过给组件标签设置 `data-show-footer="true"`，`thead > th` 标签设置自定义属性 `data-footer-formatter` 即可使用表尾行合计
+
+**支持字符串函数**
+
+- `@sum(number)` 求和，`number`为保留的小数点位数；如：`data-footer-formatter="共 @sum(2) 元"`
+- `@average(number)` 求平均值，`number`为保留的小数点位数；如：`data-footer-formatter="平均 @average(2) 元"`
+- `@count()` 统计行数，如：`data-footer-formatter="共 @count() 人"`
+
+```demo:实例
+#demo14
+```
+
+#### 工具栏
+
+```demo:实例
+#demo15
+```
+
+##### 自定义按钮
+
+> 通过给组件标签设置自定义属性 `data-buttons=""` 来配置自定义按钮
+
+```demo:实例
+#demo16
+```
+
+##### 工具栏容器
+
+> 通过给组件标签设置自定义属性 `data-buttons-toolbar="selector"` 来指定工具栏容器
+
+```demo:实例
+#demo17
+```
+
+##### 扩展工具栏
+
+> 通过给组件标签设置自定义属性 `data-toolbar="@"` 系统会查找组件标签内包含自定义属性 `data-template="toolbar"` 的模版标签作为扩展工具栏。
+
+
+```HTML
+<div data-toggle="busy-table" data-toolbar="@">
+    <table>
+    </table>
+    <script type="text/html" data-template="toolbar">
+        <button class="btn btn-primary">添加</button>
+        <button class="btn btn-danger">删除</button>
+    <\/script>
+</div>
+```
+
+```demo:实例
+#demo18
+```
+
+##### 自定义搜索框
+
+> 通过给组件标签设置自定义属性 `data-search-selector="selector"` 来定义自定义搜索框
+
+```demo:实例
+#demo19
+```
+
+##### 搜索栏(SearchBar)
+
+```demo:实例
+#demo20
 ```
             </script>
         </div>
     </div>
 
     <template class="hide" id="demo1">
-        <table data-toggle="busy-table"
-               data-height="300">
-            <thead>
+<div data-toggle="busy-table">
+    <table>
+        <thead>
+            <tr>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th>地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="4">
                 <tr>
-                    <th rowspan="2" data-valign="middle">名称</th>
-                    <th colspan="3">详情</th>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
                 </tr>
-                <tr>
-                    <th>关注数</th>
-                    <th>浏览数</th>
-                    <th>描述</th>
-                </tr>
-            </thead>
-            <tbody>
-                <for name="index" start="1" end="100">
-                    <tr>
-                        <td>张三{$index}</td>
-                        <td><?=rand(0, 9999)?></td>
-                        <td><?=rand(0, 9999)?></td>
-                        <td><?=rand(0, 9999)?></td>
-                    </tr>
-                </for>
-            </tbody>
-        </table>
+            </for>
+        </tbody>
+    </table>
+</div>
     </template>
-
-
     <template class="hide" id="demo2">
-        <table class="table table-hover table-bordered table-striped"
-               data-toggle="busy-table"
-               data-height="300"
-               data-fixed-columns="true"
-               data-fixed-right-number="1"
-               data-model="<?=\BusyPHP\app\admin\model\system\logs\SystemLogs::class;?>">
-            <thead>
+<div data-toggle="busy-table">
+    <table class="table-bordered table-hover table-striped">
+        <thead>
+            <tr>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th>地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="4">
                 <tr>
-                    <th data-field="id" data-title="ID"></th>
-                    <th data-field="name" data-title="操作名称"></th>
-                    <th data-field="format_create_time" data-title="创建时间"></th>
-                    <th data-field="operate" data-title="操作" data-align="center" data-formatter="@">
-                        <template>
-                            <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload|@modal.close"><i class="fa fa-plus"></i></a>
-                        </template>
-                    </th>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
                 </tr>
-            </thead>
-        </table>
+            </for>
+        </tbody>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo3">
+<div data-toggle="busy-table" data-height="240" data-show-footer="true" data-show-columns="true">
+    <table class="table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th>地址</th>
+                <th>地址1</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="6">
+                <tr>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
+                    <td>北京市海淀区西北胡同{$index}{$index}号门</td>
+                </tr>
+            </for>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="2">日期</th>
+                <th>地址</th>
+                <th>地址1</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo4">
+<div data-toggle="busy-table" data-fixed-number="1" data-fixed-right-number="1">
+    <table class="table-hover table-striped">
+        <thead>
+            <tr>
+                <th width="60">ID</th>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th width="100">性别</th>
+                <th width="100">爱好</th>
+                <th width="600">地址</th>
+                <th width="100">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="3">
+                <tr>
+                    <td>{$index}</td>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>男</td>
+                    <td>足球</td>
+                    <td>北京市海淀区西直门东西巷西北胡同{$index}号门</td>
+                    <td>操作{$index}</td>
+                </tr>
+            </for>
+        </tbody>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo5">
+<div data-toggle="busy-table" data-height="240" data-fixed-number="1" data-fixed-right-number="1">
+    <table class="table-hover table-striped">
+        <thead>
+            <tr>
+                <th width="60">ID</th>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th width="100">性别</th>
+                <th width="100">爱好</th>
+                <th width="600">地址</th>
+                <th width="100">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="10">
+                <tr>
+                    <td>{$index}</td>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>男</td>
+                    <td>足球</td>
+                    <td>北京市海淀区西直门东西巷西北胡同{$index}号门</td>
+                    <td>操作{$index}</td>
+                </tr>
+            </for>
+        </tbody>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo6">
+<div data-toggle="busy-table" data-height="240" data-fixed-number="1" data-fixed-right-number="1">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th width="60" rowspan="2">ID</th>
+                <th width="180" rowspan="2">日期</th>
+                <th width="980" colspan="4">个人信息</th>
+                <th width="100" rowspan="2">操作</th>
+            </tr>
+            <tr>
+                <th width="180">姓名</th>
+                <th width="100">性别</th>
+                <th width="100">爱好</th>
+                <th width="600">地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="10">
+                <tr>
+                    <td>{$index}</td>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>男</td>
+                    <td>足球</td>
+                    <td>北京市海淀区西直门东西巷西北胡同{$index}号门</td>
+                    <td>操作{$index}</td>
+                </tr>
+            </for>
+        </tbody>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo7">
+<button class="btn btn-primary" id="demo7Btn">选中第2行</button>
+<button class="btn btn-primary" id="demo7Btn2">取消选择</button>
+<div data-toggle="busy-table" data-show-footer="true" id="tableDemo7">
+    <table class="table-hover table-striped" >
+        <thead>
+            <tr>
+                <th data-radio="true"></th>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th>地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="4">
+                <tr>
+                    <td></td>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
+                </tr>
+            </for>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th></th>
+                <th>日期</th>
+                <th>姓名</th>
+                <th>地址</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<script>
+    $(function () {
+        $('#demo7Btn').on('click', function () {
+            $('#tableDemo7').baTable('check', 1);
+        });
+        $('#demo7Btn2').on('click', function () {
+            $('#tableDemo7').baTable('uncheckAll');
+        });
+    });
+</script>
+    </template>
+    <template class="hide" id="demo8">
+<button class="btn btn-primary" id="demo8Btn">选中第2，3行</button>
+<button class="btn btn-primary" id="demo8Btn2">取消选择</button>
+<div data-toggle="busy-table" data-show-footer="true" id="tableDemo8">
+    <table class="table-hover table-striped">
+        <thead>
+            <tr>
+                <th data-checkbox="true"></th>
+                <th width="180">日期</th>
+                <th width="180">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="4">
+                <tr>
+                    <td></td>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
+                </tr>
+            </for>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th></th>
+                <th>日期</th>
+                <th>姓名</th>
+                <th>地址</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<script>
+    $(function () {
+        $('#demo8Btn').on('click', function () {
+            $('#tableDemo8').baTable('check', 1);
+            $('#tableDemo8').baTable('check', 2);
+        });
+        $('#demo8Btn2').on('click', function () {
+            $('#tableDemo8').baTable('uncheckAll');
+        });
+    });
+</script>
+    </template>
+    <template class="hide" id="demo9">
+<div data-toggle="busy-table" data-show-footer="true">
+    <table class="table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="180">日期</th>
+                <th width="180" data-sortable="true">姓名</th>
+                <th data-sortable="true">地址</th>
+            </tr>
+        </thead>
+        <tbody>
+            <for name="index" start="1" end="4">
+                <tr>
+                    <td><?=date('Y-m-d')?></td>
+                    <td>欧阳小虎{$index}</td>
+                    <td>北京市海淀区西北胡同{$index}号门</td>
+                </tr>
+            </for>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>日期</th>
+                <th>姓名</th>
+                <th>地址</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+    </template>
+    <template class="hide" id="demo10">
+<div data-toggle="busy-table" id="demo10Table" data-data="demo10Data" data-show-print="true" data-show-footer="true">
+    <table class="table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="180" data-field="date" data-title="日期" data-formatter="@">
+                    <script type="text/html">
+                        <ba-if value="is_print">
+                            打印：{{ value }}
+                            <ba-else />
+                            <span class="badge">{{ value }}</span>
+                        </ba-if>
+                    </script>
+                </th>
+                <th width="180" data-field="name" data-title="姓名"></th>
+                <th width="180" data-field="sex" data-title="性别" data-formatter="@sex" data-print-formatter="@sex"></th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>日期</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>地址</th>
+            </tr>
+        </tfoot>
+    </table>
+    <script type="text/html" data-template="formatter@sex">
+        <ba-if value="男">
+            <span class="label label-primary">{{ value }}</span>
+            <ba-elseif value="女" />
+            <span class="label label-danger">{{ value }}</span>
+            <ba-else/>
+            <span class="label label-dark">{{ value }}</span>
+        </ba-if>
+    </script>
+    <script type="text/html" data-template="print@sex">
+        打印：{{value}}
+    </script>
+    <script>
+        busyAdmin.data.demo10Data = [{
+            date: '2021-05-11',
+            name: '欧阳小虎1',
+            sex: '男',
+            address: '北京市海淀区西北胡同2号门'
+        },{
+            date: '2021-05-12',
+            name: '欧阳小虎2',
+            sex: '女',
+            address: '北京市海淀区西北胡同2号门'
+        }, {
+            date: '2021-05-13',
+            name: '欧阳小虎3',
+            sex: '未知',
+            address: '北京市海淀区西北胡同3号门'
+        }];
+    </script>
+</div>
+    </template>
+    <template class="hide" id="demo11">
+<div data-toggle="busy-table" data-detail-view="true" data-detail-formatter="@" data-data="demo11Data">
+    <table class="table-hover table-striped">
+        <thead>
+            <tr>
+                <th width="180" data-field="date">日期</th>
+                <th width="180" data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+    <script type="text/html" data-template="detail">
+        <dl class="dl-horizontal no-margin-bottom">
+            <dt><div class="text-left">日期</div></dt>
+            <dd>{{item.date}}</dd>
+            <dt><div class="text-left">姓名</div></dt>
+            <dd>{{item.name}}</dd>
+            <dt><div class="text-left">性别</div></dt>
+            <dd>{{item.sex}}</dd>
+            <dt><div class="text-left">地址</div></dt>
+            <dd>{{item.address}}</dd>
+        </dl>
+    </script>
+</div>
+<script>
+    busyAdmin.data.demo11Data = [{
+        date: '2021-05-11',
+        name: '欧阳小虎1',
+        sex: '男',
+        address: '北京市海淀区西北胡同2号门'
+    },{
+        date: '2021-05-12',
+        name: '欧阳小虎2',
+        sex: '女',
+        address: '北京市海淀区西北胡同2号门'
+    }, {
+        date: '2021-05-13',
+        name: '欧阳小虎3',
+        sex: '未知',
+        address: '北京市海淀区西北胡同3号门'
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo12">
+<div data-toggle="busy-table"
+     data-fixed-number="2"
+     data-fixed-right-number="1"
+     data-tree-show-field="date"
+     data-tree-state="true"
+     data-id-field="id"
+     data-parent-field="pid"
+     data-parent-root="0"
+     data-state="demo12"
+     data-data="demo12Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-checkbox="true"></th>
+                <th width="60" data-field="id">ID</th>
+                <th width="300" data-field="date">日期</th>
+                <th width="180" data-field="name" data-sortable="true">姓名</th>
+                <th width="600" data-field="address">地址</th>
+                <th width="100">操作</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo12Data = [{
+        id           : 1,
+        pid          : 0,
+        date         : '2021-05-11',
+        name         : '欧阳小虎1',
+        address      : '北京市海淀区西北胡同2号门',
+    }, {
+        id           : 2,
+        pid          : 0,
+        date         : '2021-05-12',
+        name         : '欧阳小虎2',
+        address      : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 3,
+        pid     : 0,
+        date    : '2021-05-13',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同3号门'
+    }, {
+        id           : 4,
+        pid          : 2,
+        date         : '2021-05-14',
+        name         : '欧阳小虎21',
+        address      : '北京市海淀区西北胡同21号门',
+    }, {
+        id           : 5,
+        pid          : 2,
+        date         : '2021-05-15',
+        name         : '欧阳小虎22',
+        address      : '北京市海淀区西北胡同22号门',
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo13">
+<div data-toggle="busy-table"
+     data-fixed-number="2"
+     data-fixed-right-number="1"
+     data-tree-show-field="date"
+     data-tree-lazy="true"
+     data-tree-load="demo13Load"
+     data-tree-state="true"
+     data-id-field="id"
+     data-parent-field="pid"
+     data-parent-root="0"
+     data-state="demo13"
+     data-data="demo13Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-checkbox="true"></th>
+                <th width="60" data-field="id">ID</th>
+                <th width="300" data-field="date">日期</th>
+                <th width="180" data-field="name" data-sortable="true">姓名</th>
+                <th width="600" data-field="address">地址</th>
+                <th width="100">操作</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo13Data = [{
+        id           : 1,
+        pid          : 0,
+        date         : '2021-05-11',
+        name         : '欧阳小虎1',
+        address      : '北京市海淀区西北胡同2号门',
+    }, {
+        id           : 2,
+        pid          : 0,
+        date         : '2021-05-12',
+        name         : '欧阳小虎2',
+        address      : '北京市海淀区西北胡同2号门',
+        has_children : true
+    }, {
+        id      : 3,
+        pid     : 0,
+        date    : '2021-05-13',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同3号门'
+    }];
+
+    // 模拟懒加载
+    // 注意：实际开发中如果指定了 model 一般不使用此方法
+    busyAdmin.data.demo13LoadDeep = 0;
+    busyAdmin.data.demo13Load = function (options, row, success, error) {
+        busyAdmin.data.demo13LoadDeep++;
+        setTimeout(function () {
+            var list = [];
+            for (var i = 0; i < 3; i++) {
+                list.push({
+                    id           : row.id + '' + i,
+                    pid          : row.id,
+                    date         : '2021-0'+ busyAdmin.data.demo13LoadDeep +'-1' + i,
+                    name         : '欧阳小虎' + row.id + i,
+                    address      : '北京市海淀区西北胡同2'+ row.id +'号门',
+                    has_children : busyAdmin.data.demo13LoadDeep > 2 ? false : i % 2 === 1
+                })
+            }
+            success(list);
+        }, 1000);
+    }
+</script>
+    </template>
+    <template class="hide" id="demo14">
+<div data-toggle="busy-table"
+     data-show-footer="true"
+     data-data="demo14Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-field="id" data-footer-formatter="合计">ID</th>
+                <th data-field="name" data-footer-formatter="共 @count(2) 人">姓名</th>
+                <th data-field="number1" data-sortable="true" data-footer-formatter="合计 @sum(2)">数值1</th>
+                <th data-field="number2" data-sortable="true" data-footer-formatter="平均 @average(2)">数值2</th>
+                <th data-field="number3" data-sortable="true" data-footer-formatter="共 @sum(4) 美元">数值3</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo14Data = [{
+        id           : 1,
+        name         : '欧阳小虎1',
+        number1      : 65,
+        number2      : '12.45',
+        number3      : '10',
+    }, {
+        id           : 2,
+        name         : '欧阳小虎1',
+        number1      : 32,
+        number2      : '2.65',
+        number3      : '22',
+    }, {
+        id           : 3,
+        name         : '欧阳小虎1',
+        number1      : 77,
+        number2      : '11.99',
+        number3      : '16',
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo15">
+<div data-toggle="busy-table"
+     data-show-columns="true"
+     data-show-print="true"
+     data-show-export="true"
+     data-export-types='excel,csv,doc,txt,xml,sql,png,json'
+     data-show-refresh="true"
+     data-show-fullscreen="true"
+     data-search="true"
+     data-search-align="left"
+     data-data="demo15Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-field="id">ID</th>
+                <th data-field="date">日期</th>
+                <th data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo15Data = [{
+        id      : 1,
+        date    : '2021-05-11',
+        name    : '欧阳小虎1',
+        address : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 2,
+        date    : '2021-05-12',
+        name    : '欧阳小虎2',
+        address : '北京市海淀区西北胡同3号门',
+    }, {
+        id      : 3,
+        date    : '2021-05-12',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同4号门',
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo16">
+<div data-toggle="busy-table"
+     data-show-columns="true"
+     data-buttons="demo16Buttons"
+     data-data="demo16Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-field="id">ID</th>
+                <th data-field="date">日期</th>
+                <th data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo16Data = [{
+        id      : 1,
+        date    : '2021-05-11',
+        name    : '欧阳小虎1',
+        address : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 2,
+        date    : '2021-05-12',
+        name    : '欧阳小虎2',
+        address : '北京市海淀区西北胡同3号门',
+    }, {
+        id      : 3,
+        date    : '2021-05-12',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同4号门',
+    }];
+    busyAdmin.data.demo16Buttons = function () {
+        return {
+            btn1: {
+                text: '按钮1',
+                icon: 'fa fa-plus',
+                event : function () {
+                    busyAdmin.dialog.toast('点击了按钮1')
+                },
+                attributes: {
+                    title: '按钮1',
+                }
+            },
+            btn2: {
+                text: '按钮2',
+                icon: 'fa fa-plus',
+                event : function () {
+                    busyAdmin.dialog.toast('点击了按钮2')
+                },
+                attributes: {
+                    title: '按钮2',
+                }
+            },
+        }
+    };
+</script>
+    </template>
+    <template class="hide" id="demo17">
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div id="demo17Buttons" class="clearfix"></div>
+    </div>
+</div>
+
+<p>将工具栏放到自定义容器中</p>
+
+<div data-toggle="busy-table"
+     data-show-columns="true"
+     data-show-print="true"
+     data-show-export="true"
+     data-export-types='excel,csv,doc,txt,xml,sql,png,json'
+     data-show-refresh="true"
+     data-search="true"
+     data-search-align="left"
+     data-buttons-toolbar="#demo17Buttons"
+     data-data="demo17Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-field="id">ID</th>
+                <th data-field="date">日期</th>
+                <th data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo17Data = [{
+        id      : 1,
+        date    : '2021-05-11',
+        name    : '欧阳小虎1',
+        address : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 2,
+        date    : '2021-05-12',
+        name    : '欧阳小虎2',
+        address : '北京市海淀区西北胡同3号门',
+    }, {
+        id      : 3,
+        date    : '2021-05-12',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同4号门',
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo18">
+<div data-toggle="busy-table"
+     data-show-columns="true"
+     data-show-print="true"
+     data-show-export="true"
+     data-export-types='excel,csv,doc,txt,xml,sql,png,json'
+     data-show-refresh="true"
+     data-search="true"
+     data-toolbar="@"
+     data-data="demo18Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-checkbox="true"></th>
+                <th data-field="id">ID</th>
+                <th data-field="date">日期</th>
+                <th data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+    <script type="text/html" data-template="toolbar">
+        <a class="btn btn-primary">添加</a>
+        <a class="btn btn-danger" data-disabled data-confirm="确认要删除选中的%s项吗？" data-checked="true" data-url="">删除</a>
+    </script>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo18Data = [{
+        id      : 1,
+        date    : '2021-05-11',
+        name    : '欧阳小虎1',
+        address : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 2,
+        date    : '2021-05-12',
+        name    : '欧阳小虎2',
+        address : '北京市海淀区西北胡同3号门',
+    }, {
+        id      : 3,
+        date    : '2021-05-12',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同4号门',
+    }];
+</script>
+    </template>
+    <template class="hide" id="demo19">
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="input-group">
+            <input type="search" class="form-control" id="demo19Search" placeholder="请输入关键词按回车搜索"/>
+            <div class="input-group-btn">
+                <button class="btn btn-primary" onclick="$('#demo19Table').baTable('doSearch')">搜索</button>
+                <button class="btn btn-secondary" onclick="$('#demo19Table').baTable('resetSearch')">重置</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="demo19Table"
+     data-toggle="busy-table"
+     data-show-columns="true"
+     data-show-refresh="true"
+     data-search="true"
+     data-search-selector="#demo19Search"
+     data-toolbar="@"
+     data-data="demo19Data">
+    <table class="table-hover table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th data-checkbox="true"></th>
+                <th data-field="id">ID</th>
+                <th data-field="date">日期</th>
+                <th data-field="name">姓名</th>
+                <th data-field="address">地址</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    // 初始数据
+    busyAdmin.data.demo19Data = [{
+        id      : 1,
+        date    : '2021-05-11',
+        name    : '欧阳小虎1',
+        address : '北京市海淀区西北胡同2号门',
+    }, {
+        id      : 2,
+        date    : '2021-05-12',
+        name    : '欧阳小虎2',
+        address : '北京市海淀区西北胡同3号门',
+    }, {
+        id      : 3,
+        date    : '2021-05-12',
+        name    : '欧阳小虎3',
+        address : '北京市海淀区西北胡同4号门',
+    }];
+</script>
+    </template>
+    
+    <template class="hide" id="demo20">
+<div data-toggle="busy-table"
+     data-height="600"
+     data-search="@"
+     data-fixed-columns="true"
+     data-fixed-right-number="1"
+     data-url="{:url('system_logs/index')}">
+    <table class="table table-hover table-bordered table-striped">
+        <thead>
+            <tr>
+                <th data-checkbox="true"></th>
+                <th width="60" data-field="id" data-title="ID" data-sortable="true"></th>
+                <th class="text-center" data-min-width="200" data-field="name" data-title="操作名称" data-halign="center" data-align="left"></th>
+                <th class="text-center" data-min-width="100" data-field="url" data-title="操作地址" data-align="center"></th>
+                <th class="text-center" width="150" data-field="ip" data-title="IP"></th>
+                <th class="text-center" width="100" data-field="type_name" data-title="操作类型"></th>
+                <th class="text-center" width="100" data-field="client_name" data-title="客户端"></th>
+                <th class="text-center" width="120" data-field="username" data-title="用户" data-sortable="true"></th>
+                <th class="text-center" width="120" data-field="user_id" data-title="用户ID" data-sortable="true"></th>
+                <th class="text-center" width="150" data-field="format_create_time" data-title="操作时间" data-sortable="true"></th>
+                <th data-field="operate" data-title="操作" data-align="center" data-formatter="@">
+                    <template>
+                        <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload|@modal.close"><i class="fa fa-plus"></i></a>
+                    </template>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <template data-template="search">
+        <div data-toggle="busy-search-bar"
+             data-url="{$url.self}"
+             data-accurate-show="true"
+             data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
+            <template type="text/html" data-template="left">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">时间范围</div>
+                        <input type="text" name="time" class="form-control" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                        <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</div>
     </template>
 </block>
