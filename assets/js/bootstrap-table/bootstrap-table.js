@@ -4456,7 +4456,7 @@
             clearTimeout(_this2._resizeTimeId);
             _this2._resizeTimeId = setTimeout(function () {
               _this2.resetView();
-            }, 50);
+            }, 10);
           });
         }
 
@@ -5578,6 +5578,12 @@
             value_ = Utils.escapeHTML(value_);
           } // Style concat
 
+          // busyAdmin: showOverflow
+          var showOverflowClass = '';
+          if (column.showOverflow) {
+            showOverflowClass = 'ba--show-overflow';
+            class_ = class_ ? class_.replace('="', '="'+ showOverflowClass +' ') : 'class="'+ showOverflowClass +'"';
+          }
 
           if (csses.concat([_this7.header.styles[j]]).length) {
             styleToAdd_ += "".concat(csses.concat([_this7.header.styles[j]]).join('; '));
@@ -5598,7 +5604,7 @@
           }
 
           if (item["_".concat(field, "_class")]) {
-            class_ = Utils.sprintf(' class="%s"', item["_".concat(field, "_class")]);
+            class_ = Utils.sprintf(' class="%s %s"', item["_".concat(field, "_class")], showOverflowClass); // busyAdmin: showOverflow
           }
 
           if (item["_".concat(field, "_rowspan")]) {
@@ -5616,7 +5622,7 @@
           cellStyle = Utils.calculateObjectValue(_this7.header, _this7.header.cellStyles[j], [value_, item, i, field], cellStyle);
 
           if (cellStyle.classes) {
-            class_ = " class=\"".concat(cellStyle.classes, "\"");
+            class_ = 'class="'+ cellStyle.classes +' '+ showOverflowClass +'"'; // busyAdmin: showOverflow
           }
 
           if (cellStyle.css) {
@@ -5876,6 +5882,43 @@
           // https://github.com/jquery/jquery/issues/1741
           _this9.multipleSelectRowCtrlKey = e.ctrlKey || e.metaKey;
           _this9.multipleSelectRowShiftKey = e.shiftKey;
+        }).off('mouseenter').on('mouseenter', function () { // busyAdmin: mouseenter
+          var $this = $(this);
+          if (!$this.hasClass('ba--show-overflow')) {
+            return;
+          }
+
+          var $cellChild = $this.find('.ba-cell');
+          var cellChild = $cellChild[0];
+
+          // use range width instead of scrollWidth to determine whether the text is overflowing
+          // to address a potential FireFox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1074543#c3
+          var range = document.createRange();
+          range.setStart(cellChild, 0);
+          range.setEnd(cellChild, cellChild.childNodes.length);
+          var rangeWidth = range.getBoundingClientRect().width;
+          var padding = (parseInt($cellChild.css('paddingLeft'), 10) || 0) + (parseInt($cellChild.css('paddingRight'), 10) || 0);
+          if ((rangeWidth + padding > cellChild.offsetWidth || cellChild.scrollWidth > cellChild.offsetWidth) ) {
+            $this.removeData('bs.popover')
+                .popover({
+                  container : 'body',
+                  trigger   : 'manual',
+                  html      : true,
+                  placement : 'auto',
+                  content   : $cellChild.children().clone(true, true)
+                })
+                .popover('show');
+          }
+
+        }).off('mouseleave').on('mouseleave', function () { // busyAdmin: mouseenter
+          var $this = $(this);
+          if (!$this.hasClass('ba--show-overflow')) {
+            return;
+          }
+          var $popover = $this.data('bs.popover');
+          if ($popover) {
+            $popover.hide();
+          }
         });
         this.$body.find('> tr[data-index] > td > .detail-icon').off('click').on('click', function (e) {
           e.preventDefault();
@@ -6234,6 +6277,10 @@
         this.$tableHeader.css('margin-right', scrollWidth);
         table.css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$headerColgroup.clone()).append(this.$header_); // busyAdmin: this.$headerColgroup.clone()
         this.$tableLoading.css('width', this.$el.outerWidth());
+
+        if (this.$tableBorder) {
+          this.$tableBorder.css('width', this.$el.outerWidth());
+        }
 
         // busyAdmin: 增加垂直滚动条上面的补丁块以美化样式
         if (scrollWidth > 0 || this.$tableHeader.width() > table.outerWidth()) {
@@ -7265,8 +7312,6 @@
         this.$selectAll.prop('checked', this.$selectItem.length > 0 && this.$selectItem.length === this.$selectItem.filter(':checked').length);
         this.$tableContainer.toggleClass('has-card-view', this.options.cardView);
 
-        this.updateColumnsWidth();
-
         if (!this.options.cardView && this.options.showHeader && this.options.height) {
           this.$tableHeader.show();
           this.resetHeader();
@@ -7348,8 +7393,14 @@
         } else {
           // Assign the correct sortable arrow
           this.getCaret();
-          this.$tableContainer.css('padding-bottom', "".concat(padding, "px"));
+
+          // 使用flex布局则不补充padding
+          if (!this.options.flex) {
+            this.$tableContainer.css('padding-bottom', "".concat(padding, "px"));
+          }
         }
+
+        this.updateColumnsWidth();
 
         this.trigger('reset-view');
       }
