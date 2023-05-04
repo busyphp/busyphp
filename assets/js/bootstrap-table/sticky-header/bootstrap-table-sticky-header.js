@@ -1202,6 +1202,11 @@
         // busyAdmin 修复 this.$stickyEnd 偶尔为空
         var end = this.$stickyEnd ? this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height() : 0; // show sticky when top anchor touches header, and when bottom anchor not exceeded
 
+        // busyAdmin 修复 this.$stickyContainer 偶尔为空
+        if (!this.$stickyContainer) {
+          return;
+        }
+
         if (top > start && top <= end) {
           // ensure clone and source column widths are the same
           this.$stickyHeader.find('tr:eq(0)').find('th').each(function (index, el) {
@@ -1248,6 +1253,10 @@
     }, {
       key: "matchPositionX",
       value: function matchPositionX() {
+        // busyAdmin 修复 this.$stickyContainer 偶尔为空
+        if (!this.$stickyContainer) {
+          return;
+        }
         this.$stickyContainer.scrollLeft(this.$tableBody.scrollLeft());
       }
     }]);
