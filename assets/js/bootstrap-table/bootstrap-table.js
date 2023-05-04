@@ -2893,6 +2893,7 @@
     serverSort: true,
     customSort: undefined,
     columns: [[]],
+    columnMinWidth: 80, // busyAdmin: columnMinWidth
     data: [],
     url: undefined,
     method: 'get',
@@ -4206,7 +4207,7 @@
         var columns = this.columns;
         var scrollYWidth = this.$tableBody[0].scrollHeight > this.$tableBody[0].clientHeight ? Utils.getScrollBarWidth() : 0;
         var toMinWidth = function (value) {
-          return +(value || 80);
+          return +(value || me.columnMinWidth || 80);
         }
         var flexColumns = columns.filter(function (vo) {
           if (typeof vo.width !== 'number' && vo.visible) {
