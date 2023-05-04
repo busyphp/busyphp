@@ -2986,6 +2986,7 @@
     uniqueId: undefined,
     cardView: false,
     detailView: false,
+    detailViewWidth: 30, // busyAdmin: add detailViewWidth
     detailViewIcon: true,
     detailViewByClick: false,
     detailViewAlign: 'left',
@@ -4204,9 +4205,13 @@
         var me = this;
         var columns = this.columns;
         var scrollYWidth = this.$tableBody[0].scrollHeight > this.$tableBody[0].clientHeight ? Utils.getScrollBarWidth() : 0;
+        var toMinWidth = function (value) {
+          return +(value || 80);
+        }
         var flexColumns = columns.filter(function (vo) {
           if (typeof vo.width !== 'number' && vo.visible) {
-            vo.$col && vo.$col.attr('width', 0);
+            vo.$fhCol && vo.$fhCol.attr('width', 0);
+            vo.$ftCol && vo.$ftCol.attr('width', 0);
             return true;
           }
           return false;
@@ -4220,10 +4225,10 @@
         if (flexColumns.length > 0) {
           var tableMinWidth = columns.reduce(function (prev, vo) {
             if (vo.visible) {
-              return prev + (vo.width || vo.minWidth || 80);
+              return prev + (vo.width || toMinWidth(vo.minWidth));
             }
             return prev + 0;
-          }, 0);
+          }, Utils.hasDetailViewIcon(me.options) ? (me.options.detailViewWidth || 30) : 0);
           var tableWidth = me.$el.width();
 
           // 有水平滚动条
@@ -4232,10 +4237,10 @@
 
             // 只有一个
             if (flexColumns.length === 1) {
-              flexColumns[0].realWidth = (flexColumns[0].minWidth || 80) + totalFlexWidth
+              flexColumns[0].realWidth = toMinWidth(flexColumns[0].minWidth) + totalFlexWidth
             } else {
               var flexColumnsWidth = flexColumns.reduce(function (prev, vo){
-                return prev + (vo.minWidth || 80)
+                return prev + toMinWidth(vo.minWidth)
               }, 0);
               var flexColumnsPixel = totalFlexWidth / flexColumnsWidth;
               var noneFirstWidth = 0;
@@ -4243,15 +4248,15 @@
                 if (index == 0) {
                   return;
                 }
-                var flexWidth = (item.minWidth || 80) * flexColumnsPixel;
+                var flexWidth = Math.floor(toMinWidth(item.minWidth) * flexColumnsPixel);
                 noneFirstWidth += flexWidth;
-                item.realWidth = (item.minWidth || 80) + flexWidth;
+                item.realWidth = toMinWidth(item.minWidth) + flexWidth;
               });
-              flexColumns[0].realWidth = (flexColumns[0].minWidth || 80) + totalFlexWidth - noneFirstWidth;
+              flexColumns[0].realWidth = toMinWidth(flexColumns[0].minWidth) + totalFlexWidth - noneFirstWidth;
             }
           } else {
             flexColumns.forEach(function (item) {
-              item.realWidth = item.minWidth || 80
+              item.realWidth = toMinWidth(item.minWidth)
             });
           }
         }
@@ -4298,14 +4303,17 @@
           var html = [];
           html.push("<tr".concat(Utils.sprintf(' class="%s"', _this2._headerTrClasses[i]), " ").concat(Utils.sprintf(' style="%s"', _this2._headerTrStyles[i]), ">"));
           var detailViewTemplate = '';
+          var detailViewCol = ''; // busyAdmin: detailViewCol
 
           if (i === 0 && Utils.hasDetailViewIcon(_this2.options)) {
             var rowspan = _this2.options.columns.length > 1 ? " rowspan=\"".concat(_this2.options.columns.length, "\"") : '';
-            detailViewTemplate = "<th class=\"detail\"".concat(rowspan, ">\n          <div class=\"fht-cell\"></div>\n          </th>");
+            detailViewTemplate = "<th class=\"detail ba--column-detail\"".concat(rowspan, ">\n          <div class=\"fht-cell\"></div>\n          </th>");
+            detailViewCol = '<col name="ba--column-detail" width="'+ (_this2.options.detailViewWidth || 30) +'" />'; // busyAdmin: detailViewCol
           }
 
           if (detailViewTemplate && _this2.options.detailViewAlign !== 'right') {
             html.push(detailViewTemplate);
+            _this2.$headerColgroup.prepend(detailViewCol); // busyAdmin: detailViewCol
           }
 
           columns.forEach(function (column, j) {
@@ -4393,6 +4401,7 @@
 
           if (detailViewTemplate && _this2.options.detailViewAlign === 'right') {
             html.push(detailViewTemplate);
+            _this2.$headerColgroup.append(detailViewCol); // busyAdmin: detailViewCol
           }
 
           html.push('</tr>');
@@ -5521,7 +5530,7 @@
         var detailViewTemplate = '';
 
         if (Utils.hasDetailViewIcon(this.options)) {
-          detailViewTemplate = '<td>';
+          detailViewTemplate = '<td class="detail ba--column-detail">'; // busyAdmin: add ba--column-detail
 
           if (Utils.calculateObjectValue(null, this.options.detailFilter, [i, item])) {
             detailViewTemplate += "\n          <a class=\"detail-icon\" href=\"#\">\n          ".concat(Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, this.options.icons.detailOpen), "\n          </a>\n        ");
@@ -6257,24 +6266,26 @@
         var data = this.getData();
         var html = [];
         var detailTemplate = '';
+        var detailViewCol  = '';
+
+        // busyAdmin: 复制 columns 以计算colspan
+        var cloneColumns = [];
+        cloneColumns = cloneColumns.concat.apply(cloneColumns, this.columns);
+
+        // busyAdmin: add $footerColgroup
+        this.$footerColgroup = $('<colgroup />');
 
         if (Utils.hasDetailViewIcon(this.options)) {
-          detailTemplate = '<th class="detail"><div class="th-inner"></div><div class="fht-cell"></div></th>';
+          detailTemplate = '<th class="detail ba--column-detail"><div class="th-inner"></div><div class="fht-cell"></div></th>';
+          detailViewCol  = '<col name="ba--column-detail" width="'+ (this.options.detailViewWidth || 30) +'"/>';
         }
 
         if (detailTemplate && this.options.detailViewAlign !== 'right') {
           html.push(detailTemplate);
         }
 
-        // busyAdmin: 复制 columns 以计算colspan
-        var cloneColumns = [];
-        cloneColumns = cloneColumns.concat.apply(cloneColumns, this.columns);
-
         var _iterator4 = _createForOfIteratorHelper(this.columns),
             _step4;
-
-        // busyAdmin: add $footerColgroup
-        this.$footerColgroup = $('<colgroup />');
 
         try {
           for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
@@ -6371,8 +6382,13 @@
           _iterator4.f();
         }
 
-        if (detailTemplate && this.options.detailViewAlign === 'right') {
-          html.push(detailTemplate);
+        if (detailTemplate) {
+          if (this.options.detailViewAlign === 'right') {
+            this.$footerColgroup.append(detailViewCol); // busyAdmin: detailViewCol
+            html.push(detailTemplate);
+          } else {
+            this.$footerColgroup.prepend(detailViewCol); // busyAdmin: detailViewCol
+          }
         }
 
         if (!this.options.height && !this.$tableFooter.length) {
