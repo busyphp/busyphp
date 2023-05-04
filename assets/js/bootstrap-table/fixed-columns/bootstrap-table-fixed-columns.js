@@ -1265,6 +1265,7 @@
           return;
         }
 
+        this.$tableContainer.addClass('ba--scroll-left'); // busyAdmin: 增加 .ba--scroll-left 样式以配合固定列样式优化
         if (this.options.fixedNumber) {
           this.$tableContainer.append('<div class="fixed-columns"></div>');
           this.$fixedColumns = this.$tableContainer.find('.fixed-columns');
@@ -1320,7 +1321,7 @@
           return;
         }
 
-        // busyAdmin add reset-view 修复全屏切换操作存在 sticky-header 时样式错误BUG
+        // busyAdmin: add reset-view 修复全屏切换操作存在 sticky-header 时样式错误BUG
         if (args[0] === 'post-header' || args[0] === 'reset-view') {
           this.initFixedColumnsHeader();
         } else if (args[0] === 'scroll-body') {
@@ -1331,7 +1332,23 @@
           if (this.needFixedColumns && this.options.fixedRightNumber) {
             this.$fixedBodyRight.scrollTop(this.$tableBody.scrollTop());
           }
-        } else if (args[0] === 'load-success') { // busyAdmin 修复分页加载成功后，包涵 sticky-header 下错乱的BUG
+
+          // busyAdmin: 增加水平滚动至左中右样式，以配合美化固定列样式
+          var scrollLeft  = this.$tableBody.scrollLeft();
+          var clientWidth = this.$tableBody[0].clientWidth;
+          var scrollWidth = this.$tableBody[0].scrollWidth;
+          var $container  = this.$tableContainer;
+          if (scrollLeft <= 0) {
+            $container.removeClass('ba--scroll-right ba--scroll-middle').addClass('ba--scroll-left');
+          } else if (scrollWidth - scrollLeft <= clientWidth) {
+            $container.removeClass('ba--scroll-left ba--scroll-middle').addClass('ba--scroll-right');
+          } else {
+            $container.removeClass('ba--scroll-left ba--scroll-right').addClass('ba--scroll-middle');
+          }
+        }
+
+        // busyAdmin: 修复分页加载成功后，包涵 sticky-header 下错乱的BUG
+        else if (args[0] === 'load-success') {
           this.renderStickyHeader();
         }
       }
@@ -1439,13 +1456,15 @@
         var initFixedBody = function initFixedBody($fixedColumns, $fixedHeader) {
           $fixedColumns.find('.fixed-table-body').remove();
           $fixedColumns.append(_this3.$tableBody.clone(true));
-          $fixedColumns.find('.fixed-table-body table').removeAttr('id'); // busyAdmin remove attr id
+          $fixedColumns.find('.fixed-table-body table').removeAttr('id'); // busyAdmin: remove attr id
           var $fixedBody = $fixedColumns.find('.fixed-table-body');
 
           var tableBody = _this3.$tableBody.get(0);
 
           var scrollHeight = tableBody.scrollWidth > tableBody.clientWidth ? Utils.getScrollBarWidth() : 0;
-          var height = _this3.$tableContainer.outerHeight(true) - _this3.$tableFooter.height() - scrollHeight - 3; // busyAdmin fix height
+          var offset = _this3.$tableBorder ? ($.isNumeric(_this3.options.fixedColumnsBorderExtra) ? _this3.options.fixedColumnsBorderExtra :2) : ($.isNumeric(_this3.options.fixedColumnsExtra) ? _this3.options.fixedColumnsExtra : 0); // busyAdmin: 包含 $tableBorder 时高度计算要减去差值2
+          var footerHeight = _this3.$tableFooter.length ? _this3.$tableFooter.height() : 0; // busyAdmin: 增加计算footer的高度
+          var height = _this3.$tableContainer.outerHeight(true) - footerHeight - scrollHeight - offset;
           $fixedColumns.css({
             height: height
           });
@@ -1600,7 +1619,7 @@
         if (this.needFixedColumns && this.options.fixedRightNumber) {
           var $stickyHeaderContainerRight = this.$fixedColumnsRight.find('.sticky-header-container');
           this.$fixedColumnsRight.css('z-index', 101);
-          $stickyHeaderContainerRight.css('left', '').width(this.$fixedColumnsRight.outerWidth()).scrollLeft($stickyHeaderContainerRight.find('.table').outerWidth()); // busyAdmin 修复右侧栏标题不对齐问题
+          $stickyHeaderContainerRight.css('left', '').width(this.$fixedColumnsRight.outerWidth()).scrollLeft($stickyHeaderContainerRight.find('.table').outerWidth()); // busyAdmin: 修复右侧栏标题不对齐问题
         }
       }
     }, {
