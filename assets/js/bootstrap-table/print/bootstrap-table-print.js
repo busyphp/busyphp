@@ -2317,7 +2317,7 @@
         var _this2 = this;
         var formatValue = function formatValue(row, i, column) {
           var value_ = Utils.getItemField(row, column.field, _this2.options.escape, column.escape);
-          var value = Utils.calculateObjectValue(column, column.printFormatter || column.formatter, [value_, row, i], value_);
+          var value = Utils.calculateObjectValue(column, column.printFormatter, [value_, row, i], value_);
           return typeof value === 'undefined' || value === null ? _this3.options.undefinedText : value;
         };
         var buildTable = function buildTable(data, columnsArray) {
@@ -2374,7 +2374,8 @@
                   }
                 }
               }
-              if (!columns[j].printIgnore && columns[j].visible && columns[j].field && (!dontRender.includes("".concat(i, ",").concat(j)) || rowspan > 0 && colspan > 0)) {
+              // busyAdmin: 修复 field 为0的情况下不打印的BUG
+              if (!columns[j].printIgnore && columns[j].visible && columns[j].field !== undefined && (!dontRender.includes("".concat(i, ",").concat(j)) || rowspan > 0 && colspan > 0)) {
                 if (rowspan > 0 && colspan > 0) {
                   html.push("<td ".concat(Utils.sprintf(' rowspan="%s"', rowspan), " ").concat(Utils.sprintf(' colspan="%s"', colspan), ">"), formatValue(data[i], i, columns[j]), '</td>');
                 } else {
