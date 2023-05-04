@@ -3170,6 +3170,7 @@
     titleTooltip: undefined,
     class: undefined,
     width: undefined,
+    minWidth: undefined, // busyAdmin: minWidth
     widthUnit: 'px',
     rowspan: undefined,
     colspan: undefined,
@@ -3456,13 +3457,16 @@
 
       return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     },
-    updateFieldGroup: function updateFieldGroup(columns) {
+
+    // busyAdmin: add tableIndex
+    updateFieldGroup: function updateFieldGroup(columns, tableIndex) {
       var _ref;
 
       var allColumns = (_ref = []).concat.apply(_ref, _toConsumableArray(columns));
 
       var _iterator4 = _createForOfIteratorHelper(columns),
-          _step4;
+          _step4,
+          index = 0; // busyAdmin: index
 
       try {
         for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
@@ -3495,12 +3499,14 @@
                 r.colspan = colspan;
                 r.visible = colspan > 0;
               }
+              r._name = 'ba--column-' + tableIndex + '-' + index + '-' + r.fieldIndex; // busyAdmin: _name
             }
           } catch (err) {
             _iterator5.e(err);
           } finally {
             _iterator5.f();
           }
+          index++; // busyAdmin: index
         }
       } catch (err) {
         _iterator4.e(err);
@@ -4153,6 +4159,10 @@
             var column = $__default['default'].extend({}, BootstrapTable.COLUMN_DEFAULTS, _column);
 
             if (typeof column.fieldIndex !== 'undefined') {
+              // busyAdmin: 添加默认宽度
+              if ((column.checkbox || column.radio) && !column.width) {
+                column.width = 36;
+              }
               _this.columns[column.fieldIndex] = column;
               _this.fieldsColumnsIndex[column.field] = column.fieldIndex;
             }
@@ -4188,6 +4198,71 @@
         this.trigger('init-table-after');
       }
     }, {
+      // busyAdmin: add updateColumnsWidth
+      key: "updateColumnsWidth",
+      value: function updateColumnsWidth() {
+        var me = this;
+        var columns = this.columns;
+        var scrollYWidth = this.$tableBody[0].scrollHeight > this.$tableBody[0].clientHeight ? Utils.getScrollBarWidth() : 0;
+        var flexColumns = columns.filter(function (vo) {
+          if (typeof vo.width !== 'number' && vo.visible) {
+            vo.$col && vo.$col.attr('width', 0);
+            return true;
+          }
+          return false;
+        });
+        columns.forEach(function (vo) {
+          if (typeof vo.width === 'number' && vo.realWidth) {
+            vo.realWidth = null;
+          }
+        });
+
+        if (flexColumns.length > 0) {
+          var tableMinWidth = columns.reduce(function (prev, vo) {
+            if (vo.visible) {
+              return prev + (vo.width || vo.minWidth || 80);
+            }
+            return prev + 0;
+          }, 0);
+          var tableWidth = me.$el.width();
+
+          // 有水平滚动条
+          if (tableMinWidth <= tableWidth - scrollYWidth) {
+            var totalFlexWidth = tableWidth - scrollYWidth - tableMinWidth;
+
+            // 只有一个
+            if (flexColumns.length === 1) {
+              flexColumns[0].realWidth = (flexColumns[0].minWidth || 80) + totalFlexWidth
+            } else {
+              var flexColumnsWidth = flexColumns.reduce(function (prev, vo){
+                return prev + (vo.minWidth || 80)
+              }, 0);
+              var flexColumnsPixel = totalFlexWidth / flexColumnsWidth;
+              var noneFirstWidth = 0;
+              flexColumns.forEach(function (item, index) {
+                if (index == 0) {
+                  return;
+                }
+                var flexWidth = (item.minWidth || 80) * flexColumnsPixel;
+                noneFirstWidth += flexWidth;
+                item.realWidth = (item.minWidth || 80) + flexWidth;
+              });
+              flexColumns[0].realWidth = (flexColumns[0].minWidth || 80) + totalFlexWidth - noneFirstWidth;
+            }
+          } else {
+            flexColumns.forEach(function (item) {
+              item.realWidth = item.minWidth || 80
+            });
+          }
+        }
+
+        columns.forEach(function (column) {
+          var width = column.realWidth || column.width;
+          column.$fhCol && column.$fhCol.attr('width', width);
+          column.$ftCol && column.$ftCol.attr('width', width);
+        });
+      }
+    }, {
       key: "initHeader",
       value: function initHeader() {
         var _this2 = this;
@@ -4206,7 +4281,19 @@
           cellStyles: [],
           searchables: []
         };
-        Utils.updateFieldGroup(this.options.columns);
+        Utils.updateFieldGroup(this.options.columns, this.tableIndex);
+
+        // busyAdmin: colgroup
+        this.$headerColgroup = $('<colgroup />');
+        this.columns.forEach(function (column) {
+          column.$fhCol = $('<col name="'+ column._name +'" width="'+ (column.width || 0) +'"/>');
+          if (column.visible) {
+            _this2.$headerColgroup.append(column.$fhCol);
+          }
+        });
+        this.$el.find('> colgroup').remove();
+        this.$el.prepend(this.$headerColgroup);
+
         this.options.columns.forEach(function (columns, i) {
           var html = [];
           html.push("<tr".concat(Utils.sprintf(' class="%s"', _this2._headerTrClasses[i]), " ").concat(Utils.sprintf(' style="%s"', _this2._headerTrStyles[i]), ">"));
@@ -4222,13 +4309,10 @@
           }
 
           columns.forEach(function (column, j) {
-            var class_ = Utils.sprintf(' class="%s"', column['class']);
-            var unitWidth = column.widthUnit;
-            var width = parseFloat(column.width);
+            var class_ = Utils.sprintf(' class="%s"', [column['class'], column._name].join(' ')); // busyAdmin: column._name
             var halign = Utils.sprintf('text-align: %s; ', column.halign ? column.halign : column.align);
             var align = Utils.sprintf('text-align: %s; ', column.align);
             var style = Utils.sprintf('vertical-align: %s; ', column.valign);
-            style += Utils.sprintf('width: %s; ', (column.checkbox || column.radio) && !width ? !column.showSelectTitle ? '36px' : undefined : width ? width + unitWidth : undefined);
 
             if (typeof column.fieldIndex === 'undefined' && !column.visible) {
               return;
@@ -4249,7 +4333,7 @@
             }
 
             if (headerStyle && headerStyle.classes) {
-              classes = Utils.sprintf(' class="%s"', column['class'] ? [column['class'], headerStyle.classes].join(' ') : headerStyle.classes);
+              classes = Utils.sprintf(' class="%s"', [column['class'] ? [column['class'], headerStyle.classes].join(' ') : headerStyle.classes, column._name].join(' ')); // busyAdmin: column._name
             }
 
             if (typeof column.fieldIndex !== 'undefined') {
@@ -6138,7 +6222,7 @@
         this.$header_ = this.$header.clone(true, true);
         this.$selectAll_ = this.$header_.find('[name="btSelectAll"]');
         this.$tableHeader.css('margin-right', scrollWidth);
-        table.css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$header_);
+        table.css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$headerColgroup.clone()).append(this.$header_); // busyAdmin: this.$headerColgroup.clone()
         this.$tableLoading.css('width', this.$el.outerWidth());
 
         // busyAdmin: 增加垂直滚动条上面的补丁块以美化样式
@@ -6158,40 +6242,6 @@
 
         this.$header.find('th[data-field]').each(function (i, el) {
           _this14.$header_.find(Utils.sprintf('th[data-field="%s"]', $__default['default'](el).data('field'))).data($__default['default'](el).data());
-        });
-        var visibleFields = this.getVisibleFields();
-        var $ths = this.$header_.find('th');
-        var $tr = this.$body.find('>tr:not(.no-records-found,.virtual-scroll-top)').eq(0);
-
-        while ($tr.length && $tr.find('>td[colspan]:not([colspan="1"])').length) {
-          $tr = $tr.next();
-        }
-
-        var trLength = $tr.find('> *').length;
-        $tr.find('> *').each(function (i, el) {
-          var $this = $__default['default'](el);
-
-          if (Utils.hasDetailViewIcon(_this14.options)) {
-            if (i === 0 && _this14.options.detailViewAlign !== 'right' || i === trLength - 1 && _this14.options.detailViewAlign === 'right') {
-              var $thDetail = $ths.filter('.detail');
-
-              var _zoomWidth = $thDetail.innerWidth() - $thDetail.find('.fht-cell').width();
-
-              $thDetail.find('.fht-cell').width($this.innerWidth() - _zoomWidth);
-              return;
-            }
-          }
-
-          var index = i - Utils.getDetailViewIndexOffset(_this14.options);
-
-          var $th = _this14.$header_.find(Utils.sprintf('th[data-field="%s"]', visibleFields[index]));
-
-          if ($th.length > 1) {
-            $th = $__default['default']($ths[$this[0].cellIndex]);
-          }
-
-          var zoomWidth = $th.innerWidth() - $th.find('.fht-cell').width();
-          $th.find('.fht-cell').width($this.innerWidth() - zoomWidth);
         });
         this.horizontalScroll();
         this.trigger('post-header');
@@ -6216,25 +6266,47 @@
           html.push(detailTemplate);
         }
 
-        // busyAdmin: 复制 columns 以计算宽度
-        var columnList = this.columns.map(function (item) {
-            return item;
-        }), columnIndex = -1;
+        // busyAdmin: 复制 columns 以计算colspan
+        var cloneColumns = [];
+        cloneColumns = cloneColumns.concat.apply(cloneColumns, this.columns);
 
         var _iterator4 = _createForOfIteratorHelper(this.columns),
             _step4;
 
+        // busyAdmin: add $footerColgroup
+        this.$footerColgroup = $('<colgroup />');
+
         try {
           for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            columnIndex++;
             var column = _step4.value;
             var falign = '';
             var valign = '';
             var csses = [];
             var style = {};
-            var class_ = Utils.sprintf(' class="%s"', column['class']);
+            var class_ = Utils.sprintf(' class="%s"', [column['class'], column._name].join(' '));
+            var colspan = +((this.footerData[0] || {})['_' + column.field + '_colspan'] || 0);
 
-            if (!column.visible || this.footerData && this.footerData.length > 0 && !(column.field in this.footerData[0])) {
+            // busyAdmin: add col
+            column.$ftCol = $('<col name="'+ column._name +'" width="'+ (column.width || 0) +'"/>');
+            if (column.visible) {
+              this.$footerColgroup.append(column.$ftCol);
+            }
+
+            // busyAdmin: 计算是否需要跳过
+            var hidden = !column.visible && colspan < 2;
+
+            // busyAdmin: 合并列存在，则计算对应的列是否全部隐藏，否则显示
+            if (colspan > 1) {
+              var visible = false;
+              for (var j = column.fieldIndex; j < column.fieldIndex + colspan; j++) {
+                if (this.columns[j].visible) {
+                  visible = true;
+                }
+              }
+              hidden = !visible;
+            }
+
+            if (hidden || !(column.field in (this.footerData[0] || {}))) {
               continue;
             }
 
@@ -6257,38 +6329,29 @@
             }
 
             if (style && style.classes) {
-              class_ = Utils.sprintf(' class="%s"', column['class'] ? [column['class'], style.classes].join(' ') : style.classes);
+              // busyAdmin: add column._name
+              class_ = Utils.sprintf(' class="%s"', [column['class'] ? [column['class'], style.classes].join(' ') : style.classes, column._name].join(' '));
             }
 
-            html.push('<th', class_);
-            var colspan = 0;
+            html.push('<th', class_, Utils.sprintf(' style="%s"', falign + valign + csses.concat().join('; ')));
 
-            if (this.footerData && this.footerData.length > 0) {
-              colspan = this.footerData[0]["_".concat(column.field, "_colspan")] || 0;
-            }
-
-            // busyAdmin: 增加footer宽度控制
-            var width = 0, jCol, j;
-
-            if (colspan) {
-              for (j = 0; j <= colspan; j++) {
-                jCol = columnList.shift();
-                if (jCol && jCol.visible) {
-                  width += parseFloat(jCol.width);
+            // busyAdmin: 计算colspan
+            if (colspan > 1) {
+              var cloneColspan = colspan;
+              for (var i = 0; i < colspan; i++) {
+                if (!cloneColumns.shift().visible) {
+                  cloneColspan--;
                 }
               }
-
-              html.push(" colspan=\"".concat(colspan, "\" "));
+              colspan = cloneColspan;
             } else {
-              jCol = columnList.shift();
-              if (jCol && jCol.visible) {
-                width = parseFloat(jCol.width);
-              }
+              cloneColumns.shift();
+            }
+            if (colspan > 1) {
+              html.push(" colspan=\"".concat(colspan, "\" "));
             }
 
-            width = Utils.sprintf('width: %s; ', (column.checkbox || column.radio) && !width ? !column.showSelectTitle ? '36px' : undefined : width ? width + column.widthUnit : undefined);
-
-            html.push(Utils.sprintf(' style="%s"', falign + valign + width + csses.concat().join('; ')), '>');
+            html.push('>');
             html.push('<div class="th-inner">');
             var value = '';
 
@@ -6319,6 +6382,13 @@
 
         if (!this.$tableFooter.find('tr').length) {
           this.$tableFooter.html('<table><thead><tr></tr></thead></table>');
+        }
+
+        // busyAdmin: add colgroup
+        if (!this.$tableFooter.is('tfoot')) {
+          var $table = this.$tableFooter.find('table');
+          $table.find('> colgroup').remove();
+          $table.prepend(this.$footerColgroup);
         }
 
         this.$tableFooter.find('tr').html(html.join(''));
@@ -6365,33 +6435,6 @@
           this.$tableFooterPatch.hide();
         }
 
-        var $ths = this.$tableFooter.find('th');
-        var $tr = this.$body.find('>tr:first-child:not(.no-records-found)');
-        $ths.find('.fht-cell').width('auto');
-
-        while ($tr.length && $tr.find('>td[colspan]:not([colspan="1"])').length) {
-          $tr = $tr.next();
-        }
-
-        var trLength = $tr.find('> *').length;
-        $tr.find('> *').each(function (i, el) {
-          var $this = $__default['default'](el);
-
-          if (Utils.hasDetailViewIcon(_this15.options)) {
-            if (i === 0 && _this15.options.detailViewAlign === 'left' || i === trLength - 1 && _this15.options.detailViewAlign === 'right') {
-              var $thDetail = $ths.filter('.detail');
-
-              var _zoomWidth2 = $thDetail.innerWidth() - $thDetail.find('.fht-cell').width();
-
-              $thDetail.find('.fht-cell').width($this.innerWidth() - _zoomWidth2);
-              return;
-            }
-          }
-
-          var $th = $ths.eq(i);
-          var zoomWidth = $th.innerWidth() - $th.find('.fht-cell').width();
-          $th.find('.fht-cell').width($this.innerWidth() - zoomWidth);
-        });
         this.horizontalScroll();
       }
     }, {
@@ -7204,6 +7247,8 @@
 
         this.$selectAll.prop('checked', this.$selectItem.length > 0 && this.$selectItem.length === this.$selectItem.filter(':checked').length);
         this.$tableContainer.toggleClass('has-card-view', this.options.cardView);
+
+        this.updateColumnsWidth();
 
         if (!this.options.cardView && this.options.showHeader && this.options.height) {
           this.$tableHeader.show();
