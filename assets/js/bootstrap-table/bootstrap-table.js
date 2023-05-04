@@ -5901,11 +5901,14 @@
           if ((rangeWidth + padding > cellChild.offsetWidth || cellChild.scrollWidth > cellChild.offsetWidth) ) {
             $this.removeData('bs.popover')
                 .popover({
+                  title     : '',
+                  selector  : false,
+                  template  : '<div class="popover ba-table--show-overflow-popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
                   container : 'body',
                   trigger   : 'manual',
                   html      : true,
                   placement : 'auto',
-                  content   : $cellChild.children().clone(true, true)
+                  content   : $cellChild.clone()
                 })
                 .popover('show');
           }
