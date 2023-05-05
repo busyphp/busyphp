@@ -1998,7 +1998,7 @@
             });
           }
 
-          this.$export = this.$toolbar.find('>.columns div.export');
+          this.$export = this.$toolbar.find('.columns div.export'); // busyAdmin: 适配对toolbar的调整
 
           if (this.$export.length) {
             this.updateExportButton();
