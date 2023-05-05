@@ -7368,7 +7368,7 @@
           }
 
           var toolbarHeight = this.$toolbar.outerHeight(true);
-          var paginationHeight = this.options.pagination ? this.$pagination.outerHeight(true) : 0;
+          var paginationHeight = this.options.pagination && !this.$pagination.is(':hidden') ? this.$pagination.outerHeight(true) : 0;
           var height = trueHeight - toolbarHeight - paginationHeight;
           var $bodyTable = this.$tableBody.find('>table');
           var tableHeight = $bodyTable.outerHeight(); // 滚动容器内table的高度
