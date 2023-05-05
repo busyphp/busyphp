@@ -2318,7 +2318,11 @@
         var formatValue = function formatValue(row, i, column) {
           var value_ = Utils.getItemField(row, column.field, _this2.options.escape, column.escape);
           var value = Utils.calculateObjectValue(column, column.printFormatter, [value_, row, i], value_);
-          return typeof value === 'undefined' || value === null ? _this3.options.undefinedText : value;
+          // busyAdmin: undefinedStrict
+          if (_this3.options.undefinedStrict) {
+            return typeof value === 'undefined' || value === null ? _this3.options.undefinedText : value;
+          }
+          return value || _this3.options.undefinedText;
         };
         var buildTable = function buildTable(data, columnsArray) {
           var dir = _this3.$el.attr('dir') || 'ltr';

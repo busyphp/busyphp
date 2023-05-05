@@ -2879,6 +2879,7 @@
       return {};
     },
     undefinedText: '-',
+    undefinedStrict: false, // busyAdmin: undefinedStrict
     locale: undefined,
     virtualScroll: false,
     virtualScrollItemHeight: undefined,
@@ -5642,7 +5643,12 @@
           value = Utils.calculateObjectValue(column, _this7.header.formatters[j], [value_, item, i, field], value_);
 
           if (!(column.checkbox || column.radio)) {
-            value = typeof value === 'undefined' || value === null ? _this7.options.undefinedText : value;
+            // busyAdmin: undefinedStrict
+            if (_this7.options.undefinedStrict) {
+              value = typeof value === 'undefined' || value === null ? _this7.options.undefinedText : value;
+            } else {
+              value = value || _this7.options.undefinedText;
+            }
           }
 
           if (column.searchable && _this7.searchText && _this7.options.searchHighlight) {
