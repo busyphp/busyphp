@@ -1,6 +1,7 @@
-interface jQuery{
+interface jQuery {
 
 }
+
 declare namespace busyAdmin {
     //+======================================================================
     //+ 核心库名称
@@ -311,7 +312,7 @@ declare namespace busyAdmin {
         /**
          * 在表格结构数据初始化完成后触发
          */
-        tableDataInit: "ba:table-data-init",
+        tableInitTableAfter: "ba:table-init-table-after",
         /**
          * 在表格主体准备完成后触发
          */
@@ -1072,7 +1073,7 @@ declare namespace busyAdmin {
      * Require
      * 按顺序加载
      */
-    var requireQueue: (modules: [string|{module: string, exports: string}], callback: (...args) => void) => void;
+    var requireQueue: (modules: [string | { module: string, exports: string }], callback: (...args) => void) => void;
 
     /**
      * Define
@@ -1504,7 +1505,7 @@ declare namespace busyAdmin {
      * 实例化一个请求
      * @param url 请求的URL地址
      */
-    function request(url?: string): BusyAdminRequest;
+    function request(url?: string | (() => string) | {}): BusyAdminRequest;
 
 
     /**
@@ -1538,7 +1539,7 @@ declare namespace busyAdmin {
          * 设置请求URL，不设置则获取当前网址
          * @param url
          */
-        url(url: string): BusyAdminRequest;
+        url(url: string | (() => string)): BusyAdminRequest;
 
         /**
          * 设置是否进行POST请求
@@ -1556,7 +1557,7 @@ declare namespace busyAdmin {
          * 设置请求头
          * @param params
          */
-        headers(params: { [key: string]: any }): BusyAdminRequest;
+        headers(params: { [key: string]: any } | (() => { [key: string]: string })): BusyAdminRequest;
 
         /**
          * 添加请求头
@@ -1569,7 +1570,7 @@ declare namespace busyAdmin {
          * 设置请求参数
          * @param params
          */
-        params(params: { [key: string]: any }[]): BusyAdminRequest;
+        params(params: { [key: string]: any }[] | (() => { [key: string]: any } | string | [])): BusyAdminRequest;
 
         /**
          * 添加请求参数
@@ -2495,7 +2496,7 @@ declare namespace busyAdmin {
          * @param {string} optionEvent 插件上下文
          * @param {string|object} jQueryEvent 插件上下文
          */
-        triggerPluginReady($element: object, plugin: object, optionEvent: string, jQueryEvent: string|Object);
+        triggerPluginReady($element: object, plugin: object, optionEvent: string, jQueryEvent: string | Object);
 
         /**
          * 类继承实现
