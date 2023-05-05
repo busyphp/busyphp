@@ -6286,6 +6286,7 @@
         this.$tableHeader.css('margin-right', scrollWidth);
         table.css('width', this.$el.outerWidth()).html('').attr('class', this.$el.attr('class')).append(this.$headerColgroup.clone()).append(this.$header_); // busyAdmin: this.$headerColgroup.clone()
         this.$tableLoading.css('width', this.$el.outerWidth());
+        this.$tableLoading.css('top', this.$header.outerHeight(true)); // busyAdmin: fix top
 
         if (this.$tableBorder) {
           this.$tableBorder.css('width', this.$el.outerWidth());
