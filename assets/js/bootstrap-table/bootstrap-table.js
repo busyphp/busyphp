@@ -5469,9 +5469,17 @@
       } // eslint-disable-next-line no-unused-vars
 
     }, {
+      // busyAdmin: handleRow
+      key: "handleRow",
+      value: function handleRow(item) {
+
+      }
+    }, {
       key: "initRow",
       value: function initRow(item, i, data, trFragments) {
         var _this7 = this;
+
+        this.handleRow(item);
 
         var html = [];
         var style = {};

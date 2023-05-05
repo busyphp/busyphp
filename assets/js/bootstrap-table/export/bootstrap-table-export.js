@@ -2256,8 +2256,8 @@
       }
     }, {
       // busyAdmin: 定义导出data
-      key: 'initRow',
-      value: function initRow(item, i, data, trFragments) {
+      key: 'handleRow',
+      value: function handleRow(item) {
         var _get4 = this;
         for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
           args[_key3] = arguments[_key3];
@@ -2287,7 +2287,7 @@
           }
         });
 
-        return (_get4 = _get(_getPrototypeOf(_class.prototype), "initRow", this)).call.apply(_get4, [this].concat(args));
+        return (_get4 = _get(_getPrototypeOf(_class.prototype), "handleRow", this)).call.apply(_get4, [this].concat(args));
       }
     } ,{
       key: "updateSelected",
