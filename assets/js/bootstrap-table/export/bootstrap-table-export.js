@@ -1914,6 +1914,7 @@
     /*powerpoint: 'MS-Powerpoint',
     pdf: 'PDF'*/
   };
+  $__default['default'].fn.bootstrapTable.exportTypeName = TYPE_NAME;
   $__default['default'].extend($__default['default'].fn.bootstrapTable.defaults, {
     showExport: false,
     exportDataType: 'basic',
