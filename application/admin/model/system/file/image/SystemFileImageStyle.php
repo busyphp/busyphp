@@ -126,7 +126,7 @@ class SystemFileImageStyle extends Model implements LocalImageStyleManagerInterf
      */
     public function deleteImageStyle(string $name) : void
     {
-        $this->remove($name);
+        $this->delete($name);
     }
     
     
