@@ -1925,7 +1925,18 @@
           return cell.find('.th-inner').text();
         }
 
-        return htmlData;
+        // busyAdmin: 指定导出的内容
+        var selector = cell.attr('data-tableexport-selector');
+        if (selector) {
+          var $selector = cell.find(selector);
+          if ($selector.length) {
+            if ($selector.is(':input')) {
+              return $selector.val();
+            }
+            return $selector.text();
+          }
+        }
+        return cell.find('.ba-cell').html();
       }
     },
     exportFooter: false
@@ -2224,6 +2235,60 @@
         }
       }
     }, {
+      // busyAdmin: 定义导出data
+      key: 'initHeader',
+      value: function initHeader() {
+        var _get2 = this;
+        var _this = this;
+
+        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+
+        (_get2 = _get(_getPrototypeOf(_class.prototype), "initHeader", this)).call.apply(_get2, [this].concat(args));
+
+        this.columns.forEach(function (column) {
+          if (column.hasOwnProperty('tableexportDisplay')) {
+            _this.$header.find('[data-field="'+ column.field +'"]').attr('data-tableexport-display', column.tableexportDisplay ? 'always' : 'none');
+          }
+        });
+      }
+    }, {
+      // busyAdmin: 定义导出data
+      key: 'initRow',
+      value: function initRow(item, i, data, trFragments) {
+        var _get4 = this;
+        for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+          args[_key3] = arguments[_key3];
+        }
+
+        _get4.columns.forEach(function (column) {
+          var key = '_' + column.field + '_data';
+          item[key] = item[key] || {};
+
+          if (column.hasOwnProperty('tableexportDisplay')) {
+            item[key]['tableexport-display'] = column.tableexportDisplay ? 'always' : 'none';
+          }
+          if (column.hasOwnProperty('tableexportMsonumberformat')) {
+            item[key]['tableexport-msonumberformat'] = column.tableexportMsonumberformat;
+          }
+          if (column.hasOwnProperty('tableexportCanvas')) {
+            item[key]['tableexport-canvas'] = column.tableexportCanvas;
+          }
+          if (column.hasOwnProperty('tableexportCellformat')) {
+            item[key]['tableexport-cellformat'] = column.tableexportCellformat;
+          }
+          if (column.hasOwnProperty('tableexportXlsxformatid')) {
+            item[key]['tableexport-xlsxformatid'] = column.tableexportXlsxformatid;
+          }
+          if (column.hasOwnProperty('tableexportSelector')) {
+            item[key]['tableexport-selector'] = column.tableexportSelector;
+          }
+        });
+
+        return (_get4 = _get(_getPrototypeOf(_class.prototype), "initRow", this)).call.apply(_get4, [this].concat(args));
+      }
+    } ,{
       key: "updateSelected",
       value: function updateSelected() {
         _get(_getPrototypeOf(_class.prototype), "updateSelected", this).call(this);
