@@ -1188,12 +1188,12 @@ abstract class Model extends Query
             }
         }
         
-        if (!$range) {
-            throw new InvalidArgumentException('Primary key field must be set');
+        if (!$list) {
+            throw new DbException('miss update condition');
         }
         
-        if (!$list) {
-            return 0;
+        if (!$range) {
+            throw new InvalidArgumentException('Primary key field must be set');
         }
         
         $item = [];
