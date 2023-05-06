@@ -36,73 +36,133 @@ class Table extends Driver implements ContainerInterface
      * 排序字段
      * @var string
      */
-    protected $orderField;
+    protected string $orderField;
     
     /**
      * 排序方式
      * @var string
      */
-    protected $orderType;
+    protected string $orderType;
     
     /**
      * 偏移量
      * @var int
      */
-    protected $offset;
+    protected int $offset;
     
     /**
      * 每页显示条数
      * @var int
      */
-    protected $limit;
+    protected int $limit;
     
     /**
      * 是否启用最多查询，即$limit设置多少就最多查多少
      * @var bool
      */
-    protected $maxLimit = false;
+    protected bool $maxLimit = false;
     
     /**
      * 搜索的字段
      * @var string
      */
-    protected $field;
+    protected string $field;
     
     /**
      * 搜索的内容
      * @var string
      */
-    protected $word;
+    protected string $word;
     
     /**
      * 查询字段选项
      * @var ArrayOption
      */
-    protected $map;
+    protected ArrayOption $map;
     
     /**
      * 是否精确搜索
      * @var bool
      */
-    protected $accurate;
+    protected bool $accurate;
     
     /**
      * 允许参与搜索的字段
      * @var array
      */
-    protected $searchable;
+    protected array $searchable;
     
     /**
      * 字段处理回调
-     * @var callable($model Model, $field string, $word string, $op string, $source string):mixed
+     * @var Closure|null
      */
-    protected $fieldCallback;
+    protected ?Closure $fieldCallback = null;
     
     /**
      * 查询处理回调
-     * @var null|callable($model Model, $option ArrayOption):void
+     * @var Closure|null
      */
-    protected $queryCallback;
+    protected ?Closure $queryCallback = null;
+    
+    /**
+     * 请求类型
+     * @var string
+     */
+    protected string $action;
+    
+    /**
+     * Tree 子节点是否懒加载
+     * @var bool
+     */
+    protected bool $treeLazy;
+    
+    /**
+     * Tree 节点ID字段名
+     * @var string
+     */
+    protected string $treeIdField;
+    
+    /**
+     * Tree 子节点定义的父节点ID的字段名
+     * @var string
+     */
+    protected string $treeParentField;
+    
+    /**
+     * Tree 根节点默认值
+     * @var string
+     */
+    protected string $treeParentRoot;
+    
+    /**
+     * Tree 子节点的父节点ID
+     * @var string
+     */
+    protected string $treeParentId;
+    
+    /**
+     * Tree 当前节点是否还有子节点的字段名
+     * @var string
+     */
+    protected string $treeHasChildrenField;
+    
+    /**
+     * Tree 当前数据集中是否已包含 {@see Table::$treeHasChildrenField} 字段
+     * @var bool
+     */
+    protected bool $treeAlreadyHaveHasChildrenField = false;
+    
+    /**
+     * Tree 是否需要将节点的父ID清理为根节点默认值
+     * @var bool
+     */
+    protected bool $treeNeedClearParentToRoot = false;
+    
+    /**
+     * 查询根节点处理回调
+     * @var Closure|null
+     */
+    protected ?Closure $treeLazyRootQueryCallback = null;
     
     
     final public static function defineContainer() : string
@@ -128,6 +188,18 @@ class Table extends Driver implements ContainerInterface
         $this->orderType  = $this->orderType ?: 'desc';
         $this->orderField = $this->orderField ?: 'id';
         
+        $this->action               = $this->request->param('action/s', '', 'trim');
+        $this->treeParentField      = $this->request->param('tree_parent_field/s', '', 'trim');
+        $this->treeParentRoot       = $this->request->param('tree_parent_root/s', '', 'trim');
+        $this->treeParentId         = $this->request->param('tree_parent_id/s', '', 'trim');
+        $this->treeIdField          = $this->request->param('tree_id_field/s', '', 'trim');
+        $this->treeHasChildrenField = $this->request->param('tree_has_children_field/s', '', 'trim');
+        $this->treeLazy             = $this->request->param('tree_lazy/b', false);
+        
+        $this->treeIdField          = $this->treeIdField ?: 'id';
+        $this->treeParentField      = $this->treeParentField ?: 'parent_id';
+        $this->treeHasChildrenField = $this->treeHasChildrenField ?: 'has_children';
+        
         // 查询的条件
         $whereData = $this->request->param('static/a', []);
         foreach ($whereData as $key => $value) {
@@ -144,11 +216,19 @@ class Table extends Driver implements ContainerInterface
     
     /**
      * 指定数据集
-     * @param array|Collection|callable($list array):array $list 数据集或处理回调
-     * @param null|callable($list array):array|void        $listCallback 处理回调
+     * @param array|Collection|Closure(array $list):array $list 数据集或处理回调
+     * @param null|Closure(array $list):array|void        $listCallback 处理回调，回调参数：<p>
+     * - {@see array} $list 处理的数据<br />
+     * <b>示例：</b>
+     * <pre>
+     * $this->list(function({@see array} $list) {
+     *      return $list;
+     * })
+     * </pre>
+     * </p>
      * @return static
      */
-    public function list($list, callable $listCallback = null) : static
+    public function list(array|Collection|Closure $list, ?Closure $listCallback = null) : static
     {
         if ($list instanceof Closure) {
             $listCallback = $list;
@@ -164,10 +244,18 @@ class Table extends Driver implements ContainerInterface
     
     /**
      * 指定查询处理回调
-     * @param callable($model Model, $option ArrayOption):void $callback 查询处理回调
+     * @param Closure(Model $model, ArrayOption $option):void $callback 查询处理回调，回调参数：<p>
+     * - {@see Model} $model 模型<br />
+     * - {@see ArrayOption} $option 查询选项<br />
+     * <b>示例：</b>
+     * <pre>
+     * $this->query(function({@see Model} $model, {@see ArrayOption} $option) {
+     * })
+     * </pre>
+     * </p>
      * @return static
      */
-    public function query(callable $callback) : static
+    public function query(Closure $callback) : static
     {
         $this->queryCallback = $callback;
         
@@ -177,22 +265,70 @@ class Table extends Driver implements ContainerInterface
     
     /**
      * 指定搜索字段或搜索字段处理回调
-     * @param string|Entity|callable($model Model, $field string, $word string, $op string, $source string):mixed $field 字段名称或处理回调
-     * @param null|callable($model Model, $field string, $word string, $op string, $source string):mixed          $callback 处理回调
+     * @param string|Entity|Closure(Model $model, string $field, string $word, string $op, string $source):mixed $field 字段名称或处理回调
+     * @param null|Closure(Model $model, string $field, string $word, string $op, string $source):mixed          $callback 处理回调，回调参数：<p>
+     * - {@see Model} $model 模型<br />
+     * - {@see string} $field 字段<br />
+     * - {@see string} $word 搜索关键词<br />
+     * - {@see string} $op 搜索条件<br />
+     * - {@see string} $source 搜索词原文<br />
+     * <b>示例：</b>
+     * <pre>
+     * $this->fieldQuery(function({@see Model} $model, {@see string} $field, {@see string} $word, {@see string} $op, {@see string} $source) {
+     *      // 返回false代表阻止系统处理字段查询处理
+     *      return false;
+     * })
+     * </pre>
+     * </p>
      * @return static
      */
-    public function field($field, callable $callback = null) : static
+    public function fieldQuery(string|Entity|Closure $field, Closure $callback = null) : static
     {
         if ($field instanceof Closure) {
             $this->fieldCallback = $field;
         } else {
             $this->fieldCallback = $callback;
+            
             if ($field) {
                 $this->field = (string) $field;
             }
         }
         
         return $this;
+    }
+    
+    
+    /**
+     * 处理字段
+     * @param string $field 处理的字段
+     * @param bool   $accurate 是否精确搜索
+     * @param string $sourceWord 未处理的关键词
+     * @param string $likeWord 模糊查询的关键词
+     * @return mixed
+     */
+    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord) : mixed
+    {
+        $op   = 'like';
+        $word = $likeWord;
+        if ($accurate) {
+            $op   = '=';
+            $word = $sourceWord;
+        }
+        
+        // 触发字段处理回调
+        if ($this->handler) {
+            $field = $this->handler->fieldQuery($field, $op, $word);
+        } elseif ($this->fieldCallback) {
+            $field = call_user_func_array($this->fieldCallback, [
+                $this->model,
+                $field,
+                $op,
+                $word,
+                $sourceWord
+            ]);
+        }
+        
+        return $field;
     }
     
     
@@ -247,7 +383,7 @@ class Table extends Driver implements ContainerInterface
      * @param string|Entity $orderField
      * @return static
      */
-    public function setOrderField($orderField) : static
+    public function setOrderField(string|Entity $orderField) : static
     {
         $this->orderField = (string) $orderField;
         
@@ -352,7 +488,7 @@ class Table extends Driver implements ContainerInterface
      * @param bool                $merge 是否合并
      * @return static
      */
-    public function setSearchable($searchable, bool $merge = true) : static
+    public function setSearchable(array|string|Entity $searchable, bool $merge = true) : static
     {
         if (!is_array($searchable)) {
             $searchable = [$searchable];
@@ -362,7 +498,7 @@ class Table extends Driver implements ContainerInterface
         if ($merge) {
             $this->searchable = array_merge($this->searchable, $searchable);
         } else {
-            $this->searchable = $merge;
+            $this->searchable = $searchable;
         }
         
         return $this;
@@ -376,6 +512,133 @@ class Table extends Driver implements ContainerInterface
     public function getSearchable() : array
     {
         return $this->searchable;
+    }
+    
+    
+    /**
+     * Tree 是否懒加载子节点
+     * @return bool
+     */
+    public function isTreeLazy() : bool
+    {
+        return $this->treeLazy;
+    }
+    
+    
+    /**
+     * Tree 是否请求子节点
+     * @return bool
+     */
+    public function isGetTreeChildren() : bool
+    {
+        return $this->action === 'get_children';
+    }
+    
+    
+    /**
+     * Tree 设置数据集合中是否已包含 hasChildren 字段
+     * @param bool $treeAlreadyHaveHasChildrenField
+     * @return $this
+     */
+    public function setTreeAlreadyHaveHasChildrenField(bool $treeAlreadyHaveHasChildrenField) : static
+    {
+        $this->treeAlreadyHaveHasChildrenField = $treeAlreadyHaveHasChildrenField;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * Tree 获取当前节点是否还有子节点的字段名
+     * @return string
+     */
+    public function getTreeHasChildrenField() : string
+    {
+        return $this->treeHasChildrenField;
+    }
+    
+    
+    /**
+     * Tree 获取节点ID字段名
+     * @return string
+     */
+    public function getTreeIdField() : string
+    {
+        return $this->treeIdField;
+    }
+    
+    
+    /**
+     * Tree 获取子节点的父节点ID
+     * @return string
+     */
+    public function getTreeParentId() : string
+    {
+        return $this->treeParentId;
+    }
+    
+    
+    /**
+     * Tree 获取子节点定义的父节点ID的字段名
+     * @return string
+     */
+    public function getTreeParentField() : string
+    {
+        return $this->treeParentField;
+    }
+    
+    
+    /**
+     * Tree 获取根节点默认值
+     * @return string
+     */
+    public function getTreeParentRoot() : string
+    {
+        return $this->treeParentRoot;
+    }
+    
+    
+    /**
+     * Tree 设置根节点查询处理
+     * @param Closure(string $field, string $root):mixed $callback 处理回调，回调参数：<p>
+     * - {@see string} $field 字段名称<br />
+     * - {@see string} $root 根节点默认值<br /><br />
+     * <b>示例：</b>
+     * <pre>
+     * $this->treeLazyRootQuery(function(string $field, string $root) {
+     *      // 返回false代表阻止系统处理根节点查询处理
+     *      return false;
+     * })
+     * </pre>
+     * </p>
+     * @return static
+     */
+    public function treeLazyRootQuery(Closure $callback) : static
+    {
+        $this->treeLazyRootQueryCallback = $callback;
+        
+        return $this;
+    }
+    
+    
+    /**
+     * Tree 查询根节点处理
+     * @return mixed
+     */
+    protected function handleTreeLazyRootQuery() : mixed
+    {
+        $field = $this->treeParentField;
+        if ($this->handler) {
+            $field = $this->handler->treeLazyRootQuery($field, $this->treeParentRoot);
+        } elseif ($this->treeLazyRootQueryCallback) {
+            $field = call_user_func_array($this->treeLazyRootQueryCallback, [
+                $this->model,
+                $field,
+                $this->treeParentRoot
+            ]);
+        }
+        
+        return $field;
     }
     
     
@@ -412,13 +675,48 @@ class Table extends Driver implements ContainerInterface
             return null;
         }
         
-        $total = $total === false ? count($this->list) : $total;
+        // 处理是否含有子节点
+        if (!$this->treeAlreadyHaveHasChildrenField && ($this->isTreeLazy() || $this->isGetTreeChildren())) {
+            $treeIds = [];
+            foreach ($this->list as $item) {
+                $treeIds[] = $item[$this->treeIdField];
+            }
+            
+            $groups = $this->model
+                ->field([
+                    $this->treeParentField,
+                    sprintf('COUNT(`%s`) AS total', $this->treeParentField)
+                ])
+                ->where($this->treeParentField, 'in', $treeIds)
+                ->group($this->treeParentField)
+                ->select()
+                ->toArray();
+            $groups = array_column($groups, null, $this->treeParentField);
+            foreach ($this->list as $item) {
+                $item[$this->treeHasChildrenField] = ($groups[$item[$this->treeIdField]]['total'] ?? 0) > 0;
+            }
+        }
         
-        return [
-            'total'            => $total,
-            'totalNotFiltered' => $total,
-            'rows'             => $this->list,
-        ];
+        // 需要清理root
+        if ($this->treeNeedClearParentToRoot) {
+            foreach ($this->list as $item) {
+                $item[$this->treeParentField] = $this->treeParentRoot;
+            }
+        }
+        
+        if ($this->isGetTreeChildren()) {
+            return [
+                'list' => $this->list,
+            ];
+        } else {
+            $total = $total === false ? count($this->list) : $total;
+            
+            return [
+                'total'            => $total,
+                'totalNotFiltered' => $total,
+                'rows'             => $this->list
+            ];
+        }
     }
     
     
@@ -434,55 +732,69 @@ class Table extends Driver implements ContainerInterface
             return $this;
         }
         
-        // 指定字段搜索
-        if ($this->word !== '') {
-            $sourceWord = $this->word;
-            $likeWord   = '%' . FilterHelper::searchWord($sourceWord) . '%';
-            
-            // 多字段搜索
-            if ($this->searchable) {
-                $searchable = [];
-                foreach ($this->searchable as $field) {
-                    if ($field = $this->handleField($field, false, $sourceWord, $likeWord)) {
-                        $searchable[] = $field;
+        // 查询子节点
+        if ($this->isGetTreeChildren()) {
+            $this->model->where($this->treeParentField, '=', $this->treeParentId);
+        } else {
+            // 指定字段搜索
+            if ($this->word !== '' && ($this->searchable || $this->field)) {
+                $sourceWord = $this->word;
+                $likeWord   = '%' . FilterHelper::searchWord($sourceWord) . '%';
+                
+                // 多字段搜索
+                if ($this->searchable) {
+                    $searchable = [];
+                    foreach ($this->searchable as $field) {
+                        if ($field = $this->handleField($field, false, $sourceWord, $likeWord)) {
+                            $searchable[] = $field;
+                        }
+                    }
+                    
+                    if ($searchable) {
+                        $this->model->where(function(Model $model) use ($searchable, $likeWord) {
+                            foreach ($searchable as $field) {
+                                $model->whereLike($field, $likeWord);
+                            }
+                        });
                     }
                 }
                 
-                if ($searchable) {
-                    $this->model->where(function(Model $model) use ($searchable, $likeWord) {
-                        foreach ($searchable as $field) {
-                            $model->whereLike($field, $likeWord);
-                        }
-                    });
+                // has field
+                // 指定字段搜索
+                elseif ($this->field && $field = $this->handleField($this->field, $this->accurate, $sourceWord, $likeWord)) {
+                    if ($this->accurate) {
+                        $this->model->where($field, '=', $sourceWord);
+                    } else {
+                        $this->model->whereLike($field, $likeWord);
+                    }
                 }
+                
+                $this->treeNeedClearParentToRoot = $this->isTreeLazy();
             }
             
-            // has field
-            // 指定字段搜索
-            elseif ($this->field && $field = $this->handleField($this->field, $this->accurate, $sourceWord, $likeWord)) {
-                if ($this->accurate) {
-                    $this->model->where($field, '=', $sourceWord);
-                } else {
-                    $this->model->whereLike($field, $likeWord);
-                }
-            }
-        }
-        
-        // 处理查询条件
-        if ($this->handler) {
-            $this->handler->query($this->map);
-        } elseif ($this->queryCallback) {
-            call_user_func_array($this->queryCallback, [$this->model, $this->map]);
-        }
-        
-        // 将未处理的条件按照 field = value 进行查询
-        foreach ($this->map as $field => $value) {
-            if (is_null($value)) {
-                continue;
+            // tree
+            // 懒加载
+            elseif ($this->isTreeLazy() && $field = $this->handleTreeLazyRootQuery()) {
+                $this->model->where($field, '=', $this->treeParentRoot);
+                $this->treeNeedClearParentToRoot = false;
             }
             
-            if ($field = $this->handleField($field, true, $value, '%' . FilterHelper::searchWord($value) . '%')) {
-                $this->model->where($field, $value);
+            // 处理查询条件
+            if ($this->handler) {
+                $this->handler->query($this->map);
+            } elseif ($this->queryCallback) {
+                call_user_func_array($this->queryCallback, [$this->model, $this->map]);
+            }
+            
+            // 将未处理的条件按照 field = value 进行查询
+            foreach ($this->map as $field => $value) {
+                if (is_null($value)) {
+                    continue;
+                }
+                
+                if ($field = $this->handleField($field, true, $value, '%' . FilterHelper::searchWord($value) . '%')) {
+                    $this->model->where($field, $value);
+                }
             }
         }
         
@@ -534,39 +846,5 @@ class Table extends Driver implements ContainerInterface
         }
         
         return $this->model->getOptions();
-    }
-    
-    
-    /**
-     * 处理字段
-     * @param string $field 处理的字段
-     * @param bool   $accurate 是否精确搜索
-     * @param string $sourceWord 未处理的关键词
-     * @param string $likeWord 模糊查询的关键词
-     * @return mixed
-     */
-    protected function handleField(string $field, bool $accurate, string $sourceWord, string $likeWord) : mixed
-    {
-        $op   = 'like';
-        $word = $likeWord;
-        if ($accurate) {
-            $op   = '=';
-            $word = $sourceWord;
-        }
-        
-        // 触发字段处理回调
-        if ($this->handler) {
-            $field = $this->handler->field($field, $op, $word);
-        } elseif ($this->fieldCallback) {
-            $field = call_user_func_array($this->fieldCallback, [
-                $this->model,
-                $field,
-                $op,
-                $word,
-                $sourceWord
-            ]);
-        }
-        
-        return $field;
     }
 }

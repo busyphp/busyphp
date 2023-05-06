@@ -478,7 +478,7 @@ class SimpleQuery implements ContainerInterface
         
         // 触发字段处理回调
         if ($this->handler) {
-            $field = $this->handler->field($field, $op, $word);
+            $field = $this->handler->fieldQuery($field, $op, $word);
         } elseif ($this->fieldCallback) {
             $field = call_user_func_array($this->fieldCallback, [
                 $this->model,

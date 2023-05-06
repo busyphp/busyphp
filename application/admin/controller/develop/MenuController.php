@@ -62,7 +62,7 @@ class MenuController extends InsideController
             return $table
                 ->model($this->model)
                 ->query(function(SystemMenu $model, ArrayOption $option) {
-                    if (!MenuController::DEVELOP) {
+                    if (!static::DEVELOP) {
                         $model->where(SystemMenuField::path('<>', SystemMenu::class()::DEVELOPER_PATH));
                     }
                     
@@ -71,6 +71,10 @@ class MenuController extends InsideController
                 })
                 ->response();
         }
+        
+        $this->assign('parent_field', SystemMenuField::parentPath());
+        $this->assign('id_field', SystemMenuField::path());
+        $this->assign('parent_root', '');
         
         return $this->insideDisplay();
     }

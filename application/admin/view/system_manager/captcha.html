@@ -3,15 +3,19 @@
     <div class="panel panel-default">
         <include file="system_manager/nav"/>
         <div class="panel-body">
+            <div class="text-gray">
+                说明：合理的调整图形验证码，可有效的防止相关业务安全
+            </div>
+            <div class="space-15"></div>
             <div class="table-responsive no-margin-bottom">
-                <table class="table table-bordered table-hover table-striped">
+                <table class="table table-hover table-striped">
                     <thead class="thead-light">
                         <tr>
                             <th>客户端</th>
-                            <th width="100" class="text-center">有效期</th>
-                            <th width="100" class="text-center">混淆曲线</th>
-                            <th width="100" class="text-center">添加杂点</th>
-                            <th width="100" class="text-center">类型</th>
+                            <th width="100">有效期</th>
+                            <th width="100">混淆曲线</th>
+                            <th width="100">添加杂点</th>
+                            <th width="100">类型</th>
                             <th width="80" class="text-center">操作</th>
                         </tr>
                     </thead>
@@ -19,10 +23,10 @@
                         <foreach name="clients" item="vo">
                             <tr>
                                 <td>{$vo.name}</td>
-                                <td class="text-center">{$info['clients'][$vo['dir']]['expire_minute']|default='10'}分钟</td>
-                                <td class="text-center"><?=($info['clients'][$vo['dir']]['curve'] ?? 0) ? '有':'无'?></td>
-                                <td class="text-center"><?=($info['clients'][$vo['dir']]['noise'] ?? 0) ? '有':'无'?></td>
-                                <td class="text-center">
+                                <td>{$info['clients'][$vo['dir']]['expire_minute']|default='10'}分钟</td>
+                                <td><?=($info['clients'][$vo['dir']]['curve'] ?? 0) ? '有':'无'?></td>
+                                <td><?=($info['clients'][$vo['dir']]['noise'] ?? 0) ? '有':'无'?></td>
+                                <td>
                                     <?php
                                     switch (($info['clients'][$vo['dir']]['type'] ?? 0)) {
                                         case 1:
@@ -207,10 +211,6 @@
                 </table>
             </div>
 
-            <div class="space-15"></div>
-            <div class="text-gray">
-                说明：合理的调整图形验证码，可有效的防止相关业务安全
-            </div>
         </div>
     </div>
     <form action="{$url.self}" method="post" id="form" class="form-horizontal" data-toggle="busy-form" data-on-success="@route.reload">

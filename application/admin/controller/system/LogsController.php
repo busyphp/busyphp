@@ -10,7 +10,6 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
 use BusyPHP\app\admin\model\system\logs\SystemLogsField;
 use BusyPHP\helper\AppHelper;
-use BusyPHP\helper\TransHelper;
 use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -30,19 +29,12 @@ class LogsController extends InsideController
      */
     protected $model;
     
-    /**
-     * 操作记录默认查询时间范围
-     * @var string
-     */
-    protected $indexTimeRange;
-    
     
     protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
-        $this->model          = SystemLogs::init();
-        $this->indexTimeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
+        $this->model = SystemLogs::init();
     }
     
     
@@ -53,29 +45,40 @@ class LogsController extends InsideController
     #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text-o', sort: 2)]
     public function index() : Response
     {
+        $timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
         if ($table = Table::initIfRequest()) {
-            if ($table->getOrderField() == SystemLogsField::formatCreateTime()) {
-                $table->setOrderField(SystemLogsField::createTime());
-            }
-            
             return $table
                 ->model($this->model)
-                ->query(function(SystemLogs $model, ArrayOption $option) {
+                ->query(function(SystemLogs $model, ArrayOption $option) use ($timeRange) {
                     $option->deleteIfLt('type', 0);
                     $option->deleteIfEmpty('client');
                     
-                    if ($time = $option->pull('time', $this->indexTimeRange)) {
+                    if ($time = $option->pull('time', $timeRange)) {
                         $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
                     }
-                    
-                    $model->order('id', 'desc');
                 })
                 ->response();
         }
         
-        $this->assign('type_options', TransHelper::toOptionHtml($this->model::getTypes()));
-        $this->assign('client_options', TransHelper::toOptionHtml(AppHelper::getList(), null, 'name', 'dir'));
-        $this->assign('time', $this->indexTimeRange);
+        // 操作类型
+        $typeList = $this->model::getTypes();
+        $typeList = [-1 => '不限'] + $typeList;
+        $this->assign('types', $typeList);
+        
+        // 客户端
+        $clientList = AppHelper::getList();
+        array_unshift($clientList, ['name' => '不限', 'dir' => '']);
+        $clientList[] = ['name' => AppHelper::CLI_CLIENT_NAME, 'dir' => AppHelper::CLI_CLIENT_KEY];
+        $clientList   = array_map(function($item) {
+            return [
+                'name' => $item['name'],
+                'dir'  => $item['dir']
+            ];
+        }, $clientList);
+        $this->assign('clients', $clientList);
+        
+        // 默认时间
+        $this->assign('time', $timeRange);
         
         return $this->insideDisplay();
     }

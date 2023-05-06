@@ -53,18 +53,7 @@ class UserController extends InsideController
     {
         // 管理员列表数据
         if ($table = Table::initIfRequest()) {
-            $table->model($this->model);
-            
-            switch ($table->getOrderField()) {
-                case AdminUserField::formatCreateTime():
-                    $table->setOrderField(AdminUserField::createTime());
-                break;
-                case AdminUserField::formatLastTime():
-                    $table->setOrderField(AdminUserField::lastTime());
-                break;
-            }
-            
-            $table->query(function(AdminUser $model, ArrayOption $option) {
+            $table->model($this->model)->query(function(AdminUser $model, ArrayOption $option) {
                 switch ($option->pull('status', 0, 'intval')) {
                     // 正常
                     case 1:
@@ -101,6 +90,8 @@ class UserController extends InsideController
             
             return $table->response();
         }
+        
+        $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
         
         return $this->insideDisplay();
     }

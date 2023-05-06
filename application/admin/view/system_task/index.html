@@ -1,27 +1,15 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <span class="text-muted">
-                <b class="text-default">服务状态：</b><b class="fa fa-spinner fa-spin cursor-pointer"></b>
-                <b class="status cursor-pointer">请稍后...</b>
-            </span>
-            &nbsp;
-            <span class="text-muted"><b class="text-default">任务统计：</b>待处理 <b class="text-black">0</b> 个任务，处理中 <b class="text-primary">0</b> 个任务，已完成 <b class="text-success">0</b> 个任务，已失败 <b class="text-danger">0</b> 个任务。</span>
-        </div>
-    </div>
-
     <div id="searchBar"
          data-toggle="busy-search-bar"
-         class="fieldset"
-         data-url="{$url.self}"
+         data-url="__URL__"
          data-accurate-show="true"
          data-fields="title:任务名称,command:执行指令,id:任务ID">
-        <script type="text/html" data-search-id="left">
+        <script type="text/html" data-template="left">
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">计划</div>
-                    <input type="text" name="time" class="form-control" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                    <input type="text" name="time" class="form-control" placeholder="不限计划时间" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
                     <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
                 </div>
             </div>
@@ -45,14 +33,14 @@
                 </div>
             </div>
         </script>
-        <script type="text/html" data-search-id="toolbar">
+        <script type="text/html" data-template="toolbar">
             <ba:access value="clean,optimize,repair">
                 <div class="btn-group">
                     <ba:access value="clean">
                         <a class="btn btn-warning"
                            data-url="{:url('clean')}"
+                           data-toggle="busy-request"
                            data-confirm="确认要清理任务吗？<div class=text-info>该功能用于清理超过一个月的无效任务和重置72小时未执行成功的任务</div>"
-                           data-params="false"
                            data-on-success="@table.reload">
                             <i class="fa fa-recycle"></i>
                             清理任务
@@ -62,18 +50,18 @@
                         <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right" style="min-width: 100%">
+                        <ul class="dropdown-menu dropdown-menu-right" >
                             <ba:access value="optimize">
                                 <li>
                                     <a class="cursor-pointer"
                                        busy-console-log-on-hide="@table.reload"
                                        busy-console-log-title="任务日志"
                                        busy-console-log-ok="false"
-                                       data-params="false"
+                                       data-toggle="busy-request"
                                        data-url="{:url('optimize')}"
                                        data-confirm="确认要优化数据表吗？"
                                        data-on-success="@console-log|@:false">
-                                        <i class="fa fa-database"></i>&nbsp;&nbsp;优化数据表
+                                        <i class="fa fa-database"></i> 优化数据表
                                     </a>
                                 </li>
                             </ba:access>
@@ -83,11 +71,11 @@
                                        busy-console-log-on-hide="@table.reload"
                                        busy-console-log-title="任务日志"
                                        busy-console-log-ok="false"
-                                       data-params="false"
+                                       data-toggle="busy-request"
                                        data-url="{:url('repair')}"
                                        data-confirm="确认要修复数据表吗？"
                                        data-on-success="@console-log|@:false">
-                                        <i class="fa fa-database"></i>&nbsp;&nbsp;修复数据表
+                                        <i class="fa fa-database"></i> 修复数据表
                                     </a>
                                 </li>
                             </ba:access>
@@ -98,156 +86,34 @@
         </script>
     </div>
 
-    <table class="table"
-           id="taskTable"
-           data-toggle="busy-table"
-           data-search="#searchBar"
-           data-state="__ROUTE__"
-           data-show-columns="true"
-           data-show-refresh="true"
-           data-show-fullscreen="true"
-           data-toolbar="#tableToolbar"
-           data-route="true"
-           data-url="{$url.self}"
-           data-fixed-columns="true"
-           data-fixed-right-number="1"
-           data-fixed-number="1"
-           data-height="true">
-        <thead>
-            <tr>
-                <th class="text-center" width="40" data-print-ignore="true" data-checkbox="true"></th>
-                <th class="text-center" data-field="title" data-title="任务名称" data-halign="center" data-align="left" data-formatter="@">
-                    <script type="text/html">
-                        <b>{{value}}</b>
-                        <div class="space-2"></div>
-                        <div class="size-12 text-muted">
-                            <ba-if value="item.wait">
-                                暂无执行结果
-                                <ba-elseif value="item.started"/>
-                                等待执行结果
-                                <ba-elseif value="item.success"/>
-                                <span class="text-success">{{item.remark}}</span>
-                                <ba-else/>
-                                <span class="text-danger">{{item.remark}}</span>
-                            </ba-if>
-                        </div>
-                    </script>
-                </th>
-                <th class="text-center" width="280" data-field="loops" data-title="任务计划" data-formatter="@">
-                    <script type="text/html">
-                        <div class="flex flex-align-center width-260">
-                            <div>
-                                <ba-if value="item.loops > 0">
-                                    <b class="badge badge-outline-primary width-20 height-40 text-wrap flex flex-align-center">循环</b>
-                                    <ba-else/>
-                                    <b class="badge badge-outline-dark width-20 height-40 text-wrap flex flex-align-center">单次</b>
-                                </ba-if>
-                            </div>
-                            <div class="width-7 height-5"></div>
-                            <div class="size-12 width-0 flex-grow-1 text-left">
-                                <div class="text-muted">
-                                    计划时间：{{item.format_plan_time}}
-                                    <ba-if value="item.loops > 0">
-                                        <span> / <b class="text-primary">{{item.loops}}</b>秒</span>
-                                    </ba-if>
-                                </div>
-                                <div class="input-group input-group-xs" data-toggle="tooltip" data-title="执行指令">
-                                    <input type="text" class="form-control form-control-xs" readonly value="{{item.command}}"/>
-                                    <div class="input-group-btn">
-                                        <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{item.command}}"><i class="fa fa-copy"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </script>
-                </th>
-                <th class="text-center" width="150" data-field="success" data-title="执行结果" data-formatter="@">
-                    <script type="text/html">
-                        <div class="text-left flex flex-align-center">
-                            <div>
-                                <ba-if value="item.started || item.wait">
-                                    <b class="badge badge-dark width-20 height-40 text-wrap flex flex-align-center">等待</b>
-                                    <ba-elseif value="value"/>
-                                    <b class="badge badge-success width-20 height-40 text-wrap flex flex-align-center">成功</b>
-                                    <ba-else/>
-                                    <b class="badge badge-danger width-20 height-40 text-wrap flex flex-align-center">失败</b>
-                                </ba-if>
-                            </div>
-                            <div class="width-7 height-5"></div>
-                            <div class="text-muted size-12">
-                                <ba-if value="item.duration <= 0">
-                                    等待结果中
-                                    <ba-else/>
-                                    耗时 <span class="text-success">{{item.duration}}</span> 秒
-                                </ba-if>
-                                <br/>
-                                累计执行 <b class="text-danger">{{item.attempts}}</b> 次
-                            </div>
-                        </div>
-                    </script>
-                </th>
-                <th class="text-center" width="80" data-field="status_name" data-title="执行状态" data-formatter="@">
-                    <script type="text/html">
-                        <ba-if value="item.waiting">
-                            <span class="badge badge-default">{{value}}</span>
-                            <ba-elseif value="item.complete"/>
-                            <span class="badge badge-success">{{value}}</span>
-                            <ba-elseif value="item.started"/>
-                            <span class="badge badge-primary">{{value}}</span>
-                        </ba-if>
-                    </script>
-                </th>
-                <th class="text-center" width="100" data-field="format_create_time" data-title="创建时间" data-formatter="@">
-                    <script type="text/html">
-                        <div class="text-wrap width-80 text-muted">{{value}}</div>
-                    </script>
-                </th>
-                <th class="text-center" width="120" data-print-ignore="true" data-title="操作" data-formatter="@">
-                    <script type="text/html">
-                        <ba-if value="item.operate_url && item.success && !item.wait && !item.started">
-                            <a class="btn btn-success btn-xs btn-block" data-toggle="" href="{{item.operate_url}}" target="{{item.operate_blank}}">{{item.operate_name}}</a>
-                            <div class="space-5"></div>
-                        </ba-if>
-                        <ba:access value="logs,reset,delete">
-                            <ba:access value="reset">
-                                <a class="btn btn-dark btn-xs {{item.started ? 'disabled' : ''}}"
-                                   href="{:url('reset?id=')}{{item.id}}"
-                                   busy-console-log-id="{{item.log_id}}"
-                                   busy-console-log-on-hide="@table.reload"
-                                   busy-console-log-title="任务日志"
-                                   busy-console-log-ok="{{item.operate_name || false}}"
-                                   busy-console-log-ok-url="{{item.operate_url}}"
-                                   busy-console-log-ok-blank="{{item.operate_blank}}"
-                                   data-toggle="busy-request"
-                                   data-confirm="确认要重置该任务吗？"
-                                   {{item.started ? 'disabled' : ''}}
-                                   data-on-success="@console-log|@:false">重置</a>
-                            </ba:access>
-                            <ba:access value="logs">
-                                <a class="btn btn-primary btn-xs"
-                                   data-toggle="busy-console-log"
-                                   data-id="{{item.log_id}}"
-                                   data-ok="{{item.operate_name || false}}"
-                                   data-ok-url="{{item.operate_url}}"
-                                   data-ok-blank="{{item.operate_blank}}"
-                                   data-title="任务日志">日志</a>
-                            </ba:access>
-                            <ba:access value="delete">
-                                <a class="btn btn-danger btn-xs"
-                                   href="{:url('delete?id=')}{{item.id}}"
-                                   data-toggle="busy-request"
-                                   data-confirm="确认要删除该任务吗？"
-                                   data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
-                            </ba:access>
-                        </ba:access>
-                    </script>
-                </th>
-            </tr>
-        </thead>
-    </table>
+    <div class="panel panel-default no-radius-bottom-right no-radius-bottom-left no-border-bottom no-margin-bottom">
+        <div class="panel-body">
+            <span class="text-muted">
+                <b class="text-default">服务状态：</b><b class="fa fa-spinner fa-spin cursor-pointer"></b>
+                <b class="status cursor-pointer">请稍后...</b>
+            </span>
+            &nbsp;
+            <span class="text-muted"><b class="text-default">任务统计：</b>待处理 <b class="text-black">0</b> 个任务，处理中 <b class="text-primary">0</b> 个任务，已完成 <b class="text-success">0</b> 个任务，已失败 <b class="text-danger">0</b> 个任务。</span>
+        </div>
+    </div>
 
-    <div class="hide">
-        <div id="tableToolbar">
+    <div id="taskTable"
+         data-bordered="true"
+         data-toggle="busy-table"
+         data-search="#searchBar"
+         data-state="__ROUTE__"
+         data-show-columns="true"
+         data-show-refresh="true"
+         data-toolbar="@"
+         data-route="true"
+         data-url="__URL__"
+         data-fixed-columns="true"
+         data-fixed-right-number="1"
+         data-fixed-number="1"
+         data-height="true">
+
+        <!--toolbar-->
+        <template data-template="toolbar">
             <ba:access value="delete">
                 <a class="btn btn-danger"
                    data-url="{:url('delete')}"
@@ -260,7 +126,169 @@
                     删除
                 </a>
             </ba:access>
-        </div>
+        </template>
+
+        <!--table-->
+        <table class="table table-hover table-striped table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th data-checkbox="true"></th>
+
+                    <th class="text-center"
+                        data-min-width="300"
+                        data-field="title"
+                        data-title="任务名称"
+                        data-halign="center"
+                        data-align="left"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <b>{{value}}</b>
+                            <div class="space-2"></div>
+                            <div class="size-12 text-muted">
+                                <ba-if value="item.wait">
+                                    暂无执行结果
+                                    <ba-elseif value="item.started"/>
+                                    等待执行结果
+                                    <ba-elseif value="item.success"/>
+                                    <span class="text-success">{{item.remark}}</span>
+                                    <ba-else/>
+                                    <span class="text-danger">{{item.remark}}</span>
+                                </ba-if>
+                            </div>
+                        </script>
+                    </th>
+
+                    <th class="text-center"
+                        width="280"
+                        data-field="loops"
+                        data-title="任务计划"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <div class="flex flex-align-center">
+                                <div>
+                                    <ba-if value="item.loops > 0">
+                                        <b class="badge badge-outline-primary width-20 height-40 text-wrap flex flex-align-center">循环</b>
+                                        <ba-else/>
+                                        <b class="badge badge-outline-dark width-20 height-40 text-wrap flex flex-align-center">单次</b>
+                                    </ba-if>
+                                </div>
+                                <div class="width-7 height-5"></div>
+                                <div class="size-12 width-0 flex-grow-1 text-left">
+                                    <div class="text-muted">
+                                        计划时间：{{item.format_plan_time}}
+                                        <ba-if value="item.loops > 0">
+                                            <span> / <b class="text-primary">{{item.loops}}</b>秒</span>
+                                        </ba-if>
+                                    </div>
+                                    <div class="input-group input-group-xs" data-toggle="tooltip" data-title="执行指令">
+                                        <input type="text" class="form-control form-control-xs" readonly value="{{item.command}}"/>
+                                        <div class="input-group-btn">
+                                            <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{item.command}}"><i class="fa fa-copy"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </script>
+                    </th>
+
+                    <th class="text-center"
+                        width="180"
+                        data-field="success"
+                        data-title="执行结果"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <div class="text-left flex flex-align-center">
+                                <div>
+                                    <ba-if value="item.started || item.wait">
+                                        <b class="badge badge-dark width-20 height-40 text-wrap flex flex-align-center">等待</b>
+                                        <ba-elseif value="value"/>
+                                        <b class="badge badge-success width-20 height-40 text-wrap flex flex-align-center">成功</b>
+                                        <ba-else/>
+                                        <b class="badge badge-danger width-20 height-40 text-wrap flex flex-align-center">失败</b>
+                                    </ba-if>
+                                </div>
+                                <div class="width-7 height-5"></div>
+                                <div class="text-muted size-12">
+                                    <ba-if value="item.duration <= 0">
+                                        等待结果中
+                                        <ba-else/>
+                                        耗时 <span class="text-success">{{item.duration}}</span> 秒
+                                    </ba-if>
+                                    <br/>
+                                    累计执行 <b class="text-danger">{{item.attempts}}</b> 次
+                                </div>
+                            </div>
+                        </script>
+                    </th>
+
+                    <th class="text-center"
+                        width="80"
+                        data-field="status_name"
+                        data-title="执行状态"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <ba-if value="item.waiting">
+                                <span class="badge badge-default">{{value}}</span>
+                                <ba-elseif value="item.complete"/>
+                                <span class="badge badge-success">{{value}}</span>
+                                <ba-elseif value="item.started"/>
+                                <span class="badge badge-primary">{{value}}</span>
+                            </ba-if>
+                        </script>
+                    </th>
+
+                    <th class="text-center"
+                        width="100"
+                        data-field="format_create_time"
+                        data-title="创建时间">
+                    </th>
+
+                    <th class="text-center"
+                        width="130"
+                        data-print-ignore="true"
+                        data-title="操作"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <ba-if value="item.operate_url && item.success && !item.wait && !item.started">
+                                <a class="btn btn-success btn-xs btn-block" data-toggle="" href="{{item.operate_url}}" target="{{item.operate_blank}}">{{item.operate_name}}</a>
+                                <div class="space-5"></div>
+                            </ba-if>
+                            <ba:access value="logs,reset,delete">
+                                <ba:access value="reset">
+                                    <a class="btn btn-dark btn-xs {{item.started ? 'disabled' : ''}}"
+                                       href="{:url('reset?id=')}{{item.id}}"
+                                       busy-console-log-id="{{item.log_id}}"
+                                       busy-console-log-on-hide="@table.reload"
+                                       busy-console-log-title="任务日志"
+                                       busy-console-log-ok="{{item.operate_name || false}}"
+                                       busy-console-log-ok-url="{{item.operate_url}}"
+                                       busy-console-log-ok-blank="{{item.operate_blank}}"
+                                       data-toggle="busy-request"
+                                       data-confirm="确认要重置该任务吗？"
+                                       {{item.started ? 'disabled' : ''}} data-on-success="@console-log|@:false">重置</a>
+                                </ba:access>
+                                <ba:access value="logs">
+                                    <a class="btn btn-primary btn-xs"
+                                       data-toggle="busy-console-log"
+                                       data-id="{{item.log_id}}"
+                                       data-ok="{{item.operate_name || false}}"
+                                       data-ok-url="{{item.operate_url}}"
+                                       data-ok-blank="{{item.operate_blank}}"
+                                       data-title="任务日志">日志</a>
+                                </ba:access>
+                                <ba:access value="delete">
+                                    <a class="btn btn-danger btn-xs"
+                                       href="{:url('delete?id=')}{{item.id}}"
+                                       data-toggle="busy-request"
+                                       data-confirm="确认要删除该任务吗？"
+                                       data-on-success="@table.reload"><i class="fa fa-trash"></i></a>
+                                </ba:access>
+                            </ba:access>
+                        </script>
+                    </th>
+                </tr>
+            </thead>
+        </table>
     </div>
 </block>
 <block name="foot">

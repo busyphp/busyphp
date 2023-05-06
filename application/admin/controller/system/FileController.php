@@ -9,12 +9,10 @@ use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClassField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\AppHelper;
-use BusyPHP\helper\TransHelper;
 use BusyPHP\model\ArrayOption;
 use think\db\exception\DbException;
 use think\Response;
@@ -39,12 +37,6 @@ class FileController extends InsideController
      */
     protected $fileClassModel;
     
-    /**
-     * 文件管理默认时间范围
-     * @var string
-     */
-    protected $indexTimeRange;
-    
     
     protected function initialize($checkLogin = true)
     {
@@ -52,7 +44,6 @@ class FileController extends InsideController
         
         $this->model          = SystemFile::init();
         $this->fileClassModel = SystemFileClass::init();
-        $this->indexTimeRange = date('Y-m-d 00:00:00', strtotime('-29 days')) . ' - ' . date('Y-m-d 23:59:59');
     }
     
     
@@ -65,15 +56,6 @@ class FileController extends InsideController
     {
         $type = $this->param('type/s', 'trim');
         if ($table = Table::initIfRequest()) {
-            switch ($table->getOrderField()) {
-                case SystemFileField::formatSize():
-                    $table->setOrderField(SystemFileField::size());
-                break;
-                case SystemFileField::formatCreateTime():
-                    $table->setOrderField(SystemFileField::createTime());
-                break;
-            }
-            
             return $table
                 ->model($this->model)
                 ->query(function(SystemFile $model, ArrayOption $option) use ($type) {
@@ -86,7 +68,7 @@ class FileController extends InsideController
                     }
                     
                     // 时间
-                    if ($time = $option->pull('time', $this->indexTimeRange)) {
+                    if ($time = $option->pull('time')) {
                         $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
                     }
                     
@@ -109,14 +91,14 @@ class FileController extends InsideController
         
         // 客户端选项
         $clientOptions = AppHelper::getList();
-        array_unshift($clientOptions, [
-            'name' => '不限',
-            'dir'  => ''
-        ]);
-        $clientOptions[] = [
-            'name' => AppHelper::CLI_CLIENT_NAME,
-            'dir'  => AppHelper::CLI_CLIENT_KEY
-        ];
+        array_unshift($clientOptions, ['name' => '不限', 'dir' => '']);
+        $clientOptions[] = ['name' => AppHelper::CLI_CLIENT_NAME, 'dir' => AppHelper::CLI_CLIENT_KEY];
+        $clientOptions   = array_map(function($item) {
+            return [
+                'name' => $item['name'],
+                'dir'  => $item['dir']
+            ];
+        }, $clientOptions);
         $this->assign('client_options', $clientOptions);
         
         // 分类选项
@@ -146,8 +128,7 @@ class FileController extends InsideController
             'type' => ''
         ]);
         $this->assign('disks', $disks);
-        $this->assign('upload_types', ['不限', '普通', '秒传', '等待中']);
-        $this->assign('time', $this->indexTimeRange);
+        $this->assign('upload_types', ['不限', '普通', '秒传', '上传中']);
         
         return $this->insideDisplay();
     }
@@ -190,10 +171,11 @@ class FileController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function clear_repeat() : Response
     {
-        $total = $this->model->clearRepeat();
+        $invalid = $this->model->clearInvalid();
+        $repeat  = $this->model->clearRepeat();
         $this->log()->record(self::LOG_DELETE, '清理重复文件');
         
-        return $this->success("成功清理{$total}个文件");
+        return $this->success("成功清理{$invalid}个无效文件，{$repeat}个重复文件");
     }
     
     
@@ -205,7 +187,7 @@ class FileController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function clear_invalid() : Response
     {
-        $total = $this->model->where(SystemFileField::createTime('<', time() - 86400 * 2))->clearInvalid();
+        $total = $this->model->clearInvalid();
         $this->log()->record(self::LOG_DELETE, '清理无效文件');
         
         return $this->success("成功清理{$total}个文件");

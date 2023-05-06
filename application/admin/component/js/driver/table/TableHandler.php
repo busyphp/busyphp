@@ -26,7 +26,7 @@ abstract class TableHandler extends Handler
      * @param string $word 查询的关键词，如果查询条件是like，系统已自动加上 % 号
      * @return mixed 返回真实字段名称或字段实体({@see Entity})，返回空则不查询该字段
      */
-    public function field(string $field, string $op, string $word)
+    public function fieldQuery(string $field, string $op, string $word) : mixed
     {
         return $field;
     }
@@ -49,5 +49,17 @@ abstract class TableHandler extends Handler
     public function list(&$list)
     {
         return null;
+    }
+    
+    
+    /**
+     * 查询根节点处理回调
+     * @param string $field
+     * @param string $value
+     * @return mixed 返回真实字段名称或字段实体({@see Entity})，返回空则不查询该字段
+     */
+    public function treeLazyRootQuery(string $field, string $value) : mixed
+    {
+        return $field;
     }
 }

@@ -33,7 +33,6 @@ use think\validate\ValidateRule;
  * @method static Entity maxSize(mixed $op = null, mixed $condition = null) 限制文件大小
  * @method static Entity mimetype(mixed $op = null, mixed $condition = null) 限制文件mimetype
  * @method static Entity style(mixed $op = null, mixed $condition = null) 样式
- * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统类型
  * @method static Entity typeName() 类型名称
  * @method static Entity isFile() 是否附件
  * @method static Entity isImage() 是否图片
@@ -48,7 +47,6 @@ use think\validate\ValidateRule;
  * @method $this setMaxSize(mixed $maxSize) 设置限制文件大小
  * @method $this setMimetype(mixed $mimetype) 设置限制文件mimetype
  * @method $this setStyle(mixed $style) 设置样式
- * @method $this setSystem(mixed $system) 设置是否系统类型
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileClassField extends Field implements ModelValidateInterface, FieldGetModelDataInterface
@@ -118,14 +116,8 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
      * 样式
      * @var array
      */
-    #[Json]
+    #[Json(default: '{}')]
     public $style;
-    
-    /**
-     * 是否系统类型
-     * @var bool
-     */
-    public $system;
     
     /**
      * 类型
@@ -185,37 +177,15 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
                 ->in(array_keys(SystemFile::class()::getTypes()), '请选择有效的:attribute')
         );
         
-        if ($data instanceof SystemFileClassField && $data->system) {
-            $this->setSystem(true);
-        }
-        
         if ($scene == SystemFileClass::SCENE_CREATE) {
-            $this->setId(0);
-            $this->retain($validate, [
-                $this::name(),
-                $this::var(),
-                $this::type(),
-                $this::system()
+            $this->exclude($validate, [
+                $this::id()
             ]);
             
             return true;
         } elseif ($scene == SystemFileClass::SCENE_UPDATE) {
-            $this->retain($validate, [
-                $this::id(),
-                $this::name(),
+            $this->exclude($validate, [
                 $this::var(),
-                $this::type(),
-                $this::system()
-            ]);
-            
-            return true;
-        } elseif ($scene == SystemFileClass::SCENE_USER_SET) {
-            $this->retain($validate, [
-                $this::id(),
-                $this::extensions(),
-                $this::maxSize(),
-                $this::mimetype(),
-                $this::style()
             ]);
             
             return true;

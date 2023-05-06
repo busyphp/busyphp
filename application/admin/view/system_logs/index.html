@@ -1,117 +1,58 @@
 <extend name="@admin:layout"/>
 <block name="content">
-    <?php
-    
-    use BusyPHP\helper\AppHelper;
-    
-    ?>
+    <div data-toggle="busy-table"
+         data-bordered="true"
+         data-state="__ROUTE__"
+         data-search="@"
+         data-show-columns="true"
+         data-show-print="true"
+         data-show-refresh="true"
+         data-show-export-way="true"
+         data-export-filename="{$system.page_title}-%s"
+         data-toolbar="@"
+         data-route="true"
+         data-url="__URL__"
+         data-fixed-columns="true"
+         data-fixed-right-number="1"
+         data-fixed-number="1"
+         data-height="true">
 
-    <div id="searchBar"
-         data-toggle="busy-search-bar"
-         data-url="{$url.self}"
-         data-accurate-show="true"
-         data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
-        <script type="text/html" data-search-id="left">
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon">时间范围</div>
-                    <input type="text" name="time" class="form-control" value="{$time}" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
-                    <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon">操作类型</div>
-                    <select class="form-control" name="type">
-                        <option value="-1">不限</option>
-                        {$type_options}
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon">客户端</div>
-                    <select class="form-control" name="client">
-                        <option value="">不限</option>
-                        {$client_options}
-                        <option value="<?=AppHelper::CLI_CLIENT_KEY;?>"><?=AppHelper::CLI_CLIENT_NAME;?></option>
-                    </select>
-                </div>
-            </div>
-        </script>
-    </div>
-
-    <table class="table"
-           data-toggle="busy-table"
-           data-state="__ROUTE__"
-           data-search="#searchBar"
-           data-show-columns="true"
-           data-show-print="true"
-           data-show-refresh="true"
-           data-show-export="true"
-           data-show-fullscreen="true"
-           data-toolbar="#tableToolbar"
-           data-route="true"
-           data-url="{$url.self}"
-           data-fixed-columns="true"
-           data-fixed-right-number="1"
-           data-fixed-number="1"
-           data-height="true">
-        <thead>
-            <tr>
-                <th class="text-center" width="60" data-field="id" data-title="ID" data-sortable="true"></th>
-                <th class="text-center" data-field="name" data-title="操作名称" data-halign="center" data-align="left"></th>
-                <th class="text-center" width="150" data-field="url" data-title="操作地址" data-align="center" data-formatter="@">
-                    <script type="text/html">
-                        {{if is_print}}
-                        {{value}}
-                        {{else}}
-                        <div class="input-group input-group-xs">
-                            <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
-                            <div class="input-group-btn">
-                                <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
-                            </div>
+        <!--search-->
+        <template data-template="search">
+            <div data-toggle="busy-search-bar"
+                 data-url="{$url.self}"
+                 data-accurate-show="true"
+                 data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
+                <template type="text/html" data-template="left">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">时间范围</div>
+                            <input type="text" name="time" class="form-control" value="{$time}" placeholder="不限时间范围" data-toggle="busy-date-picker" data-format="YYYY-MM-DD HH:mm:ss" data-range="true" readonly/>
+                            <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
                         </div>
-                        {{/if}}
-                    </script>
-                </th>
-                <th class="text-center" width="150" data-field="ip" data-title="IP" data-formatter="@">
-                    <script type="text/html">
-                        {{if is_print}}
-                        {{value}}
-                        {{else}}
-                        <div class="input-group input-group-xs">
-                            <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
-                            <div class="input-group-btn">
-                                <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
-                            </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">操作类型</div>
+                            <select class="form-control" name="type">
+                                <?=\BusyPHP\helper\TransHelper::toOptionHtml($types)?>
+                            </select>
                         </div>
-                        {{/if}}
-                    </script>
-                </th>
-                <th class="text-center" width="100" data-field="type_name" data-title="操作类型"></th>
-                <th class="text-center" width="100" data-field="client_name" data-title="客户端"></th>
-                <th class="text-center" width="100" data-field="username" data-title="用户" data-sortable="true"></th>
-                <th class="text-center" width="80" data-field="user_id" data-title="用户ID" data-sortable="true" data-formatter="@">
-                    <script type="text/html">
-                        <a href="{:url('?field=user_id&word=')}{{value}}">{{value}}</a>
-                    </script>
-                </th>
-                <th class="text-center" width="150" data-field="format_create_time" data-title="操作时间" data-sortable="true"></th>
-                <ba:access value="detail">
-                    <th class="text-center" width="80" data-print-ignore="true"  data-title="操作" data-formatter="@">
-                        <script type="text/html">
-                            <a class="btn btn-success btn-xs" href="{:url('detail?id=')}{{item.id}}" data-toggle="busy-modal" data-type="page" data-ok="关闭" data-cancel="false" data-title="记录详情">详情</a>
-                        </script>
-                    </th>
-                </ba:access>
-            </tr>
-        </thead>
-    </table>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">客户端</div>
+                            <select class="form-control" name="client">
+                                <?=\BusyPHP\helper\TransHelper::toOptionHtml($clients, '', 'name', 'dir');?>
+                            </select>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
 
-
-    <div class="hide">
-        <div id="tableToolbar">
+        <!--toolbar-->
+        <template data-template="toolbar">
             <ba:access value="clear">
                 <a class="btn btn-warning"
                    data-url="{:url('clear')}"
@@ -122,7 +63,125 @@
                     清理操作记录
                 </a>
             </ba:access>
-        </div>
-    </div>
+        </template>
 
+        <!--table-->
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-light">
+                <tr>
+                    <th width="60"
+                        data-field="id"
+                        data-title="ID"
+                        data-show-overflow="true"
+                        data-sortable="true"></th>
+                    
+                    <th class="text-center"
+                        data-min-width="200"
+                        data-show-overflow="true"
+                        data-field="name"
+                        data-title="操作名称"
+                        data-halign="center"
+                        data-align="left"></th>
+                    
+                    <th class="text-center"
+                        width="150"
+                        data-field="url"
+                        data-title="操作地址"
+                        data-align="center"
+                        data-formatter="@"
+                        data-tableexport-selector="input">
+                        <script type="text/html">
+                            <ba-if value="is_print">
+                                {{value}}
+                                <ba-else/>
+                                <div class="input-group input-group-xs">
+                                    <input type="text" readonly class="form-control min-width-100" value="{{value}}"/>
+                                    <div class="input-group-btn">
+                                        <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
+                                    </div>
+                                </div>
+                            </ba-if>
+                        </script>
+                    </th>
+                    
+                    <th class="text-center"
+                        width="150"
+                        data-field="ip"
+                        data-title="IP"
+                        data-formatter="@"
+                        data-tableexport-selector="input">
+                        <script type="text/html">
+                            <ba-if value="is_print">
+                                {{value}}
+                                <ba-else/>
+                                <div class="input-group input-group-xs">
+                                    <input type="text" readonly class="form-control" value="{{value}}" style="min-width: 100px;"/>
+                                    <div class="input-group-btn">
+                                        <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
+                                    </div>
+                                </div>
+                            </ba-if>
+                        </script>
+                    </th>
+                    
+                    <th class="text-center"
+                        width="80"
+                        data-show-overflow="true"
+                        data-field="type_name"
+                        data-title="操作类型"></th>
+                    
+                    <th class="text-center"
+                        width="80"
+                        data-show-overflow="true"
+                        data-field="client_name"
+                        data-title="客户端"></th>
+                    
+                    <th class="text-center"
+                        width="100"
+                        data-show-overflow="true"
+                        data-field="username"
+                        data-title="用户"
+                        data-sortable="true"></th>
+                    
+                    <th class="text-center"
+                        width="100"
+                        data-show-overflow="true"
+                        data-field="user_id"
+                        data-title="用户ID"
+                        data-sortable="true"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <a href="javascript:void(0)" onclick="$(this).closestBaTable('reset', {field: 'user_id', word: '{{value}}'})">{{value}}</a>
+                        </script>
+                    </th>
+                    
+                    <th class="text-center"
+                        width="160"
+                        data-field="format_create_time"
+                        data-sort-name="create_time"
+                        data-title="操作时间"
+                        data-sortable="true"></th>
+                    
+                    <ba:access value="detail">
+                        <th class="text-center"
+                            width="60"
+                            data-print-ignore="true"
+                            data-title="操作"
+                            data-formatter="@"
+                            data-tableexport-display="false">
+                            <script type="text/html">
+                                <a class="btn btn-success btn-xs"
+                                   data-url="{:url('detail?id=')}{{item.id}}"
+                                   data-toggle="busy-modal"
+                                   data-type="page"
+                                   data-ok="关闭"
+                                   data-cancel="false"
+                                   data-title="记录详情">详情</a>
+                            </script>
+                        </th>
+                    </ba:access>
+                </tr>
+            </thead>
+        </table>
+    </div>
 </block>

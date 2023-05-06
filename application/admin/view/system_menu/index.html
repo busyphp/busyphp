@@ -1,121 +1,33 @@
 <extend name="@admin:layout"/>
 <block name="head"></block>
 <block name="content">
-    <?php
-    
-    use BusyPHP\app\admin\model\system\menu\SystemMenuField;
-    
-    ?>
-    <table class="table table-striped table-bordered table-hover"
-           data-toggle="busy-table"
-           data-height="true"
-           data-show-columns="true"
-           data-search="true"
-           data-show-refresh="true"
-           data-show-print="true"
-           data-tree-show-field="name"
-           data-parent-id-field="<?=SystemMenuField::parentHash();?>"
-           data-id-field="<?=SystemMenuField::hash();?>"
-           data-root-parent-id=""
-           data-state="__ROUTE__"
-           data-tree-state="true"
-           data-pagination="false"
-           data-toolbar="#tableToolbar"
-           data-url="{$url.self}"
-           data-fixed-columns="true"
-           data-fixed-right-number="1"
-           data-fixed-number="2"
-           data-route="true">
-        <thead>
-            <tr>
-                <th class="text-center" width="40" data-checkbox="true" data-print-ignore="true" data-formatter="busyAdmin.data.checkboxState"></th>
-                <th width="60" data-align="center" data-field="sort" data-title="排序" data-formatter="@">
-                    <script type="text/html">
-                        {{if is_print}}
-                        {{value}}
-                        {{else}}
-                        <input type="text" class="form-control input-xs text-center" data-bind="" value="{{value}}"/>
-                        {{/if}}
-                    </script>
-                </th>
-                <th width="60" data-align="center" data-field="id" data-title="ID"></th>
-                <th width="50" data-align="center" data-field="icon" data-print-ignore="true" data-title="图标" data-formatter="@">
-                    <script type="text/html">
-                        <i class="{{value || 'icon-placeholder'}}"></i>
-                    </script>
-                </th>
-                <th data-align="left" data-halign="center" data-field="name" data-title="菜单名称" data-formatter="@" data-searchable="true">
-                    <script type="text/html">
-                        {{value}} <code>{{item.path}}</code>
-                    </script>
-                </th>
-                <th width="100" data-align="center" data-field="disabled" data-title="状态" data-formatter="@">
-                    <script type="text/html">
-                        <div class="min-width-80">
-                            {{if item.system}}
-                            <kbd>系统菜单</kbd>
-                            {{else}}
-                            {{if is_print}}
-                            {{value ?'禁用':'启用'}}
-                            {{else}}
-                            <input class="switch input-xs success" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"disabled"}' data-toggle="busy-checkbox" {{value ?'':'checked'}} title="启用,禁用"/>
-                            {{/if}}
-                            {{/if}}
-                        </div>
-                    </script>
-                </th>
-                <th width="100" data-align="center" data-field="hide" data-title="节点类型" data-formatter="@">
-                    <script type="text/html">
-                        <div class="min-width-80">
-                            {{if item.system}}
-                            {{if value}}
-                            <span class="badge badge-success badge-pill">&nbsp;权限&nbsp;</span>
-                            {{else}}
-                            <span class="badge badge-primary badge-pill">&nbsp;菜单&nbsp;</span>
-                            {{/if}}
-                            {{else}}
-                            {{if is_print}}
-                            {{value ?'权限':'菜单'}}
-                            {{else}}
-                            <input class="switch input-xs primary" type="checkbox" data-url="{:url('set_attr')}" data-on-success="false" data-params='{"id":"{{item.id}}","type":"hide"}' data-toggle="busy-checkbox" {{value ?'':'checked'}} title="菜单,权限"/>
-                            {{/if}}
-                            {{/if}}
-                        </div>
-                    </script>
-                </th>
-                <th width="130" data-align="center" data-title="操作" data-print-ignore="true" data-formatter="@">
-                    <script type="text/html">
-                        <a class="btn btn-default btn-xs"
-                           data-url="{:url('add?id=')}{{item.id}}"
-                           data-toggle="busy-modal"
-                           data-size="lg"
-                           data-ok="添加菜单"
-                           data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
-                            <i class="fa fa-plus"></i>
-                            添加
-                        </a>
+    <div data-toggle="busy-table"
+         data-height="true"
+         data-show-columns="true"
+         data-search="true"
+         data-show-refresh="true"
+         data-show-print="true"
+         data-show-export-way="true"
+         data-export-filename="{$system.page_title}-%s"
+         data-state="__ROUTE__"
+         data-tree-show-field="name"
+         data-tree-lazy="true"
+         data-tree-state="true"
+         data-parent-field="{$parent_field}"
+         data-parent-root="{$parent_root}"
+         data-id-field="{$id_field}"
+         data-pagination="false"
+         data-toolbar="@"
+         data-url="__URL__"
+         data-fixed-columns="true"
+         data-fixed-right-number="1"
+         data-fixed-number="2"
+         data-bordered="true"
+         data-route="true">
 
-                        <a class="btn btn-success btn-xs"
-                           data-url="{:url('edit?id=')}{{item.id}}"
-                           data-toggle="busy-modal"
-                           data-size="lg"
-                           data-ok="修改菜单"
-                           data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
-                            <i class="fa fa-pencil"></i>
-                        </a>
-                        {{if !item.system}}
-                        <a class="btn btn-danger btn-xs" href="{:url('delete?id=')}{{item.id}}" data-toggle="busy-request" data-confirm="确认要删除该菜单吗？" data-on-success="@table.reload|@app.loadInfo"><i class="fa fa-trash"></i></a>
-                        {{/if}}
-                    </script>
-                </th>
-            </tr>
-        </thead>
-    </table>
-
-    <div class="hide">
-        <div id="tableToolbar">
+        <!--toolbar-->
+        <template data-template="toolbar">
             <a class="btn btn-success"
-               href="javascript:void(0)"
                data-toggle="busy-modal"
                data-size="lg"
                data-ok="添加菜单"
@@ -137,7 +49,6 @@
             </a>
 
             <a class="btn btn-default"
-               href="javascript:void(0)"
                data-url="{:url('sort')}"
                data-field="id,sort"
                data-method="post"
@@ -146,7 +57,154 @@
                 <i class="fa fa-sort"></i>
                 排序
             </a>
-        </div>
+        </template>
+
+        <!--table-->
+        <table class="table table-striped table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th data-checkbox="true"
+                        data-print-ignore="true"
+                        data-tableexport-display="false"
+                        data-formatter="busyAdmin.data.checkboxState"></th>
+
+                    <th width="80"
+                        data-align="center"
+                        data-field="sort"
+                        data-title="排序"
+                        data-tableexport-selector="input"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <ba-if value="is_print">
+                                {{value}}
+                                <ba-else/>
+                                <input type="text" class="form-control input-xs text-center" data-bind="" value="{{value}}"/>
+                            </ba-if>
+                        </script>
+                    </th>
+
+                    <th width="60"
+                        data-align="center"
+                        data-field="id"
+                        data-show-overflow="true"
+                        data-title="ID"></th>
+
+                    <th width="50"
+                        data-align="center"
+                        data-field="icon"
+                        data-print-ignore="true"
+                        data-tableexport-display="false"
+                        data-title="图标"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <i class="{{value || 'icon-placeholder'}}"></i>
+                        </script>
+                    </th>
+
+                    <th data-align="left"
+                        data-halign="center"
+                        data-field="name"
+                        data-title="菜单名称"
+                        data-formatter="@"
+                        data-min-width="300"
+                        data-searchable="true">
+                        <script type="text/html">
+                            {{value}} <code>{{item.path}}</code>
+                        </script>
+                    </th>
+
+                    <th width="100"
+                        data-align="center"
+                        data-field="disabled"
+                        data-title="状态"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <ba-if value="item.system">
+                                <kbd>系统菜单</kbd>
+                                <ba-else/>
+                                <ba-if value="is_print">
+                                    {{value ?'禁用':'启用'}}
+                                    <ba-else/>
+                                    <input class="switch input-xs success"
+                                           type="checkbox"
+                                           data-url="{:url('set_attr')}"
+                                           data-on-success="false"
+                                           data-params='{"id":"{{item.id}}","type":"disabled"}'
+                                           data-toggle="busy-checkbox"
+                                           title="启用,禁用"
+                                           {{value ?'':'checked'}} />
+                                </ba-if>
+                            </ba-if>
+                        </script>
+                    </th>
+
+                    <th width="100"
+                        data-align="center"
+                        data-field="hide"
+                        data-title="节点类型"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <ba-if value="item.system">
+                                <ba-if value="value">
+                                    <span class="badge badge-success badge-pill">&nbsp;权限&nbsp;</span>
+                                    <ba-else/>
+                                    <span class="badge badge-primary badge-pill">&nbsp;菜单&nbsp;</span>
+                                </ba-if>
+                                <ba-else/>
+                                <ba-if value="is_print">
+                                    {{value ?'权限':'菜单'}}
+                                    <ba-else/>
+                                    <input class="switch input-xs primary"
+                                           type="checkbox"
+                                           data-url="{:url('set_attr')}"
+                                           data-on-success="false"
+                                           data-params='{"id":"{{item.id}}","type":"hide"}'
+                                           data-toggle="busy-checkbox"
+                                           title="菜单,权限"
+                                           {{value ?'':'checked'}} />
+                                </ba-if>
+                            </ba-if>
+                        </script>
+                    </th>
+
+                    <th width="130"
+                        data-align="center"
+                        data-title="操作"
+                        data-print-ignore="true"
+                        data-tableexport-display="false"
+                        data-formatter="@">
+                        <script type="text/html">
+                            <a class="btn btn-default btn-xs"
+                               data-url="{:url('add?id=')}{{item.id}}"
+                               data-toggle="busy-modal"
+                               data-size="lg"
+                               data-ok="添加菜单"
+                               data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
+                                <i class="fa fa-plus"></i>
+                                添加
+                            </a>
+
+                            <a class="btn btn-success btn-xs"
+                               data-url="{:url('edit?id=')}{{item.id}}"
+                               data-toggle="busy-modal"
+                               data-size="lg"
+                               data-ok="修改菜单"
+                               data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+
+                            <ba-if value="!item.system">
+                                <a class="btn btn-danger btn-xs"
+                                   data-url="{:url('delete?id=')}{{item.id}}"
+                                   data-toggle="busy-request"
+                                   data-confirm="确认要删除该菜单吗？"
+                                   data-on-success="@table.reload|@app.loadInfo"><i class="fa fa-trash"></i></a>
+                            </ba-if>
+                        </script>
+                    </th>
+                </tr>
+            </thead>
+        </table>
     </div>
 </block>
 <block name="foot">

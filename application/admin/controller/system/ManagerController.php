@@ -156,7 +156,7 @@ class ManagerController extends InsideController
     
     
     /**
-     * 存储分类
+     * 文件分类
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
@@ -165,16 +165,6 @@ class ManagerController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function file_class() : Response
     {
-        // 分类设置
-        if ($this->isPost()) {
-            SystemFileClass::init()
-                ->modify(SystemFileClassField::init($this->post()), SystemFileClass::SCENE_USER_SET);
-            $this->log()->record(self::LOG_UPDATE, '分类上传设置');
-            $this->updateCache();
-            
-            return $this->success('设置成功');
-        }
-        
         // 分类列表数据
         if ($table = Table::initIfRequest()) {
             return $table
@@ -184,15 +174,6 @@ class ManagerController extends InsideController
                     $model->order(SystemFileClassField::id(), 'desc');
                 })
                 ->response();
-        }
-        
-        //
-        // 修改分类
-        elseif ($this->get('action/s') == 'edit') {
-            $this->assign('disks', StorageSetting::class()::getDisks());
-            $this->assign('info', SystemFileClass::init()->getInfo($this->get('id/d')));
-            
-            return $this->insideDisplay('file_class_edit');
         }
         
         // 分类列表
@@ -206,6 +187,94 @@ class ManagerController extends InsideController
     
     
     /**
+     * 添加文件分类
+     * @return Response
+     * @throws DbException
+     */
+    #[MenuNode(menu: false, parent: '/file_class')]
+    public function file_class_add() : Response
+    {
+        if ($this->isPost()) {
+            SystemFileClass::init()->create(SystemFileClassField::init($this->post()));
+            $this->log()->record(self::LOG_INSERT, '增加文件分类');
+            
+            return $this->success('添加成功');
+        }
+        
+        $this->assign('types', SystemFile::class()::getTypes());
+        $this->assign('disks', StorageSetting::class()::getDisks());
+        $this->assign('image_type', SystemFile::class()::FILE_TYPE_IMAGE);
+        $this->assign('info', [
+            'type' => ''
+        ]);
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 修改文件分类
+     * @return Response
+     * @throws DbException
+     * @throws DataNotFoundException
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/file_class')]
+    public function file_class_edit() : Response
+    {
+        if ($this->isPost()) {
+            SystemFileClass::init()->modify(SystemFileClassField::init($this->post()));
+            $this->log()->record(self::LOG_UPDATE, '修改文件分类');
+            
+            return $this->success('修改成功');
+        }
+        
+        $info = SystemFileClass::init()->getInfo($this->get('id'));
+        $this->assign('types', SystemFile::class()::getTypes());
+        $this->assign('disks', StorageSetting::class()::getDisks());
+        $this->assign('image_type', SystemFile::class()::FILE_TYPE_IMAGE);
+        $this->assign('info', $info);
+        
+        
+        return $this->insideDisplay('file_class_add');
+    }
+    
+    
+    /**
+     * 删除文件分类
+     * @return Response
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/file_class')]
+    public function file_class_delete() : Response
+    {
+        $model = SystemFileClass::init();
+        SimpleForm::init()
+            ->batch($this->param('id/a', 'intval'), '请选择要删除的文件分类', function(int $id) use ($model) {
+                $model->delete($id);
+            });
+        
+        $this->log()->record(self::LOG_DELETE, '删除文件分类');
+        
+        return $this->success('删除成功');
+    }
+    
+    
+    /**
+     * 排序文件分类
+     * @throws DbException
+     */
+    #[MenuNode(menu: false, parent: '/file_class')]
+    public function file_class_sort() : Response
+    {
+        SimpleForm::init(SystemFileClass::init())->sort('sort', SystemFileClassField::sort());
+        $this->log()->record(self::LOG_UPDATE, '排序文件分类');
+        
+        return $this->success('排序成功');
+    }
+    
+    
+    /**
      * 图片样式
      * @return Response
      * @throws Throwable
@@ -214,7 +283,12 @@ class ManagerController extends InsideController
     public function image_style() : Response
     {
         if ($table = Table::initIfRequest()) {
-            return $table->list(array_values(Filesystem::disk($this->disk)->image()->selectStyleByCache()))->response();
+            $list = array_values(Filesystem::disk($this->disk)->image()->selectStyleByCache());
+            foreach ($list as $item) {
+                $item['disk'] = $this->disk;
+            }
+            
+            return $table->list($list)->response();
         }
         
         $this->assign('disks', StorageSetting::class()::getDisks());
