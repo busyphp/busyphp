@@ -17,6 +17,7 @@ use BusyPHP\office\excel\import\parameter\ImportInitParameter;
 use BusyPHP\traits\ContainerDefine;
 use Closure;
 use LogicException;
+use RuntimeException;
 use think\db\exception\DbException;
 use think\exception\InvalidArgumentException;
 use think\Request;
@@ -108,6 +109,10 @@ class SimpleForm implements ContainerInterface
                 $pkField   => $id,
                 $sortField => $value,
             ];
+        }
+        
+        if (!$updateData) {
+            throw new RuntimeException('无排序项');
         }
         
         return $this->getModel()->updateAll($updateData, $pkField);
