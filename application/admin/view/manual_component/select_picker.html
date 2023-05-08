@@ -28,13 +28,16 @@
 | data-width | string | `否` | - | 设置宽度，不设置则自适应 |
 | data-search | boolean | `否` | `true` | 是否允许搜索 |
 | data-search-min | number | `否` | 0 | 最少需要输入多少个字符才进行搜索 |
-| data-list | [object] | `否` | `[]` | 设置数据，参考`list数据结构` |
+| data-data | [object],Function | `否` | `[]` | 设置数据，参考`data数据结构` |
 | data-multiple | boolean | `否` | `false` | 是否为多选模式 |
 | data-disabled | boolean | `否` | `false` | 是否禁用该组件 |
 | data-max | number | `否` | 0 | 多选情况下，最大允许选择数，0为不限制 |
 | data-value | string,[string] | `否` | null | 设置默认选中项，多选模式传数组，单选模式传字符 |
 | data-selected-template | string,function | `否` | null | 自定义选中项模板 |
 | data-option-template | string,function | `否` | null | 自定义选项模板 |
+| data-tags | boolean | `否` | `false` | 是否为tags模式，该模式下，输入的tag不存则可以创建 |
+| data-tags-space | [string] | `否` | `null` | 设置tag分割字符，默认为回车 |
+| data-select2-options | object | `否` | `null` | Select2插件配置，参考[Select2插件配置](https://select2.org/configuration/options-api) |
 | 异步加载:title |  |  |  |  |
 | data-url | boolean,string | `否` | `false` | 是否启用异步数据选项，设置字符串URL则从该地址获取，否则从当前网址获取 |
 | data-params | object,Function | `否` | - | 自定义请求参数，支持闭包 |
@@ -45,12 +48,8 @@
 | data-model-text-field | string | `否` | `name` | 取模型数据`名称`的字段 |
 | data-model-length | string | `否` | `name` | 数据每页展示条数，0为不限，会缓存该结果 |
 | data-model-order | string | `否` | `id DESC` | 设置模型数据排序方式，多个用英文逗号分割，如：`id DESC` |
-| Select2配置:title |  |  |  |  |
-| data-select2-tags | boolean | `否` | `false` | 是否为tags模式，该模式下，输入的tag不存则可以创建 |
-| data-select2-tags-space | [string] | `否` | `null` | 设置tag分割字符，默认为回车 |
-| data-select2-options | object | `否` | `null` | Select2插件配置，参考[Select2插件配置](https://select2.org/configuration/options-api) |
 
-### `list`数据结构
+### `data`数据结构
 ```json
 [
     {
@@ -90,7 +89,7 @@
 #demo3
 ```
 
-#### Select2自定义标签
+#### 自定义标签
 
 ```demo:实例
 #demo4
@@ -106,188 +105,189 @@
     </div>
 
     <template id="demo1">
-        <button class="btn btn-primary" id="demo1_btn1">打开</button>
-        <button class="btn btn-primary" id="demo1_btn2">关闭</button>
-        <button class="btn btn-primary" id="demo1_btn3">启用</button>
-        <button class="btn btn-primary" id="demo1_btn4">禁用</button>
-        <button class="btn btn-primary" id="demo1_btn5">设置选中项</button>
-        <button class="btn btn-primary" id="demo1_btn6">清除选中项</button>
-        <button class="btn btn-primary" id="demo1_btn7">添加选项</button>
-        <button class="btn btn-primary" id="demo1_btn8">设置新的选项</button>
-        <div class="space-10"></div>
-        <div class="input-group">
-            <div class="input-group-addon">单选</div>
-            <select class="form-control"
-                    id="demo1_select"
-                    data-toggle="busy-select-picker"
-                    data-placeholder="请选择">
-                <option></option>
-                <option value="1">张三</option>
-                <option value="2">李四</option>
-                <option value="3">王武</option>
-            </select>
-        </div>
-        <hr/>
-        <button class="btn btn-primary" id="demo1_btn9">设置选中项</button>
-        <button class="btn btn-primary" id="demo1_btn10">清除选中项</button>
-        <div class="space-10"></div>
-        <div class="input-group">
-            <div class="input-group-addon">多选</div>
-            <select class="form-control"
-                    id="demo1_select1"
-                    data-toggle="busy-select-picker"
-                    data-placeholder="请选择"
-                    data-clear="true"
-                    multiple>
-                <option value="1">张三</option>
-                <option value="2">李四</option>
-                <option value="3">王武</option>
-            </select>
-        </div>
-        <script>
-            $(function () {
-                $('#demo1_btn1').on('click', function () {
-                    $('#demo1_select').baSelectPicker('open', true);
-                });
-                $('#demo1_btn2').on('click', function () {
-                    $('#demo1_select').baSelectPicker('open', false);
-                });
-                $('#demo1_btn3').on('click', function () {
-                    $('#demo1_select').prop('disabled', false);
-                });
-                $('#demo1_btn4').on('click', function () {
-                    $('#demo1_select').prop('disabled', true);
-                });
-                $('#demo1_btn5').on('click', function () {
-                    $('#demo1_select').baSelectPicker('value', 2);
-                });
-                $('#demo1_btn6').on('click', function () {
-                    $('#demo1_select').baSelectPicker('value', null);
-                });
-                $('#demo1_btn7').on('click', function () {
-                    $('#demo1_select').baSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
-                });
-                $('#demo1_btn8').on('click', function () {
-                    $('#demo1_select').baSelectPicker('list', [
-                        {
-                            text     : 'BAT公司',
-                            children : [
-                                {id : "1", text : '百度'},
-                                {id : "2", text : '阿里'},
-                                {id : "3", text : '腾讯'},
-                            ]
-                        },
-                        {
-                            text     : '金融公司',
-                            children : [
-                                {id : "4", text : '工商'},
-                                {id : "5", text : '建行'},
-                                {id : "6", text : '民生'},
-                            ]
-                        },
-                        {
-                            id   : '7',
-                            text : '滴滴',
-                        },
-                        {
-                            id   : '8',
-                            text : '美团',
-                        },
-                        {
-                            id   : '9',
-                            text : '饿了吗',
-                        }
-                    ]);
-                });
+<button class="btn btn-primary" id="demo1_btn1">打开</button>
+<button class="btn btn-primary" id="demo1_btn2">关闭</button>
+<button class="btn btn-primary" id="demo1_btn3">启用</button>
+<button class="btn btn-primary" id="demo1_btn4">禁用</button>
+<button class="btn btn-primary" id="demo1_btn5">设置选中项</button>
+<button class="btn btn-primary" id="demo1_btn6">清除选中项</button>
+<button class="btn btn-primary" id="demo1_btn7">添加选项</button>
+<button class="btn btn-primary" id="demo1_btn8">设置新的选项</button>
+<div class="space-10"></div>
+<div class="input-group">
+    <div class="input-group-addon">单选</div>
+    <select class="form-control"
+            id="demo1_select"
+            data-toggle="busy-select-picker"
+            data-placeholder="请选择">
+        <option></option>
+        <option value="1">张三</option>
+        <option value="2">李四</option>
+        <option value="3">王武</option>
+    </select>
+</div>
+<hr/>
+<button class="btn btn-primary" id="demo1_btn9">设置选中项</button>
+<button class="btn btn-primary" id="demo1_btn10">清除选中项</button>
+<div class="space-10"></div>
+<div class="input-group">
+    <div class="input-group-addon">多选</div>
+    <select class="form-control"
+            id="demo1_select1"
+            data-toggle="busy-select-picker"
+            data-placeholder="请选择"
+            data-clear="true"
+            multiple>
+        <option value="1">张三</option>
+        <option value="2">李四</option>
+        <option value="3">王武</option>
+    </select>
+</div>
+<script>
+    $(function () {
+        $('#demo1_btn1').on('click', function () {
+            $('#demo1_select').baSelectPicker('open', true);
+        });
+        $('#demo1_btn2').on('click', function () {
+            $('#demo1_select').baSelectPicker('open', false);
+        });
+        $('#demo1_btn3').on('click', function () {
+            $('#demo1_select').prop('disabled', false);
+        });
+        $('#demo1_btn4').on('click', function () {
+            $('#demo1_select').prop('disabled', true);
+        });
+        $('#demo1_btn5').on('click', function () {
+            $('#demo1_select').baSelectPicker('value', 2);
+        });
+        $('#demo1_btn6').on('click', function () {
+            $('#demo1_select').baSelectPicker('value', null);
+        });
+        $('#demo1_btn7').on('click', function () {
+            $('#demo1_select').baSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
+        });
+        $('#demo1_btn8').on('click', function () {
+            $('#demo1_select').baSelectPicker('data', [
+                {
+                    text     : 'BAT公司',
+                    children : [
+                        {id : "1", text : '百度'},
+                        {id : "2", text : '阿里'},
+                        {id : "3", text : '腾讯'},
+                    ]
+                },
+                {
+                    text     : '金融公司',
+                    children : [
+                        {id : "4", text : '工商'},
+                        {id : "5", text : '建行'},
+                        {id : "6", text : '民生'},
+                    ]
+                },
+                {
+                    id   : '7',
+                    text : '滴滴',
+                },
+                {
+                    id   : '8',
+                    text : '美团',
+                },
+                {
+                    id   : '9',
+                    text : '饿了吗',
+                }
+            ]);
+        });
 
-                $('#demo1_btn9').on('click', function () {
-                    $('#demo1_select1').baSelectPicker('value', [1, 2]);
-                });
-                $('#demo1_btn10').on('click', function () {
-                    $('#demo1_select1').baSelectPicker('value', null);
-                });
-            });
-        </script>
+        $('#demo1_btn9').on('click', function () {
+            $('#demo1_select1').baSelectPicker('value', [1, 2]);
+        });
+        $('#demo1_btn10').on('click', function () {
+            $('#demo1_select1').baSelectPicker('value', null);
+        });
+    });
+</script>
     </template>
 
     <script id="demo2" type="text/html" class="hide">
-        <select class="form-control"
-                id="demo2_array"
-                data-toggle="busy-select-picker"
-                data-list='[{"id":"1","text":"张三"},{"id":"2","text":"李四","disabled":true},{"id":"3","text":"王武","selected":true}]'
-                data-placeholder="请选择">
-        </select>
+<select class="form-control"
+        id="demo2_array"
+        data-toggle="busy-select-picker"
+        data-data='[{"id":"1","text":"张三"},{"id":"2","text":"李四","disabled":true},{"id":"3","text":"王武","selected":true}]'
+        data-placeholder="请选择">
+</select>
     </script>
 
-    <template id="demo3" class="hide">
-        有缓存
-        <div class="input-group">
-            <div class="input-group-addon">单选</div>
-            <select class="form-control"
-                    data-toggle="busy-select-picker"
-                    data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-                    data-model-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-                    data-model-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
-                    data-model-length="0"
-                    data-value='avatar'
-                    data-placeholder="请选择">
-            </select>
-        </div>
-        <hr/>
-        无缓存
-        <div class="input-group">
-            <div class="input-group-addon">多选</div>
-            <select class="form-control"
-                    data-toggle="busy-select-picker"
-                    data-model="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClass::class;?>"
-                    data-model-id-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::var();?>"
-                    data-model-text-field="<?=\BusyPHP\app\admin\model\system\file\classes\SystemFileClassField::name();?>"
-                    data-order="id desc,var desc"
-                    data-value='["avatar","banner"]'
-                    data-placeholder="请选择"
-                    multiple>
-            </select>
-        </div>
-    </template>
+    <script type="text/html" id="demo3" class="hide">
+有缓存
+<div class="input-group">
+    <div class="input-group-addon">单选</div>
+    <select class="form-control"
+            data-toggle="busy-select-picker"
+            id="testtetttt"
+            data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+            data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+            data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+            data-model-length="0"
+            data-value='admin'
+            data-placeholder="请选择">
+    </select>
+</div>
+<hr/>
+无缓存
+<div class="input-group">
+    <div class="input-group-addon">多选</div>
+    <select class="form-control"
+            data-toggle="busy-select-picker"
+            data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+            data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+            data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+            data-model-order="id desc,type desc"
+            data-value='["admin","storage"]'
+            data-placeholder="请选择"
+            multiple>
+    </select>
+</div>
+    </script>
 
-    <template id="demo4" class="hide">
-        <select class="form-control"
-                data-toggle="busy-select-picker"
-                data-select2-tags="true"
-                data-clear="true"
-                data-placeholder="请选择">
-            <option value="1">百度</option>
-            <option value="2">腾讯</option>
-            <option value="3">阿里</option>
-        </select>
-        <hr/>
-        请输入标签，用逗号或空格分割
-        <select class="form-control"
-                data-toggle="busy-select-picker"
-                data-select2-tags="true"
-                data-select2-tags-space='[","," "]'
-                data-placeholder="请输入标签，用逗号或空格分割"
-                multiple>
-            <option value="1" selected>百度</option>
-            <option value="2" selected>腾讯</option>
-            <option value="3" selected>阿里</option>
-        </select>
-    </template>
+    <script type="text/html" id="demo4" class="hide">
+<select class="form-control"
+        data-toggle="busy-select-picker"
+        data-tags="true"
+        data-clear="true"
+        data-placeholder="请选择">
+    <option value="1">百度</option>
+    <option value="2">腾讯</option>
+    <option value="3">阿里</option>
+</select>
+<hr/>
+请输入标签，用逗号或空格分割
+<select class="form-control"
+        data-toggle="busy-select-picker"
+        data-tags="true"
+        data-tags-space='[","," "]'
+        data-placeholder="请输入标签，用逗号或空格分割"
+        multiple>
+    <option value="1" selected>百度</option>
+    <option value="2" selected>腾讯</option>
+    <option value="3" selected>阿里</option>
+</select>
+    </script>
 
     <script id="demo5" type="text/html">
-        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
-        <template id="modalContent">
-            <div style="height: 1000px;">
-                <select class="form-control"
-                        id="demo1_select"
-                        data-toggle="busy-select-picker"
-                        data-placeholder="请选择">
-                    <option></option>
-                    <option value="1">张三</option>
-                    <option value="2">李四</option>
-                    <option value="3">王武</option>
-                </select>
-            </div>
-        </template>
+<a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
+<template id="modalContent">
+    <div style="height: 1000px;">
+        <select class="form-control"
+                id="demo1_select"
+                data-toggle="busy-select-picker"
+                data-placeholder="请选择">
+            <option></option>
+            <option value="1">张三</option>
+            <option value="2">李四</option>
+            <option value="3">王武</option>
+        </select>
+    </div>
+</template>
     </script>
 </block>
