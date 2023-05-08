@@ -12,83 +12,418 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-toggle="tab"` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-tabs"` 来触发
 
 ### 标签结构
 
 ```html
-<div>
-    <ul class="nav nav-tabs" role="tablist">
-        <li class="active"><a href="#tab1" data-toggle="tab">选项1</a></li>
-        <li><a href="#tab2" data-toggle="tab">选项2</a></li>
-        <li><a href="#tab3" data-toggle="tab">选项3</a></li>
-        <li><a href="#tab4" data-toggle="tab">选项4</a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane active" id="tab1">...</div>
-        <div class="tab-pane" id="tab2">...</div>
-        <div class="tab-pane" id="tab3">...</div>
-        <div class="tab-pane" id="tab4">...</div>
-    </div>
+<ul class="nav nav-tabs" data-toggle="busy-tabs">
+    <li class="active"><a>选项1</a></li>
+    <li><a>选项2</a></li>
+    <li><a>选项3</a></li>
+    <li><a>选项4</a></li>
+</ul>
+<!-- tab-content 是可选的，但必须于 data-toggle="busy-tabs" 标签相邻 -->
+<div class="tab-content">
+    <div class="tab-pane">...</div>
+    <div class="tab-pane">...</div>
+    <div class="tab-pane">...</div>
+    <div class="tab-pane">...</div>
 </div>
 ```
+### 属性
 
-### 事件
-
-使用 `event.target` 和 `event.relatedTarget` 分别定位 `当前选项卡` 和 `上一个选项卡`
-
-| 事件名称:240 | 描述 |
-| :-: | :- |
-| show.bs.tab | 显示未执行动画时触发 |
-| shown.bs.tab | 显示已执行完毕动画时触发 |
-| hide.bs.tab | 隐藏未执行动画时触发 |
-| hidden.bs.tab | 隐藏已执行完毕动画时触发 |
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-fade | boolean | `否` | `true` | 是否显示切换动画 |
+| data-active | string | `否` | `0` | 默认激活的选项名称，支持在`a`标签定义`data-name` |
+| data-closable | boolean | `否` | `false` | 是否显示关闭标签按钮 |
+| data-addable | boolean | `否` | `false` | 是否显示添加标签按钮 |
+| data-editable | boolean | `否` | `false` | 标签是否同时可增加和关闭 |
+| data-clearable | boolean | `否` | `false` | 是否显示清空按钮 |
+| data-more | boolean | `否` | `true` | 选项卡过多时，是否显示更多下拉菜单 |
+| data-html | boolean | `否` | `false` | 是否静态展示 |
+| data-card | string,boolean | `否` | `false` | 是否卡片化，或指定卡片主题，支持：'default', 'primary', 'secondary', 'dark', 'light', 'success', 'warning', 'danger', 'info' |
+| data-content | string | `否` | - | `.tab-content` 容器选择器 |
+| data-on-before-remove | string,Function | `否` | - | 标签删除前回调 |
+| data-on-removed | string,Function | `否` | - | 标签删除后回调 |
+| data-on-before-clear | string,Function | `否` | - | 清空前回调 |
+| data-on-cleared | string,Function | `否` | - | 清空后回调 |
+| data-add | string,Function | `否` | - | 添加标签回调，回调应该返回 `{name: string, label: string, pane: string, show: boolean}`，否则不添加 |
+| data-on-added | string,Function | `否` | - | 添加标签后回调 |
 
 ### 使用示例
 
 #### 基本示例
+
 ```demo:实例
 #demo1
+```
+
+#### 卡片化
+
+```demo:实例
+#demo2
+```
+
+#### 定义content容器
+
+```demo:实例
+#demo3
+```
+
+#### 内容超出可滚动
+
+```demo:实例
+#demo4
+```
+
+#### 可关闭标签
+
+```demo:实例
+#demo5
+```
+
+#### 可关闭/清空标签
+
+```demo:实例
+#demo6
+```
+
+#### 可添加标签
+
+```demo:实例
+#demo7
+```
+
+#### 静态展示
+
+> 通过设置 `data-html="true"` 来静态展示，通过 `li标签` 设置 `class="active"` 激活
+
+```demo:实例
+#demo8
+```
+
+#### 只有选项卡
+
+```demo:实例
+#demo9
 ```
             </script>
         </div>
     </div>
 
-    <template id="demo1" class="hide">
-        <div>
-            <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li class="active">
-                    <a href="#tab1" data-toggle="tab">选项卡1</a>
-                </li>
-                <li class="">
-                    <a href="#tab2" data-toggle="tab">选项卡2</a>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">更多选项 <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="#tab3" data-toggle="tab">选项卡3</a>
-                        </li>
-                        <li>
-                            <a href="#tab4" data-toggle="tab">选项卡4</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane fade active in" id="tab1">
-                    <p>选项卡内容1</p>
-                </div>
-                <div class="tab-pane fade" id="tab2">
-                    <p>选项卡内容2</p>
-                </div>
-                <div class="tab-pane fade" id="tab3">
-                    <p>选项卡内容3</p>
-                </div>
-                <div class="tab-pane fade" id="tab4">
-                    <p>选项卡内容4</p>
-                </div>
-            </div>
-        </div>
+    <template id="demo1">
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-active="2">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content padding-15">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3，使用 <code>data-active="2"</code> 激活</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+
+<br />
+<br />
+
+<ul class="nav nav-lines" data-toggle="busy-tabs" data-active="test">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a data-name="test">选项卡4</a></li>
+</ul>
+<div class="tab-content padding-15">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4，通过给<code>A标签</code>赋值 <code>data-name="test"</code> 并使用 <code>data-active="test"</code> 激活</div>
+</div>
+
+<br />
+<br />
+
+<ul class="nav nav-lines-top" data-toggle="busy-tabs">
+    <li><a>选项卡1</a></li>
+    <li class="active"><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content padding-15">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2，通过给<code>LI标签</code>设置class为 <code>active</code> 激活</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+
+<br />
+<br />
+
+<ul class="nav nav-pills" data-toggle="busy-tabs" data-active="0">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content padding-15">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+    </template>
+
+    <template id="demo2">
+<p>点击切换样式</p>
+<button type="button" class="btn btn-default change-style">default</button>
+<button type="button" class="btn btn-primary change-style">primary</button>
+<button type="button" class="btn btn-secondary change-style">secondary</button>
+<button type="button" class="btn btn-dark change-style">dark</button>
+<button type="button" class="btn btn-light change-style">light</button>
+<button type="button" class="btn btn-success change-style">success</button>
+<button type="button" class="btn btn-warning change-style">warning</button>
+<button type="button" class="btn btn-danger change-style">danger</button>
+<button type="button" class="btn btn-info change-style">info</button>
+<hr />
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-active="2" data-card="default">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3，使用 <code>data-active="2"</code> 激活</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+
+<ul class="nav nav-lines" data-toggle="busy-tabs" data-active="test" data-card="default">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a data-name="test">选项卡4</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4，通过给<code>A标签</code>赋值 <code>data-name="test"</code> 并使用 <code>data-active="test"</code> 激活</div>
+</div>
+
+
+<ul class="nav nav-lines-top" data-toggle="busy-tabs" data-card="default">
+    <li><a>选项卡1</a></li>
+    <li class="active"><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2，通过给<code>LI标签</code>设置class为 <code>active</code> 激活</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+<script>
+    busyAdmin.ready(function () {
+        var $style = $('[data-card]');
+        $('.change-style').on('click', function() {
+            $style.data('card', $(this).text()).baTabs(true);
+        });
+    });
+</script>
+    </template>
+    
+    <template id="demo3">
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-content="#demo3Content">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<br />
+<div class="alert alert-success">自定义内容区域</div>
+<div class="tab-content" id="demo3Content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+    </template>
+    
+    <template id="demo4">
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-closable="true">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+    <li><a>选项卡6</a></li>
+    <li><a>选项卡7</a></li>
+    <li><a>选项卡8</a></li>
+    <li><a>选项卡9</a></li>
+    <li><a>选项卡10</a></li>
+    <li><a>选项卡11</a></li>
+    <li><a>选项卡12</a></li>
+    <li><a>选项卡13</a></li>
+    <li><a>选项卡14</a></li>
+    <li><a>选项卡15</a></li>
+    <li><a>选项卡16</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+    <div class="tab-pane">选项卡5</div>
+    <div class="tab-pane">选项卡6</div>
+    <div class="tab-pane">选项卡7</div>
+    <div class="tab-pane">选项卡8</div>
+    <div class="tab-pane">选项卡9</div>
+    <div class="tab-pane">选项卡10</div>
+    <div class="tab-pane">选项卡11</div>
+    <div class="tab-pane">选项卡12</div>
+    <div class="tab-pane">选项卡13</div>
+    <div class="tab-pane">选项卡14</div>
+    <div class="tab-pane">选项卡15</div>
+    <div class="tab-pane">选项卡116</div>
+</div>
+    </template>
+    
+    <template id="demo5">
+<ul class="nav nav-tabs"
+    data-toggle="busy-tabs"
+    data-closable="true"
+    data-on-before-remove="demo5OnBeforeRemove"
+    data-on-removed="demo5OnRemoved">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+    <div class="tab-pane">选项卡4</div>
+</div>
+<script>
+    busyAdmin.data.demo5OnBeforeRemove = function (tabs, name) {
+        busyAdmin.dialog.confirm('确认要删除该选项卡吗？', function () {
+            tabs.remove(tabs.getTab(name));
+        });
+
+        return false;
+    };
+    busyAdmin.data.demo5OnRemoved = function (tabs, name) {
+        busyAdmin.dialog.toast('已删除:' + name.$tab.text());
+    }
+</script>
+    </template>
+    
+    <template id="demo6">
+<ul class="nav nav-tabs"
+    data-toggle="busy-tabs"
+    data-card="default"
+    data-closable="true"
+    data-clearable="true"
+    data-on-before-clear="demo6OnBeforeClear"
+    data-on-cleared="demo6OnCleared">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+    <div class="tab-pane">选项卡3</div>
+</div>
+<script>
+    busyAdmin.data.demo6OnBeforeClear = function (tabs) {
+        busyAdmin.dialog.confirm('确认要清空吗？', function () {
+           tabs.clear();
+        });
+        
+        return false;
+    };
+    busyAdmin.data.demo6OnCleared = function (tabs) {
+        busyAdmin.dialog.toast('已清空');
+    }
+</script>
+    </template>
+    
+    <template id="demo7">
+<button class="btn btn-primary" type="button" id="demo7AddBtn">添加标签</button>
+<br />
+<br />
+<ul class="nav nav-tabs"
+    id="demo7Tab"
+    data-toggle="busy-tabs"
+    data-card="default"
+    data-clearable="true"
+    data-add="demo7Add"
+    data-on-added="demo7Added"
+    data-editable="true">
+    <li><a data-name="1">选项卡1</a></li>
+    <li><a data-name="2">选项卡2</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane">选项卡1</div>
+    <div class="tab-pane">选项卡2</div>
+</div>
+<script>
+    busyAdmin.data.demo7Added = function (tabs, name) {
+        busyAdmin.dialog.toast('已添加: ' + name)
+    };
+    busyAdmin.data.demo7Add = function (tabs) {
+        var name = busyAdmin.helper.random(6);
+        
+        return {
+            name: name,
+            label: '选项卡:'+name,
+            pane: name,
+            show: true
+        }
+    }
+    busyAdmin.ready(function () {
+       $('#demo7AddBtn').on('click', function () {
+           var name = busyAdmin.helper.random(6);
+           
+            $('#demo7Tab').baTabs('add', name, '手动:'+name, name, true);
+       });
+    });
+</script>
+    </template>
+
+    <template id="demo8">
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-html="true">
+    <li class="{$Request.get.active == 1 ? 'active':''}"><a href="__URL__?active=1">选项卡1</a></li>
+    <li class="{$Request.get.active == 2 ? 'active':''}"><a href="__URL__?active=2">选项卡2</a></li>
+    <li class="{$Request.get.active == 3 ? 'active':''}"><a href="__URL__?active=3">选项卡3</a></li>
+    <li class="{$Request.get.active == 4 ? 'active':''}"><a href="__URL__?active=4">选项卡4</a></li>
+    <li class="{$Request.get.active == 5 ? 'active':''}"><a href="__URL__?active=5">选项卡5</a></li>
+    <li class="{$Request.get.active == 6 ? 'active':''}"><a href="__URL__?active=6">选项卡6</a></li>
+    <li class="{$Request.get.active == 7 ? 'active':''}"><a href="__URL__?active=7">选项卡7</a></li>
+    <li class="{$Request.get.active == 8 ? 'active':''}"><a href="__URL__?active=8">选项卡8</a></li>
+    <li class="{$Request.get.active == 9 ? 'active':''}"><a href="__URL__?active=9">选项卡9</a></li>
+    <li class="{$Request.get.active == 10 ? 'active':''}"><a href="__URL__?active=10">选项卡10</a></li>
+    <li class="{$Request.get.active == 11 ? 'active':''}"><a href="__URL__?active=11">选项卡11</a></li>
+    <li class="{$Request.get.active == 12 ? 'active':''}"><a href="__URL__?active=12">选项卡12</a></li>
+    <li class="{$Request.get.active == 13 ? 'active':''}"><a href="__URL__?active=13">选项卡13</a></li>
+    <li class="{$Request.get.active == 14 ? 'active':''}"><a href="__URL__?active=14">选项卡14</a></li>
+</ul>
+    </template>
+
+    <template id="demo9">
+<ul class="nav nav-tabs mixin-body" data-toggle="busy-tabs" data-editable="true">
+    <li><a>选项卡1</a></li>
+    <li><a>选项卡2</a></li>
+    <li><a>选项卡3</a></li>
+    <li><a>选项卡4</a></li>
+</ul>
     </template>
 </block>
