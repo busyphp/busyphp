@@ -1,19 +1,19 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\js\driver\SelectPicker;
+namespace BusyPHP\app\admin\component\js\driver\select;
 
-use BusyPHP\app\admin\component\js\driver\SelectPicker;
+use BusyPHP\app\admin\component\js\driver\Select;
 use BusyPHP\app\admin\component\js\Node;
 
 /**
  * JS组件[busyAdmin.plugins.SelectPicker] 选项节点类
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/11/13 21:13 SelectPickerNode.php $
- * @see SelectPicker
+ * @version $Id: 2022/11/13 21:13 SelectOption.php $
+ * @see Select
  */
-class SelectPickerNode extends Node
+class SelectOption extends Node
 {
     /**
      * @var string

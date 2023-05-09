@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\js\driver;
 
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerHandler;
-use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerNode;
+use BusyPHP\app\admin\component\js\driver\select\SelectHandler;
+use BusyPHP\app\admin\component\js\driver\select\SelectOption;
 use BusyPHP\app\admin\component\js\traits\Lists;
 use BusyPHP\app\admin\component\js\traits\ModelOrder;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
@@ -23,11 +23,11 @@ use think\db\exception\DbException;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/11/13 20:14 SelectPicker.php $
- * @property SelectPickerHandler                                                          $handler
- * @property callable($node SelectPickerNode, $item mixed, $group bool, $index int):mixed $itemCallback
- * @method SelectPicker handler(SelectPickerHandler $handler)
+ * @property SelectHandler                                                            $handler
+ * @property callable($node SelectOption, $item mixed, $group bool, $index int):mixed $itemCallback
+ * @method Select handler(SelectHandler $handler)
  */
-class SelectPicker extends Driver implements ContainerInterface
+class Select extends Driver implements ContainerInterface
 {
     use ModelSelect;
     use ModelOrder;
@@ -263,7 +263,7 @@ class SelectPicker extends Driver implements ContainerInterface
         $index = 0;
         $data  = [];
         foreach ($this->list as $item) {
-            $node = SelectPickerNode::init($item);
+            $node = SelectOption::init($item);
             
             // 节点处理回调
             $result = null;

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\js\driver\SelectPicker;
+namespace BusyPHP\app\admin\component\js\driver\select;
 
-use BusyPHP\app\admin\component\js\driver\SelectPicker;
+use BusyPHP\app\admin\component\js\driver\Select;
 use BusyPHP\app\admin\component\js\Handler;
 use BusyPHP\model\Field;
 use think\Collection;
@@ -13,15 +13,15 @@ use think\Collection;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/11/13 20:33 SelectPickerHandler.php $
- * @see SelectPicker
- * @property SelectPicker $driver
+ * @see Select
+ * @property Select $driver
  */
-class SelectPickerHandler extends Handler
+class SelectHandler extends Handler
 {
     /**
      * 查询处理回调
      * @return void|null|false 返回false代表阻止系统处理关键词搜索的相关请求参数：
-     * ({@see SelectPicker::isValue()}，{@see SelectPicker::getTextField()}, {@see SelectPicker::getIdField()})
+     * ({@see Select::isValue()}，{@see Select::getTextField()}, {@see Select::getIdField()})
      */
     public function query()
     {
@@ -31,13 +31,13 @@ class SelectPickerHandler extends Handler
     
     /**
      * 选项处理回调
-     * @param SelectPickerNode $node 节点对象
-     * @param array|Field      $item 数据集Item
-     * @param bool             $group 是否请求分组，暂无意义
-     * @param int              $index 数据集Item下标
+     * @param SelectOption $node 节点对象
+     * @param array|Field  $item 数据集Item
+     * @param bool         $group 是否请求分组，暂无意义
+     * @param int          $index 数据集Item下标
      * @return null|false|void  如果返回false则删除该节点
      */
-    public function item(SelectPickerNode $node, $item, bool $group, int $index)
+    public function item(SelectOption $node, $item, bool $group, int $index)
     {
         $node->setId($item[$this->driver->getIdField()] ?? '');
         $node->setText($item[$this->driver->getTextField()] ?? '');

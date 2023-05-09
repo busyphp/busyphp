@@ -6,8 +6,8 @@ namespace BusyPHP\app\admin\controller\system;
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
 use BusyPHP\app\admin\component\common\SimpleForm;
-use BusyPHP\app\admin\component\js\driver\SelectPicker;
-use BusyPHP\app\admin\component\js\driver\SelectPicker\SelectPickerNode;
+use BusyPHP\app\admin\component\js\driver\Select;
+use BusyPHP\app\admin\component\js\driver\select\SelectOption;
 use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
@@ -389,10 +389,10 @@ class ManagerController extends InsideController
      */
     public function image_style_select() : Response
     {
-        return SelectPicker::init()
+        return Select::init()
             ->list(
                 Filesystem::disk($this->disk)->image()->selectStyleByCache(),
-                function(SelectPickerNode $node, ImageStyleResult $item) {
+                function(SelectOption $node, ImageStyleResult $item) {
                     $node->setId($item->id);
                     $node->setText($item->id);
                 }

@@ -12,10 +12,10 @@
 
 ### 使用
 
-通过在标签上加上自定义属性 `data-toggle="busy-select-picker"` 来触发
+通过在标签上加上自定义属性 `data-toggle="busy-select"` 来触发
 
 ```html
-<select data-toggle="busy-select-picker"></select>
+<select data-toggle="busy-select"></select>
 ```
 
 ### 属性
@@ -37,7 +37,14 @@
 | data-option-template | string,function | `否` | null | 自定义选项模板 |
 | data-tags | boolean | `否` | `false` | 是否为tags模式，该模式下，输入的tag不存则可以创建 |
 | data-tags-space | [string] | `否` | `null` | 设置tag分割字符，默认为回车 |
-| data-select2-options | object | `否` | `null` | Select2插件配置，参考[Select2插件配置](https://select2.org/configuration/options-api) |
+| data-select-class | string | `否` | - | 用来设置select自定义样式，如：`input-sm` |
+| data-loading-text | string | `否` | - | 加载中文本提示 |
+| data-loading-more-text | string | `否` | - | 更多加载中文本提示 |
+| data-input-long-text | string | `否` | - | 输入文字过多文本提示，支持变量 `%s` |
+| data-input-short-text | string | `否` | - | 输入文字过少文本提示，支持变量 `%s` |
+| data-max-selected-text | string | `否` | - | 选中项数量超过最大数量文本提示，支持变量 `%s` |
+| data-empty-text | string | `否` | - | 无选项文本提示 |
+| data-select2 | object | `否` | `null` | Select2插件配置，参考[Select2插件配置](https://select2.org/configuration/options-api) |
 | 异步加载:title |  |  |  |  |
 | data-url | boolean,string | `否` | `false` | 是否启用异步数据选项，设置字符串URL则从该地址获取，否则从当前网址获取 |
 | data-params | object,Function | `否` | - | 自定义请求参数，支持闭包 |
@@ -89,36 +96,122 @@
 #demo3
 ```
 
-#### 自定义标签
+#### 异步缓存
+
+> 通过设置 `data-model-length="0"` 即可实现异步缓存
+
+```demo:实例
+#demo9
+```
+
+#### 不允许搜索
+
+> 通过给组件标签设置自定属性 `data-search="false"` 即可禁止搜索
 
 ```demo:实例
 #demo4
 ```
 
-#### 在modal中打开
+#### 自定义选项模版
+
+> 通过给组件标签设置自定属性 `data-option-template="@|selector|Function"` 即可自定义选项模版
+
+----------
+
+**`baTemplate`模版引擎支持变量**：<br />
+- `id:string` - 选项`value`
+- `text:string` - 选项`text`
+- `group:boolean` - 是否`optgroup`
+- `selected:boolean` - 是否已选中
+- `disabled:boolean` - 是否已禁用
+- `option:object` - 选项源数据，可以在里面获取到数据源，如：`{{option.source}}`
+
+----------
+
+**赋值 `data-formatter="@"`**
+
+
+系统会查找在 `select` 标签内包含自定义属性 `data-template="option"` 的模版标签作为渲染模版。
+
+```HTML
+<div data-toggle="busy-select">
+    <template data-template="option">{{text}}</template>
+</div>
+```
 
 ```demo:实例
 #demo5
+```
+
+
+#### 自定义选中项模版
+
+> 通过给组件标签设置自定属性 `data-selected-template="@|selector|Function"` 即可自定义选中项模版
+
+----------
+
+**`baTemplate`模版引擎支持变量**：<br />
+- `id:string` - 选项`value`
+- `text:string` - 选项`text`
+- `selected:boolean` - 是否已选中
+- `disabled:boolean` - 是否已禁用
+- `option:object` - 选项源数据，可以在里面获取到数据源，如：`{{option.source}}`
+
+----------
+
+**赋值 `data-formatter="@"`**
+
+
+系统会查找在 `select` 标签内包含自定义属性 `data-template="selected"` 的模版标签作为渲染模版。
+
+```HTML
+<div data-toggle="busy-select">
+    <template data-template="selected">{{text}}</template>
+</div>
+```
+
+```demo:实例
+#demo6
+```
+
+#### 创建选项
+
+```demo:实例
+#demo7
+```
+
+#### 组件尺寸
+
+```demo:实例
+#demo8
+```
+
+#### 在modal中打开
+
+```demo:实例
+#demo20
 ```
             </script>
         </div>
     </div>
 
     <template id="demo1">
-<button class="btn btn-primary" id="demo1_btn1">打开</button>
-<button class="btn btn-primary" id="demo1_btn2">关闭</button>
-<button class="btn btn-primary" id="demo1_btn3">启用</button>
-<button class="btn btn-primary" id="demo1_btn4">禁用</button>
-<button class="btn btn-primary" id="demo1_btn5">设置选中项</button>
-<button class="btn btn-primary" id="demo1_btn6">清除选中项</button>
-<button class="btn btn-primary" id="demo1_btn7">添加选项</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('open')">打开</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('close')">关闭</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('enable')">启用</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('enable', false)">禁用</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('setValue', 2)">设置选中项</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('setValue', null)">清除选中项</button>
+<button class="btn btn-primary" onclick="$('#demo1_select').baSelect('append', [{id: 4, text: '小花', disabled: true}, {id: 5, text: '小花2', selected: true}]);">添加选项</button>
 <button class="btn btn-primary" id="demo1_btn8">设置新的选项</button>
+<button class="btn btn-primary" onclick="busyAdmin.dialog.alert(JSON.stringify($('#demo1_select').baSelect('getSelectedData') || {}))">获取选中数据</button>
+<button class="btn btn-primary" onclick="busyAdmin.dialog.alert($('#demo1_select').val() || '')">获取选中值</button>
 <div class="space-10"></div>
 <div class="input-group">
     <div class="input-group-addon">单选</div>
     <select class="form-control"
             id="demo1_select"
-            data-toggle="busy-select-picker"
+            data-toggle="busy-select"
             data-placeholder="请选择">
         <option></option>
         <option value="1">张三</option>
@@ -127,14 +220,14 @@
     </select>
 </div>
 <hr/>
-<button class="btn btn-primary" id="demo1_btn9">设置选中项</button>
-<button class="btn btn-primary" id="demo1_btn10">清除选中项</button>
+<button class="btn btn-primary" id="demo1_btn9" onclick="$('#demo1_select1').baSelect('setValue', [1, 2])">设置选中项</button>
+<button class="btn btn-primary" id="demo1_btn10" onclick="$('#demo1_select1').baSelect('setValue', null)">清除选中项</button>
 <div class="space-10"></div>
 <div class="input-group">
     <div class="input-group-addon">多选</div>
     <select class="form-control"
             id="demo1_select1"
-            data-toggle="busy-select-picker"
+            data-toggle="busy-select"
             data-placeholder="请选择"
             data-clear="true"
             multiple>
@@ -145,65 +238,37 @@
 </div>
 <script>
     $(function () {
-        $('#demo1_btn1').on('click', function () {
-            $('#demo1_select').baSelectPicker('open', true);
-        });
-        $('#demo1_btn2').on('click', function () {
-            $('#demo1_select').baSelectPicker('open', false);
-        });
-        $('#demo1_btn3').on('click', function () {
-            $('#demo1_select').prop('disabled', false);
-        });
-        $('#demo1_btn4').on('click', function () {
-            $('#demo1_select').prop('disabled', true);
-        });
-        $('#demo1_btn5').on('click', function () {
-            $('#demo1_select').baSelectPicker('value', 2);
-        });
-        $('#demo1_btn6').on('click', function () {
-            $('#demo1_select').baSelectPicker('value', null);
-        });
-        $('#demo1_btn7').on('click', function () {
-            $('#demo1_select').baSelectPicker('append', [new Option('小花', 4), new Option('小花1', 5, false, true)]);
-        });
         $('#demo1_btn8').on('click', function () {
-            $('#demo1_select').baSelectPicker('data', [
+            $('#demo1_select').baSelect('setData', [
                 {
                     text     : 'BAT公司',
                     children : [
-                        {id : "1", text : '百度'},
-                        {id : "2", text : '阿里'},
-                        {id : "3", text : '腾讯'},
+                        {id : 1, text : '百度', selected: true},
+                        {id : 2, text : '阿里'},
+                        {id : 3, text : '腾讯'},
                     ]
                 },
                 {
                     text     : '金融公司',
                     children : [
-                        {id : "4", text : '工商'},
-                        {id : "5", text : '建行'},
-                        {id : "6", text : '民生'},
+                        {id : 4, text : '工商'},
+                        {id : 5, text : '建行', disabled: true},
+                        {id : 6, text : '民生'},
                     ]
                 },
                 {
-                    id   : '7',
+                    id   : 7,
                     text : '滴滴',
                 },
                 {
-                    id   : '8',
+                    id   : 8,
                     text : '美团',
                 },
                 {
-                    id   : '9',
+                    id   : 9,
                     text : '饿了吗',
                 }
             ]);
-        });
-
-        $('#demo1_btn9').on('click', function () {
-            $('#demo1_select1').baSelectPicker('value', [1, 2]);
-        });
-        $('#demo1_btn10').on('click', function () {
-            $('#demo1_select1').baSelectPicker('value', null);
         });
     });
 </script>
@@ -212,33 +277,30 @@
     <script id="demo2" type="text/html" class="hide">
 <select class="form-control"
         id="demo2_array"
-        data-toggle="busy-select-picker"
+        data-toggle="busy-select"
         data-data='[{"id":"1","text":"张三"},{"id":"2","text":"李四","disabled":true},{"id":"3","text":"王武","selected":true}]'
         data-placeholder="请选择">
 </select>
     </script>
 
     <script type="text/html" id="demo3" class="hide">
-有缓存
 <div class="input-group">
     <div class="input-group-addon">单选</div>
     <select class="form-control"
-            data-toggle="busy-select-picker"
-            id="testtetttt"
+            data-toggle="busy-select"
             data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
             data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
             data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
-            data-model-length="0"
             data-value='admin'
+            data-empty-text="暂无选项"
             data-placeholder="请选择">
     </select>
 </div>
 <hr/>
-无缓存
 <div class="input-group">
     <div class="input-group-addon">多选</div>
     <select class="form-control"
-            data-toggle="busy-select-picker"
+            data-toggle="busy-select"
             data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
             data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
             data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
@@ -249,13 +311,139 @@
     </select>
 </div>
     </script>
+    
+    <script type="text/html" id="demo9" class="hide">
+<div class="input-group">
+    <div class="input-group-addon">单选</div>
+    <select class="form-control"
+            data-toggle="busy-select"
+            data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+            data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+            data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+            data-model-length="0"
+            data-value='admin'
+            data-placeholder="请选择">
+    </select>
+</div>
+<hr/>
+<div class="input-group">
+    <div class="input-group-addon">多选</div>
+    <select class="form-control"
+            data-toggle="busy-select"
+            data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+            data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+            data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+            data-model-order="id desc,type desc"
+            data-model-length="0"
+            data-value='["admin","storage"]'
+            data-placeholder="请选择"
+            multiple>
+    </select>
+</div>
+    </script>
 
     <script type="text/html" id="demo4" class="hide">
 <select class="form-control"
-        data-toggle="busy-select-picker"
+        data-search="false"
+        data-clear="true"
+        data-toggle="busy-select"
+        data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+        data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+        data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+        data-value='admin'
+        data-model-length="0"
+        data-placeholder="请选择">
+</select>
+
+<hr />
+
+<select class="form-control"
+        data-toggle="busy-select"
+        data-clear="true"
+        data-search="false"
+        data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+        data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+        data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+        data-model-order="id desc,type desc"
+        data-value='["admin","storage"]'
+        data-placeholder="请选择"
+        data-model-length="0"
+        multiple>
+</select>
+    </script>
+    
+    <script type="text/html" id="demo5" class="hide">
+<div data-clear="true"
+     data-toggle="busy-select"
+     data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+     data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+     data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+     data-value="admin"
+     data-model-length="0"
+     data-option-template="@"
+     data-placeholder="请选择">
+    <template data-template="option">
+        <i class="fa fa-list-ul"></i> {{text}}
+    </template>
+    <select></select>
+</div>
+
+<hr />
+
+<div data-clear="true"
+     data-toggle="busy-select"
+     data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+     data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+     data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+     data-value="admin"
+     data-model-length="0"
+     data-option-template="@"
+     data-placeholder="请选择"
+     data-multiple="true">
+    <template data-template="option">
+        <i class="fa fa-user-circle-o"></i> {{text}}
+    </template>
+</div>
+    </script>
+    
+    <script type="text/html" id="demo6" class="hide">
+<div data-clear="true"
+     data-toggle="busy-select"
+     data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+     data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+     data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+     data-value="admin"
+     data-model-length="0"
+     data-selected-template="@"
+     data-placeholder="请选择">
+    <template data-template="selected">
+        <i class="fa fa-user-circle-o"></i> {{text}}
+    </template>
+</div>
+<hr />
+<div data-clear="true"
+     data-toggle="busy-select"
+     data-model="<?=\BusyPHP\app\admin\model\system\config\SystemConfig::class;?>"
+     data-model-id-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::type()?>"
+     data-model-text-field="<?=\BusyPHP\app\admin\model\system\config\SystemConfigField::name()?>"
+     data-value="admin"
+     data-model-length="0"
+     data-selected-template="@"
+     data-placeholder="请选择"
+     data-multiple="true">
+    <template data-template="selected">
+        <i class="fa fa-plane"></i> {{text}}
+    </template>
+</div>
+    </script>
+
+    <script type="text/html" id="demo7" class="hide">
+<select class="form-control"
+        data-toggle="busy-select"
         data-tags="true"
         data-clear="true"
-        data-placeholder="请选择">
+        data-placeholder="请输入内容按回车创建">
+    <option></option>
     <option value="1">百度</option>
     <option value="2">腾讯</option>
     <option value="3">阿里</option>
@@ -263,24 +451,265 @@
 <hr/>
 请输入标签，用逗号或空格分割
 <select class="form-control"
-        data-toggle="busy-select-picker"
+        data-toggle="busy-select"
         data-tags="true"
         data-tags-space='[","," "]'
         data-placeholder="请输入标签，用逗号或空格分割"
         multiple>
-    <option value="1" selected>百度</option>
-    <option value="2" selected>腾讯</option>
-    <option value="3" selected>阿里</option>
+    <option></option>
+    <option value="1">百度</option>
+    <option value="2">腾讯</option>
+    <option value="3">阿里</option>
 </select>
     </script>
 
-    <script id="demo5" type="text/html">
+    <script type="text/html" id="demo8" class="hide">
+<div class="form-group-title">普通</div>
+
+<hr />
+<p><code>.input-lg</code></p>
+
+<div class="row row-gutters-5">
+    <div class="col-sm-4">
+        <select class="form-control input-lg">
+            <option value="">请选择</option>
+            <option value="1">百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-lg" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-lg" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+            <option value="1" selected>百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+            <option value="4">饿了吗</option>
+            <option value="5" selected>美团</option>
+            <option value="6">抖音</option>
+        </select>
+    </div>
+</div>
+
+<hr />
+<p><code>默认大小</code></p>
+
+<div class="row row-gutters-5">
+    <div class="col-sm-4">
+        <select class="form-control">
+            <option value="">请选择</option>
+            <option value="1">百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control" data-toggle="busy-select" data-placeholder="请选择"  data-clear="true" multiple>
+            <option value="1" selected>百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+            <option value="4">饿了吗</option>
+            <option value="5" selected>美团</option>
+            <option value="6">抖音</option>
+        </select>
+    </div>
+</div>
+
+<hr />
+<p><code>.input-sm</code></p>
+
+<div class="row row-gutters-5">
+    <div class="col-sm-4">
+        <select class="form-control input-sm">
+            <option value="">请选择</option>
+            <option value="1">百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-sm" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-sm" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+            <option value="1" selected>百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+            <option value="4">饿了吗</option>
+            <option value="5" selected>美团</option>
+            <option value="6">抖音</option>
+        </select>
+    </div>
+</div>
+
+<hr />
+<p><code>.input-xs</code></p>
+
+<div class="row row-gutters-5">
+    <div class="col-sm-4">
+        <select class="form-control input-xs">
+            <option value="">请选择</option>
+            <option value="1">百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-xs" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <select class="form-control input-xs" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+            <option value="1" selected>百度</option>
+            <option value="2">腾讯</option>
+            <option value="3" selected>阿里</option>
+            <option value="4">饿了吗</option>
+            <option value="5" selected>美团</option>
+            <option value="6">抖音</option>
+        </select>
+    </div>
+</div>
+
+<hr />
+
+<div class="form-group-title">组合</div>
+
+<hr />
+<p><code>.input-group-lg</code></p>
+
+<div class="input-group input-group-lg">
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3">阿里</option>
+    </select>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3" >阿里</option>
+        <option value="4" selected>饿了吗</option>
+        <option value="5" >美团</option>
+        <option value="6">抖音</option>
+    </select>
+</div>
+
+<hr />
+<p><code>默认大小</code></p>
+
+<div class="input-group">
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3">阿里</option>
+    </select>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3" >阿里</option>
+        <option value="4" selected>饿了吗</option>
+        <option value="5" >美团</option>
+        <option value="6">抖音</option>
+    </select>
+</div>
+
+<hr />
+<p><code>.input-group-sm</code></p>
+
+<div class="input-group input-group-sm">
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3">阿里</option>
+    </select>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3" >阿里</option>
+        <option value="4" selected>饿了吗</option>
+        <option value="5" >美团</option>
+        <option value="6">抖音</option>
+    </select>
+</div>
+
+<hr />
+<p><code>.input-group-xs</code></p>
+
+<div class="input-group input-group-xs">
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3">阿里</option>
+    </select>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+        <option value="1">百度</option>
+        <option value="2" selected>腾讯</option>
+        <option value="3" >阿里</option>
+        <option value="4" selected>饿了吗</option>
+        <option value="5" >美团</option>
+        <option value="6">抖音</option>
+    </select>
+</div>
+
+<hr />
+
+<div class="form-group-title">内联</div>
+
+<hr />
+<div class="form-inline">
+    <div class="input-group">
+        <div class="input-group-addon">关键词</div>
+        <input type="text" class="form-control" placeholder="关键词"/>
+    </div>
+    <div class="input-group">
+        <div class="input-group-addon">选择项</div>
+        <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true">
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <div class="input-group-addon">选择项</div>
+        <select class="form-control" data-toggle="busy-select" data-placeholder="请选择" data-clear="true" multiple>
+            <option value="1">百度</option>
+            <option value="2" selected>腾讯</option>
+            <option value="3">阿里</option>
+        </select>
+    </div>
+    <button class="btn btn-primary">搜索</button>
+</div>
+    </script>
+
+    <script id="demo20" type="text/html">
 <a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
 <template id="modalContent">
     <div style="height: 1000px;">
         <select class="form-control"
-                id="demo1_select"
-                data-toggle="busy-select-picker"
+                data-toggle="busy-select"
                 data-placeholder="请选择">
             <option></option>
             <option value="1">张三</option>
