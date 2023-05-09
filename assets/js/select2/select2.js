@@ -4611,7 +4611,7 @@ S2.define('select2/dropdown/attachBody',[
     container.bottom = offset.top + container.height;
 
     var dropdown = {
-      height: this.$dropdown.outerHeight(false)
+      height: this.$dropdown.outerHeight(true) // busyAdmin: 修复高度计算方式
     };
 
     var viewport = {
