@@ -1,4 +1,4 @@
-<ul class="nav nav-tabs ">
+<ul class="nav nav-tabs" data-toggle="busy-tabs" data-html="true">
     <foreach name="nav" item="vo">
         <ba:access value="$vo.path">
             <li class="{$url.route_path == $vo.route_path ? 'active':''}"><a href="{:url($vo.path)}">{$vo.name}</a></li>
