@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\controller\develop;
 
+use BusyPHP\app\admin\annotation\MenuGroup;
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
 use BusyPHP\app\admin\component\common\SimpleForm;
@@ -27,6 +28,16 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2020/6/1 下午3:35 下午 MenuController.php $
  */
+// 开发模式
+#[MenuGroup(path: '#developer', name: "开发模式", icon: 'fa fa-folder-open-o', sort: 0, default: true)]
+#[MenuGroup(path: '#developer_manual', name: "开发手册", parent: "#developer", icon: 'fa fa-book', sort: 50)]
+
+// 系统
+#[MenuGroup(path: '#system', name: "系统", icon: 'glyphicon glyphicon-cog', sort: 1)]
+#[MenuGroup(path: '#system_manager', name: "系统管理", parent: "#system", icon: 'fa fa-anchor', sort: 0)]
+#[MenuGroup(path: '#system_user', name: "系统用户", parent: "#system", icon: 'fa fa-user-circle', sort: 1)]
+
+// 路由转发为class
 #[MenuRoute(path: 'system_menu', class: true)]
 class MenuController extends InsideController
 {
@@ -55,7 +66,7 @@ class MenuController extends InsideController
      * 菜单管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#developer', icon: 'bicon bicon-menu', sort: 1)]
+    #[MenuNode(menu: true, icon: 'bicon bicon-menu', sort: 1)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {

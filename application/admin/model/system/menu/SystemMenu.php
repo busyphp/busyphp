@@ -489,38 +489,46 @@ class SystemMenu extends Model implements ContainerInterface
                             }
                             
                             // 分组节点
+                            $defaultGroup = null;
                             if ($menuGroups = $reflect->getAttributes(MenuGroup::class)) {
-                                /** @var MenuGroup $menuGroup */
-                                $menuGroup = $menuGroups[0]->newInstance();
-                                $sort      = $menuGroup->getSort();
-                                $icon      = trim($menuGroup->getIcon());
-                                $path      = trim($menuGroup->getPath());
-                                
-                                // 分组名称
-                                $menuName = trim($menuGroup->getName());
-                                if ($menuName === '') {
-                                    $menuName = $res[ClassHelper::ATTR_NAME] ?: ucfirst(StringHelper::snake($reflect->getShortName(), ' '));
-                                }
-                                
-                                $id--;
-                                $item = SystemMenuField::init();
-                                $item->setId($id);
-                                $item->setName($menuName);
-                                $item->setPath('#' . ltrim($path === '' ? $controller : $path, '#'));
-                                $item->setParentPath(trim($menuGroup->getParent()));
-                                $item->setIcon($icon ?: 'fa fa-folder');
-                                $item->setSort($sort === false ? abs($id) : $sort);
-                                $item->setParams('');
-                                $item->setHide(false);
-                                $item->setDisabled(false);
-                                $item->setSystem(false);
-                                $item->setTopPath('');
-                                $item->setTarget('');
-                                $item   = SystemMenuField::parse($item);
-                                $parent = $item->path;
-                                if ($item->parentPath) {
+                                foreach ($menuGroups as $attribute) {
+                                    /** @var MenuGroup $menuGroup */
+                                    $menuGroup = $attribute->newInstance();
+                                    $sort      = $menuGroup->getSort();
+                                    $icon      = trim($menuGroup->getIcon());
+                                    $path      = trim($menuGroup->getPath());
+                                    
+                                    // 分组名称
+                                    $menuName = trim($menuGroup->getName());
+                                    if ($menuName === '') {
+                                        $menuName = $res[ClassHelper::ATTR_NAME] ?: ucfirst(StringHelper::snake($reflect->getShortName(), ' '));
+                                    }
+                                    
+                                    $id--;
+                                    $item = SystemMenuField::init();
+                                    $item->setId($id);
+                                    $item->setName($menuName);
+                                    $item->setPath('#' . ltrim($path === '' ? $controller : $path, '#'));
+                                    $item->setParentPath(trim($menuGroup->getParent()));
+                                    $item->setIcon($icon ?: 'fa fa-folder');
+                                    $item->setSort($sort === false ? abs($id) : $sort);
+                                    $item->setParams('');
+                                    $item->setHide(false);
+                                    $item->setDisabled(false);
+                                    $item->setSystem(false);
+                                    $item->setTopPath('');
+                                    $item->setTarget('');
+                                    $item   = SystemMenuField::parse($item);
                                     $list[] = $item;
+                                    $parent = $item->path;
+                                    
+                                    if ($menuGroup->isDefault()) {
+                                        $defaultGroup = $item;
+                                    }
                                 }
+                            }
+                            if ($defaultGroup) {
+                                $parent = $defaultGroup->path;
                             }
                             
                             // 叶子节点
