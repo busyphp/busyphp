@@ -710,52 +710,52 @@ declare namespace busyAdmin {
         uploadAsyncAfterSendFile: string,
 
         //+======================================================================
-        //+ SelectPicker
+        //+ select
         //+======================================================================
         /**
          * 每当选择或删除选项时触发
          */
-        selectPickerChange: string,
+        selectChange: string,
         /**
          * 关闭前触发
          */
-        selectPickerBeforeClose: string,
+        selectBeforeClose: string,
         /**
          * 关闭后触发
          */
-        selectPickerClose: string,
+        selectClose: string,
         /**
          * 打开前触发
          */
-        selectPickerBeforeOpen: string,
+        selectBeforeOpen: string,
         /**
          * 打开后触发
          */
-        selectPickerOpen: string,
+        selectOpen: string,
         /**
          * 选择前触发
          */
-        selectPickerBeforeSelect: string,
+        selectBeforeSelect: string,
         /**
          * 选择后触发
          */
-        selectPickerSelect: string,
+        selectSelect: string,
         /**
          * 取消选择前触发
          */
-        selectPickerBeforeUnselect: string,
+        selectBeforeUnselect: string,
         /**
          * 取消选择后触发
          */
-        selectPickerUnselect: string,
+        selectUnselect: string,
         /**
          * 清空前触发
          */
-        selectPickerBeforeClear: string,
+        selectBeforeClear: string,
         /**
          * 清空后触发
          */
-        selectPickerClear: string,
+        selectClear: string,
 
 
         //+======================================================================
@@ -1111,7 +1111,7 @@ declare namespace busyAdmin {
         Modal: object,
         Request: object,
         SearchBar: object,
-        SelectPicker: object,
+        Select: object,
         Shuttle: object,
         Table: object,
         Tree: object,
