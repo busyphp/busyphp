@@ -11,6 +11,9 @@ use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\interfaces\ContainerInterface;
+use BusyPHP\traits\ContainerDefine;
+use BusyPHP\traits\ContainerInstance;
 use Closure;
 use stdClass;
 use think\Container;
@@ -29,8 +32,11 @@ use Throwable;
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/18 下午下午1:40 AdminHandle.php $
  */
-class AdminHandle extends Handle
+class AdminHandle extends Handle implements ContainerInterface
 {
+    use ContainerDefine;
+    use ContainerInstance;
+    
     /** @var int 需要登录 */
     const CODE_NEED_LOGIN = 3020001;
     
@@ -38,43 +44,9 @@ class AdminHandle extends Handle
     const CODE_NEED_EMPTY_CONSOLE_LOG = 4010001;
     
     
-    /**
-     * 处理数据渲染
-     * @param Request   $request
-     * @param Throwable $e
-     * @return Response
-     */
-    public function render($request, Throwable $e) : Response
+    public static function defineContainer() : string
     {
-        if ($e instanceof HttpResponseException || $e instanceof HttpException) {
-            return parent::render($request, $e);
-        }
-        
-        if ($request->isAjax() && !self::isSinglePage()) {
-            $error = $this->convertExceptionToArray($e);
-            
-            $error['error_code']    = $error['code'];
-            $error['error_message'] = $error['message'];
-            unset($error['code'], $error['message']);
-            
-            return self::restResponseError($e, $error);
-        }
-        
-        if ($request->isJson()) {
-            return parent::render($request, $e);
-        }
-        
-        // 异常页面
-        try {
-            /** @var View $view */
-            $view = View::create(__DIR__ . DIRECTORY_SEPARATOR . '../view/exception.html', 'view');
-            $view->assign(self::templateBaseData('系统发生错误'));
-            $view->assign($this->convertExceptionToArray($e));
-            
-            return $view;
-        } catch (Throwable $e) {
-            return parent::render($request, $e);
-        }
+        return static::class;
     }
     
     
@@ -257,6 +229,40 @@ class AdminHandle extends Handle
     
     
     /**
+     * 处理数据渲染
+     * @param Request   $request
+     * @param Throwable $e
+     * @return Response
+     */
+    public function render($request, Throwable $e) : Response
+    {
+        if ($e instanceof HttpResponseException || $e instanceof HttpException) {
+            return parent::render($request, $e);
+        }
+        
+        if ($request->isAjax() && !self::isSinglePage()) {
+            return $this->jsonError($e);
+        }
+        
+        if ($request->isJson()) {
+            return parent::render($request, $e);
+        }
+        
+        // 异常页面
+        try {
+            /** @var View $view */
+            $view = View::create(__DIR__ . DIRECTORY_SEPARATOR . '../view/exception.html', 'view');
+            $view->assign(self::templateBaseData('系统发生错误'));
+            $view->assign($this->convertExceptionToArray($e));
+            
+            return $view;
+        } catch (Throwable $e) {
+            return parent::render($request, $e);
+        }
+    }
+    
+    
+    /**
      * Rest响应
      * @param int    $code 错误码，1为成功
      * @param string $message 消息
@@ -264,14 +270,14 @@ class AdminHandle extends Handle
      * @param mixed  $url 跳转的URL
      * @return Response
      */
-    public static function restResponse(int $code = 1, string $message = '', array $result = [], $url = '') : Response
+    public function json(int $code = 1, string $message = '', array $result = [], $url = '') : Response
     {
-        $app = App::getInstance();
+        $app = $this->app;
         $url = (string) $url;
         
         if ($code === 1) {
             if ($result && !ArrayHelper::isAssoc($result)) {
-                return self::restResponse(0, '返回数据结构必须是键值对形式');
+                return $this->json(0, '返回数据结构必须是键值对形式');
             }
         }
         
@@ -281,6 +287,7 @@ class AdminHandle extends Handle
             'result'  => $result ?: new stdClass(),
             'url'     => $url,
         ];
+        
         if ($app->isDebug()) {
             $runtime = number_format(microtime(true) - $app->getBeginTime(), 10, '.', '');
             $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
@@ -288,7 +295,7 @@ class AdminHandle extends Handle
             $uri     = $app->request->protocol() . ' ' . $app->request->method() . ' : ' . $app->request->url(true);
             $files   = get_included_files();
             
-            $data['debug'] = [
+            $data['debugs'] = [
                 'request' => sprintf("%s %s", date('Y-m-d H:i:s', $app->request->time() ?: time()), $uri),
                 'runtime' => sprintf("%ss [ 吞吐率：%sreq/s ] 内存消耗：%skb 文件加载：%s", number_format((float) $runtime, 6), $reqs, $mem, count($files)),
                 'query'   => sprintf("%s queries", $app->db->getQueryTimes()),
@@ -296,8 +303,8 @@ class AdminHandle extends Handle
                 'cookies' => $app->request->cookie(),
                 'session' => $app->exists('session') ? $app->session->all() : [],
                 'files'   => $files,
-                'trace'   => trace()
             ];
+            $data['traces'] = trace();
         }
         
         return Response::create($data, 'json');
@@ -311,7 +318,7 @@ class AdminHandle extends Handle
      * @param string|Url       $url 跳转的地址
      * @return Response
      */
-    public static function restResponseSuccess(string|array $message = '', array|string|Url $result = [], string|Url $url = '') : Response
+    public function jsonSuccess(string|array $message = '', array|string|Url $result = [], string|Url $url = '') : Response
     {
         if (is_array($message)) {
             $url     = is_array($result) ? '' : $result;
@@ -321,7 +328,7 @@ class AdminHandle extends Handle
             $url = $result;
         }
         
-        return self::restResponse(1, $message, $result, $url);
+        return $this->json(1, $message, $result, $url);
     }
     
     
@@ -332,24 +339,31 @@ class AdminHandle extends Handle
      * @param int                  $code 错误代码
      * @return Response
      */
-    public static function restResponseError(mixed $message = '', string|Url|int|array $url = '', int $code = 0) : Response
+    public function jsonError(mixed $message = '', string|Url|int|array $url = '', int $code = 0) : Response
     {
+        $errorCode = 0;
+        $result    = [];
         if ($message instanceof Throwable) {
-            if ($message->getCode() !== 1) {
-                $code = $message->getCode();
-            }
-            $message = $message->getMessage();
+            $result    = $this->convertExceptionToArray($message);
+            $message   = $result['message'];
+            $errorCode = $result['code'];
+            unset($result['message'], $result['code']);
         }
         
-        $result = [];
         if (is_numeric($url)) {
             $code = $url;
             $url  = '';
         } elseif (is_array($url)) {
-            $result = $url;
-            $url    = '';
+            if (ArrayHelper::isAssoc($url)) {
+                $result += $url;
+            }
+            $url = '';
         }
         
-        return self::restResponse($code === 1 ? 0 : $code, $message, $result, $url);
+        if (!$code) {
+            $code = $errorCode;
+        }
+        
+        return $this->json($code === 1 ? 0 : $code, $message, $result, $url);
     }
 }

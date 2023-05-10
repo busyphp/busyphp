@@ -132,7 +132,7 @@ abstract class Driver
             throw new RuntimeException('组件数据获取失败，请检测前置条件');
         }
         
-        return AdminHandle::restResponseSuccess($result);
+        return AdminHandle::instance()->jsonSuccess($result);
     }
     
     
@@ -226,6 +226,6 @@ abstract class Driver
             return;
         }
         
-        throw new HttpResponseException(AdminHandle::restResponseSuccess($result));
+        throw new HttpResponseException(AdminHandle::instance()->jsonSuccess($result));
     }
 }

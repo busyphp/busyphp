@@ -199,7 +199,7 @@ class ConsoleLog
             $logId = $logId->logId;
         }
         
-        return AdminHandle::restResponseSuccess($message, [
+        return AdminHandle::instance()->jsonSuccess($message, [
             'console_log' => [
                 'id'            => $logId,
                 'operate_url'   => (string) $url,

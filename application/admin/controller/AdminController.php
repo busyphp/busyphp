@@ -31,6 +31,7 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/9/24 下午下午4:39 AdminController.php $
+ * @property AdminHandle $handle
  */
 abstract class AdminController extends Controller
 {
@@ -223,7 +224,7 @@ abstract class AdminController extends Controller
         }
         
         if (($this->isAjax() || $data) && !AdminHandle::isSinglePage()) {
-            return AdminHandle::restResponseSuccess($message, $data, $jumpUrl);
+            return $this->handle->jsonSuccess($message, $data, $jumpUrl);
         }
         
         return parent::success($message, $jumpUrl);
@@ -240,7 +241,7 @@ abstract class AdminController extends Controller
     protected function error($message, $jumpUrl = '', int $code = 0) : Response
     {
         if ($this->isAjax()) {
-            return AdminHandle::restResponseError($message, $jumpUrl, $code);
+            return $this->handle->jsonError($message, $jumpUrl, $code);
         }
         
         return parent::error($message, $jumpUrl);
