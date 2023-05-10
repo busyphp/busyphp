@@ -159,6 +159,7 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
     
     protected function onParseAfter()
     {
+        $this->style   = $this->style ?: [];
         $this->isFile  = $this->type == SystemFile::FILE_TYPE_FILE;
         $this->isImage = $this->type == SystemFile::FILE_TYPE_IMAGE;
         $this->isVideo = $this->type == SystemFile::FILE_TYPE_VIDEO;

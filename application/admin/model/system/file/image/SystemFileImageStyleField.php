@@ -52,6 +52,7 @@ class SystemFileImageStyleField extends Field implements ModelValidateInterface
      */
     protected function onParseAfter() : void
     {
+        $this->content = $this->content ?: [];
         $this->content = ImageStyleResult::fillContent($this->content);
     }
     

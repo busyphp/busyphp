@@ -361,6 +361,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     {
         $groupIdMap = AdminGroup::instance()->getIdMap();
         
+        $this->theme              = $this->theme ?: [];
         $this->skin               = $this->theme['skin'] ?? '';
         $this->isTempLock         = $this->errorRelease > time();
         $this->formatErrorRelease = $this->errorRelease > 0 ? TransHelper::date($this->errorRelease) : '';

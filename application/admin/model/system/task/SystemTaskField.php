@@ -274,6 +274,7 @@ class SystemTaskField extends Field
             $this->duration = number_format(max($this->endTime - $this->startTime, 0), 3);
         }
         
+        $this->operate      = $this->operate ?: [];
         $this->operateUrl   = $this->operate['url'] ?? '';
         $this->operateBlank = $this->operate['blank'] ?? false;
         $this->operateName  = $this->operate['name'] ?? '';
