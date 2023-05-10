@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace BusyPHP;
 
 use think\Exception;
+use think\exception\Handle;
 use think\exception\ValidateException;
 use think\facade\Route;
 use think\Request;
@@ -48,31 +49,36 @@ use Throwable;
 abstract class Controller
 {
     /**
-     * @var Request
-     */
-    protected $request;
-    
-    /**
      * @var App
      */
-    protected $app;
+    protected App $app;
+    
+    /**
+     * @var Request
+     */
+    protected Request $request;
     
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
+    
+    /**
+     * @var Handle
+     */
+    protected Handle $handle;
     
     /**
      * 是否批量验证
      * @var bool
      */
-    protected $batchValidate = false;
+    protected bool $batchValidate = false;
     
     /**
      * 控制器中间件
      * @var array
      */
-    protected $middleware = [];
+    protected array $middleware = [];
     
     
     /**
@@ -84,7 +90,8 @@ abstract class Controller
     {
         $this->app     = $app;
         $this->request = $this->app->request;
-        $this->view    = Response::create('', 'view', 200);
+        $this->handle  = $this->app->make(Handle::class);
+        $this->view    = $this->app->make(View::class);
         $this->initialize();
     }
     
