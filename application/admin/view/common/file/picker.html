@@ -133,7 +133,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="!loading && list.length == 0" class="ba-full-empty" v-html="empty_text"></div>
+                            <div v-if="!loading && list.length == 0" class="ba-full-empty" v-html="'<div>'+ empty_text +'</div>'"></div>
                         </div>
                     </div>
                     <div class="ba--pager border no-border-left no-border-bottom no-border-right" ref="foot" v-show="page_html !== ''" v-html="page_html"></div>
@@ -164,7 +164,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="selected_list.length == 0" class="ba-full-empty" v-html="options.locale.noSelect"></div>
+                            <div v-if="selected_list.length == 0" class="ba-full-empty" v-html="'<div>'+ options.locale.noSelect +'</div>'"></div>
                         </div>
                     </div>
                     <div class="ba--select-foot" v-if="selected_list.length > 0">
