@@ -98,9 +98,9 @@ class SimpleForm implements ContainerInterface
      * @return int
      * @throws DbException
      */
-    public function sort(string|array $data, string|Entity $sortField = 'sort', string|Entity $pkField = '') : int
+    public function sort(string|array $data, string|Entity $sortField = '', string|Entity $pkField = '') : int
     {
-        $sortField  = Entity::parse($sortField);
+        $sortField  = Entity::parse($sortField) ?: 'sort';
         $pkField    = Entity::parse($pkField) ?: $this->getModel()->getPk();
         $data       = is_string($data) ? $this->request->param("$data/a", [], 'intval') : $data;
         $updateData = [];
