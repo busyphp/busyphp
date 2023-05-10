@@ -51,7 +51,13 @@ class AdminHandle extends Handle
         }
         
         if ($request->isAjax() && !self::isSinglePage()) {
-            return self::restResponseError($e);
+            $error = $this->convertExceptionToArray($e);
+            
+            $error['error_code']    = $error['code'];
+            $error['error_message'] = $error['message'];
+            unset($error['code'], $error['message']);
+            
+            return self::restResponseError($e, $error);
         }
         
         if ($request->isJson()) {
@@ -276,7 +282,22 @@ class AdminHandle extends Handle
             'url'     => $url,
         ];
         if ($app->isDebug()) {
-            $data['traces'] = trace();
+            $runtime = number_format(microtime(true) - $app->getBeginTime(), 10, '.', '');
+            $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
+            $mem     = number_format((memory_get_usage() - $app->getBeginMem()) / 1024, 2);
+            $uri     = $app->request->protocol() . ' ' . $app->request->method() . ' : ' . $app->request->url(true);
+            $files   = get_included_files();
+            
+            $data['debug'] = [
+                'request' => sprintf("%s %s", date('Y-m-d H:i:s', $app->request->time() ?: time()), $uri),
+                'runtime' => sprintf("%ss [ 吞吐率：%sreq/s ] 内存消耗：%skb 文件加载：%s", number_format((float) $runtime, 6), $reqs, $mem, count($files)),
+                'query'   => sprintf("%s queries", $app->db->getQueryTimes()),
+                'cache'   => sprintf("%s reads,%s writes", $app->cache->getReadTimes(), $app->cache->getWriteTimes()),
+                'cookies' => $app->request->cookie(),
+                'session' => $app->exists('session') ? $app->session->all() : [],
+                'files'   => $files,
+                'trace'   => trace()
+            ];
         }
         
         return Response::create($data, 'json');
@@ -290,7 +311,7 @@ class AdminHandle extends Handle
      * @param string|Url       $url 跳转的地址
      * @return Response
      */
-    public static function restResponseSuccess($message = '', $result = [], $url = '') : Response
+    public static function restResponseSuccess(string|array $message = '', array|string|Url $result = [], string|Url $url = '') : Response
     {
         if (is_array($message)) {
             $url     = is_array($result) ? '' : $result;
@@ -306,12 +327,12 @@ class AdminHandle extends Handle
     
     /**
      * Rest响应失败
-     * @param string|Throwable $message 失败消息或异常类对象
-     * @param string|Url|int   $url 跳转地址或错误代码
-     * @param int              $code 错误代码
+     * @param string|Throwable     $message 失败消息或异常类对象
+     * @param string|Url|int|array $url 跳转地址或错误代码或错误数据
+     * @param int                  $code 错误代码
      * @return Response
      */
-    public static function restResponseError($message = '', $url = '', int $code = 0) : Response
+    public static function restResponseError(mixed $message = '', string|Url|int|array $url = '', int $code = 0) : Response
     {
         if ($message instanceof Throwable) {
             if ($message->getCode() !== 1) {
@@ -320,10 +341,15 @@ class AdminHandle extends Handle
             $message = $message->getMessage();
         }
         
+        $result = [];
         if (is_numeric($url)) {
             $code = $url;
+            $url  = '';
+        } elseif (is_array($url)) {
+            $result = $url;
+            $url    = '';
         }
         
-        return self::restResponse($code === 1 ? 0 : $code, $message, [], $url);
+        return self::restResponse($code === 1 ? 0 : $code, $message, $result, $url);
     }
 }
