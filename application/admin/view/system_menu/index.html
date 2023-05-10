@@ -4,14 +4,11 @@
     <div data-toggle="busy-table"
          data-height="true"
          data-show-columns="true"
-         data-search="true"
          data-show-refresh="true"
          data-show-print="true"
-         data-show-export-way="true"
          data-export-filename="{$system.page_title}-%s"
          data-state="__ROUTE__"
          data-tree-show-field="name"
-         data-tree-lazy="true"
          data-tree-state="true"
          data-parent-field="{$parent_field}"
          data-parent-root="{$parent_root}"
@@ -75,7 +72,7 @@
                         data-tableexport-selector="input"
                         data-formatter="@">
                         <script type="text/html">
-                            <ba-if value="is_print">
+                            <ba-if value="is_print || item.annotation">
                                 {{value}}
                                 <ba-else/>
                                 <input type="text" class="form-control input-xs text-center" data-bind="" value="{{value}}"/>
@@ -87,7 +84,16 @@
                         data-align="center"
                         data-field="id"
                         data-show-overflow="true"
-                        data-title="ID"></th>
+                        data-formatter="@"
+                        data-title="ID">
+                        <script type="text/html">
+                            <ba-if value="item.annotation">
+                                -
+                                <ba-else/>
+                                {{value}}
+                            </ba-if>
+                        </script>
+                    </th>
 
                     <th width="50"
                         data-align="center"
@@ -106,10 +112,29 @@
                         data-field="name"
                         data-title="菜单名称"
                         data-formatter="@"
-                        data-min-width="300"
-                        data-searchable="true">
+                        data-min-width="300">
                         <script type="text/html">
-                            {{value}} <code>{{item.path}}</code>
+                            {{value}}
+                        </script>
+                    </th>
+
+                    <th data-align="center"
+                        data-field="path"
+                        data-title="菜单路径"
+                        data-formatter="@"
+                        data-width="150"
+                        data-tableexport-selector="input">
+                        <script type="text/html">
+                            <ba-if value="is_print">
+                                {{value}}
+                                <ba-else/>
+                                <div class="input-group input-group-xs">
+                                    <input type="text" readonly class="form-control min-width-100" value="{{value}}"/>
+                                    <div class="input-group-btn">
+                                        <a class="btn btn-secondary" data-toggle="busy-copy" data-content="{{value}}"><i class="fa fa-copy"></i></a>
+                                    </div>
+                                </div>
+                            </ba-if>
                         </script>
                     </th>
 
@@ -119,21 +144,21 @@
                         data-title="状态"
                         data-formatter="@">
                         <script type="text/html">
-                            <ba-if value="item.system">
-                                <kbd>系统菜单</kbd>
-                                <ba-else/>
-                                <ba-if value="is_print">
-                                    {{value ?'禁用':'启用'}}
+                            <ba-if value="!item.operate_disable || is_print">
+                                <ba-if value="value">
+                                    <b class="text-danger">禁用</b>
                                     <ba-else/>
-                                    <input class="switch input-xs success"
-                                           type="checkbox"
-                                           data-url="{:url('set_attr')}"
-                                           data-on-success="false"
-                                           data-params='{"id":"{{item.id}}","type":"disabled"}'
-                                           data-toggle="busy-checkbox"
-                                           title="启用,禁用"
-                                           {{value ?'':'checked'}} />
+                                    <b class="text-success">正常</b>
                                 </ba-if>
+                                <ba-else/>
+                                <input class="switch input-xs success"
+                                       type="checkbox"
+                                       data-url="{:url('set_attr')}"
+                                       data-on-success="false"
+                                       data-params='{"id":"{{item.id}}","type":"disabled"}'
+                                       data-toggle="busy-checkbox"
+                                       title="启用,禁用"
+                                       {{value ?'':'checked'}} />
                             </ba-if>
                         </script>
                     </th>
@@ -167,39 +192,59 @@
                         </script>
                     </th>
 
-                    <th width="130"
+                    <th width="100"
                         data-align="center"
                         data-title="操作"
                         data-print-ignore="true"
                         data-tableexport-display="false"
                         data-formatter="@">
                         <script type="text/html">
-                            <a class="btn btn-default btn-xs"
-                               data-url="{:url('add?id=')}{{item.id}}"
-                               data-toggle="busy-modal"
-                               data-size="lg"
-                               data-ok="添加菜单"
-                               data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
-                                <i class="fa fa-plus"></i>
-                                添加
-                            </a>
+                            <ba-if value="item.annotation">
+                                
+                                <a class="btn btn-default btn-xs {{item.hide ? 'disabled':''}}"
+                                   data-url="{:url('add?hash=')}{{item.hash}}"
+                                   data-toggle="busy-modal"
+                                   data-size="lg"
+                                   data-ok="添加菜单"
+                                   data-form-on-success="@table.reload|@app.loadInfo|@modal.close"
+                                   {{item.hide ? 'disabled':''}} > <i class="fa fa-plus"></i> </a>
 
-                            <a class="btn btn-success btn-xs"
-                               data-url="{:url('edit?id=')}{{item.id}}"
-                               data-toggle="busy-modal"
-                               data-size="lg"
-                               data-ok="修改菜单"
-                               data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
-                                <i class="fa fa-pencil"></i>
-                            </a>
+                                <a class="btn btn-success btn-xs"
+                                   data-url="{:url('edit?hash=')}{{item.hash}}"
+                                   data-toggle="busy-modal"
+                                   data-size="lg"
+                                   data-ok="修改菜单"
+                                   data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                
+                                <ba-else/>
+                                
+                                <a class="btn btn-default btn-xs {{item.hide ? 'disabled':''}}"
+                                   data-url="{:url('add?id=')}{{item.id}}"
+                                   data-toggle="busy-modal"
+                                   data-size="lg"
+                                   data-ok="添加菜单"
+                                   data-form-on-success="@table.reload|@app.loadInfo|@modal.close"
+                                   {{item.hide ? 'disabled':''}} > <i class="fa fa-plus"></i> </a>
 
-                            <ba-if value="!item.system">
-                                <a class="btn btn-danger btn-xs"
-                                   data-url="{:url('delete?id=')}{{item.id}}"
-                                   data-toggle="busy-request"
-                                   data-confirm="确认要删除该菜单吗？"
-                                   data-on-success="@table.reload|@app.loadInfo"><i class="fa fa-trash"></i></a>
+                                <a class="btn btn-success btn-xs"
+                                   data-url="{:url('edit?id=')}{{item.id}}"
+                                   data-toggle="busy-modal"
+                                   data-size="lg"
+                                   data-ok="修改菜单"
+                                   data-form-on-success="@table.reload|@app.loadInfo|@modal.close">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                
                             </ba-if>
+
+                            <a class="btn btn-danger btn-xs {{item.annotation ? 'disabled':''}}"
+                               data-url="{:url('delete?id=')}{{item.id}}"
+                               data-toggle="busy-request"
+                               data-confirm="确认要删除该菜单吗？"
+                               data-on-success="@table.reload|@app.loadInfo"
+                               {{item.annotation ? 'disabled':''}} ><i class="fa fa-trash"></i></a>
                         </script>
                     </th>
                 </tr>
@@ -210,7 +255,7 @@
 <block name="foot">
     <script>
         busyAdmin.data.checkboxState = function (value, item, index) {
-            if (item.system) {
+            if (item.annotation) {
                 return {disabled : true}
             }
 

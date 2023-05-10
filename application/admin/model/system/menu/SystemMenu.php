@@ -107,12 +107,28 @@ class SystemMenu extends Model implements ContainerInterface
     public function modify(SystemMenuField $data, string $scene = self::SCENE_UPDATE)
     {
         $this->transaction(function() use ($data, $scene) {
+            // 如果是修改注解菜单则复制一份添加到数据库
+            if ($data->hash) {
+                $info = $this->getAnnotationMenu($data->hash);
+                $info->setName($data->name);
+                $info->setIcon($data->icon);
+                $this->validate($data, $scene, $info);
+                
+                $info->setName($data->name);
+                $info->setIcon($data->icon);
+                $info->setParentPath($data->parentPath);
+                $this->create($info);
+                
+                return;
+            }
+            
+            // 修改数据库菜单
             $info = $this->lock(true)->getInfo($data->id);
             
             $this->validate($data, $scene, $info);
             
             // 更新子菜单关系
-            if (!$info->system) {
+            if (!$info->annotation) {
                 $this->where(SystemMenuField::parentPath($info->path))
                     ->setField(SystemMenuField::parentPath(), $data->path);
             }
@@ -134,10 +150,6 @@ class SystemMenu extends Model implements ContainerInterface
         return $this->transaction(function() use ($id) {
             $info = $this->lock(true)->getInfo($id);
             
-            if ($info->system) {
-                throw new RuntimeException('系统菜单禁止删除');
-            }
-            
             // 删除子菜单
             $list       = ArrayHelper::listToTree(
                 $this->selectList(),
@@ -150,7 +162,7 @@ class SystemMenu extends Model implements ContainerInterface
             $childIds   = array_column($list, SystemFileField::id()->name());
             $childIds[] = $info->id;
             
-            return $this->where(SystemMenuField::system(0))->where(SystemMenuField::id('in', $childIds))->delete();
+            return $this->where(SystemMenuField::id('in', $childIds))->delete();
         }, $disabledTrans);
     }
     
@@ -346,7 +358,7 @@ class SystemMenu extends Model implements ContainerInterface
                 } else {
                     // 不在规则内
                     // 不是系统菜单
-                    if (!in_array($info->hash, $AdminUserField->groupRuleIds) || $info->system) {
+                    if (!in_array($info->hash, $AdminUserField->groupRuleIds) || $info->path == static::DEVELOPER_PATH) {
                         return false;
                     }
                 }
@@ -454,13 +466,14 @@ class SystemMenu extends Model implements ContainerInterface
                                 $nodeName = $nodeName === '' ? ($res[ClassHelper::ATTR_NAME] ?: $methodName) : $nodeName;
                                 
                                 $methods[$methodName] = [
-                                    'name'   => $nodeName,
-                                    'action' => $methodName,
-                                    'node'   => $nodeNode->isMenu(),
-                                    'icon'   => trim($nodeNode->getIcon()),
-                                    'params' => trim($nodeNode->getParams()),
-                                    'parent' => trim($nodeNode->getParent()),
-                                    'sort'   => $nodeNode->getSort()
+                                    'name'        => $nodeName,
+                                    'action'      => $methodName,
+                                    'node'        => $nodeNode->isMenu(),
+                                    'icon'        => trim($nodeNode->getIcon()),
+                                    'params'      => trim($nodeNode->getParams()),
+                                    'parent'      => trim($nodeNode->getParent()),
+                                    'sort'        => $nodeNode->getSort(),
+                                    'can_disable' => $nodeNode->isCanDisable()
                                 ];
                             }
                         }
@@ -518,7 +531,10 @@ class SystemMenu extends Model implements ContainerInterface
                                     $item->setSystem(false);
                                     $item->setTopPath('');
                                     $item->setTarget('');
-                                    $item   = SystemMenuField::parse($item);
+                                    
+                                    $item             = SystemMenuField::parse($item);
+                                    $item->canDisable = $menuGroup->isCanDisable();
+                                    
                                     $list[] = $item;
                                     $parent = $item->path;
                                     
@@ -557,7 +573,10 @@ class SystemMenu extends Model implements ContainerInterface
                                 $item->setSystem(false);
                                 $item->setTopPath('');
                                 $item->setTarget('');
-                                $item = SystemMenuField::parse($item);
+                                
+                                $item             = SystemMenuField::parse($item);
+                                $item->canDisable = $vo['can_disable'];
+                                
                                 if ($item->parentPath) {
                                     $list[] = $item;
                                 }
@@ -616,6 +635,37 @@ class SystemMenu extends Model implements ContainerInterface
     public static function getAnnotationMenus() : array
     {
         return static::extractAnnotation()['list'];
+    }
+    
+    
+    /**
+     * 获取hash为主键的注解菜单
+     * @return array<string, SystemMenuField>
+     */
+    public static function getAnnotationMenusHashMap() : array
+    {
+        static $list;
+        if (!isset($list)) {
+            $list = array_column(SystemMenu::class()::getAnnotationMenus(), null, SystemMenuField::hash()->name());
+        }
+        
+        return $list;
+    }
+    
+    
+    /**
+     * 获取注解菜单信息
+     * @param string $hash
+     * @return SystemMenuField
+     */
+    public function getAnnotationMenu(string $hash) : SystemMenuField
+    {
+        $info = static::getAnnotationMenusHashMap()[$hash] ?? null;
+        if (!$info) {
+            throw new RuntimeException('系统菜单不存在');
+        }
+        
+        return $info;
     }
     
     

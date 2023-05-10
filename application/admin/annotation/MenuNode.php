@@ -26,6 +26,8 @@ class MenuNode
     
     private mixed     $parent;
     
+    private bool      $canDisable;
+    
     
     /**
      * 构造函数
@@ -35,15 +37,17 @@ class MenuNode
      * @param string          $icon 定义菜单图标，必须是图标的完整css类名称，如：fa fa-list-ol
      * @param int|false       $sort 定义菜单所属分组排序，数字越大排序越靠后
      * @param string          $params 如果是菜单节点，定义该菜单URL支持的参数名，多个用英文逗号分割，便于系统自动获取参数
+     * @param bool            $canDisable 定义该菜单是否可以被禁用，默认允许禁用
      */
-    public function __construct(bool $menu = true, string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, string $params = '')
+    public function __construct(bool $menu = true, string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, string $params = '', bool $canDisable = true)
     {
-        $this->menu   = $menu;
-        $this->icon   = $icon;
-        $this->sort   = $sort;
-        $this->params = $params;
-        $this->name   = $name;
-        $this->parent = $parent;
+        $this->menu       = $menu;
+        $this->icon       = $icon;
+        $this->sort       = $sort;
+        $this->params     = $params;
+        $this->name       = $name;
+        $this->parent     = $parent;
+        $this->canDisable = $canDisable;
     }
     
     
@@ -102,5 +106,14 @@ class MenuNode
         }
         
         return $this->parent;
+    }
+    
+    
+    /**
+     * @return bool
+     */
+    public function isCanDisable() : bool
+    {
+        return $this->canDisable;
     }
 }

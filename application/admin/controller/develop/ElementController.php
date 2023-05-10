@@ -16,7 +16,7 @@ use think\Response;
  * @version $Id: 2021/2/28 下午9:01 下午 ElementController.php $
  */
 #[MenuRoute(path: 'manual_element', class: true)]
-#[MenuGroup(path: 'developer_manual_element', parent: '#developer_manual', icon: 'fa fa-wpforms')]
+#[MenuGroup(path: 'developer_manual_element', parent: '#developer_manual', icon: 'fa fa-wpforms', canDisable: false)]
 class ElementController extends InsideController
 {
     protected function initialize($checkLogin = true)
@@ -30,7 +30,7 @@ class ElementController extends InsideController
     /**
      * 布局
      */
-    #[MenuNode(menu: true, icon: 'fa fa-th-large')]
+    #[MenuNode(menu: true, icon: 'fa fa-th-large', canDisable: false)]
     public function grid() : Response
     {
         return $this->insideDisplay();
@@ -40,7 +40,7 @@ class ElementController extends InsideController
     /**
      * 基本
      */
-    #[MenuNode(menu: true, icon: 'fa fa-code')]
+    #[MenuNode(menu: true, icon: 'fa fa-code', canDisable: false)]
     public function base() : Response
     {
         return $this->insideDisplay();
@@ -50,7 +50,7 @@ class ElementController extends InsideController
     /**
      * 表单
      */
-    #[MenuNode(menu: true, icon: 'fa fa-list-alt')]
+    #[MenuNode(menu: true, icon: 'fa fa-list-alt', canDisable: false)]
     public function form() : Response
     {
         return $this->insideDisplay();
@@ -60,7 +60,7 @@ class ElementController extends InsideController
     /**
      * 按钮/按钮组
      */
-    #[MenuNode(menu: true, icon: 'fa fa-flickr')]
+    #[MenuNode(menu: true, icon: 'fa fa-flickr', canDisable: false)]
     public function button() : Response
     {
         return $this->insideDisplay();
@@ -70,7 +70,7 @@ class ElementController extends InsideController
     /**
      * 徽章
      */
-    #[MenuNode(menu: true, icon: 'fa fa-circle')]
+    #[MenuNode(menu: true, icon: 'fa fa-circle', canDisable: false)]
     public function badge() : Response
     {
         return $this->insideDisplay();
@@ -80,7 +80,7 @@ class ElementController extends InsideController
     /**
      * 警告框
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-dialog')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-dialog', canDisable: false)]
     public function alert() : Response
     {
         return $this->insideDisplay();
@@ -90,7 +90,7 @@ class ElementController extends InsideController
     /**
      * 进度条
      */
-    #[MenuNode(menu: true, icon: 'fa fa-tasks')]
+    #[MenuNode(menu: true, icon: 'fa fa-tasks', canDisable: false)]
     public function progress() : Response
     {
         return $this->insideDisplay();
@@ -100,7 +100,7 @@ class ElementController extends InsideController
     /**
      * 表格
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-table')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-table', canDisable: false)]
     public function table() : Response
     {
         return $this->insideDisplay();
@@ -110,7 +110,7 @@ class ElementController extends InsideController
     /**
      * 列表组
      */
-    #[MenuNode(menu: true, icon: 'fa fa-list-ul')]
+    #[MenuNode(menu: true, icon: 'fa fa-list-ul', canDisable: false)]
     public function group_list() : Response
     {
         return $this->insideDisplay();
@@ -120,7 +120,7 @@ class ElementController extends InsideController
     /**
      * 选项卡
      */
-    #[MenuNode(menu: true, icon: 'fa fa-flag-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-flag-o', canDisable: false)]
     public function tabs() : Response
     {
         return $this->insideDisplay();
@@ -130,7 +130,7 @@ class ElementController extends InsideController
     /**
      * 面板
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-dialog')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-dialog', canDisable: false)]
     public function panel() : Response
     {
         return $this->insideDisplay();
@@ -140,7 +140,7 @@ class ElementController extends InsideController
     /**
      * 列表布局
      */
-    #[MenuNode(menu: true, icon: 'fa fa-list-alt')]
+    #[MenuNode(menu: true, icon: 'fa fa-list-alt', canDisable: false)]
     public function list_item() : Response
     {
         return $this->insideDisplay();

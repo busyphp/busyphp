@@ -38,7 +38,7 @@ class PluginController extends InsideController
     /**
      * 插件管理
      */
-    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-plug', sort: 30)]
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-plug', sort: 30, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {

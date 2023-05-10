@@ -14,11 +14,12 @@ use BusyPHP\app\admin\component\js\driver\Table;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
-use BusyPHP\model\ArrayOption;
 use RangeException;
+use RuntimeException;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\exception\HttpException;
 use think\Response;
 use Throwable;
 
@@ -29,11 +30,11 @@ use Throwable;
  * @version $Id: 2020/6/1 下午3:35 下午 MenuController.php $
  */
 // 开发模式
-#[MenuGroup(path: '#developer', name: "开发模式", icon: 'fa fa-folder-open-o', sort: 0, default: true)]
-#[MenuGroup(path: '#developer_manual', name: "开发手册", parent: "#developer", icon: 'fa fa-book', sort: 50)]
+#[MenuGroup(path: '#developer', name: "开发模式", icon: 'fa fa-folder-open-o', sort: 0, default: true, canDisable: false)]
+#[MenuGroup(path: '#developer_manual', name: "开发手册", parent: "#developer", icon: 'fa fa-book', sort: 50, canDisable: false)]
 
 // 系统
-#[MenuGroup(path: '#system', name: "系统", icon: 'glyphicon glyphicon-cog', sort: 1)]
+#[MenuGroup(path: '#system', name: "系统", icon: 'glyphicon glyphicon-cog', sort: 1, canDisable: false)]
 #[MenuGroup(path: '#system_manager', name: "系统管理", parent: "#system", icon: 'fa fa-anchor', sort: 0)]
 #[MenuGroup(path: '#system_user', name: "系统用户", parent: "#system", icon: 'fa fa-user-circle', sort: 1)]
 
@@ -49,12 +50,12 @@ class MenuController extends InsideController
     /**
      * @var bool 开发模式
      */
-    const DEVELOP = true;
+    const DEVELOP = false;
     
     
     protected function initialize($checkLogin = true)
     {
-        $this->releaseDisabled('linkage_picker_data');
+        $this->releaseDisabled('data');
         
         parent::initialize($checkLogin);
         
@@ -66,21 +67,23 @@ class MenuController extends InsideController
      * 菜单管理
      * @return Response
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-menu', sort: 1)]
+    #[MenuNode(menu: true, icon: 'bicon bicon-menu', sort: 1, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
-            return $table
-                ->model($this->model)
-                ->query(function(SystemMenu $model, ArrayOption $option) {
-                    if (!static::DEVELOP) {
-                        $model->where(SystemMenuField::path('<>', SystemMenu::class()::DEVELOPER_PATH));
+            $list = $this->model->getList();
+            if (!static::DEVELOP) {
+                $data = [];
+                foreach ($list as $item) {
+                    if ($item->path == $this->model::DEVELOPER_PATH) {
+                        continue;
                     }
-                    
-                    $model->order(SystemMenuField::sort(), 'asc');
-                    $model->order(SystemMenuField::id(), 'asc');
-                })
-                ->response();
+                    $data[] = $item;
+                }
+                $list = $data;
+            }
+            
+            return $table->list($list)->response();
         }
         
         $this->assign('parent_field', SystemMenuField::parentPath());
@@ -113,15 +116,20 @@ class MenuController extends InsideController
         if ($id = $this->get('id/d')) {
             $info       = $this->model->getInfo($id);
             $parentPath = $this->parseParentPath($info, true);
+        } elseif ($hash = $this->get('hash/s', 'trim')) {
+            $info       = $this->model->getAnnotationMenu($hash);
+            $parentPath = $this->parseParentPath($info, true);
         }
         
         $this->assign('parent_path', $parentPath);
         $this->assign('target_list', SystemMenu::class()::getTargets());
         $this->assign('info', [
-            'target'   => '',
-            'hide'     => 0,
-            'disabled' => 0,
-            'system'   => 0
+            'target'          => '',
+            'hide'            => 0,
+            'disabled'        => 0,
+            'annotation'      => false,
+            'system'          => false,
+            'operate_disable' => true
         ]);
         
         return $this->insideDisplay();
@@ -145,7 +153,12 @@ class MenuController extends InsideController
             
             return $this->success('修改菜单成功');
         } else {
-            $info = $this->model->getInfo($this->get('id/d'));
+            if ($hash = $this->get('hash/s', 'trim')) {
+                $info = $this->model->getAnnotationMenu($hash);
+            } else {
+                $info = $this->model->getInfo($this->get('id/d'));
+            }
+            
             $this->assign('parent_path', $this->parseParentPath($info));
             $this->assign('target_list', SystemMenu::class()::getTargets());
             $this->assign('info', $info);
@@ -207,6 +220,9 @@ class MenuController extends InsideController
         $type   = $this->get('type/s', 'trim');
         $id     = $this->get('id/d');
         $status = $this->get('status/b');
+        if ($id < 0) {
+            throw new RuntimeException('系统菜单不允许操作');
+        }
         
         switch ($type) {
             case 'disabled':
@@ -234,7 +250,15 @@ class MenuController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function sort() : Response
     {
-        SimpleForm::init($this->model)->sort('sort', SystemMenuField::sort());
+        $data = [];
+        foreach ($this->request->param("sort/a", [], 'intval') as $id => $item) {
+            if ($id <= 0) {
+                continue;
+            }
+            $data[$id] = $item;
+        }
+        
+        SimpleForm::init($this->model)->sort($data, SystemMenuField::sort());
         $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
         $this->updateCache();
         
@@ -249,7 +273,15 @@ class MenuController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的菜单', function(int $id) {
+        $deleteIds = [];
+        foreach ($this->param('id/a', 'intval') as $id) {
+            if ($id <= 0) {
+                continue;
+            }
+            $deleteIds[] = $id;
+        }
+        
+        SimpleForm::init()->batch($deleteIds, '请选择要删除的菜单', function(int $id) {
             $this->model->remove($id);
         });
         
@@ -261,43 +293,18 @@ class MenuController extends InsideController
     
     
     /**
-     * LinkagePicker
+     * 数据接口
      * @return Response
      */
-    public function linkage_picker_data() : Response
+    public function data() : Response
     {
-        $hash = $this->get('hash/s', 'trim');
-        $type = $this->get('type/s', 'trim');
-        if ($type === 'db') {
-            return LinkagePicker::init()
-                ->model($this->model)
-                ->query(function(SystemMenu $model) use ($hash) {
-                    if (!MenuController::DEVELOP) {
-                        $model->where(SystemMenuField::path('<>', SystemMenu::class()::DEVELOPER_PATH));
-                    }
-                    
-                    if ($hash) {
-                        $info = $this->model->getHashMap()[$hash];
-                        if ($info) {
-                            $model->where(SystemMenuField::path('<>', $info->path));
-                        }
-                    }
-                    
-                    $model->order(SystemMenuField::sort(), 'asc');
-                    $model->order(SystemMenuField::id(), 'asc');
-                })
-                ->list(function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) {
-                    $node->setId($item->hash);
-                    $node->setName($item->name);
-                    $node->setParent($item->parentHash);
-                })
-                ->response();
-        } else {
-            $developerPath = $this->model::DEVELOPER_PATH;
+        if ($linkage = LinkagePicker::initIfRequest()) {
+            $hash = $this->param('hash/s', 'trim');
+            $all  = $this->param('all/b');
             
-            return LinkagePicker::init()
-                ->list($this->model->getList(), function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) use ($developerPath, $hash) {
-                    if (!MenuController::DEVELOP && $item->path == $developerPath || $item->hash == $hash) {
+            return $linkage
+                ->list($this->model->getList(), function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) use ($hash, $all) {
+                    if ((!self::DEVELOP && $item->path == $this->model::DEVELOPER_PATH) || $item->hash == $hash || (!$all && $item->hide)) {
                         return false;
                     }
                     
@@ -308,22 +315,14 @@ class MenuController extends InsideController
                     return true;
                 })
                 ->response();
+        } elseif ($autocomplete = Autocomplete::initIfRequest()) {
+            return $autocomplete->list($this->model->getList(), null, function($list) use ($autocomplete) {
+                $list = Collection::make($list);
+                
+                return $list->whereLike(SystemMenuField::path()->name(), $autocomplete->getWord());
+            })->response();
         }
-    }
-    
-    
-    /**
-     * Autocomplete Data
-     * @return Response
-     */
-    public function autocomplete_data() : Response
-    {
-        $autocomplete = Autocomplete::init();
         
-        return $autocomplete->list($this->model->getList(), null, function($list) use ($autocomplete) {
-            $list = Collection::make($list);
-            
-            return $list->whereLike(SystemMenuField::path()->name(), $autocomplete->getWord());
-        })->response();
+        throw new HttpException(404);
     }
 }

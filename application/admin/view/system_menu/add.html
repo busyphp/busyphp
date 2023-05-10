@@ -1,7 +1,11 @@
 <extend name="@admin:layout"/>
 <block name="content">
     <div class="form-horizontal">
-        <input type="hidden" name="id" value="{$info.id|default=''}"/>
+        <eq name="info.annotation" value="1">
+            <input type="hidden" name="hash" value="{$info.hash}"/>
+            <else />
+            <input type="hidden" name="id" value="{$info.id|default=''}"/>
+        </eq>
         <div class="form-group">
             <label class="col-sm-2 control-label">上级菜单</label>
             <div class="col-sm-9">
@@ -12,10 +16,9 @@
                        placeholder="顶级菜单"
                        value="{$parent_path|default=''}"
                        data-toggle="busy-linkage-picker"
-                       data-url="{:url('linkage_picker_data?type=db&hash=' . ($info['hash'] ?? ''))}"
+                       data-url="{:url('data')}?hash={$info.hash|default=''}"
                        data-strict="false"
                        data-clear="true"
-                    <?=is_disabled($info['system'])?>
                 />
                 <span class="help-block">选择所属父菜单</span>
             </div>
@@ -33,7 +36,7 @@
                         <a class="btn btn-secondary" data-toggle="busy-icon-picker" data-target="#menuIconInput,#menuIconShow">选择图标</a>
                     </div>
                 </div>
-                <span class="help-block">设置菜单名称，如：<code>文章列表</code>。对于未隐藏的菜单建议一定要选择一个图标</span>
+                <span class="help-block">设置菜单名称，如：<code>文章列表</code>。对于菜单节点的建议一定要选择一个图标</span>
             </div>
         </div>
         <eq name="info.system" value="1">
@@ -48,7 +51,7 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label required">菜单链接</label>
                 <div class="col-sm-9">
-                    <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-url="{:url('autocomplete_data')}" data-model-text-field="path" value="{$info.path|default=''}"/>
+                    <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-url="{:url('data')}" data-model-text-field="path" value="{$info.path|default=''}"/>
                     <span class="help-block">设置菜单链接，如：<code>user/index</code>，外部链接必须填写<code>https://</code>或<code>http://</code>前缀</span>
                 </div>
             </div>
@@ -86,8 +89,8 @@
             <label class="col-sm-2 control-label">启用/禁用</label>
             <div class="col-sm-9">
                 <div class="radio">
-                    <input type="radio" name="disabled" <?=is_disabled($info['system'])?> value="0" title="启用" <?=is_checked(!$info['disabled'])?> data-toggle="busy-radio"/>
-                    <input type="radio" name="disabled" <?=is_disabled($info['system'])?> value="1" title="禁用" <?=is_checked($info['disabled'])?> data-toggle="busy-radio"/>
+                    <input type="radio" name="disabled" <?=is_disabled(!$info['operate_disable'])?> value="0" title="启用" <?=is_checked(!$info['disabled'])?> data-toggle="busy-radio"/>
+                    <input type="radio" name="disabled" <?=is_disabled(!$info['operate_disable'])?> value="1" title="禁用" <?=is_checked($info['disabled'])?> data-toggle="busy-radio"/>
                 </div>
                 <span class="help-block">选择 <code>禁用</code> 则该菜单将无法正常使用</span>
             </div>
@@ -95,7 +98,7 @@
         <div class="form-group no-margin-bottom" id="topPath">
             <label class="col-sm-2 control-label">访问链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="top_path" <?=is_disabled($info['system'])?> placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-url="{:url('autocomplete_data')}" data-model-text-field="path" value="{$info.top_path|default=''}"/>
+                <input class="form-control" name="top_path" <?=is_disabled($info['system'])?> placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-url="{:url('data')}" data-model-text-field="path" value="{$info.top_path|default=''}"/>
                 <span class="help-block">设置顶级菜单访问链接，设置后点击顶级菜单将默认访问该链接</span>
             </div>
         </div>

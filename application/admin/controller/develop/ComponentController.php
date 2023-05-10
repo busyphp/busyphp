@@ -21,7 +21,7 @@ use think\Response;
  * @version $Id: 2021/2/28 下午9:01 下午 ComponentController.php $
  */
 #[MenuRoute(path: 'manual_component', class: true)]
-#[MenuGroup(path: 'developer_manual_component', parent: '#developer_manual', icon: 'fa fa-sliders')]
+#[MenuGroup(path: 'developer_manual_component', parent: '#developer_manual', icon: 'fa fa-sliders', canDisable: false)]
 class ComponentController extends InsideController
 {
     protected function initialize($checkLogin = true)
@@ -35,7 +35,7 @@ class ComponentController extends InsideController
     /**
      * 对话框
      */
-    #[MenuNode(menu: true, icon: 'fa fa-clone')]
+    #[MenuNode(menu: true, icon: 'fa fa-clone', canDisable: false)]
     public function dialog() : Response
     {
         return $this->insideDisplay();
@@ -45,7 +45,7 @@ class ComponentController extends InsideController
     /**
      * 模态框
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-dialog')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-dialog', canDisable: false)]
     public function modal() : Response
     {
         if ($this->isPost()) {
@@ -63,7 +63,7 @@ class ComponentController extends InsideController
     /**
      * 文件选择
      */
-    #[MenuNode(menu: true, icon: 'fa fa-folder-open')]
+    #[MenuNode(menu: true, icon: 'fa fa-folder-open', canDisable: false)]
     public function file_picker() : Response
     {
         return $this->insideDisplay();
@@ -73,7 +73,7 @@ class ComponentController extends InsideController
     /**
      * 文件上传
      */
-    #[MenuNode(menu: true, icon: 'fa fa-cloud-upload')]
+    #[MenuNode(menu: true, icon: 'fa fa-cloud-upload', canDisable: false)]
     public function upload() : Response
     {
         return $this->insideDisplay();
@@ -83,7 +83,7 @@ class ComponentController extends InsideController
     /**
      * 数据表格
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-table')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-table', canDisable: false)]
     public function table() : Response
     {
         return $this->insideDisplay();
@@ -93,7 +93,7 @@ class ComponentController extends InsideController
     /**
      * 树形组件
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-tree')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-tree', canDisable: false)]
     public function tree() : Response
     {
         return $this->insideDisplay();
@@ -103,7 +103,7 @@ class ComponentController extends InsideController
     /**
      * 联级选择器
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-tree')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-tree', canDisable: false)]
     public function linkage_picker() : Response
     {
         if ($picker = LinkagePicker::initIfRequest()) {
@@ -126,7 +126,7 @@ class ComponentController extends InsideController
     /**
      * 穿梭框
      */
-    #[MenuNode(menu: true, icon: 'fa fa-exchange')]
+    #[MenuNode(menu: true, icon: 'fa fa-exchange', canDisable: false)]
     public function shuttle() : Response
     {
         return $this->insideDisplay();
@@ -136,7 +136,7 @@ class ComponentController extends InsideController
     /**
      * 全选/反选
      */
-    #[MenuNode(menu: true, icon: 'fa fa-check-square-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-check-square-o', canDisable: false)]
     public function check_all() : Response
     {
         return $this->insideDisplay();
@@ -146,7 +146,7 @@ class ComponentController extends InsideController
     /**
      * 搜索栏
      */
-    #[MenuNode(menu: true, icon: 'fa fa-search')]
+    #[MenuNode(menu: true, icon: 'fa fa-search', canDisable: false)]
     public function search_bar() : Response
     {
         return $this->insideDisplay();
@@ -156,7 +156,7 @@ class ComponentController extends InsideController
     /**
      * 自动表单
      */
-    #[MenuNode(menu: true, icon: 'fa fa-wpforms')]
+    #[MenuNode(menu: true, icon: 'fa fa-wpforms', canDisable: false)]
     public function form() : Response
     {
         if ($this->isPost()) {
@@ -170,7 +170,7 @@ class ComponentController extends InsideController
     /**
      * 表单验证
      */
-    #[MenuNode(menu: true, icon: 'fa fa-check')]
+    #[MenuNode(menu: true, icon: 'fa fa-check', canDisable: false)]
     public function form_verify() : Response
     {
         return $this->insideDisplay();
@@ -180,7 +180,7 @@ class ComponentController extends InsideController
     /**
      * 自动请求
      */
-    #[MenuNode(menu: true, icon: 'fa fa-random')]
+    #[MenuNode(menu: true, icon: 'fa fa-random', canDisable: false)]
     public function request() : Response
     {
         if ($this->isPost()) {
@@ -194,7 +194,7 @@ class ComponentController extends InsideController
     /**
      * 日期/时间
      */
-    #[MenuNode(menu: true, icon: 'fa fa-calendar')]
+    #[MenuNode(menu: true, icon: 'fa fa-calendar', canDisable: false)]
     public function date() : Response
     {
         return $this->insideDisplay();
@@ -204,7 +204,7 @@ class ComponentController extends InsideController
     /**
      * 下拉选择器
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-down-menu')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-down-menu', canDisable: false)]
     public function select_picker() : Response
     {
         return $this->insideDisplay();
@@ -214,7 +214,7 @@ class ComponentController extends InsideController
     /**
      * Checkbox/Radio
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-checkbox-checked')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-checkbox-checked', canDisable: false)]
     public function checkbox_radio() : Response
     {
         if (Driver::getRequestName() === 'Checkbox' || Driver::getRequestName() === 'Radio') {
@@ -228,7 +228,7 @@ class ComponentController extends InsideController
     /**
      * 输入提示
      */
-    #[MenuNode(menu: true, icon: 'fa fa-pencil')]
+    #[MenuNode(menu: true, icon: 'fa fa-pencil', canDisable: false)]
     public function autocomplete() : Response
     {
         return $this->insideDisplay();
@@ -238,7 +238,7 @@ class ComponentController extends InsideController
     /**
      * 下拉菜单
      */
-    #[MenuNode(menu: true, icon: 'fa fa-chevron-circle-down')]
+    #[MenuNode(menu: true, icon: 'fa fa-chevron-circle-down', canDisable: false)]
     public function dropdown() : Response
     {
         return $this->insideDisplay();
@@ -248,7 +248,7 @@ class ComponentController extends InsideController
     /**
      * 选项卡
      */
-    #[MenuNode(menu: true, icon: 'fa fa-flag-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-flag-o', canDisable: false)]
     public function tab() : Response
     {
         return $this->insideDisplay();
@@ -258,7 +258,7 @@ class ComponentController extends InsideController
     /**
      * 提示工具
      */
-    #[MenuNode(menu: true, icon: 'fa fa-commenting-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-commenting-o', canDisable: false)]
     public function tooltip() : Response
     {
         return $this->insideDisplay();
@@ -268,7 +268,7 @@ class ComponentController extends InsideController
     /**
      * 弹出框
      */
-    #[MenuNode(menu: true, icon: 'fa fa-comment-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-comment-o', canDisable: false)]
     public function popover() : Response
     {
         return $this->insideDisplay();
@@ -278,7 +278,7 @@ class ComponentController extends InsideController
     /**
      * 折叠面板
      */
-    #[MenuNode(menu: true, icon: 'fa fa-server')]
+    #[MenuNode(menu: true, icon: 'fa fa-server', canDisable: false)]
     public function collapse() : Response
     {
         return $this->insideDisplay();
@@ -288,7 +288,7 @@ class ComponentController extends InsideController
     /**
      * 富文本编辑器
      */
-    #[MenuNode(menu: true, icon: 'fa fa-edit')]
+    #[MenuNode(menu: true, icon: 'fa fa-edit', canDisable: false)]
     public function editor() : Response
     {
         return $this->insideDisplay();
@@ -298,7 +298,7 @@ class ComponentController extends InsideController
     /**
      * 颜色选择器
      */
-    #[MenuNode(menu: true, icon: 'fa fa-eyedropper')]
+    #[MenuNode(menu: true, icon: 'fa fa-eyedropper', canDisable: false)]
     public function color_picker() : Response
     {
         return $this->insideDisplay();
@@ -308,7 +308,7 @@ class ComponentController extends InsideController
     /**
      * 图片预览
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-image-viewer')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-image-viewer', canDisable: false)]
     public function image_viewer() : Response
     {
         return $this->insideDisplay();
@@ -318,7 +318,7 @@ class ComponentController extends InsideController
     /**
      * 视频播放器
      */
-    #[MenuNode(menu: true, icon: 'fa fa-youtube-play')]
+    #[MenuNode(menu: true, icon: 'fa fa-youtube-play', canDisable: false)]
     public function video() : Response
     {
         return $this->insideDisplay();
@@ -328,7 +328,7 @@ class ComponentController extends InsideController
     /**
      * 视频预览
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-video')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-video', canDisable: false)]
     public function video_viewer() : Response
     {
         return $this->insideDisplay();
@@ -338,7 +338,7 @@ class ComponentController extends InsideController
     /**
      * 音频播放器
      */
-    #[MenuNode(menu: true, icon: 'fa fa-audio-description')]
+    #[MenuNode(menu: true, icon: 'fa fa-audio-description', canDisable: false)]
     public function audio() : Response
     {
         return $this->insideDisplay();
@@ -348,7 +348,7 @@ class ComponentController extends InsideController
     /**
      * 音频预览
      */
-    #[MenuNode(menu: true, icon: 'fa fa-play-circle')]
+    #[MenuNode(menu: true, icon: 'fa fa-play-circle', canDisable: false)]
     public function audio_viewer() : Response
     {
         return $this->insideDisplay();
@@ -358,7 +358,7 @@ class ComponentController extends InsideController
     /**
      * 图标选择器
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-dcs')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-dcs', canDisable: false)]
     public function icon_picker() : Response
     {
         return $this->insideDisplay();
@@ -368,7 +368,7 @@ class ComponentController extends InsideController
     /**
      * 滑块
      */
-    #[MenuNode(menu: true, icon: 'fa fa-sliders')]
+    #[MenuNode(menu: true, icon: 'fa fa-sliders', canDisable: false)]
     public function range_slider() : Response
     {
         return $this->insideDisplay();
@@ -378,7 +378,7 @@ class ComponentController extends InsideController
     /**
      * 评分
      */
-    #[MenuNode(menu: true, icon: 'fa fa-star-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-star-o', canDisable: false)]
     public function rate() : Response
     {
         return $this->insideDisplay();
@@ -388,7 +388,7 @@ class ComponentController extends InsideController
     /**
      * 打印
      */
-    #[MenuNode(menu: true, icon: 'fa fa-print')]
+    #[MenuNode(menu: true, icon: 'fa fa-print', canDisable: false)]
     public function print() : Response
     {
         return $this->insideDisplay();
@@ -398,7 +398,7 @@ class ComponentController extends InsideController
     /**
      * 任务日志
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-dcs')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-dcs', canDisable: false)]
     public function console_log() : Response
     {
         return $this->insideDisplay();
@@ -408,7 +408,7 @@ class ComponentController extends InsideController
     /**
      * 日历
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-calendar-block')]
+    #[MenuNode(menu: true, icon: 'bicon bicon-calendar-block', canDisable: false)]
     public function calendar() : Response
     {
         return $this->insideDisplay();
@@ -418,7 +418,7 @@ class ComponentController extends InsideController
     /**
      * 代码高亮
      */
-    #[MenuNode(menu: true, icon: 'fa fa-file-code-o')]
+    #[MenuNode(menu: true, icon: 'fa fa-file-code-o', canDisable: false)]
     public function high_code() : Response
     {
         return $this->insideDisplay();
@@ -428,7 +428,7 @@ class ComponentController extends InsideController
     /**
      * 目录
      */
-    #[MenuNode(menu: true, icon: 'fa fa-list-ol')]
+    #[MenuNode(menu: true, icon: 'fa fa-list-ol', canDisable: false)]
     public function catalog() : Response
     {
         return $this->insideDisplay();
@@ -438,7 +438,7 @@ class ComponentController extends InsideController
     /**
      * 复制/剪切
      */
-    #[MenuNode(menu: true, icon: 'fa fa-copy')]
+    #[MenuNode(menu: true, icon: 'fa fa-copy', canDisable: false)]
     public function copy() : Response
     {
         return $this->insideDisplay();
@@ -448,7 +448,7 @@ class ComponentController extends InsideController
     /**
      * 随机字符
      */
-    #[MenuNode(menu: true, icon: 'fa fa-refresh')]
+    #[MenuNode(menu: true, icon: 'fa fa-refresh', canDisable: false)]
     public function random() : Response
     {
         return $this->insideDisplay();
@@ -459,7 +459,7 @@ class ComponentController extends InsideController
      * 模版引擎
      * @return Response
      */
-    #[MenuNode(menu: true, icon: 'fa fa-code')]
+    #[MenuNode(menu: true, icon: 'fa fa-code', canDisable: false)]
     public function template() : Response
     {
         return $this->insideDisplay();

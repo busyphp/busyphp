@@ -26,6 +26,8 @@ class MenuGroup
     
     private bool      $default;
     
+    private bool      $canDisable;
+    
     
     /**
      * 构造函数
@@ -35,15 +37,17 @@ class MenuGroup
      * @param string          $icon 定义该分组图标，必须是图标的完整css类名称，如：fa fa-list-ol
      * @param int|false       $sort 定义该分组排序，数字越大排序越靠后
      * @param bool            $default 在一个控制器中声明多个时，用来定义该控制器的默认parent属于哪个，如果都是false则取最后一个
+     * @param bool            $canDisable 定义该分组是否可以被禁用，默认允许被禁用
      */
-    public function __construct(string $path = '', string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, bool $default = false)
+    public function __construct(string $path = '', string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, bool $default = false, bool $canDisable = true)
     {
-        $this->path    = $path;
-        $this->icon    = $icon;
-        $this->sort    = $sort;
-        $this->name    = $name;
-        $this->parent  = $parent;
-        $this->default = $default;
+        $this->path       = $path;
+        $this->icon       = $icon;
+        $this->sort       = $sort;
+        $this->name       = $name;
+        $this->parent     = $parent;
+        $this->default    = $default;
+        $this->canDisable = $canDisable;
     }
     
     
@@ -89,6 +93,15 @@ class MenuGroup
     public function isDefault() : bool
     {
         return $this->default;
+    }
+    
+    
+    /**
+     * @return bool
+     */
+    public function isCanDisable() : bool
+    {
+        return $this->canDisable;
     }
     
     

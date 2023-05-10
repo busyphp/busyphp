@@ -44,7 +44,7 @@ class ConfigController extends InsideController
      * 配置管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-cube', sort: 20)]
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-cube', sort: 20, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {

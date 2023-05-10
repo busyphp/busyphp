@@ -33,7 +33,6 @@ use think\validate\ValidateRule;
  * @method static Entity target(mixed $op = null, mixed $condition = null) 打开方式
  * @method static Entity hide(mixed $op = null, mixed $condition = null) 是否隐藏
  * @method static Entity disabled(mixed $op = null, mixed $condition = null) 是否禁用
- * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统菜单
  * @method static Entity sort(mixed $op = null, mixed $condition = null) 自定义排序
  * @method static Entity child();
  * @method static Entity hash();
@@ -131,12 +130,6 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
     public $disabled;
     
     /**
-     * 是否系统菜单
-     * @var bool
-     */
-    public $system;
-    
-    /**
      * 自定义排序
      * @var int
      */
@@ -205,10 +198,31 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
     #[Ignore]
     public $annotation;
     
+    /**
+     * 该数据是否复制的注解菜单
+     * @var bool
+     */
+    #[Ignore]
+    public $system;
+    
+    /**
+     * 该注解菜单是否可以被禁用
+     * @var bool
+     */
+    #[Ignore]
+    public $canDisable;
+    
+    /**
+     * 是否允许操作禁用字段
+     * @var bool
+     */
+    public $operateDisable;
+    
     
     protected function onParseAfter()
     {
         $this->annotation = $this->id < 0;
+        $this->system     = $this->annotation;
         $this->routePath  = StringHelper::snake($this->path);
         $this->hash       = md5($this->routePath);
         $this->parentHash = $this->parentPath ? md5(StringHelper::snake($this->parentPath)) : '';
@@ -225,6 +239,20 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
         $this->topUrl = '';
         if ($this->topPath) {
             $this->topUrl = Route::buildUrl('/' . ltrim($this->topPath, '/'))->build();
+        }
+        
+        // 非注解菜单判断是否复制的注解菜单
+        if (!$this->annotation) {
+            $menu = SystemMenu::class()::getAnnotationMenusHashMap()[$this->hash] ?? null;
+            if ($menu) {
+                $this->system     = true;
+                $this->canDisable = $menu->canDisable;
+            } else {
+                $this->canDisable = true;
+            }
+            $this->operateDisable = $this->canDisable;
+        } else {
+            $this->operateDisable = false;
         }
     }
     
@@ -246,7 +274,6 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
                     if (str_starts_with($value, '#') || str_contains($value, '://')) {
                         return false;
                     }
-                    
                     
                     return true;
                 }, ':attribute不能是锚连接或外部连接')->closure(function($value) use ($model) {
@@ -272,18 +299,45 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
                 $this::target(),
                 $this::hide(),
                 $this::disabled(),
-                $this::topPath()
+                $this::topPath(),
+                $this::sort()
             ]);
             
             return true;
         } elseif ($scene == SystemMenu::SCENE_UPDATE) {
-            if ($data->system) {
+            
+            // annotation菜单
+            // 只保留 name icon parent_path
+            if ($data->annotation) {
                 $this->retain($validate, [
+                    $this::name(),
+                    $this::icon(),
+                    $this::parentPath(),
+                ]);
+            }
+            
+            // 属于复制的annotation菜单
+            // 保留 id name icon parent_path
+            elseif ($data->system) {
+                $propertyList = [
                     $this::id(),
                     $this::name(),
                     $this::icon(),
-                ]);
-            } else {
+                    $this::parentPath(),
+                ];
+                
+                // 如果允许操作禁用字段
+                if ($data->operateDisable) {
+                    $propertyList[] = $this::disabled();
+                }
+                
+                
+                $this->retain($validate, $propertyList);
+            }
+            
+            //
+            // 正常修改
+            else {
                 $this->retain($validate, [
                     $this::id(),
                     $this::parentPath(),
