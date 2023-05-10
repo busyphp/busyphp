@@ -614,7 +614,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 $data[$name] = [
                     self::ATTR_TITLE      => $title,
                     self::ATTR_NAME       => $name,
-                    self::ATTR_FIELD      => $fieldMap[$name] ?? false,
+                    self::ATTR_FIELD      => $fieldMap[$name] ?? '',
                     self::ATTR_TYPES      => $types,
                     self::ATTR_VAR_TYPE   => $varType,
                     self::ATTR_FIELD_TYPE => $fieldType,
@@ -986,6 +986,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // set get has
         if (in_array($prefix, ['set', 'get', 'has']) && $length > 3) {
+            // 排除引起歧义的属性，如属性名称为：hash，setting, getting 等包含特殊前缀的，直接返回
+            if (static::getPropertyAttrs($name)) {
+                return static::__callStatic($name, $arguments);
+            }
+            
             $property = StringHelper::camel(substr($name, 3));
             $attrs    = static::getPropertyAttrs($property);
             if (!$attrs) {
@@ -1139,6 +1144,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         $data          = [];
         
         self::eachPropertyAttrs(function(string $field, ReflectionProperty $property, array $attrs) use (&$data, $limitProperty, $limitExclude) {
+            if (!$field) {
+                return;
+            }
+            
             if ($limitExclude) {
                 if (in_array($property->getName(), $limitProperty)) {
                     return;
@@ -1246,7 +1255,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             } else {
                 $key = $property;
                 if ($toFormat = self::getToFormatAnnotation()) {
-                    $key = $toFormat->build($property, self::getPropertyAttrs($property)[self::ATTR_FIELD] ?? false);
+                    $key = $toFormat->build($property, self::getPropertyAttrs($property)[self::ATTR_FIELD]);
                 }
                 $array[$key] = $value;
             }
