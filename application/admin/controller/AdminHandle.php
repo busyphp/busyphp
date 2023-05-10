@@ -350,8 +350,8 @@ class AdminHandle extends Handle implements ContainerInterface
             unset($result['message'], $result['code']);
         }
         
-        if (is_numeric($url)) {
-            $code = $url;
+        if (is_int($url)) {
+            $code = (int) $url;
             $url  = '';
         } elseif (is_array($url)) {
             if (ArrayHelper::isAssoc($url)) {
