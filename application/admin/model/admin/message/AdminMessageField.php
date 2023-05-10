@@ -115,6 +115,8 @@ class AdminMessageField extends Field
     
     protected function onParseAfter()
     {
+        $this->attrs = $this->attrs ?: [];
+        
         $color = '';
         if (count($this->icon) > 1) {
             [$icon, $color] = $this->icon;
