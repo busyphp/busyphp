@@ -40,11 +40,11 @@ class ToArrayFormat
     
     /**
      * 构造键名称
-     * @param string       $property 属性名称
-     * @param string|false $field 字段名称
+     * @param string $property 属性名称
+     * @param string $field 字段名称
      * @return string
      */
-    public function build(string $property, string|false $field) : string
+    public function build(string $property, string $field = '') : string
     {
         $field = $field ?: $property;
         
