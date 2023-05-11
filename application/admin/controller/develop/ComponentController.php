@@ -218,7 +218,7 @@ class ComponentController extends InsideController
     public function checkbox_radio() : Response
     {
         if (Driver::getRequestName() === 'Checkbox' || Driver::getRequestName() === 'Radio') {
-            return $this->success();
+            return rand(0, 1) ? $this->success() : $this->error('演示性错误提示');
         }
         
         return $this->insideDisplay();
