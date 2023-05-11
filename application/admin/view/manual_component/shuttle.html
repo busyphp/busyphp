@@ -29,9 +29,9 @@
 | data-left-title | string | `否` | `列表1` | 左侧标题 |
 | data-right-title | string | `否` | `列表2` | 右侧标题 |
 | data-name | string | `否` | - | 穿梭框表单名称 |
-| data-list | [object] | `否` | null | 设置数据，参考`list数据结构` |
+| data-data | [object] | `否` | null | 设置数据，参考`data数据结构` |
 
-### `list`数据结构
+### `data`数据结构
 ```json
 [
     {
@@ -58,8 +58,8 @@
         </div>
     </div>
 
-    <textarea id="demo1" class="hide">
-<button class="btn btn-primary" id="demo1_btn">获取右侧数据</button>
+    <template id="demo1" class="hide">
+<button class="btn btn-primary" id="demo1_btn" onclick="busyAdmin.dialog.alert(JSON.stringify($('#demo1_select').baShuttle('getData')))">获取右侧数据</button>
 <div class="space-10"></div>
 <select data-toggle="busy-shuttle" id="demo1_select">
     <option value="1">腾讯</option>
@@ -74,30 +74,37 @@
 </select>
 <script>
     $(function () {
-        $('#demo1_btn').on('click', function () {
-            busyAdmin.dialog.alert(JSON.stringify($('#demo1_select').baShuttle('getData')));
-        });
-
         $('#demo1_select').on(busyAdmin.e.shuttleChange, function (e, api, data, fromByLeft) {
             busyAdmin.dialog.alert('来自' + (fromByLeft ? "左边" : "右边") + '的数据：' + JSON.stringify(data));
         });
     });
 </script>
-    </textarea>
+    </template>
 
-    <textarea id="demo2" class="hide">
-<select
-        data-toggle="busy-shuttle"
-        data-search="true">
-    <option value="1">腾讯</option>
-    <option value="2">阿里</option>
-    <option value="3" selected disabled>百度</option>
-    <option value="4">58同城</option>
-    <option value="5">赶集网</option>
-    <option value="6" selected>网易</option>
-    <option value="7">百度新闻</option>
-    <option value="8">百度百科</option>
-    <option value="9">今日头条</option>
-</select>
-    </textarea>
+    <template id="demo2" class="hide">
+<form id="demo2_form">
+    <select data-toggle="busy-shuttle" data-search="true" name="id[]" id="demo2_select">
+        <option value="1">腾讯</option>
+        <option value="2">阿里</option>
+        <option value="3" selected disabled>百度</option>
+        <option value="4">58同城</option>
+        <option value="5">赶集网</option>
+        <option value="6" selected>网易</option>
+        <option value="7">百度新闻</option>
+        <option value="8">百度百科</option>
+        <option value="9">今日头条</option>
+    </select>
+    <div class="space-10"></div>
+    <button type="submit" class="btn btn-primary">提交</button>
+    <button type="reset" class="btn btn-default">重置</button>
+</form>
+<script>
+    $(function () {
+        $('#demo2_form').on('submit', function () {
+            busyAdmin.dialog.alert(($('#demo2_select').val() || []).join(','));
+            return false;
+        })
+    });
+</script>
+    </template>
 </block>
