@@ -70,6 +70,11 @@
 ```demo:实例
 #demo4
 ```
+
+#### 尺寸
+```demo:实例
+#demo5
+```
             </script>
         </div>
     </div>
@@ -99,40 +104,203 @@
        data-list='{$tree}'/>
     </script>
 
-    <script id="demo3" type="text/html">
-        <p><b>指定URL</b></p>
-        <input type="text"
-               class="form-control"
-               value=""
-               placeholder="请选择"
-               data-toggle="busy-linkage-picker"
-               data-url="__SELF__"
-               data-clear="true"/>
-        <hr />
-        <p><b>使用model</b></p>
-        <input type="text"
-               class="form-control"
-               value=""
-               placeholder="请选择"
-               data-toggle="busy-linkage-picker"
-               data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class?>"
-               data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::hash()?>"
-               data-model-name-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::name()?>"
-               data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::parentHash()?>"
-               data-clear="true"/>
-    </script>
+    <template id="demo3" type="text/html">
+<input type="text"
+       id="demo3_input"
+       class="form-control"
+       value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+       placeholder="请选择"
+       data-toggle="busy-linkage-picker"
+       data-url="{:url('system_menu/data')}"
+       data-clear="true"/>
+    </template>
 
-    <script id="demo4" type="text/html">
-        <a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
-        <template id="modalContent">
-            <div style="height: 1000px;">
-                <input type="text"
-                       class="form-control"
-                       placeholder="请选择"
-                       data-toggle="busy-linkage-picker"
-                       data-url="__SELF__"
-                       data-clear="true"/>
-            </div>
-        </template>
-    </script>
+    <template id="demo4" type="text/html">
+<a class="btn btn-primary" data-toggle="busy-modal" data-content="#modalContent">打开模态框</a>
+<template id="modalContent">
+    <div style="height: 1000px;">
+        <input type="text"
+               class="form-control"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+</template>
+    </template>
+    
+    <template id="demo5">
+<div class="form-group-title">普通</div>
+
+<hr />
+<p><code>.input-lg</code></p>
+<div class="row row-gutters-15">
+    <div class="col-sm-6"><input type="text" class="form-control input-lg" placeholder="普通输入框"/></div>
+    <div class="col-sm-6">
+        <input type="text"
+               class="form-control input-lg"
+               value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+</div>
+
+<hr />
+<p><code>默认尺寸</code></p>
+<div class="row row-gutters-15">
+    <div class="col-sm-6"><input type="text" class="form-control" placeholder="普通输入框"/></div>
+    <div class="col-sm-6">
+        <input type="text"
+               class="form-control"
+               value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+</div>
+
+<hr />
+<p><code>.input-sm</code></p>
+<div class="row row-gutters-15">
+    <div class="col-sm-6"><input type="text" class="form-control input-sm" placeholder="普通输入框"/></div>
+    <div class="col-sm-6">
+        <input type="text"
+               class="form-control input-sm"
+               value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+</div>
+
+<hr />
+<p><code>.input-xs</code></p>
+<div class="row row-gutters-15">
+    <div class="col-sm-6"><input type="text" class="form-control input-xs" placeholder="普通输入框"/></div>
+    <div class="col-sm-6">
+        <input type="text"
+               class="form-control input-xs"
+               value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+</div>
+
+<hr />
+
+<div class="form-group-title">组合</div>
+
+<hr />
+<p><code>.input-group-lg</code></p>
+
+<div class="input-group input-group-lg">
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+</div>
+
+<hr />
+<p><code>默认尺寸</code></p>
+
+<div class="input-group">
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+</div>
+
+<hr />
+<p><code>.input-group-sm</code></p>
+
+<div class="input-group input-group-sm">
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+</div>
+
+<hr />
+<p><code>.input-group-xs</code></p>
+
+<div class="input-group input-group-xs">
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+    <div class="input-group-addon no-border-left no-border-right">选项</div>
+    <input type="text"
+           class="form-control"
+           value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+           placeholder="请选择"
+           data-toggle="busy-linkage-picker"
+           data-url="{:url('system_menu/data')}"
+           data-clear="true"/>
+</div>
+
+<hr />
+
+<div class="form-group-title">内联</div>
+
+<hr />
+<div class="form-inline">
+    <div class="input-group">
+        <div class="input-group-addon">关键词</div>
+        <input type="text" class="form-control" placeholder="关键词"/>
+    </div>
+    <div class="input-group">
+        <div class="input-group-addon">选择项</div>
+        <input type="text"
+               class="form-control"
+               value="0efec22100364a634ea2019a3327a051,f490500ca4df70de864d2e9289937967,f24d33a591a526f225de7783dc5a6989"
+               placeholder="请选择"
+               data-toggle="busy-linkage-picker"
+               data-url="{:url('system_menu/data')}"
+               data-clear="true"/>
+    </div>
+    <button class="btn btn-primary">搜索</button>
+</div>
+    </template>
 </block>
