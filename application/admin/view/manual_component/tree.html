@@ -15,7 +15,11 @@
 通过在标签上加上自定义属性 `data-toggle="busy-tree"` 来触发
 
 ```html
-<div data-toggle="busy-tree"></div>
+<div data-toggle="busy-tree">
+    <!--可选-->
+    <select name="tree_id[]" data-template="main"></select>
+    <select name="uncertain_id[]" data-template="uncertain"></select>
+</div>
 ```
 
 ### 属性
@@ -48,7 +52,7 @@
 | data-model-icon-field | string | 否 | `icon` | 取模型数据`图标`的字段 |
 | data-model-disabled-field | string | 否 | `disabled` | 取模型数据`是否禁用`的字段 |
 | Data:title |  |  |  |  |
-| data-list | string | 否 | - | 设置初始化的数据，支持html、json格式的数据 |
+| data-data | string | 否 | - | 设置初始化的数据，支持html、json格式的数据 |
 | 复选框:title |  |  |  |  |
 | data-checkbox | boolean | 否 | `false` | 是否启用复选框 |
 | data-checkbox-relation | boolean | 否 | `true` | 设置复选框勾选是否关联上下层级 |
@@ -62,8 +66,6 @@
 | 右键菜单:title |  |  |  |  |
 | data-contextmenu | boolean | 否 | `false` | 是否显示右键菜单 |
 | data-contextmenu-items | **Function(node:Object) : Object** <br /> 自定义右键菜单回调，参考：https://www.jstree.com/api/#/?f=$.jstree.defaults.contextmenu.items<br /><br />**String**<br />`window全局方法名`，参数同自定义回调一致 | 否 | `false` | 是否显示右键菜单 |
-| 表单验证:title |  |  |  |  |
-| `data-validate-*` | string | 否 | - | 表单验证属性，参考[表单验证]({:url('form_verify')}) |
 
 ### JSON数据格式
 
@@ -127,175 +129,123 @@
     </div>
 
     <template class="hide" id="demo1">
-        <button class="btn btn-primary" id="demo1_btn1">获取选中值</button>
-        <button class="btn btn-primary" id="demo1_btn2">全选</button>
-        <button class="btn btn-primary" id="demo1_btn3">取消全选</button>
-        <button class="btn btn-primary" id="demo1_btn4">选中指定节点</button>
-        <button class="btn btn-primary" id="demo1_btn5">展开节点</button>
-        <button class="btn btn-primary" id="demo1_btn6">关闭节点</button>
-        <button class="btn btn-primary" id="demo1_btn7">展开指定节点</button>
-        <button class="btn btn-primary" id="demo1_btn8">关闭指定节点</button>
-        <button class="btn btn-primary" id="demo1_btn9">隐藏连线</button>
-        <button class="btn btn-primary" id="demo1_btn10">显示连线</button>
-        <button class="btn btn-primary" id="demo1_btn11">隐藏图标</button>
-        <button class="btn btn-primary" id="demo1_btn12">显示图标</button>
-        <button class="btn btn-primary" id="demo1_btn13">隐藏复选框</button>
-        <button class="btn btn-primary" id="demo1_btn14">显示复选框</button>
-        <br/>
-        <br/>
+<button class="btn btn-primary" id="demo1_btn1" onclick="busyAdmin.dialog.alert(JSON.stringify($('#demo1_tree').baTree('getChecked')))">获取选中值</button>
+<button class="btn btn-primary" id="demo1_btn2" onclick="$('#demo1_tree').baTree('checkAll');">全选</button>
+<button class="btn btn-primary" id="demo1_btn3" onclick="$('#demo1_tree').baTree('uncheckAll');">取消全选</button>
+<button class="btn btn-primary" id="demo1_btn4" onclick="$('#demo1_tree').baTree('checkNode', ['demo1_tree_1', 'demo1_tree_2']);">选中指定节点</button>
+<button class="btn btn-primary" id="demo1_btn5" onclick="$('#demo1_tree').baTree('openAll')">展开节点</button>
+<button class="btn btn-primary" id="demo1_btn6" onclick="$('#demo1_tree').baTree('closeAll');">关闭节点</button>
+<button class="btn btn-primary" id="demo1_btn7" onclick="$('#demo1_tree').baTree('openNode', 'demo1_tree_1')">展开指定节点</button>
+<button class="btn btn-primary" id="demo1_btn8" onclick="$('#demo1_tree').baTree('closeNode', 'demo1_tree_1')">关闭指定节点</button>
+<button class="btn btn-primary" id="demo1_btn9" onclick="$('#demo1_tree').baTree('hideDots')">隐藏连线</button>
+<button class="btn btn-primary" id="demo1_btn10" onclick="$('#demo1_tree').baTree('showDots')">显示连线</button>
+<button class="btn btn-primary" id="demo1_btn11" onclick="$('#demo1_tree').baTree('hideIcons')">隐藏图标</button>
+<button class="btn btn-primary" id="demo1_btn12" onclick="$('#demo1_tree').baTree('showIcons')">显示图标</button>
+<button class="btn btn-primary" id="demo1_btn13" onclick="$('#demo1_tree').baTree('hideCheckboxes')">隐藏复选框</button>
+<button class="btn btn-primary" id="demo1_btn14" onclick="$('#demo1_tree').baTree('showCheckboxes')">显示复选框</button>
+<br/>
+<br/>
 
-        <div data-toggle="busy-tree" id="demo1_tree" data-block="true" data-operate="true" data-contextmenu="true" data-contextmenu-items="customContextMenu" data-checkbox="true" data-expand-selected-onload="true">
+<div data-toggle="busy-tree" id="demo1_tree" data-block="true" data-operate="true" data-contextmenu="true" data-contextmenu-items="customContextMenu" data-checkbox="true" data-expand-selected-onload="true">
+    <ul>
+        <li disabled="">
+            根节点 1
             <ul>
-                <li disabled="">
-                    根节点 1
+                <li id="demo1_tree_1" data-selected="true">
+                    子节点1
                     <ul>
-                        <li id="demo1_tree_1" data-selected="true">
-                            子节点1
-                            <ul>
-                                <li>子节点1-1</li>
-                                <li>子节点2-1</li>
-                            </ul>
-                        </li>
-                        <li>子节点2</li>
+                        <li>子节点1-1</li>
+                        <li>子节点2-1</li>
                     </ul>
                 </li>
-                <li data-icon="fa fa-plus">
-                    根节点 2
-                    <ul>
-                        <li data-selected="true">子节点11</li>
-                        <li id="demo1_tree_2">子节点22</li>
-                    </ul>
-                </li>
+                <li>子节点2</li>
             </ul>
-        </div>
+        </li>
+        <li data-icon="fa fa-plus">
+            根节点 2
+            <ul>
+                <li data-selected="true">子节点11</li>
+                <li id="demo1_tree_2">子节点22</li>
+            </ul>
+        </li>
+    </ul>
+</div>
 
-        <script>
-            // 自定义菜单
-            var customContextMenu = function (node) {
-                return {
-                    menu1 : {
-                        separator_before : false,   // 是否显示上线
-                        separator_after  : false,   // 是否显示下线
-                        _disabled        : false,   // 是否禁用
-                        label            : '菜单1', // 菜单名称
-                        icon             : 'fa fa-plus',    // 菜单图标
-                        action           : function (api) {     // 菜单点击
-                            busyAdmin.dialog.toast('点击了菜单1')
-                        }
+<script>
+    // 自定义菜单
+    busyAdmin.data.customContextMenu = function (node) {
+        return {
+            menu1 : {
+                separator_before : false,   // 是否显示上线
+                separator_after  : false,   // 是否显示下线
+                _disabled        : false,   // 是否禁用
+                label            : '菜单1', // 菜单名称
+                icon             : 'fa fa-plus',    // 菜单图标
+                action           : function (api) {     // 菜单点击
+                    busyAdmin.dialog.toast('点击了菜单1')
+                }
+            },
+            menu2 : {
+                separator_before : true,
+                label            : '更多',
+                action           : false,
+                submenu          : {
+                    menu3 : {
+                        label : '菜单3',
                     },
-                    menu2 : {
-                        separator_before : true,
-                        label            : '更多',
-                        action           : false,
-                        submenu          : {
-                            menu3 : {
-                                label : '菜单3',
-                            },
-                            menu4 : {
-                                label : '菜单4',
-                            }
-                        }
+                    menu4 : {
+                        label : '菜单4',
                     }
-                };
-            };
+                }
+            }
+        };
+    };
 
-            $(function () {
-                $('#demo1_tree').on(busyAdmin.e.treeClickNode, function (e, tree, node, event) {
-                    busyAdmin.dialog.toast(node.text)
-                });
-
-                $('#demo1_btn1').on('click', function () {
-                    busyAdmin.dialog.alert(JSON.stringify($('#demo1_tree').baTree('get_checked')));
-                });
-
-                $("#demo1_btn2").on('click', function () {
-                    $('#demo1_tree').baTree('check_all');
-                });
-
-                $("#demo1_btn3").on('click', function () {
-                    $('#demo1_tree').baTree('uncheck_all');
-                });
-
-                $("#demo1_btn4").on('click', function () {
-                    $('#demo1_tree').baTree('check_node', ['demo1_tree_1', 'demo1_tree_2']);
-                });
-                $("#demo1_btn5").on('click', function () {
-                    $('#demo1_tree').baTree('open_all');
-                });
-                $("#demo1_btn6").on('click', function () {
-                    $('#demo1_tree').baTree('close_all');
-                });
-                $("#demo1_btn7").on('click', function () {
-                    $('#demo1_tree').baTree('openNode', 'demo1_tree_1');
-                });
-                $("#demo1_btn8").on('click', function () {
-                    $('#demo1_tree').baTree('closeNode', 'demo1_tree_1');
-                });
-                $("#demo1_btn9").on('click', function () {
-                    $('#demo1_tree').baTree('hide_dots');
-                });
-                $("#demo1_btn10").on('click', function () {
-                    $('#demo1_tree').baTree('show_dots');
-                });
-                $("#demo1_btn11").on('click', function () {
-                    $('#demo1_tree').baTree('hide_icons');
-                });
-                $("#demo1_btn12").on('click', function () {
-                    $('#demo1_tree').baTree('show_icons');
-                });
-                $("#demo1_btn13").on('click', function () {
-                    $('#demo1_tree').baTree('hide_checkboxes');
-                });
-                $("#demo1_btn14").on('click', function () {
-                    $('#demo1_tree').baTree('show_checkboxes');
-                });
-            })
-        </script>
+    $(function () {
+        $('#demo1_tree').on(busyAdmin.e.treeClickNode, function (e, tree, node, event) {
+            busyAdmin.dialog.toast(node.text)
+        });
+    })
+</script>
     </template>
 
     <template class="hide" id="demo2">
-        <p><b>单个节点异步</b></p>
-        <div data-toggle="busy-tree"
-             data-checkbox="true"
-             data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class()?>"
-             data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::path()?>"
-             data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::parentPath()?>"
-             data-async-node="true"></div>
-
-        <hr />
-        
-        <p><b>一次性异步请求</b></p>
-        <div data-toggle="busy-tree"
-             data-checkbox="true"
-             data-model="<?=\BusyPHP\app\admin\model\system\menu\SystemMenu::class()?>"
-             data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::path()?>"
-             data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::parentPath()?>"
-             data-async-node="false"></div>
+<div data-toggle="busy-tree"
+     data-checkbox="true"
+     data-url="{:url('system_menu/data')}"
+     data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::path()?>"
+     data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::parentPath()?>"
+     data-async-node="false"></div>
     </template>
 
     <script type="text/html" class="hide" id="demo3">
-        <div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-list='[{"id":1, "text": "节点1", "state":{"selected":true}},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
+<div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-data='[{"id":1, "text": "节点1", "state":{"selected":true}},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
     </script>
 
-    <textarea type="text/html" class="hide" id="demo4">
-        <form id="demo4_form">
-            请输入内容
-            <input type="text" class="form-control" name="name" placeholder="请输入内容"/>
-            <br/>
-            请选择节点
-            <br/>
-            <div id="demo4_tree" data-toggle="busy-tree" data-name="tree_id[]" data-checkbox="true" data-list='[{"id":1, "text": "节点1"},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
-            <br/>
-            <button type="submit" class="btn btn-primary">提交表单</button>
-        </form>
-        <script>
-            $(function () {
-                $('#demo4_form').on('submit', function () {
-                    busyAdmin.dialog.alert(JSON.stringify($(this).serializeArray()));
+    <template type="text/html" class="hide" id="demo4">
+<form id="demo4_form">
+    请输入内容
+    <input type="text" class="form-control" name="name" placeholder="请输入内容"/>
+    <br/>
+    请选择节点
+    <br/>
+    <div id="demo4_tree" data-toggle="busy-tree" data-name="tree_id[]" data-checkbox="true" data-data='demo4Data'>
+        <select name="tree_id[]" data-template="main"></select>
+        <select name="uncertain_id[]" data-template="uncertain"></select>
+    </div>
+    <br/>
+    <button type="submit" class="btn btn-primary">提交表单</button>
+    <button type="reset" class="btn btn-default">重置</button>
+</form>
+<script>
+    busyAdmin.data.demo4Data = [{"id":1, "text": "节点1", "state":{"selected":true}},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}];
+    $(function () {
+        $('#demo4_form').on('submit', function () {
+            busyAdmin.dialog.alert(JSON.stringify($(this).serializeArray()));
 
-                    return false;
-                });
-            })
-        </script>
-    </textarea>
+            return false;
+        });
+    })
+</script>
+    </template>
 </block>
