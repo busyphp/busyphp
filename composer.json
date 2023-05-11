@@ -35,7 +35,10 @@
 		"topthink/think-trace"      : "1.5",
 		"intervention/image"        : "2.7.2",
 		"php-di/phpdoc-reader"      : "2.2.1",
-		"endroid/qr-code"           : "3.9.6"
+		"endroid/qr-code"           : "3.9.6",
+		"phpoffice/phpspreadsheet"  : "1.28.0",
+		"symfony/process"           : "^6.0",
+		"scssphp/scssphp"           : "^1.0"
 	},
 	"require-dev"  : {
 		"symfony/var-dumper" : "^4.2",
@@ -73,5 +76,12 @@
 			"config"      : {
 			}
 		}
+	},
+	"scripts"      : {
+		"post-autoload-dump" : [
+			"@php think service:discover",
+			"@php think vendor:publish",
+			"@php think bp:publish --dev composer.json"
+		]
 	}
 }

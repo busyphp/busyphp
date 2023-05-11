@@ -18,6 +18,9 @@ use BusyPHP\Controller;
 use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\FileHelper;
 use FilesystemIterator;
+use ScssPhp\ScssPhp\Compiler;
+use ScssPhp\ScssPhp\Exception\SassException;
+use ScssPhp\ScssPhp\OutputStyle;
 use SplFileInfo;
 use think\exception\HttpResponseException;
 use think\facade\Event;
@@ -192,6 +195,33 @@ abstract class AdminController extends Controller
     protected function task(string $class, mixed $data = null, string $title = '', int $later = 0, int $loop = 0) : Task
     {
         return Task::init($class, $data, $title, $later, $loop);
+    }
+    
+    
+    protected function viewFilter(string $content) : string
+    {
+        // 解析scss
+        $compiler = new Compiler($this->app->config->get('app.admin.scssphp.cache_options'));
+        $compiler->setOutputStyle($this->app->isDebug() ? OutputStyle::EXPANDED : OutputStyle::COMPRESSED);
+        $content = preg_replace_callback('#<style\stype=["\']text/scss[\'"]>(.*?)</style>#is', function($match) use ($compiler) {
+            $scss = trim($match[1]);
+            $key  = md5($scss);
+            $css  = CacheHelper::get(self::class, $key);
+            if (!$css) {
+                try {
+                    $css = $compiler->compileString($match[1])->getCss();
+                    CacheHelper::set(self::class, $key, $css, 0);
+                } catch (Throwable|SassException $e) {
+                    $css = '/**' . PHP_EOL;
+                    $css .= $e->getMessage();
+                    $css .= PHP_EOL . '*/';
+                }
+            }
+            
+            return '<style>' . $css . '</style>';
+        }, $content);
+        
+        return parent::viewFilter($content);
     }
     
     
