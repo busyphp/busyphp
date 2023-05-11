@@ -9927,7 +9927,7 @@ var LocalStorage = UE.LocalStorage = (function () {
 
     var ROOTKEY = 'ueditor_preference';
 
-    // busyAdmin 2023.4.19 新增自定义缓存键
+    // busyAdmin: 2023.4.19 新增自定义缓存键
     UE.Editor.prototype.getPreferencesKey = function () {
         var key = this.options.preferencesKey || ROOTKEY;
         if (typeof key === 'function') {
@@ -9937,7 +9937,6 @@ var LocalStorage = UE.LocalStorage = (function () {
     };
 
     UE.Editor.prototype.setPreferences = function(key,value){
-        console.log(this);
         var obj = {};
         if (utils.isString(key)) {
             obj[ key ] = value;
