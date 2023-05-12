@@ -7,11 +7,8 @@ use BusyPHP\app\admin\annotation\MenuGroup;
 use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\js\driver\LinkagePicker;
-use BusyPHP\app\admin\component\js\driver\LinkagePicker\LinkagePickerFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use think\Response;
 
 /**
@@ -106,17 +103,6 @@ class ComponentController extends InsideController
     #[MenuNode(menu: true, icon: 'bicon bicon-tree', canDisable: false)]
     public function linkage_picker() : Response
     {
-        if ($picker = LinkagePicker::initIfRequest()) {
-            return $picker
-                ->model(SystemMenu::init())
-                ->list(function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) {
-                    $node->setId($item->hash);
-                    $node->setName($item->name);
-                    $node->setParent($item->parentHash);
-                })
-                ->response();
-        }
-        
         $this->assign('tree', json_encode(SystemMenu::init()->getTree(), JSON_UNESCAPED_UNICODE));
         
         return $this->insideDisplay();

@@ -209,7 +209,7 @@ class AdminHandle extends Handle implements ContainerInterface
                     'autocomplete'  => [
                         'url' => $data['url']['app']
                     ],
-                    'formVerify'    => [
+                    'validate'    => [
                         'remote' => $data['url']['app']
                     ],
                     'watermark'     => $adminSetting->getWatermark(),

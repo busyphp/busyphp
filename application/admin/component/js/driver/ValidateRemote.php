@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\component\js\driver;
 
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\js\driver\FormVerifyRemote\FormVerifyRemoteHandler;
+use BusyPHP\app\admin\component\js\driver\validate\ValidateRemoteHandler;
 use BusyPHP\app\admin\component\js\traits\ModelQuery;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Entity;
@@ -13,14 +13,14 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 
 /**
- * JS组件[busyAdmin.plugins.FormVerify] Remote 异步验证
+ * JS组件[busyAdmin.plugins.Validate] Remote 异步验证
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/11/14 10:38 FormVerifyRemote.php $
- * @property FormVerifyRemoteHandler $handler
- * @method FormVerifyRemote handler(FormVerifyRemoteHandler $handler)
+ * @version $Id: 2022/11/14 10:38 Validate.php $
+ * @property ValidateRemoteHandler $handler
+ * @method ValidateRemote handler(ValidateRemoteHandler $handler)
  */
-class FormVerifyRemote extends Driver implements ContainerInterface
+class ValidateRemote extends Driver implements ContainerInterface
 {
     use ModelQuery;
     
@@ -201,20 +201,22 @@ class FormVerifyRemote extends Driver implements ContainerInterface
     {
         $this->prepareHandler();
         
-        if ($this->model && $this->field && $this->value !== '') {
-            if (false !== $this->modelQuery()) {
-                $this->model->where($this->field, $this->value);
+        if ($this->model) {
+            if ($this->field && $this->value !== '') {
+                if (false !== $this->modelQuery()) {
+                    $this->model->where($this->field, $this->value);
+                    
+                    if ($this->excludeValue !== '') {
+                        $this->model->where($this->excludeField, '<>', $this->excludeValue);
+                    }
+                }
                 
-                if ($this->excludeValue !== '') {
-                    $this->model->where($this->excludeField, '<>', $this->excludeValue);
+                if (!$this->model->field($this->field)->find()) {
+                    return [];
                 }
             }
             
-            if ($this->model->field($this->field)->find()) {
-                throw new RuntimeException($this->errorMessage);
-            }
-            
-            return [];
+            throw new RuntimeException($this->errorMessage);
         }
         
         return null;
