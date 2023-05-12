@@ -2650,6 +2650,24 @@ declare namespace busyAdmin {
          * @param parentField 上级节点字段名
          */
         listToTree(list: [object], idField: string, childField: string, parentField: string): [object];
+
+        pluginFn(elements: jQuery, plugin: object, option: any, args: IArguments, third: string | [any], init: (() => void)): any;
+
+        pluginAttrs(name: string): string;
+
+        pluginKey(name: string): string;
+
+        pluginCall(plugin: object, name: string, $el: jQuery, option: any, args: IArguments): any;
+
+        encodeUnicode(string: string): string;
+
+        decodeUnicode(string: string): string;
+
+        checkCardNoProvince(val: string): boolean;
+
+        checkCardNoDate(val: string): boolean;
+
+        checkCardNo(val: string): boolean;
     }
 
     /**
