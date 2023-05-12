@@ -48,8 +48,10 @@
 | 数据类型:title |  |  |  |  |
 | data-rule-remote | string | 否 | - | 异步验证URL |
 | data-opt-remote-model | string | 否 | - | 自动验证模型类名 |
-| data-opt-remote-exclude-field | string | 否 | `id` | 异步验证排除的字段名称 |
+| data-opt-remote-field | string | 否 | - | 验证的字段名称，默认为当前节点的`name` |
 | data-opt-remote-exclude-value | string | 否 | - | 异步验证排除的值，如：当前信息ID |
+| data-opt-remote-pending-status | boolean | 否 | `true` | 是否显示验证等待消息 |
+| data-opt-remote-pending-message | string | 否 | `请稍后...` | 验证等待消息文案 |
 | data-rule-email | boolean | 否 | - | 必须输入email格式 |
 | data-rule-url | boolean | 否 | - | 必须输入网址格式 |
 | data-rule-date | boolean | 否 | - | 日期格式校验 |
@@ -86,7 +88,7 @@
                    class="form-control"
                    name="username"
                    data-rule-enNumLine="true"
-                   data-rule-remote="__SELF__"
+                   data-rule-remote="true"
                    data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
                    data-opt-remote-exclude-value=""
                    required
