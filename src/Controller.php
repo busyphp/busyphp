@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\helper\StringHelper;
 use think\Exception;
 use think\exception\Handle;
 use think\exception\ValidateException;
@@ -189,7 +190,8 @@ abstract class Controller
             $this->view->content($content);
         }
         
-        $this->view->filter(function(string $content) {
+        $scoped = str_replace('/', '_', $this->request->getRoutePath(true));
+        $this->view->filter(function(string $content) use ($scoped) {
             $content = str_replace([
                 '__ROOT__',
                 '__APP__',
@@ -198,6 +200,7 @@ abstract class Controller
                 '__ROUTE__',
                 '__ASSETS__',
                 '__DOMAIN__',
+                '__SCOPED__',
             ], [
                 $this->request->getWebUrl(),
                 $this->request->getAppUrl(),
@@ -206,6 +209,7 @@ abstract class Controller
                 $this->request->getRoutePath(),
                 $this->request->getAssetsUrl(),
                 $this->request->domain(),
+                $scoped,
             ], $content);
             
             
