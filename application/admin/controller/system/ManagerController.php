@@ -373,7 +373,7 @@ class ManagerController extends InsideController
      */
     public function image_style_upload_watermark() : Response
     {
-        $this->request->setRequestIsAjax();
+        $this->request->setToAjax();
         $file = $this->request->file('file');
         FileHelper::checkFilesize(StorageSetting::instance()->getMaxSize(), $file->getSize());
         

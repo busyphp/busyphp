@@ -129,7 +129,7 @@ class FileController extends InsideController
      */
     public function front_local() : Response
     {
-        $this->request->setRequestIsAjax();
+        $this->request->setToAjax();
         
         $etag = $this->model->frontLocalUpload(
             $this->post('file_id/d'),
@@ -148,7 +148,7 @@ class FileController extends InsideController
      */
     public function upload() : Response
     {
-        $this->request->setRequestIsAjax();
+        $this->request->setToAjax();
         $parameter = new SystemFileUploadParameter(new LocalParameter($this->request->file('upload')));
         $parameter->setUserId($this->adminUserId);
         $parameter->setClassType($this->post('class_type/s', 'trim'));
