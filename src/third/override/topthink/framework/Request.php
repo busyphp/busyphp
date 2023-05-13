@@ -2500,7 +2500,7 @@ class Request implements ArrayAccess
     /**
      * 设置当前请求为ajax请求
      */
-    public function setRequestIsAjax() : void
+    public function setToAjax() : void
     {
         $this->setServer('HTTP_X_REQUESTED_WITH', 'xmlhttprequest');
     }
