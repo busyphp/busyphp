@@ -184,7 +184,7 @@
 </block>
 <block name="foot">
     <script>
-        $(function () {
+        busyAdmin.ready(function () {
             $('[name="data[disk]"]').on('change', function () {
                 var type = $(this).val();
                 $('.disk-config').addClass('hide');

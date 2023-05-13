@@ -4,89 +4,74 @@ interface jQuery {
 
 declare namespace busyAdmin {
     //+======================================================================
-    //+ 核心库名称
-    //+======================================================================
-    var sys: {
-        /**
-         * 核心对象
-         */
-        core: string,
-
-        /**
-         * jQuery库
-         * @see https://jquery.com/
-         */
-        jquery: string,
-
-        /**
-         * Pace库
-         * @see https://www.bootcdn.cn/pace/
-         */
-        pace: string,
-    }
-
-
-    //+======================================================================
     //+ 三方库名称
     //+======================================================================
     var lib: {
-        "bootstrap": "bootstrap",
-        "layer": "layer",
-        "moment": "moment",
-        "marked": "marked",
-        "vue": "vue",
-        "clipboard": "clipboard",
-        "md5": "md5",
-        "sticky": "sticky",
-        "jqueryUi": "jqueryUi",
-        "toastr": "toastr",
-        "highlight": "highlight",
-        "colorPicker": "colorPicker",
-        "tree": "tree",
-        "uploadConfig": "uploadConfig",
-        "webUploader": "webUploader",
-        "video": "video",
-        "audio": "audio",
-        "imageViewer": "imageViewer",
-        "sortable": "sortable",
-        "dragtable": "dragtable",
-        "bootstrapTable": "bootstrapTable",
-        "bootstrapTableReorderColumns": "bootstrapTableReorderColumns",
-        "bootstrapTableResizable": "bootstrapTableResizable",
-        "bootstrapTableReorderRows": "bootstrapTableReorderRows",
-        "bootstrapTableStickyHeader": "bootstrapTableStickyHeader",
-        "bootstrapTablePrint": "bootstrapTablePrint",
-        "bootstrapTableFixedColumns": "bootstrapTableFixedColumns",
-        "bootstrapTableExport": "bootstrapTableExport",
-        "ueditor": "ueditor",
-        "zeroClipboard": "zeroClipboard",
-        "ckEditor5Classic": "ckEditor5Classic",
-        "select2": "select2",
-        "autocomplete": "autocomplete",
-        "artTemplate": "artTemplate",
-        "treeTable": "treeTable",
-        "validate": "validate",
-        "socketio": "socketio",
-        "gwm": "gwm",
-        "sparkMd5": "sparkMd5",
-        "cryptoJs": "cryptoJs",
-        "fxParser": "fxParser",
-        "echarts": "echarts",
-        "echartsGl": "echartsGl",
-        "ionRangeSlider": "ionRangeSlider",
-        "bootstrapStarRatingCore": "bootstrapStarRatingCore",
-        "bootstrapStarRating": "bootstrapStarRating",
-        "fullcalendar": "fullcalendar",
-        "json": "json",
-        "depend": "depend",
-        "font": "font",
-        "goog": "goog",
-        "i18n": "i18n",
-        "image": "image",
-        "mdown": "mdown",
-        "noext": "noext",
-        "propertyParser": "propertyParser",
-        "text": "text"
+        APlayer: "APlayer"
+        artTemplate: "artTemplate"
+        autocomplete: "autocomplete"
+        bootstrap: "bootstrap"
+        bootstrapStarRating: "bootstrapStarRating"
+        bootstrapStarRatingCore: "bootstrapStarRatingCore"
+        bootstrapTable: "bootstrapTable"
+        bootstrapTableExport: "bootstrapTableExport"
+        bootstrapTableFilterControl: "bootstrapTableFilterControl"
+        bootstrapTableFixedColumns: "bootstrapTableFixedColumns"
+        bootstrapTablePrint: "bootstrapTablePrint"
+        bootstrapTableReorderColumns: "bootstrapTableReorderColumns"
+        bootstrapTableReorderRows: "bootstrapTableReorderRows"
+        bootstrapTableStickyHeader: "bootstrapTableStickyHeader"
+        ckEditor5Classic: "ckEditor5Classic"
+        clipboard: "clipboard"
+        colorPicker: "colorPicker"
+        cryptoJs: "cryptoJs"
+        depend: "depend"
+        dragtable: "dragtable"
+        echarts: "echarts"
+        echartsGl: "echartsGl"
+        font: "font"
+        fullcalendar: "fullcalendar"
+        fxParser: "fxParser"
+        goog: "goog"
+        gwm: "gwm"
+        highlight: "highlight"
+        hls: "hls"
+        html2canvas: "html2canvas"
+        i18n: "i18n"
+        image: "image"
+        imageViewer: "imageViewer"
+        ionRangeSlider: "ionRangeSlider"
+        jquery: "jquery"
+        jqueryUi: "jqueryUi"
+        json: "json"
+        jspdf: "jspdf"
+        layer: "layer"
+        marked: "marked"
+        md5: "md5"
+        mdown: "mdown"
+        moment: "moment"
+        noext: "noext"
+        pace: "pace"
+        pinyin: "pinyin"
+        print: "print"
+        propertyParser: "propertyParser"
+        select2: "select2"
+        socketio: "socketio"
+        sortable: "sortable"
+        sparkMd5: "sparkMd5"
+        sticky: "sticky"
+        text: "text"
+        toastr: "toastr"
+        tree: "tree"
+        treeTable: "treeTable"
+        ueditor: "ueditor"
+        uploadConfig: "uploadConfig"
+        validate: "validate"
+        videojs: "videojs"
+        vue: "vue"
+        webUploader: "webUploader"
+        xlsx: "xlsx"
+        zeroClipboard: "zeroClipboard"
     };
 
 
@@ -1238,12 +1223,6 @@ declare namespace busyAdmin {
 
     interface BusyAdminApp {
         $contentSide: jQuery,
-
-        /**
-         * 准备完成
-         * @param callback
-         */
-        ready(callback: (() => any));
 
         /**
          * 关闭侧边栏导航
