@@ -3,9 +3,9 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\file;
 
-use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
+use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\facade\Image;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
@@ -19,7 +19,6 @@ use BusyPHP\model\Entity;
 use BusyPHP\Upload;
 use BusyPHP\upload\front\Local;
 use League\Flysystem\FilesystemException;
-use RangeException;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -182,12 +181,12 @@ class SystemFile extends Model implements ContainerInterface
     
     /**
      * 创建一个临时的业务参数
-     * @param null|string $value
+     * @param mixed $type 分类
      * @return string
      */
-    public static function createTmp($value = null) : string
+    public static function createTmp(mixed $type = '') : string
     {
-        return static::MARK_VALUE_TMP_PREFIX . md5(($value ?: uniqid()) . StringHelper::random(32));
+        return static::MARK_VALUE_TMP_PREFIX . md5($type . ',' . md5(uniqid()) . ',' . StringHelper::random(32));
     }
     
     
@@ -200,7 +199,7 @@ class SystemFile extends Model implements ContainerInterface
      * @param string      $extension 文件扩展名
      * @return string
      */
-    public static function createFilename(string $classType, string $classValue, $userId, $file, string $extension = '') : string
+    public static function createFilename(string $classType, string $classValue, int $userId, string|File $file, string $extension = '') : string
     {
         $classType = $classType ?: 'file';
         $type      = StorageSetting::instance()->getDirGenerateType();
@@ -242,7 +241,7 @@ class SystemFile extends Model implements ContainerInterface
         
         return $classType . $dir . DIRECTORY_SEPARATOR . md5(
                 implode(',', [
-                    StringHelper::uuid(),
+                    md5(uniqid($classType)),
                     $classType,
                     $classValue,
                     $userId
@@ -272,6 +271,28 @@ class SystemFile extends Model implements ContainerInterface
     public function create(SystemFileField $data) : SystemFileField
     {
         return $this->getInfo($this->validate($data, static::SCENE_CREATE)->insert());
+    }
+    
+    
+    /**
+     * 更新分类业务参数
+     * @param string $oldValue 旧业务参数
+     * @param string $newValue 新业务参数
+     * @return int
+     * @throws DbException
+     */
+    public function updateValue(string $oldValue, string $newValue) : int
+    {
+        $oldValue = trim($oldValue);
+        $newValue = trim($newValue);
+        if ($oldValue === '') {
+            throw new ParamInvalidException('$oldValue');
+        }
+        if ($oldValue === $newValue) {
+            return 0;
+        }
+        
+        return $this->where(SystemFileField::classValue($oldValue))->setField(SystemFileField::classValue(), $newValue);
     }
     
     
@@ -524,14 +545,6 @@ class SystemFile extends Model implements ContainerInterface
         $filename   = $parameter->getFilename();
         $mimetype   = $parameter->getMimetype();
         $filesize   = $parameter->getFilesize();
-        
-        // 校验文件分类
-        $range     = SystemFileClass::instance()->getList();
-        $range[''] = '';
-        if (!array_key_exists($classType, $range)) {
-            throw new RangeException(sprintf('文件分类%s不存在', $classType));
-        }
-        
         $fast       = false;
         $path       = '';
         $setting    = StorageSetting::instance();
