@@ -357,10 +357,6 @@ class SystemFileField extends Field implements ModelValidateInterface
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
-        $range   = array_keys(SystemFileClass::instance()->getList());
-        $range[] = '';
-        $validate->append($this::classType(), ValidateRule::init()->in($range));
-        
         if ($scene == SystemFile::SCENE_CREATE) {
             $this->setCreateTime(time());
             
