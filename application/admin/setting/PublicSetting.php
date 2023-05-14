@@ -90,15 +90,15 @@ class PublicSetting extends Setting implements ContainerInterface
     
     
     /**
-     * 获取错误占位图
+     * 获取图片占位图
      * @param bool $isPath
      * @return string
      */
-    public function getImgErrorPlaceholder(bool $isPath = false) : string
+    public function getImagePlaceholder(bool $isPath = false) : string
     {
-        $image = $this->get('img_error_placeholder', '');
+        $image = $this->get('image_placeholder', '');
         if (!$image) {
-            $image = $this->app->request->getAssetsUrl() . 'system/images/no_image.jpeg';
+            $image = $this->app->request->getAssetsUrl() . 'system/images/no_image.png';
             
             if ($isPath) {
                 // 资源真实存在于assets目录下，则返回该资源
@@ -107,7 +107,33 @@ class PublicSetting extends Setting implements ContainerInterface
                 }
                 
                 // 返回系统资源
-                return __DIR__ . '/../../../assets/images/no_image.jpeg';
+                return __DIR__ . '/../../../assets/images/no_image.png';
+            }
+        }
+        
+        return $isPath ? App::urlToPath($image) : $image;
+    }
+    
+    
+    /**
+     * 获取头像占位图
+     * @param bool $isPath
+     * @return string
+     */
+    public function getAvatarPlaceholder(bool $isPath = false) : string
+    {
+        $image = $this->get('avatar_placeholder', '');
+        if (!$image) {
+            $image = $this->app->request->getAssetsUrl() . 'system/images/no_avatar.png';
+            
+            if ($isPath) {
+                // 资源真实存在于assets目录下，则返回该资源
+                if (is_file($image = App::urlToPath($image))) {
+                    return $image;
+                }
+                
+                // 返回系统资源
+                return __DIR__ . '/../../../assets/images/no_avatar.png';
             }
         }
         

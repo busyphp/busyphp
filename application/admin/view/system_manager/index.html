@@ -56,19 +56,36 @@
 
 
                 <div class="form-group">
-                    <label class="col-sm-2 control-label">错误占位图</label>
+                    <label class="col-sm-2 control-label">图片占位图</label>
                     <div class="col-sm-10 col-md-8">
                         <input class="form-control"
-                               data-class-value="system_img_error_placeholder"
+                               data-class-value="system_image_placeholder"
                                data-toggle="busy-upload"
                                data-allow-extensions="jpeg,jpg,png,gif,webp"
                                data-allow-mimetypes="image/*"
-                               name="data[img_error_placeholder]"
+                               name="data[image_placeholder]"
                                placeholder="上传错误占位图片"
                                title="占位图"
                                type="text"
                                value="{$info.img_error_placeholder|default=''}"/>
-                        <span class="help-block">设置错误占位图，当图片不存在或图片显示失败时将使用该图片替代</span>
+                        <span class="help-block">设置图片占位图，当图片不存在或图片显示失败时将使用该图片替代</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">头像站位图</label>
+                    <div class="col-sm-10 col-md-8">
+                        <input class="form-control"
+                               data-class-value="system_avatar_placeholder"
+                               data-toggle="busy-upload"
+                               data-allow-extensions="jpeg,jpg,png,gif,webp"
+                               data-allow-mimetypes="image/*"
+                               name="data[avatar_placeholder]"
+                               placeholder="上传头像占位图片"
+                               title="占位图"
+                               type="text"
+                               value="{$info.img_error_placeholder|default=''}"/>
+                        <span class="help-block">设置头像占位图片，当头像不存在或头像显示失败时将使用该图片替代</span>
                     </div>
                 </div>
 
