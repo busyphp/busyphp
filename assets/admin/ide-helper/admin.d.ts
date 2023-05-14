@@ -1094,7 +1094,7 @@ declare namespace busyAdmin {
     /**
      * 准备完成回调
      */
-    var ready: (callback: () => void) => void;
+    var ready: (modules: [string]|string|(() => void), callback?: (...object) => void, queue?: boolean) => void;
 
     /**
      * 获取项目跟地址
