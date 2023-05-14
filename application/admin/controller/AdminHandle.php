@@ -174,13 +174,14 @@ class AdminHandle extends Handle implements ContainerInterface
                 'requires'   => $requires,
                 'configs'    => [
                     'app'           => [
-                        'errorImgUrl'     => $publicSetting->getImgErrorPlaceholder(false) . "?v={$data['skin']['version']}",
-                        'url'             => $data['url']['app'],
-                        'navSingleHold'   => $theme['nav_single_hold'],
-                        'navMode'         => $theme['nav_mode'],
-                        'pageTitleSuffix' => $pageTitleSuffix,
-                        'operateTipStyle' => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
-                        'login'           => !!$adminUser,
+                        'imagePlaceholder'  => $publicSetting->getImagePlaceholder(false) . "?v={$data['skin']['version']}",
+                        'avatarPlaceholder' => $publicSetting->getAvatarPlaceholder(false) . "?v={$data['skin']['version']}",
+                        'url'               => $data['url']['app'],
+                        'navSingleHold'     => $theme['nav_single_hold'],
+                        'navMode'           => $theme['nav_mode'],
+                        'pageTitleSuffix'   => $pageTitleSuffix,
+                        'operateTipStyle'   => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
+                        'login'             => !!$adminUser,
                     ],
                     'upload'        => [
                         'configUrl' => (string) url('common.file/config?noext')->suffix(false),
@@ -209,7 +210,7 @@ class AdminHandle extends Handle implements ContainerInterface
                     'autocomplete'  => [
                         'url' => $data['url']['app']
                     ],
-                    'validate'    => [
+                    'validate'      => [
                         'remote' => $data['url']['app']
                     ],
                     'watermark'     => $adminSetting->getWatermark(),
