@@ -199,7 +199,7 @@
 <script src="/vue.js"></script>
 <block name="foot">
     <script id=":modal_id">
-        busyAdmin.require([busyAdmin.lib.vue], function (Vue) {
+        busyAdmin.ready([busyAdmin.lib.vue], function (Vue) {
             var modal;
             var app = new Vue({
                 el   : '#:modal_id_app',
