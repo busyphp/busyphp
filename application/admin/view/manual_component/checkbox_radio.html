@@ -60,9 +60,9 @@
 #demo4
 ```
 
-### Bootstrap按钮风格
+### 按钮组
 
-> 注意：该组件为`Bootstrap`提供的内置组件，不支持以上参数以及方法
+> 注意：该组件为`Bootstrap`提供的内置组件，不支持以上参数以及方法，但我们做了扩展，通过 `data-checked-class="class"` `data-default-class="class"` 来指定默认样式和选中样式
 
 ```demo:实例
 #demo6
@@ -72,126 +72,156 @@
     </div>
 
     <template id="demo1" class="hide">
-        <h5>基本</h5>
-        <input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
-        <input type="checkbox" data-toggle="busy-checkbox" checked value="" title="选项2">
-        <input type="checkbox" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
-        <input type="checkbox" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
-        <hr />
-        <h5>情景模式</h5>
-        <input type="checkbox" class="success" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="warning" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="info" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="danger" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="dark" data-toggle="busy-checkbox" checked value="" title="选项1">
+<h5>基本</h5>
+<input type="checkbox" data-toggle="busy-checkbox" value="" title="选项1">
+<input type="checkbox" data-toggle="busy-checkbox" checked value="" title="选项2">
+<input type="checkbox" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
+<input type="checkbox" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
+<hr />
+<h5>情景模式</h5>
+<input type="checkbox" class="success" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="warning" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="info" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="dark" data-toggle="busy-checkbox" checked value="" title="选项1">
     </template>
 
     <template id="demo2" class="hide">
-        <h5>基本</h5>
-        <p>在 <code>type="checkbox"</code> 上添加 <code>.pill</code> 将呈现胶囊样式</p>
+<h5>基本</h5>
+<p>在 <code>type="checkbox"</code> 上添加 <code>.pill</code> 将呈现胶囊样式</p>
 
-        <input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
-        <input type="checkbox" class="pill" data-toggle="busy-checkbox" checked value="" title="选项2">
-        <input type="checkbox" class="pill" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
-        <input type="checkbox" class="pill" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
-        <hr />
-        <h5>情景模式</h5>
-        <input type="checkbox" class="pill success" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="pill warning" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="pill info" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="pill danger" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="pill secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <input type="checkbox" class="pill dark" data-toggle="busy-checkbox" checked value="" title="选项1">
-        <hr />
-        <h5>尺寸</h5>
-        <p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
-        <input type="checkbox" class="pill input-lg" checked data-toggle="busy-checkbox" value="" title="大">
-        <input type="checkbox" class="pill" checked data-toggle="busy-checkbox" value="" title="普通">
-        <input type="checkbox" class="pill input-sm" checked data-toggle="busy-checkbox" value="" title="小">
-        <input type="checkbox" class="pill input-xs" checked data-toggle="busy-checkbox" value="" title="极小">
+<input type="checkbox" class="pill" data-toggle="busy-checkbox" value="" title="选项1">
+<input type="checkbox" class="pill" data-toggle="busy-checkbox" checked value="" title="选项2">
+<input type="checkbox" class="pill" data-toggle="busy-checkbox" disabled value="" title="禁用状态">
+<input type="checkbox" class="pill" data-toggle="busy-checkbox" checked disabled value="" title="禁用选中状态">
+<hr />
+<h5>情景模式</h5>
+<input type="checkbox" class="pill success" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="pill warning" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="pill info" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="pill danger" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="pill secondary" data-toggle="busy-checkbox" checked value="" title="选项1">
+<input type="checkbox" class="pill dark" data-toggle="busy-checkbox" checked value="" title="选项1">
+<hr />
+<h5>尺寸</h5>
+<p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
+<input type="checkbox" class="pill input-lg" checked data-toggle="busy-checkbox" value="" title="大">
+<input type="checkbox" class="pill" checked data-toggle="busy-checkbox" value="" title="普通">
+<input type="checkbox" class="pill input-sm" checked data-toggle="busy-checkbox" value="" title="小">
+<input type="checkbox" class="pill input-xs" checked data-toggle="busy-checkbox" value="" title="极小">
     </template>
 
     <template id="demo3" class="hide">
-        <h5>基本</h5>
-        <p>在 <code>type="checkbox"</code> 上添加 <code>.switch</code> 将呈现开关样式。通过 <code>title</code>属性来控制开关内的文字，用英文逗号分割</p>
+<h5>基本</h5>
+<p>在 <code>type="checkbox"</code> 上添加 <code>.switch</code> 将呈现开关样式。通过 <code>title</code>属性来控制开关内的文字，用英文逗号分割</p>
 
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" value="" title="开,关">
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" disabled value="" title="开,关">
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" checked disabled value="" title="开,关">
-        <hr />
-        <h5>情景模式</h5>
-        <input type="checkbox" class="switch success" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch warning" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch info" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch secondary" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
-        <hr />
-        <h5>尺寸</h5>
-        <p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
-        <input type="checkbox" class="switch input-lg" checked data-toggle="busy-checkbox" value="" title="开,关">
-        <input type="checkbox" class="switch" checked data-toggle="busy-checkbox" value="" title="开,关">
-        <input type="checkbox" class="switch input-sm" checked data-toggle="busy-checkbox" value="" title="开,关">
-        <input type="checkbox" class="switch input-xs" checked data-toggle="busy-checkbox" value="" title="开,关">
+<input type="checkbox" class="switch" data-toggle="busy-checkbox" value="" title="开,关">
+<input type="checkbox" class="switch" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch" data-toggle="busy-checkbox" disabled value="" title="开,关">
+<input type="checkbox" class="switch" data-toggle="busy-checkbox" checked disabled value="" title="开,关">
+<hr />
+<h5>情景模式</h5>
+<input type="checkbox" class="switch success" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch warning" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch info" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch secondary" data-toggle="busy-checkbox" checked value="" title="开,关">
+<input type="checkbox" class="switch danger" data-toggle="busy-checkbox" checked value="" title="开,关">
+<hr />
+<h5>尺寸</h5>
+<p>在 <code>type="checkbox"</code> 上添加 <code>.input-lg</code> <code>.input-sm</code> <code>.input-xs</code> 来控制控件尺寸</p>
+<input type="checkbox" class="switch input-lg" checked data-toggle="busy-checkbox" value="" title="开,关">
+<input type="checkbox" class="switch" checked data-toggle="busy-checkbox" value="" title="开,关">
+<input type="checkbox" class="switch input-sm" checked data-toggle="busy-checkbox" value="" title="开,关">
+<input type="checkbox" class="switch input-xs" checked data-toggle="busy-checkbox" value="" title="开,关">
     </template>
 
 
     <template id="demo5" class="hide">
-        <h5>基本</h5>
-        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项1">
-        <input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项2">
-        <input type="radio" data-toggle="busy-radio" name="radioName" checked disabled value="" title="选项3">
-        <input type="radio" data-toggle="busy-radio" name="radioName" disabled value="" title="禁用状态">
+<h5>基本</h5>
+<input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项1">
+<input type="radio" data-toggle="busy-radio" name="radioName" value="" title="选项2">
+<input type="radio" data-toggle="busy-radio" name="radioName" checked disabled value="" title="选项3">
+<input type="radio" data-toggle="busy-radio" name="radioName" disabled value="" title="禁用状态">
 
-        <hr />
-        <h5>情景模式</h5>
-        <input type="radio" data-toggle="busy-radio" value="" checked title="选项1">
-        <input type="radio" class="success" data-toggle="busy-radio" checked value="" title="选项1">
-        <input type="radio" class="warning" data-toggle="busy-radio" checked value="" title="选项1">
-        <input type="radio" class="info" data-toggle="busy-radio" checked value="" title="选项1">
-        <input type="radio" class="danger" data-toggle="busy-radio" checked value="" title="选项1">
-        <input type="radio" class="secondary" data-toggle="busy-radio" checked value="" title="选项1">
+<hr />
+<h5>情景模式</h5>
+<input type="radio" data-toggle="busy-radio" value="" checked title="选项1">
+<input type="radio" class="success" data-toggle="busy-radio" checked value="" title="选项1">
+<input type="radio" class="warning" data-toggle="busy-radio" checked value="" title="选项1">
+<input type="radio" class="info" data-toggle="busy-radio" checked value="" title="选项1">
+<input type="radio" class="danger" data-toggle="busy-radio" checked value="" title="选项1">
+<input type="radio" class="secondary" data-toggle="busy-radio" checked value="" title="选项1">
     </template>
 
 
     <template id="demo4" class="hide">
-        <p>除了自定义参数外，还会发送<code>status</code>参数以及<code>value</code>参数</p>
-        <hr />
-        <input type="checkbox" class="switch" data-toggle="busy-checkbox" data-url="{$url.self}" value="" title="开,关">
-        <hr />
-        
-        <input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="1" title="男">
-        <input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="2" title="女">
+<p>除了自定义参数外，还会发送<code>status</code>参数以及<code>value</code>参数</p>
+<hr />
+<input type="checkbox" class="switch" data-toggle="busy-checkbox" data-url="{$url.self}" value="" title="开,关">
+<hr />
+
+<input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="1" title="男">
+<input type="radio" data-toggle="busy-radio" data-url="{$url.self}" name="sex" value="2" title="女">
     </template>
 
 
     <template id="demo6" class="hide">
-        <h4>Checkbox</h4>
-        <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-primary active">
-                <input type="checkbox" checked> 选项1(已选中)
-            </label>
-            <label class="btn btn-primary">
-                <input type="checkbox"> 选项2
-            </label>
-            <label class="btn btn-primary">
-                <input type="checkbox"> 选项3
-            </label>
-        </div>
-        <hr />
-        <h4>Radio</h4>
-        <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-primary active">
-                <input type="radio" name="options" checked> 选项1(已选中)
-            </label>
-            <label class="btn btn-primary">
-                <input type="radio" name="options"> 选项2
-            </label>
-            <label class="btn btn-primary">
-                <input type="radio" name="options"> 选项3
-            </label>
-        </div>
+<h5>Checkbox</h5>
+<div class="btn-group" data-toggle="buttons">
+    <label class="btn btn-default">
+        <input type="checkbox" checked> 选项1(已选中)
+    </label>
+    <label class="btn btn-default">
+        <input type="checkbox"> 选项2
+    </label>
+    <label class="btn btn-default">
+        <input type="checkbox"> 选项3
+    </label>
+</div>
+<h5>Checkbox Disabled</h5>
+<div class="btn-group" data-toggle="buttons" data-checked-class="btn-warning" data-default-class="btn-secondary">
+    <label class="btn btn-secondary">
+        <input type="checkbox" checked> 选项1(已选中)
+    </label>
+    <label class="btn btn-secondary">
+        <input type="checkbox"> 选项2
+    </label>
+    <label class="btn btn-secondary">
+        <input type="checkbox" disabled checked> 选项3(禁用)
+    </label>
+    <label class="btn btn-secondary">
+        <input type="checkbox"> 选项4
+    </label>
+</div>
+<hr />
+<h5>Radio</h5>
+<div class="btn-group" data-toggle="buttons" data-checked-class="btn-warning" data-default-class="btn-info">
+    <label class="btn btn-info">
+        <input type="radio" name="options" checked> 选项1(已选中)
+    </label>
+    <label class="btn btn-info">
+        <input type="radio" name="options"> 选项2
+    </label>
+    <label class="btn btn-info">
+        <input type="radio" name="options"> 选项3
+    </label>
+</div>
+<h5>Radio Disabled</h5>
+<div class="btn-group" data-toggle="buttons" data-checked-class="btn-success" data-default-class="btn-default">
+    <label class="btn btn-default">
+        <input type="radio" name="options1"> 选项1(已选中)
+    </label>
+    <label class="btn btn-default">
+        <input type="radio" name="options1"> 选项2
+    </label>
+    <label class="btn btn-default">
+        <input type="radio" name="options1" disabled checked> 选项3(禁用)
+    </label>
+    <label class="btn btn-default">
+        <input type="radio" name="options1"> 选项4
+    </label>
+</div>
     </template>
 </block>
