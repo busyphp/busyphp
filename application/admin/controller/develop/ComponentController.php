@@ -450,4 +450,14 @@ class ComponentController extends InsideController
     {
         return $this->insideDisplay();
     }
+    
+    /**
+     * 图片占位
+     * @return Response
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-image', canDisable: false)]
+    public function image_placeholder() : Response
+    {
+        return $this->insideDisplay();
+    }
 }

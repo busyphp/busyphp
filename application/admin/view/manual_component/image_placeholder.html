@@ -1,0 +1,63 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用
+
+### 使用
+
+当指定`src`且图片地址错误时触发
+
+```html
+<img />
+```
+
+### 属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| 基本属性:title |  |  |  |  |
+| data-placeholder | string | `否` | - | 定义占位图地址，如果不定义则使用 `__ASSETS__system/images/no_image.png` 占位，此设置优先`data-avatar` |
+| data-avatar | string | `否` | - | 定义是否使用头像占位图 |
+
+### 使用示例
+
+#### 基本示例
+```demo:实例
+#demo1
+```
+
+#### 指定占位
+```demo:实例
+#demo2
+```
+
+#### 头像占位
+```demo:实例
+#demo3
+```
+            </script>
+        </div>
+    </div>
+    <template class="hide" id="demo1">
+<img class="img-thumbnail width-80 height-80" src=""/>
+<img class="img-thumbnail width-160 height-160" src=""/>
+<img class="img-thumbnail width-320 height-320" src=""/>
+    </template>
+    <template class="hide" id="demo2">
+<img class="img-thumbnail width-80 height-80" src="" data-placeholder="__ASSETS__system/images/preview2.jpeg"/>
+<img class="img-thumbnail width-160 height-160" src="" data-placeholder="__ASSETS__system/images/preview.jpeg"/>
+<img class="img-thumbnail width-320 height-320" src="" data-placeholder="__ASSETS__system/images/preview.jpeg"/>
+    </template>
+    <template class="hide" id="demo3">
+<img class="img-thumbnail width-80 height-80" src="" data-avatar="true"/>
+<img class="img-thumbnail width-160 height-160" src="" data-avatar="true"/>
+<img class="img-thumbnail width-320 height-320" src="" data-avatar="true"/>
+    </template>
+</block>
