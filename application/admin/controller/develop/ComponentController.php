@@ -157,9 +157,9 @@ class ComponentController extends InsideController
      * 表单验证
      */
     #[MenuNode(menu: true, icon: 'fa fa-check', canDisable: false)]
-    public function form_verify() : Response
+    public function validator() : Response
     {
-        return $this->insideDisplay();
+        return $this->insideDisplay('validate');
     }
     
     
@@ -450,6 +450,7 @@ class ComponentController extends InsideController
     {
         return $this->insideDisplay();
     }
+    
     
     /**
      * 图片占位
