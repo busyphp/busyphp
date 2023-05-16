@@ -13,7 +13,6 @@ declare (strict_types = 1);
 namespace think;
 
 use BusyPHP\helper\ArrayHelper;
-use BusyPHP\helper\StringHelper;
 use BusyPHP\model\Entity;
 use Closure;
 use think\exception\ValidateException;
