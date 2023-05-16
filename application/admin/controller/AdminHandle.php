@@ -153,6 +153,9 @@ class AdminHandle extends Handle implements ContainerInterface
         if ($printStyle instanceof Closure) {
             $printStyle = Container::getInstance()->invokeFunction($printStyle);
         }
+        
+        $elementUi      = $app->config->get('app.admin.element_ui', false);
+        $vue            = $elementUi || $app->config->get('app.admin.vue', false);
         $data['system'] = [
             'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
@@ -171,6 +174,8 @@ class AdminHandle extends Handle implements ContainerInterface
                 'imagesRoot' => $data['skin']['images'],
                 'version'    => $data['skin']['version'],
                 'debug'      => $app->config->get('app.admin.debug', false),
+                'vue'        => $vue,
+                'elementUi'  => $elementUi,
                 'requires'   => $requires,
                 'configs'    => [
                     'app'           => [

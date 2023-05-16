@@ -461,4 +461,26 @@ class ComponentController extends InsideController
     {
         return $this->insideDisplay();
     }
+    
+    
+    /**
+     * Vue
+     * @return Response
+     */
+    #[MenuNode(menu: true, icon: 'fa fa-code', canDisable: false)]
+    public function vue() : Response
+    {
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * ElementUI
+     * @return Response
+     */
+    #[MenuNode(menu: true, icon: 'bicon bicon-grid', canDisable: false)]
+    public function element_ui() : Response
+    {
+        return $this->insideDisplay();
+    }
 }

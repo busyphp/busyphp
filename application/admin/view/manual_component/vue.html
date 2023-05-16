@@ -1,0 +1,76 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{$system.page_title}</h3>
+        </div>
+        <div class="panel-body no-padding-bottom">
+            <script type="text/x-markdown" id="markdown">
+### 开始
+
+本组件属于内置组件，无需引用即可使用，详细文档请参考 [Vue2.0使用文档](https://v2.cn.vuejs.org/v2/api/)
+
+### 使用
+
+通过在标签上加上自定义属性 `data-toggle="busy-vue"` 来触发
+
+```html
+<div data-toggle="busy-vue">
+    <template> ...vue 模版... </template>
+</div>
+```
+
+### 标签属性
+
+| 属性:240 | 类型:100 | 必须: 100 | 默认值: 100 | 描述 |
+| - | :-: | :--: | :-: | - |
+| data-data | Object,Function | `否` | - | Vue `data` 选项 |
+| data-methods | Object,Function | `否` | - | Vue `methods` 选项 |
+| data-watch | Object,Function | `否` | - | Vue `watch` 选项 |
+| data-computed | Object,Function | `否` | - | Vue `computed` 选项 |
+| data-template | string,Function | `否` | - | Vue `template` 选项 |
+| data-directives | Object,Function | `否` | - | Vue `components` 选项 |
+| data-filters | Object,Function | `否` | - | Vue `filters` 选项 |
+| data-components | Object,Function | `否` | - | Vue `components` 选项 |
+| data-parent | Vue,Function | `否` | - | Vue `parent` 选项 |
+| data-mixins | Array<Object>,Function | `否` | - | Vue `mixins` 选项 |
+| data-extends | Object,Function | `否` | - | Vue `extends` 选项 |
+| data-provide | Object,Function | `否` | - | Vue `provide` 选项 |
+| data-inject | Array<string>,{[key: string]: string,Symbol,Object} | `否` | - | Vue `inject` 选项 |
+| data-before-create | Object,Function | `否` | - | Vue `beforeCreate` 选项 |
+| data-created | Object,Function | `否` | - | Vue `created` 选项 |
+| data-before-mount | Object,Function | `否` | - | Vue `beforeMount` 选项 |
+| data-mounted | Object,Function | `否` | - | Vue `mounted` 选项 |
+| data-before-update | Object,Function | `否` | - | Vue `beforeUpdate` 选项 |
+| data-updated | Object,Function | `否` | - | Vue `updated` 选项 |
+| data-activated | Object,Function | `否` | - | Vue `activated` 选项 |
+| data-deactivated | Object,Function | `否` | - | Vue `deactivated` 选项 |
+| data-before-destroy | Object,Function | `否` | - | Vue `beforeDestroy` 选项 |
+| data-destroyed | Object,Function | `否` | - | Vue `destroyed` 选项 |
+| data-error-captured | Object,Function | `否` | - | Vue `errorCaptured` 选项 |
+
+### 使用示例
+
+#### Vue示例
+
+```demo:实例
+#demo1
+```
+            </script>
+        </div>
+    </div>
+    <template class="hide" id="demo1">
+<div data-toggle="busy-vue" data-data="demo1Data">
+    <template>
+        {{message}}
+    </template>
+</div>
+<script>
+    busyAdmin.data.demo1Data = function () {
+        return {
+            message: 'Hello Vue!'
+        };
+    }
+</script>
+    </template>
+</block>

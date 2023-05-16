@@ -71,7 +71,9 @@ declare namespace busyAdmin {
         vue: "vue"
         webUploader: "webUploader"
         xlsx: "xlsx"
-        zeroClipboard: "zeroClipboard"
+        zeroClipboard: "zeroClipboard",
+        ELEMENT: 'ELEMENT',
+        elementUi: 'ELEMENT',
     };
 
 
@@ -934,7 +936,7 @@ declare namespace busyAdmin {
 
         printExportData: "ba:print-export-data"
 
-        HighCodeInitialized: "ba:high-code-initialized"
+        highCodeInitialized: "ba:high-code-initialized"
         audioInitialized: "ba:audio-initialized"
         audioViewerInitialized: "ba:audio-viewer-initialized"
         autocompleteInitialized: "ba:autocomplete-initialized"
@@ -1015,6 +1017,15 @@ declare namespace busyAdmin {
         validateInitialized: "ba:validate-initialized"
         videoInitialized: "ba:video-initialized"
         videoViewerInitialized: "ba:video-viewer-initialized"
+
+        vueBeforeCreate: "ba:vue-before-create"
+        vueBeforeDestroy: "ba:vue-before-destroy"
+        vueBeforeMount: "ba:vue-before-mount"
+        vueBeforeUpdate: "ba:vue-before-update"
+        vueCreated: "ba:vue-created"
+        vueDestroyed: "ba:vue-destroyed"
+        vueMounted: "ba:vue-mounted"
+        vueUpdated: "ba:vue-updated"
     }
 
     /**
