@@ -228,8 +228,8 @@ class FileController extends InsideController
         }
         
         $this->assign('info', [
-            'type_map'     => SystemFile::class()::getTypes(),
-            'category_map' => SystemFileClass::instance()->getList()
+            'type_map'     => SystemFile::class()::getTypes() ?: new stdClass(),
+            'category_map' => SystemFileClass::instance()->getList() ?: new stdClass()
         ]);
         
         return $this->insideDisplay();

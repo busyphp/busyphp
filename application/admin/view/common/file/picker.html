@@ -78,7 +78,9 @@
                                     <thead>
                                         <tr>
                                             <th data-field="checked" data-checkbox="true"></th>
-                                            <th data-field="name" data-min-width="200" data-show-overflow="true">文件名</th>
+                                            <th data-field="name" data-min-width="200" data-show-overflow="true">
+                                                文件名
+                                            </th>
                                             <th data-align="right" data-field="size" width="100">大小</th>
                                             <th data-align="center" data-field="operate" width="70">
                                                 操作
@@ -88,7 +90,8 @@
                                     <tbody>
                                         <tr v-for="(item, index) in list" :data-row-index="index" :data-row-id="item.id">
                                             <td></td>
-                                            <td><a :href="item.url" target="_blank" :title="item.name">{{item.name}}</a></td>
+                                            <td><a :href="item.url" target="_blank" :title="item.name">{{item.name}}</a>
+                                            </td>
                                             <td>{{item.format_size}}</td>
                                             <td>
                                                 <img v-if="item.is_image" :data-src="item.url" class="hidden" :alt="item.name"/>
@@ -176,10 +179,12 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button v-if="selected_list.length > 0" type="button" class="btn btn-danger pull-left" @click="batchDelete">
-                    <i class="fa fa-trash"></i>
-                    {{options.locale.delete}}
-                </button>
+                <ba:access value="delete">
+                    <button v-if="selected_list.length > 0" type="button" class="btn btn-danger pull-left" @click="batchDelete">
+                        <i class="fa fa-trash"></i>
+                        {{options.locale.delete}}
+                    </button>
+                </ba:access>
 
                 <button type="button" class="btn btn-primary" data-primary="modal" data-click="false" @click="confirm">
                     {{options.locale.confirm}}
