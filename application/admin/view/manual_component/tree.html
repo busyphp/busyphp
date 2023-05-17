@@ -251,9 +251,7 @@
     <template class="hide" id="demo2">
 <div data-toggle="busy-tree"
      data-checkbox="true"
-     data-url="{:url('system_menu/data')}"
-     data-model-id-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::path()?>"
-     data-model-parent-field="<?=\BusyPHP\app\admin\model\system\menu\SystemMenuField::parentPath()?>"
+     data-url="{:url('system_menu/data')}?all=1&develop=1&disabled=1"
      data-async-node="false"></div>
     </template>
 
@@ -265,7 +263,7 @@
 <div data-toggle="busy-tree"
      data-checkbox="true"
      data-node-extend="@"
-     data-url="{:url('system_menu/data')}"
+     data-url="{:url('system_menu/data')}?all=1&develop=1&disabled=1"
      data-async-node="false">
     <script type="text/html" data-template="node-extend">
         <span> 自定义 <i class="{{icon}}"></i></span>
