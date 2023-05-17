@@ -7,17 +7,16 @@ use BusyPHP\app\admin\annotation\MenuNode;
 use BusyPHP\app\admin\annotation\MenuRoute;
 use BusyPHP\app\admin\component\common\SimpleForm;
 use BusyPHP\app\admin\component\js\driver\Table;
-use BusyPHP\app\admin\component\js\driver\Tree;
-use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
+use BusyPHP\app\admin\model\admin\user\AdminUserEventCreateAfter;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
+use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\model\ArrayOption;
 use RuntimeException;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
+use think\exception\HttpException;
 use think\Response;
 use Throwable;
 
@@ -33,7 +32,7 @@ class UserController extends InsideController
     /**
      * @var AdminUser
      */
-    protected $model;
+    protected AdminUser $model;
     
     
     protected function initialize($checkLogin = true)
@@ -45,7 +44,7 @@ class UserController extends InsideController
     
     
     /**
-     * 管理员管理
+     * 系统用户管理
      * @return Response
      */
     #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-manager', sort: 1)]
@@ -54,6 +53,8 @@ class UserController extends InsideController
         // 管理员列表数据
         if ($table = Table::initIfRequest()) {
             $table->model($this->model)->query(function(AdminUser $model, ArrayOption $option) {
+                $option->deleteIfLt('sex', 0, true);
+                
                 switch ($option->pull('status', 0, 'intval')) {
                     // 正常
                     case 1:
@@ -92,13 +93,16 @@ class UserController extends InsideController
         }
         
         $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
+        $sexs = $this->model::getSexs();
+        $sexs = [0 => '不限'] + $sexs;
+        $this->assign('sex', $sexs);
         
         return $this->insideDisplay();
     }
     
     
     /**
-     * 添加管理员
+     * 添加用户
      * @return Response
      * @throws Throwable
      */
@@ -106,17 +110,27 @@ class UserController extends InsideController
     public function add() : Response
     {
         if ($this->isPost()) {
-            $this->model->create(AdminUserField::init($this->post()));
-            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加管理员');
+            $this->model
+                ->listen(AdminUserEventCreateAfter::class, function(AdminUserEventCreateAfter $event) {
+                    $fileId = $this->post('avatar_file_id/s', 'trim');
+                    if ($fileId !== '') {
+                        SystemFile::init()->updateValue($fileId, "{$event->info->id}");
+                    }
+                })
+                ->create(AdminUserField::init($this->post()));
+            
+            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加系统用户');
             
             return $this->success('添加成功');
         }
         
         $this->assign([
-            'info' => [
+            'info'           => [
                 'checked' => 1,
-                'system'  => 0
-            ]
+                'system'  => 0,
+            ],
+            'avatar_file_id' => SystemFile::createTmp(),
+            'validate'       => $this->model->getViewValidateRule(),
         ]);
         
         return $this->insideDisplay();
@@ -124,7 +138,7 @@ class UserController extends InsideController
     
     
     /**
-     * 修改管理员
+     * 修改用户
      * @return Response
      * @throws Throwable
      */
@@ -139,13 +153,16 @@ class UserController extends InsideController
             }
             
             $this->model->modify(AdminUserField::init($this->post()));
-            $this->log()->record(self::LOG_UPDATE, '修改管理员');
+            $this->log()->record(self::LOG_UPDATE, '修改系统用户');
             
             return $this->success('修改成功');
         }
         
+        $info = $this->model->getInfo($this->get('id/d'));
         $this->assign([
-            'info' => $this->model->getInfo($this->get('id/d'))
+            'info'           => $info,
+            'avatar_file_id' => $info->id,
+            'validate'       => $this->model->getViewValidateRule(),
         ]);
         
         return $this->insideDisplay('add');
@@ -153,45 +170,7 @@ class UserController extends InsideController
     
     
     /**
-     * 角色数据
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function group_tree_data() : Response
-    {
-        $info = null;
-        if ($id = $this->get('user_id/d')) {
-            $info = $this->model->getInfo($id);
-        }
-        
-        return Tree::init()
-            ->setOrder([
-                AdminGroupField::sort()->field() => 'asc',
-                AdminGroupField::id()->field()   => 'asc',
-            ])
-            ->model(AdminGroup::init())
-            ->list(function(TreeFlatNode $node, AdminGroupField $item, int $index) use ($info) {
-                $node->setText($item->name);
-                $node->setParent($item->parentId);
-                $node->setId($item->id);
-                $node->setOpened(true);
-                
-                if ($info && in_array($item->id, $info->groupIds)) {
-                    $node->setSelected(true);
-                }
-                
-                if ($info && $info->system) {
-                    $node->setDisabled(true);
-                    $node->setOpened(false);
-                }
-            })
-            ->response();
-    }
-    
-    
-    /**
-     * 删除管理员
+     * 删除用户
      * @throws Throwable
      */
     #[MenuNode(menu: false, parent: '/index')]
@@ -201,14 +180,14 @@ class UserController extends InsideController
             $this->model->remove($id);
         });
         
-        $this->log()->record(self::LOG_DELETE, '删除管理员');
+        $this->log()->record(self::LOG_DELETE, '删除系统用户');
         
         return $this->success('删除成功');
     }
     
     
     /**
-     * 修改管理员密码
+     * 修改密码
      * @return Response
      * @throws Throwable
      */
@@ -217,7 +196,7 @@ class UserController extends InsideController
     {
         if ($this->isPost()) {
             $this->model->modify(AdminUserField::init($this->post()), AdminUser::SCENE_PASSWORD);
-            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改管理员密码');
+            $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改系统用户密码');
             
             return $this->success('修改成功');
         }
@@ -229,7 +208,7 @@ class UserController extends InsideController
     
     
     /**
-     * 启用/禁用管理员
+     * 启用/禁用用户
      * @throws Throwable
      */
     #[MenuNode(menu: false, parent: '/index')]
@@ -242,22 +221,32 @@ class UserController extends InsideController
         
         $status = $this->get('status/b');
         $this->model->changeChecked($id, $status);
-        $this->log()->record(self::LOG_UPDATE, '启用/禁用管理员');
+        $this->log()->record(self::LOG_UPDATE, '启用/禁用系统用户');
         
         return $this->success($status ? '启用成功' : '禁用成功');
     }
     
     
     /**
-     * 解锁管理员
+     * 解锁用户
      * @throws Throwable
      */
     #[MenuNode(menu: false, parent: '/index')]
     public function unlock() : Response
     {
         $this->model->unlock($this->get('id/d'));
-        $this->log()->record(self::LOG_UPDATE, '解锁管理员');
+        $this->log()->record(self::LOG_UPDATE, '解锁系统用户');
         
         return $this->success('解锁成功');
+    }
+    
+    
+    /**
+     * 查看重要资料
+     */
+    #[MenuNode(menu: false, parent: '/index')]
+    public function show_detail_important_info()
+    {
+        throw new HttpException(404);
     }
 }

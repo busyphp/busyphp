@@ -1,137 +1,466 @@
 <extend name="@admin:layout"/>
+<block name="head">
+    <style type="text/scss">
+        .__SCOPED__ {
+            &-base {
+                @media (min-width: 768px) {
+                    display: flex;
+
+                    .--avatar {
+                        margin-right: 15px;
+                        width: 100px;
+                    }
+
+                    .--body {
+                        flex-grow: 1;
+                        width: 0;
+                    }
+                }
+
+                .--upload {
+                    width: 100px;
+                    height: 100px;
+                }
+            }
+        }
+    </style>
+</block>
 <block name="content">
-    <div class="form-horizontal">
+    <form class="form-horizontal" id=":modal_id_app">
         <input type="hidden" value="{$info.id|default=''}" name="id"/>
+        <input type="hidden" value="{$avatar_file_id|default=''}" name="avatar_file_id"/>
 
-        <div class="form-group">
-            <label class="col-sm-2 control-label required">角色组</label>
-            <div class="col-sm-9">
-                <div id="treeGroupIds"
-                     data-validate-required="true"
-                     data-validate-msg="请选择角色组"
-                     data-toggle="busy-tree"
-                     data-url="{:url('group_tree_data?user_id=' . ($info['id'] ?? 0))}"
-                     data-checkbox="true"
-                     data-checkbox-relation="false"
-                     data-icons="false"
-                     data-name="group_ids[]"></div>
-                <span class="help-block">为该用户指定一个合适的角色，支持多选</span>
-            </div>
-        </div>
+        <fieldset class="fieldset default no-padding-bottom">
+            <legend>基本资料</legend>
 
-        <div class="form-group">
-            <label class="col-sm-2 control-label">默认角色组</label>
-            <div class="col-sm-9">
-                <select class="form-control" name="default_group_id">
-                    <option value="0">自动</option>
-                </select>
-                <span class="help-block">用户登录后将默认打开该角色组的默认菜单，不指定则获取最后一个选中的角色组</span>
-            </div>
-        </div>
+            <div class="__SCOPED__-base">
+                <div class="--avatar">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="{$validate.avatar ? 'required':''} visible-xs">头像</label>
+                                <input type="text"
+                                       class="form-control --upload"
+                                       data-toggle="busy-upload"
+                                       data-type="card"
+                                       data-card-icon="fa fa-image"
+                                       data-card-radius="5"
+                                       data-allow-extensions="jpeg,jpg,png,gif"
+                                       data-allow-mimetypes="image/*"
+                                       data-compress="true"
+                                       data-compress-width="512"
+                                       data-compress-height="512"
+                                       data-compress-crop="true"
+                                       placeholder="请上传头像"
+                                       data-preview-placeholder="true"
+                                       value="{$info.avatar|default=''}"
+                                       data-class-value="{$avatar_file_id}"
+                                       data-class-type="admin_user_avatar"
+                                       name="avatar"
+                                    <?=$validate['avatar'] ? 'required' : ''?>
+                                />
+                            </div>
 
-        <div class="form-group">
-            <label class="col-sm-2 control-label required">用户名</label>
-            <div class="col-sm-9">
-                <eq name="url.action" value="edit">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="username" value="{$info.username|default=''}" placeholder="请输入用户名"/>
-                        <div class="input-group-btn">
-                            <a class="btn btn-secondary" data-toggle="busy-modal" data-size="sm" data-ok="修改密码" data-url="{:url('password?id=' . $info['id'])}">修改密码</a>
+                            <eq name="info.system" value="0">
+                                <div class="form-group">
+                                    <label class="visible-xs">是否启用</label>
+                                    <div class="btn-group btn-group-sm btn-group-justified"
+                                         data-toggle="buttons"
+                                         data-checked-class="btn-primary"
+                                         data-default-class="btn-default">
+                                        <label class="btn btn-default">
+                                            <input name="checked" type="radio" value="1" <?=is_checked(($info['checked'] ?? 0) == 1)?>/>
+                                            启用
+                                        </label>
+                                        <label class="btn btn-default">
+                                            <input name="checked" type="radio" value="0" <?=is_checked(($info['checked'] ?? 0) == 0)?>/>
+                                            禁用
+                                        </label>
+                                    </div>
+                                    <span class="help-block">禁用后该账户将无法登录</span>
+                                </div>
+                            </eq>
                         </div>
                     </div>
-                    <else/>
-                    <input type="text" class="form-control" name="username" value="{$info.username|default=''}" placeholder="请输入用户名" required/>
-                </eq>
-                <span class="help-block">设置登录用户名，中文、英文、数字、下划线，不要有特殊字符，且不能和已有的用户名重复</span>
-            </div>
-        </div>
+                </div>
 
-        <eq name="url.action" value="add">
-            <div class="form-group">
-                <label class="col-sm-2 control-label required">登录密码</label>
-                <div class="col-sm-9">
-                    <div class="input-group">
-                        <input type="password" class="form-control" name="password" placeholder="请输入登录密码" required minlength="6" maxlength="20"/>
-                        <div class="input-group-addon"><i class="fa fa-lock width-20 text-center"></i></div>
+                <div class="--body">
+                    <div class="row row-gutters-15">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="required">登录账号</label>
+                                <eq name="url.action" value="edit">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               class="form-control"
+                                               name="username"
+                                               value="{$info.username|default=''}"
+                                               placeholder="请输入登录账号"
+                                               data-rule-remote="true"
+                                               data-msg-remote="该账号已被他人使用，请更换一个账号"
+                                               data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
+                                               data-opt-remote-exclude-value="{$info.id|default=''}"
+                                               required/>
+                                        <div class="input-group-btn">
+                                            <a class="btn btn-secondary"
+                                               data-toggle="busy-modal"
+                                               data-size="sm"
+                                               data-ok="修改密码"
+                                               data-url="{:url('password?id=' . $info['id'])}">修改密码</a>
+                                        </div>
+                                    </div>
+                                    <else/>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="username"
+                                           value="{$info.username|default=''}"
+                                           placeholder="请输入登录账号"
+                                           data-rule-remote="true"
+                                           data-msg-remote="该账号已被他人使用，请更换一个账号"
+                                           data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
+                                           data-opt-remote-exclude-value="{$info.id|default=''}"
+                                           required/>
+                                </eq>
+                                <span class="help-block">设置登录账号，不能和已有的登录账号重复</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="{$validate.nickname ? 'required':''}">用户昵称</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="nickname"
+                                       value="{$info.nickname|default=''}"
+                                       placeholder="请输入用户昵称"
+                                    <?=$validate['nickname'] ? 'required' : ''?>
+                                />
+                                <span class="help-block">{$validate.nickname ? '' : '可选，'}设置用户昵称</span>
+                            </div>
+                        </div>
                     </div>
-                    <span class="help-block">设置登录密码，至少<code>6</code>位，最多<code>20</code>位</span>
+
+                    <eq name="url.action" value="add">
+                        <div class="row row-gutters-15">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="required">登录密码</label>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               class="form-control"
+                                               name="password"
+                                               placeholder="请输入登录密码"
+                                               required
+                                               minlength="6"
+                                               maxlength="20"/>
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-lock width-20 text-center"></i>
+                                        </div>
+                                    </div>
+                                    <span class="help-block">设置登录密码，至少<code>6</code>位，最多<code>20</code>位</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="required">确认密码</label>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               class="form-control"
+                                               name="confirm_password"
+                                               required
+                                               data-rule-equalTo="[name='password']"
+                                               placeholder="请再次输入登录密码"
+                                               data-msg-equalTo="两次输入的密码不一致"/>
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-lock width-20 text-center"></i>
+                                        </div>
+                                    </div>
+                                    <span class="help-block">再次输入登录密码，以确认密码正确性</span>
+                                </div>
+                            </div>
+                        </div>
+                    </eq>
+
+                    <div class="row row-gutters-15">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="{$validate.phone.required ? 'required':''}">手机号</label>
+                                <div class="input-group">
+                                    <input type="text"
+                                           class="form-control"
+                                           name="phone"
+                                           value="{$info.phone|default=''}"
+                                           placeholder="请输入手机号"
+                                           data-msg-remote="该手机号已被他人使用"
+                                           data-rule-remote="true"
+                                           data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
+                                           data-opt-remote-exclude-value="{$info.id|default=''}"
+                                           data-msg-regex="请输入有效的手机号"
+                                        <?=$validate['phone']['required'] ? 'required' : ''?>
+                                        <?=$validate['phone']['regex'] ? 'data-rule-regex="' . $validate['phone']['regex'] . '"' : ''?>
+                                    />
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-mobile width-20 text-center"></i>
+                                    </div>
+                                </div>
+                                <span class="help-block">{$validate.phone.required ? '设置您的常用手机号，可以用来登录' : '可选，设置后可以通过手机号登录'}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="{$validate.email ? 'required':''}">邮箱</label>
+                                <div class="input-group">
+                                    <input type="email"
+                                           name="email"
+                                           class="form-control"
+                                           value="{$info.email|default=''}"
+                                           placeholder="请输入邮箱"
+                                           data-rule-required="false"
+                                           data-rule-email="true"
+                                           data-rule-remote="true"
+                                           data-msg-remote="该邮箱已被他人使用"
+                                           data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
+                                           data-opt-remote-exclude-value="{$info.id|default=''}"
+                                        <?=$validate['email'] ? 'required' : ''?>
+                                    />
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-envelope-o width-20 text-center"></i>
+                                    </div>
+                                </div>
+                                <span class="help-block">{$validate.email ? '设置您的常用邮箱，可以用来登录' : '可选，设置后可以通过邮箱地址登录'}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label required">确认密码</label>
-                <div class="col-sm-9">
-                    <div class="input-group">
-                        <input type="password" class="form-control" name="confirm_password" required data-rule-equalTo="[name='password']" placeholder="请再次输入登录密码" data-msg-equalTo="两次输入的密码不一致"/>
-                        <div class="input-group-addon"><i class="fa fa-lock width-20 text-center"></i></div>
+        </fieldset>
+
+        <eq name="info.system" value="0">
+            <fieldset class="fieldset default no-padding-bottom">
+                <legend>权限设置</legend>
+
+                <div class="row row-gutters-5">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <div class="row row-gutters-5">
+                                <div class="col-xs-4">
+                                    <label class="required">访问权限</label>
+                                </div>
+                                <div class="col-xs-8">
+                                    <div class="row row-gutters-5">
+                                        <div class="col-sm-offset-6">
+                                            <div class="input-group input-group-xs">
+                                                <div class="input-group-addon"
+                                                     data-toggle="popover"
+                                                     data-trigger="hover"
+                                                     data-placement="top"
+                                                     data-container="#:modal_id_app"
+                                                     data-content="用户登录后将打开该角色组的默认菜单">
+                                                    默认权限
+                                                    <a><i class="fa fa-question-circle"></i></a>
+                                                </div>
+                                                <select class="form-control" name="default_group_id" id="__SCOPED___default_group_id">
+                                                    <option value="0">自动</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="__SCOPED___tree"
+                                 data-toggle="busy-tree"
+                                 data-url="{:url('system_group/data?id=' . implode(',', ($info['group_ids'] ?? [])))}"
+                                 data-checkbox="true"
+                                 data-checkbox-relation="false"
+                                 data-icons="false">
+                                <select name="group_ids[]" required data-msg="请选择访问权限"></select>
+                            </div>
+                            <span class="help-block">为该用户指定一个合适的权限，支持多选</span>
+                        </div>
                     </div>
-                    <span class="help-block">再次输入登录密码，以确认密码正确性</span>
                 </div>
-            </div>
+            </fieldset>
         </eq>
 
-        <div class="form-group">
-            <label class="col-sm-2 control-label">手机号</label>
-            <div class="col-sm-9">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="phone" value="{$info.phone|default=''}" placeholder="请输入手机号"/>
-                    <div class="input-group-addon"><i class="fa fa-mobile width-20 text-center"></i></div>
+        <fieldset class="fieldset default no-margin-bottom no-padding-bottom">
+            <legend>详细资料</legend>
+            <div class="row row-gutters-15">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="{$validate.name ? 'required':''}">姓名</label>
+                        <input type="text"
+                               class="form-control"
+                               name="name"
+                               value="{$info.name|default=''}"
+                               placeholder="请输入姓名"
+                            <?=$validate['name'] ? 'required' : ''?>
+                        />
+                        <span class="help-block">{$validate.name ? '' : '可选，'}设置姓名，如：张三</span>
+                    </div>
                 </div>
-                <span class="help-block">设置手机号，设置后可以通过手机号登录</span>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="col-sm-2 control-label">邮箱</label>
-            <div class="col-sm-9">
-                <div class="input-group">
-                    <input type="email" class="form-control" name="email" value="{$info.email|default=''}" data-rule-required="false" placeholder="请输入邮箱" data-rule-email="true"/>
-                    <div class="input-group-addon"><i class="fa fa-envelope-o width-20 text-center"></i></div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="{$validate.card_no.required ? 'required' : ''}">身份证号</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control"
+                                   name="card_no"
+                                   value="{$info.card_no|default=''}"
+                                   placeholder="请输入用户的证件号码"
+                                   id="__SCOPED___card_no"
+                                   data-msg-remote="该证件号码已被他人使用"
+                                   data-opt-remote-model="<?=\BusyPHP\app\admin\model\admin\user\AdminUser::class?>"
+                                   data-opt-remote-exclude-value="{$info.id|default=''}"
+                                   data-msg-cardNo="请输入有效的身份证号码"
+                                <?=$validate['card_no']['required'] ? 'required' : ''?>
+                                <?=$validate['card_no']['unique'] ? 'data-rule-remote="true"' : ''?>
+                                <?=$validate['card_no']['identity'] ? 'data-rule-cardNo="true"' : ''?>
+                            />
+                            <div class="input-group-btn">
+                                <a class="btn btn-secondary"
+                                   data-toggle="popover"
+                                   data-content="点击可识别并自动设置性别和出生日期"
+                                   data-placement="top"
+                                   id="__SCOPED___auto"
+                                   data-container="#:modal_id_app"
+                                   data-trigger="hover"><i class="fa fa-id-card-o"></i></a>
+                            </div>
+                        </div>
+                        <span class="help-block">{$validate.card_no.required ? '' : '可选，'}设置用户身份证号码</span>
+                    </div>
                 </div>
-                <span class="help-block">设置邮箱，设置后可以通过邮箱地址登录</span>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="col-sm-2 control-label">QQ号码</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="qq" value="{$info.qq|default=''}" minlength="5" maxlength="13" placeholder="请输入QQ号" data-rule-number="true"/>
-            </div>
-        </div>
-
-        <div class="form-group no-margin-bottom">
-            <label class="col-sm-2 control-label">是否启用</label>
-            <div class="col-sm-9">
-                <div class="radio">
-                    <input name="checked" <?=is_disabled($info['system'])?> type="radio" value="1" <?=is_checked(($info['checked'] ?? 0) == 1)?> data-toggle="busy-radio" title="启用"/>
-                    <input name="checked" <?=is_disabled($info['system'])?> type="radio" value="0" <?=is_checked(($info['checked'] ?? 0) == 0)?> data-toggle="busy-radio" title="禁用"/>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="{$validate.sex ? 'required' : ''}">性别</label>
+                        <select class="form-control"
+                                data-toggle="busy-select"
+                                name="sex"
+                                data-placeholder="请选择性别"
+                                data-clear="true"
+                                id="__SCOPED___sex"
+                            <?=$validate['sex'] ? 'required' : ''?>>
+                            <option value=""></option>
+                            <option value="1"<?=is_selected(($info['sex'] ?? 0) == 1)?>>男</option>
+                            <option value="2"<?=is_selected(($info['sex'] ?? 0) == 2)?>>女</option>
+                        </select>
+                        <span class="help-block">{$validate.sex ? '' : '可选，'}设置用户性别</span>
+                    </div>
                 </div>
-                <span class="help-block">禁用后该账户将无法登录管理系统</span>
             </div>
-        </div>
-    </div>
+            <div class="row row-gutters-15">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="{$validate.birthday ? 'required' : ''}">出生日期</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   data-toggle="busy-date-picker"
+                                   data-format="YYYY-MM-DD"
+                                   data-rule-dateISO="true"
+                                   class="form-control"
+                                   name="birthday"
+                                   value="{$info.birthday|default=''}"
+                                   placeholder="请选择出生日期"
+                                   id="__SCOPED___birthday"
+                                <?=$validate['birthday'] ? 'required' : ''?>/>
+                            <div class="input-group-addon"><i class="fa fa-calendar width-20 text-center"></i></div>
+                        </div>
+                        <span class="help-block">{$validate.birthday ? '': '可选，'}设置用户出生日期</span>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="{$validate.tel.required ? 'required' : ''}">电话号码</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control"
+                                   name="tel"
+                                   value="{$info.tel|default=''}"
+                                   placeholder="请输入电话号码"
+                                   data-msg-regex="请输入有效的电话号码"
+                                <?=$validate['tel']['required'] ? 'required' : ''?>
+                                <?=$validate['tel']['regex'] ? 'data-rule-regex="' . $validate['tel']['regex'] . '"' : ''?>
+                            />
+                            <div class="input-group-addon"><i class="fa fa-phone width-20 text-center"></i></div>
+                        </div>
+                        <span class="help-block">{$validate.tel.required ? '' : '可选，'}设置用户的电话号码</span>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>QQ号码</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="qq" value="{$info.qq|default=''}" minlength="5" maxlength="13" placeholder="设置QQ号码" data-rule-number="true"/>
+                            <div class="input-group-addon"><i class="fa fa-qq width-20 text-center"></i></div>
+                        </div>
+                        <span class="help-block">可选，设置用户的QQ号码</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-gutters-15">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label>用户简介</label>
+                        <textarea class="form-control" name="remark" placeholder="填写用户简介/备注">{$info.remark|default=""}</textarea>
+                        <span class="help-block">可选，设置用户简介或备注信息</span>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
 </block>
 <block name="foot">
     <script>
         busyAdmin.data.defaultGroupId = '{$info.default_group_id|default=0}';
         busyAdmin.ready(function () {
-            var $tree          = $('#treeGroupIds');
-            var $defaultGroup  = $('[name="default_group_id"]');
+            var $tree         = $('#__SCOPED___tree');
+            var $defaultGroup = $('#__SCOPED___default_group_id');
+            var $cardNo       = $('#__SCOPED___card_no');
+            var $sex          = $('#__SCOPED___sex');
+            var $birthday     = $('#__SCOPED___birthday');
+            var $auto         = $('#__SCOPED___auto');
+
+            // 默认角色组
             var defaultOptions = $defaultGroup.html();
-            $tree.on(
-                busyAdmin.e.treeReady + ' ' +
-                busyAdmin.e.treeSelectNode + ' ' +
-                busyAdmin.e.treeSelectAll + ' ' +
-                busyAdmin.e.treeDeselectNode + ' ' +
-                busyAdmin.e.treeDeselectAll,
-                function (e, api) {
-                    var options = defaultOptions;
-                    api.get_selected(true).map(function (item) {
-                        var selected = item.id == busyAdmin.data.defaultGroupId ? ' selected' : '';
-                        options += '<option value="' + item.id + '"'+ selected +'>' + item.text + '</option>';
-                    });
-                    $defaultGroup.html(options);
+            $tree.on([busyAdmin.e.treeReady, busyAdmin.e.treeSelectNode, busyAdmin.e.treeSelectAll, busyAdmin.e.treeDeselectNode, busyAdmin.e.treeDeselectAll].join(' '), function () {
+                var options = defaultOptions;
+                $tree.baTree('getSelected', true).map(function (item) {
+                    var selected = item.id == busyAdmin.data.defaultGroupId ? ' selected' : '';
+                    options += '<option value="' + item.id + '"' + selected + '>' + item.text + '</option>';
+                });
+                $defaultGroup.html(options);
+            });
+
+            // 输入身份证号码解析
+            $cardNo.on('input', function (e) {
+                var $this = $(this);
+                var val   = $this.val().trim();
+
+                if (busyAdmin.helper.checkCardNo(val)) {
+                    var birthday = val.substring(6, 10) + '-' + val.substring(10, 12) + '-' + val.substring(12, 14);
+                    var sex      = val.substring(16, 1) % 2 == 0 ? 2 : 1;
+                    if (e.force) {
+                        $birthday.val(birthday);
+                        $sex.val(sex).trigger('change');
+                        busyAdmin.dialog.toast('自动识别成功');
+                        return;
+                    }
+
+                    if (!$birthday.val()) {
+                        $birthday.val(birthday);
+                    }
+                    if (!$sex.val()) {
+                        $sex.val(sex).trigger('change');
+                    }
+                } else if (e.force) {
+                    busyAdmin.dialog.toast('身份证号无效');
                 }
-            )
+            });
+            $auto.on('click', function () {
+                $cardNo.trigger({
+                    type  : 'input',
+                    force : true
+                });
+            });
         });
     </script>
 </block>

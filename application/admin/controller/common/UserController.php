@@ -22,6 +22,20 @@ use Throwable;
 class UserController extends InsideController
 {
     /**
+     * @var AdminUser
+     */
+    protected AdminUser $model;
+    
+    
+    protected function initialize($checkLogin = true)
+    {
+        parent::initialize($checkLogin);
+        
+        $this->model = AdminUser::init();
+    }
+    
+    
+    /**
      * 修改个人资料
      * @return Response
      * @throws Throwable
@@ -29,9 +43,9 @@ class UserController extends InsideController
     public function profile() : Response
     {
         if ($this->isPost()) {
-            AdminUser::init()->modify(
+            $this->model->modify(
                 AdminUserField::init($this->post())->setId($this->adminUserId),
-                AdminUser::SCENE_PROFILE
+                $this->model::SCENE_PROFILE
             );
             $this->log()->record(self::LOG_UPDATE, '修改个人资料');
             
@@ -40,7 +54,8 @@ class UserController extends InsideController
         
         $this->setPageTitle('修改个人资料');
         $this->assign([
-            'info' => $this->adminUser
+            'info'     => $this->adminUser,
+            'validate' => $this->model->getViewValidateRule()
         ]);
         
         return $this->insideDisplay();
@@ -60,13 +75,13 @@ class UserController extends InsideController
                 throw new VerifyException('请输入登录密码', 'old_password');
             }
             
-            if (!AdminUser::class()::verifyPassword($oldPassword, $this->adminUser->password)) {
+            if (!$this->model::verifyPassword($oldPassword, $this->adminUser->password)) {
                 throw new VerifyException('登录密码输入错误', 'old_password');
             }
             
-            AdminUser::init()->modify(
+            $this->model->modify(
                 AdminUserField::init($this->post())->setId($this->adminUserId),
-                AdminUser::SCENE_PASSWORD
+                $this->model::SCENE_PASSWORD
             );
             $this->log()
                 ->filterParams(['old_password', 'password', 'confirm_password'])
@@ -92,7 +107,7 @@ class UserController extends InsideController
     public function theme() : Response
     {
         if ($this->isPost()) {
-            AdminUser::init()->setTheme($this->adminUserId, $this->post('data/a'));
+            $this->model->setTheme($this->adminUserId, $this->post('data/a'));
             $this->log()->record(self::LOG_UPDATE, '主题设置');
             
             return $this->success('修改成功');
@@ -118,7 +133,7 @@ class UserController extends InsideController
         
         $list = ArrayHelper::listSortBy($list, 'sort', ArrayHelper::ORDER_BY_ASC);
         $this->assign('list', $list);
-        $this->assign('info', AdminUser::init()->getTheme($this->adminUser));
+        $this->assign('info', $this->model->getTheme($this->adminUser));
         $this->setPageTitle('主题设置');
         
         return $this->insideDisplay();
@@ -153,16 +168,16 @@ class UserController extends InsideController
     
     
     /**
-     * 用户详情
+     * 用户资料
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      */
     public function detail() : Response
     {
-        $this->setPageTitle($this->param('title/s', 'trim') ?: '管理员详情');
+        $this->setPageTitle($this->param('title/s', 'trim') ?: '用户资料');
         $this->assign([
-            'info' => AdminUser::init()->getInfo($this->param('id/d'))
+            'info' => $this->model->getInfo($this->param('id/d'))
         ]);
         
         return $this->insideDisplay();

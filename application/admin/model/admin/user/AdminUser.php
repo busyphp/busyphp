@@ -5,10 +5,13 @@ namespace BusyPHP\app\admin\model\admin\user;
 
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\exception\VerifyException;
+use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model;
 use BusyPHP\model\Entity;
+use Closure;
 use RuntimeException;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -76,23 +79,22 @@ class AdminUser extends Model implements ContainerInterface
     /** @var string 操作场景-修改个人资料 */
     const SCENE_PROFILE = 'profile';
     
+    // +----------------------------------------------------
+    // + 性别
+    // +----------------------------------------------------
+    /** @var int 男 */
+    const SEX_MAN = 1;
+    
+    /** @var int 女 */
+    const SEX_WOMEN = 2;
+    
     protected string $dataNotFoundMessage = '管理员不存在';
     
     protected string $listNotFoundMessage = '暂无管理员';
     
     protected string $fieldClass          = AdminUserField::class;
     
-    /**
-     * 创建/修改/手机号登录验证规则，支持正则/闭包，默认为验证中国大陆手机号
-     * @var mixed
-     */
-    public static mixed $phoneRegex = null;
-    
-    /**
-     * 手机号是否必填
-     * @var bool
-     */
-    public static bool $requirePhone = false;
+    protected array  $validateConfig;
     
     
     /**
@@ -101,6 +103,25 @@ class AdminUser extends Model implements ContainerInterface
     final public static function defineContainer() : string
     {
         return self::class;
+    }
+    
+    
+    /**
+     * 获取性别
+     * @param int|null $sex
+     * @return mixed
+     */
+    public static function getSexs(int $sex = null) : mixed
+    {
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'SEX_', ClassHelper::ATTR_NAME), $sex);
+    }
+    
+    
+    public function __construct(string $connect = '', bool $force = false)
+    {
+        $this->validateConfig = Config::get('admin.model.admin_user', []);
+        
+        parent::__construct($connect, $force);
     }
     
     
@@ -117,7 +138,8 @@ class AdminUser extends Model implements ContainerInterface
         return $this->transaction(function() use ($data, $prepare) {
             $this->validate($data, static::SCENE_CREATE);
             $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
-            $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info = $this->getInfo($this->insert($data))));
+            $info = $this->getInfo($this->insert($data->setCreateTime(time())->setUpdateTime(time())));
+            $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info));
             
             return $info;
         });
@@ -138,7 +160,7 @@ class AdminUser extends Model implements ContainerInterface
             $info = $this->lock(true)->getInfo($data->id);
             $this->validate($data, $scene, $info);
             $this->trigger(new AdminUserEventUpdateBefore($this, $data, $scene, $prepare, $info));
-            $this->update($data);
+            $this->update($data->setUpdateTime(time()));
             $this->trigger(new AdminUserEventUpdateAfter($this, $data, $scene, $prepare, $info, $info = $this->getInfo($info->id)));
             
             return $info;
@@ -196,7 +218,7 @@ class AdminUser extends Model implements ContainerInterface
         // 查询账户
         if (Validate::checkRule($username, ValidateRule::init()->isEmail())) {
             $info = $this->findInfoByEmail($username);
-        } elseif (static::checkPhone($username)) {
+        } elseif ($this->checkPhone($username)) {
             $info = $this->findInfoByPhone($username);
         } else {
             $info = $this->findInfoByUsername($username);
@@ -504,14 +526,56 @@ class AdminUser extends Model implements ContainerInterface
     
     
     /**
-     * 校验手机号
-     * @param string $phone
-     * @return bool|string
+     * 获取验证配置
+     * @param string $name 配置名称
+     * @param null   $default 默认值
+     * @return mixed
      */
-    public static function checkPhone(string $phone)
+    public function getValidateConfig(string $name, $default = null) : mixed
     {
-        if ($regex = static::getPhoneRegex()) {
-            if (is_callable($regex)) {
+        return ArrayHelper::get($this->validateConfig, $name, $default);
+    }
+    
+    
+    /**
+     * 获取模版校验规则
+     * @return array
+     */
+    public function getViewValidateRule() : array
+    {
+        return [
+            'avatar'   => $this->getValidateConfig('avatar', false),
+            'nickname' => $this->getValidateConfig('nickname', false),
+            'phone'    => [
+                'required' => $this->getValidateConfig('phone.required', false),
+                'regex'    => $this->getValidateConfig('phone.js_regex', '^1[3-9]\d{9}$'),
+            ],
+            'email'    => $this->getValidateConfig('email', false),
+            'name'     => $this->getValidateConfig('name', false),
+            'card_no'  => [
+                'required' => $this->getValidateConfig('card_no.required', false),
+                'unique'   => $this->getValidateConfig('card_no.unique', false),
+                'identity' => $this->getValidateConfig('card_no.identity', true)
+            ],
+            'sex'      => $this->getValidateConfig('sex', false),
+            'birthday' => $this->getValidateConfig('birthday', false),
+            'tel'      => [
+                'required' => $this->getValidateConfig('tel.required', false),
+                'regex'    => $this->getValidateConfig('tel.js_regex', null)
+            ]
+        ];
+    }
+    
+    
+    /**
+     * 校验手机号
+     * @param string $phone 手机号
+     * @return bool|string 返回true代表验证成功，返回字符串代表验证失败的消息，返回false则使用内置错误消息文案
+     */
+    public function checkPhone(string $phone) : bool|string
+    {
+        if ($regex = $this->getValidateConfig('phone.regex')) {
+            if ($regex instanceof Closure) {
                 $res = Container::getInstance()->invoke($regex, [$phone]);
                 if ($res === false) {
                     return false;
@@ -524,25 +588,5 @@ class AdminUser extends Model implements ContainerInterface
         }
         
         return Validate::checkRule($phone, ValidateRule::init()->isMobile());
-    }
-    
-    
-    /**
-     * 获取手机号验证正则
-     * @return mixed
-     */
-    public static function getPhoneRegex() : mixed
-    {
-        return static::$phoneRegex;
-    }
-    
-    
-    /**
-     * 手机号是否必填
-     * @return bool
-     */
-    public static function isRequirePhone() : bool
-    {
-        return static::$requirePhone;
     }
 }

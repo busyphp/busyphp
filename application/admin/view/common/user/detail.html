@@ -9,53 +9,112 @@
         </div>
         <div class="modal-body no-padding">
             <div class="table-responsive no-margin-bottom">
-                <table class="table table-bordered table-striped table-hover">
-                    <tr>
-                        <th width="100">用户ID</th>
-                        <td>{$info.id|default='-'}</td>
-                        <th width="110">用户名</th>
-                        <td>{$info.username|default='-'}</td>
-                    </tr>
-                    <tr>
-                        <th>状态</th>
-                        <td>
-                            <eq name="info.checked" value="1">
-                                <span class="badge badge-success">正常</span>
-                                <else/>
-                                <span class="badge badge-danger">禁用</span>
-                            </eq>
-                        </td>
-                        <th>角色组</th>
-                        <td>
-                            <foreach name="info.group_names" item="vo">
-                                <span class="badge badge-primary">{$vo}</span>
-                            </foreach>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>手机号</th>
-                        <td>{$info.phone|default='-'}</td>
-                        <th>邮箱</th>
-                        <td>{$info.email|default='-'}</td>
-                    </tr>
-                    <tr>
-                        <th>QQ号码</th>
-                        <td>{$info.qq|default='-'}</td>
-                        <th>累计登录次数</th>
-                        <td>{$info.login_total|default='0'}次</td>
-                    </tr>
-                    <tr>
-                        <th>创建时间</th>
-                        <td>{$info.format_create_time|default='-'}</td>
-                        <th>最后登录</th>
-                        <td>{$info.format_last_time|default='-'}</td>
-                    </tr>
-                    <tr>
-                        <th>登录IP</th>
-                        <td>{$info.login_ip|default='-'}</td>
-                        <th>上次登录IP</th>
-                        <td>{$info.last_ip|default='-'}</td>
-                    </tr>
+                <table class="table table-bordered table-striped table-hover table-fixed">
+                    <colgroup>
+                        <col width="120">
+                        <col>
+                        <col width="120">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                        <tr class="secondary">
+                            <th colspan="4">基本资料</th>
+                        </tr>
+                        <tr>
+                            <th rowspan="3">
+                                <img class="img-thumbnail padding-2 object-fit-cover" src="{$info.avatar}" data-avatar="true" data-toggle="busy-image-viewer"/>
+                            </th>
+                            <td colspan="3" class="text-vcenter">
+                                用户账号：{$info.username}
+                                
+                                <?php
+                                if ($info['sex'] == \BusyPHP\app\admin\model\admin\user\AdminUser::class()::SEX_MAN) {
+                                    ?>
+                                    <i class="text-blue fa fa-male"></i>
+                                    <?php
+                                } elseif ($info['sex'] == \BusyPHP\app\admin\model\admin\user\AdminUser::class()::SEX_WOMEN) {
+                                    ?>
+                                    <b class="text-pink fa fa-female"></b>
+                                    <?php
+                                }
+                                ?>
+
+                                &nbsp;&nbsp;<span class="badge badge-dark">用户ID: {$info.id}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-vcenter">用户昵称：{$info.nickname|default='-'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-vcenter">
+                                用户角色：
+                                <foreach name="info.group_names" item="vo">
+                                    <span class="badge badge-primary">{$vo}</span>
+                                </foreach>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>手机号</th>
+                            <td>{$info.phone|default='-'}</td>
+                            <th>邮箱</th>
+                            <td>{$info.email|default='-'}</td>
+                        </tr>
+
+
+                        <tr>
+                            <th>姓名</th>
+                            <td>{$info.name|default='-'}</td>
+                            <th>生日</th>
+                            <td>{$info.birthday|default='-'}</td>
+                        </tr>
+
+                        <tr>
+                            <th>电话号码</th>
+                            <td>{$info.tel|default='-'}</td>
+                            <th>QQ号码</th>
+                            <td>{$info.qq|default='-'}</td>
+                        </tr>
+
+                        <tr>
+                            <th>用户介绍</th>
+                            <td colspan="3">{$info.remark|default='-'}</td>
+                        </tr>
+                        
+                        <ba:access value="system_user/show_detail_important_info,system_user/index">
+                            <tr class="secondary">
+                                <th colspan="4">重要资料</th>
+                            </tr>
+                            <tr>
+                                <th>账号创建时间</th>
+                                <td>{$info.format_create_time|default='-'}</td>
+                                <th>最后登录时间</th>
+                                <td>{$info.format_last_time|default='-'}</td>
+                            </tr>
+                            <tr>
+                                <th>最后登录IP</th>
+                                <td>{$info.login_ip|default='-'}</td>
+                                <th>上次登录IP</th>
+                                <td>{$info.last_ip|default='-'}</td>
+                            </tr>
+                            <tr>
+                                <th>累计登录次数</th>
+                                <td>{$info.login_total|default='0'}次</td>
+                                <th>账号状态</th>
+                                <td>
+                                    <eq name="info.checked" value="1">
+                                        <span class="badge badge-success">正常</span>
+                                        <else/>
+                                        <span class="badge badge-danger">禁用</span>
+                                    </eq>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>身份证号码</th>
+                                <td colspan="3">{$info.card_no|default='-'}</td>
+                            </tr>
+                        </ba:access>
+                    </tbody>
                 </table>
             </div>
         </div>
