@@ -190,7 +190,7 @@ abstract class Controller
             $this->view->content($content);
         }
         
-        $scoped = str_replace('/', '_', $this->request->getRoutePath(true));
+        $scoped = str_replace(['/', '.'], '_', $this->request->getRoutePath(true));
         $this->view->filter(function(string $content) use ($scoped) {
             $content = str_replace([
                 '__ROOT__',
