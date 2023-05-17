@@ -47,6 +47,11 @@ class LogsController extends InsideController
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
         if ($table = Table::initIfRequest()) {
+            if (!$this->adminUser->groupHasSystem) {
+                $this->model->where(SystemLogsField::client(), 'admin');
+                $this->model->where(SystemLogsField::userId(), $this->adminUserId);
+            }
+            
             return $table
                 ->model($this->model)
                 ->query(function(SystemLogs $model, ArrayOption $option) use ($timeRange) {

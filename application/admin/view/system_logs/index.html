@@ -22,7 +22,7 @@
             <div data-toggle="busy-search-bar"
                  data-url="{$url.self}"
                  data-accurate-show="true"
-                 data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
+                 data-fields="name:操作名称{$system.user.group_has_system ? ',username:操作用户名,user_id:操作用户ID':''}">
                 <template type="text/html" data-template="left">
                     <div class="form-group">
                         <div class="input-group">
@@ -39,14 +39,16 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-addon">客户端</div>
-                            <select class="form-control" name="client">
-                                <?=\BusyPHP\helper\TransHelper::toOptionHtml($clients, '', 'name', 'dir');?>
-                            </select>
+                    <eq name="system.user.group_has_system" value="1">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">客户端</div>
+                                <select class="form-control" name="client">
+                                    <?=\BusyPHP\helper\TransHelper::toOptionHtml($clients, '', 'name', 'dir');?>
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    </eq>
                 </template>
             </div>
         </template>
@@ -136,24 +138,26 @@
                         data-field="client_name"
                         data-title="客户端"></th>
                     
-                    <th class="text-center"
-                        width="100"
-                        data-show-overflow="true"
-                        data-field="username"
-                        data-title="用户"
-                        data-sortable="true"></th>
-                    
-                    <th class="text-center"
-                        width="100"
-                        data-show-overflow="true"
-                        data-field="user_id"
-                        data-title="用户ID"
-                        data-sortable="true"
-                        data-formatter="@">
-                        <script type="text/html">
-                            <a href="javascript:void(0)" onclick="$(this).closestBaTable('reset', {field: 'user_id', word: '{{value}}'})">{{value}}</a>
-                        </script>
-                    </th>
+                    <eq name="system.user.group_has_system" value="1">
+                        <th class="text-center"
+                            width="100"
+                            data-show-overflow="true"
+                            data-field="username"
+                            data-title="用户"
+                            data-sortable="true"></th>
+
+                        <th class="text-center"
+                            width="100"
+                            data-show-overflow="true"
+                            data-field="user_id"
+                            data-title="用户ID"
+                            data-sortable="true"
+                            data-formatter="@">
+                            <script type="text/html">
+                                <a href="javascript:void(0)" onclick="$(this).closestBaTable('reset', {field: 'user_id', word: '{{value}}'})">{{value}}</a>
+                            </script>
+                        </th>
+                    </eq>
                     
                     <th class="text-center"
                         width="160"
