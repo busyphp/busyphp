@@ -2,25 +2,29 @@
 <block name="content">
     <div class="form-horizontal">
         <input type="hidden" value="{$info.id|default=''}" name="id"/>
-        <div class="form-group">
-            <label class="col-sm-2 control-label">父角色组</label>
-            <div class="col-sm-9">
-                <input type="text"
-                       readonly
-                       class="form-control"
-                       name="parent_id"
-                       placeholder="顶级角色组"
-                       value="{$info.parent_id|default=''}"
-                       data-toggle="busy-linkage-picker"
-                       data-url="{:url('linkage_picker_data?id=' . ($info['id'] ?? 0))}"
-                       data-strict="false"
-                       data-clear="true"
-                       <?=is_disabled($info['system'])?>
-                />
-                
-                <span class="help-block">选择父角色组，将直接继承父角色组的权限规则</span>
+
+        <eq name="info.system" value="0">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">父角色组</label>
+                <div class="col-sm-9">
+                    <input type="text"
+                           readonly
+                           class="form-control"
+                           name="parent_id"
+                           placeholder="顶级角色组"
+                           value="{$info.parent_id|default=''}"
+                           id="__SCOPED___parent_id"
+                           data-toggle="busy-linkage-picker"
+                           data-url="{:url('data?id=' . ($info['id'] ?? 0))}"
+                           data-strict="false"
+                           data-clear="true"
+                    />
+
+                    <span class="help-block">选择父角色组，将直接继承父角色组的权限规则</span>
+                </div>
             </div>
-        </div>
+        </eq>
+
         <div class="form-group">
             <label class="col-sm-2 control-label required">角色名称</label>
             <div class="col-sm-9">
@@ -29,50 +33,80 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label class="col-sm-2 control-label required">角色权限</label>
-            <div class="col-sm-9">
-                <div class="checkbox-group">
-                    <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="groupAddCheckedAll" title="选中全部"/>
-                    <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="groupAddOpenAll" title="展开全部"/>
+        <eq name="info.system" value="0">
+            <div class="form-group">
+                <label class="col-sm-2 control-label required">角色权限</label>
+                <div class="col-sm-9">
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="__SCOPED___rule_select_all" title="选中全部"/>
+                        <input type="checkbox" class="pill input-sm" data-toggle="busy-checkbox" id="__SCOPED___rule_open_all" title="展开全部"/>
+                    </div>
+
+                    <div class="space-10"></div>
+                    <div id="__SCOPED___rule"
+                         data-toggle="busy-tree"
+                         data-block="true"
+                         style="max-height: 300px;"
+                         data-url="{:url('system_menu/data?all=1')}"
+                         data-method="post"
+                         data-params="busyAdmin.data.treeParams"
+                         data-checkbox-relation="false"
+                         data-node-extend="@"
+                         data-checkbox-relation-dir="up,undetermined"
+                         data-checkbox="true">
+                        <template data-template="node-extend">
+                            <ba-if value="group">
+                                <span class="btn-link no-padding size-12">全选/反选</span>
+                            </ba-if>
+                        </template>
+                        <select name="rule[]"></select>
+                    </div>
+                    <eq name="info.system" value="1">
+                        <span class="help-block text-info"><i class="fa fa-info-circle"></i> 系统角色无论是否设置角色权限，都将拥有所有权限</span>
+                    </eq>
                 </div>
-
-                <div class="space-10"></div>
-                <div id="groupAddTree"
-                     data-toggle="busy-tree"
-                     data-block="true"
-                     data-name="rule[]"
-                     data-url="{:url('rule_tree_data')}"
-                     data-params="busyAdmin.data.treeParams"
-                     data-checkbox-relation="false"
-                     data-checkbox-relation-dir="up,undetermined"
-                     data-checkbox="true"></div>
-                <eq name="info.system" value="1">
-                    <span class="help-block text-info"><i class="fa fa-info-circle"></i> 系统角色无论是否设置角色权限，都将拥有所有权限</span>
-                </eq>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label required">默认菜单</label>
+                <div class="col-sm-9">
+                    <select class="form-control" name="default_menu_id" disabled id="__SCOPED___default_menu_id">
+                        <option value="0">请先选择角色权限</option>
+                    </select>
+                    <span class="help-block">设置默认菜单，用户登录后将默认展开该菜单</span>
+                </div>
+            </div>
+        </eq>
 
         <div class="form-group">
-            <label class="col-sm-2 control-label required">默认菜单</label>
+            <label class="col-sm-2 control-label">角色描述</label>
             <div class="col-sm-9">
-                <select class="form-control" name="default_menu_id" disabled>
-                    <option value="0">请先选择角色权限</option>
-                </select>
-                <span class="help-block">设置默认菜单，用户登录后将默认展开该菜单</span>
+                <textarea class="form-control" name="remark" placeholder="请输入角色描述">{$info.remark|default=''}</textarea>
+                <span class="help-block">可选，设置角色描述</span>
             </div>
         </div>
 
-        <div class="form-group no-margin-bottom">
-            <label class="col-sm-2 control-label">启用角色</label>
-            <div class="col-sm-9">
-                <div class="radio">
-                    <input type="radio" <?=is_disabled($info['system'])?> name="status" value="1" data-toggle="busy-radio" title="启用" <?=is_checked(($info['status'] ?? 0) == 1)?>/>
-                    <input type="radio" <?=is_disabled($info['system'])?> name="status" value="0" data-toggle="busy-radio" title="禁用" <?=is_checked(($info['status'] ?? 0) == 0)?>/>
+        <eq name="info.system" value="0">
+            <div class="form-group no-margin-bottom">
+                <label class="col-sm-2 control-label">角色状态</label>
+                <div class="col-sm-9">
+                    <div class="btn-group"
+                         data-toggle="buttons"
+                         data-checked-class="btn-primary"
+                         data-default-class="btn-default">
+                        <label class="btn btn-default">
+                            <input name="status" type="radio" value="1" <?=is_checked(($info['status'] ?? 0) == 1)?>/>
+                            启用
+                        </label>
+                        <label class="btn btn-default">
+                            <input name="status" type="radio" value="0" <?=is_checked(($info['status'] ?? 0) == 0)?>/>
+                            禁用
+                        </label>
+                    </div>
+                    <span class="help-block">设置角色状态，禁用后将无法使用该角色</span>
                 </div>
-                <span class="help-block">设置角色状态，禁用后将无法使用该角色</span>
             </div>
-        </div>
+        </eq>
     </div>
 </block>
 <block name="foot">
@@ -87,56 +121,69 @@
         };
 
         busyAdmin.ready(function () {
-            var $tree = $('#groupAddTree');
-            var $menu = $('[name="default_menu_id"]');
+            var $tree = $('#__SCOPED___rule');
+            var $menu = $('#__SCOPED___default_menu_id');
 
-            $('#groupAddCheckedAll').on('change', function () {
+            $('#__SCOPED___rule_select_all').on('change', function () {
                 if ($(this).prop('checked')) {
                     $tree.baTree('check_all');
                 } else {
-                    $tree.baTree('uncheck_all');
+                    $tree.baTree('uncheckAll');
                 }
             });
 
-            $('#groupAddOpenAll').on('change', function () {
+            $('#__SCOPED___rule_open_all').on('change', function () {
                 if ($(this).prop('checked')) {
-                    $tree.baTree('open_all');
+                    $tree.baTree('openAll');
                 } else {
-                    $tree.baTree('close_all');
+                    $tree.baTree('closeAll');
                 }
             });
 
-            $('[name="parent_id"]').on('change', function () {
+            $('#__SCOPED___parent_id').on('change', function () {
                 busyAdmin.data.treeParentGroupId = $(this).val();
                 $tree.baTree('refresh');
             });
 
-            $tree.on(
-                busyAdmin.e.treeReady + ' '
-                + busyAdmin.e.treeSelectAll + ' '
-                + busyAdmin.e.treeSelectNode + ' '
-                + busyAdmin.e.treeDeselectAll + ' '
-                + busyAdmin.e.treeDeselectNode,
-                function (e, api) {
-                    var list = api.get_selected(true);
-                    list.push.apply(list, api.get_undetermined(true));
+            // 全选/反选
+            $tree.on('click', '.btn-link', function (e) {
+                var data = $tree.baTree('get_node', $(this).closest('a').attr('id'));
+                if (!data) {
+                    return;
+                }
 
-                    var options = '';
-                    list.map(function (item) {
-                        if (item.parent !== '#') {
-                            return;
-                        }
+                e.preventDefault();
+                if (data.state.selected) {
+                    $tree.baTree('uncheck_node', data.id);
+                    $tree.baTree('uncheck_node', data.children_d);
+                } else {
+                    $tree.baTree('check_node', data.id);
+                    $tree.baTree('check_node', data.children_d);
+                }
 
-                        var selected = item.id == busyAdmin.data.defaultMenuId ? ' selected' : '';
-                        options += '<option value="' + item.id + '"' + selected + '>' + item.text + '</option>';
-                    });
+                return false;
+            });
 
-                    if (options) {
-                        $menu.prop('disabled', false).html(options);
-                    } else {
-                        $menu.prop('disabled', true).html('<option value="0">请先选择角色权限</option>');
+            $tree.on([busyAdmin.e.treeReady, busyAdmin.e.treeSelectAll, busyAdmin.e.treeSelectNode, busyAdmin.e.treeDeselectAll, busyAdmin.e.treeDeselectNode].join(' '), function (e) {
+                var list = $tree.baTree('getSelected', true);
+                list.push.apply(list, $tree.baTree('getUndetermined', true));
+
+                var options = '';
+                list.map(function (item) {
+                    if (item.parent !== '#') {
+                        return;
                     }
+
+                    var selected = item.id == busyAdmin.data.defaultMenuId ? ' selected' : '';
+                    options += '<option value="' + item.id + '"' + selected + '>' + item.text + '</option>';
                 });
+
+                if (options) {
+                    $menu.prop('disabled', false).html(options);
+                } else {
+                    $menu.prop('disabled', true).html('<option value="0">请先选择角色权限</option>');
+                }
+            });
         });
     </script>
 </block>

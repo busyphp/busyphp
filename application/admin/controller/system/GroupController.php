@@ -13,12 +13,10 @@ use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
-use BusyPHP\app\admin\model\system\menu\SystemMenu;
-use BusyPHP\app\admin\model\system\menu\SystemMenuField;
-use BusyPHP\exception\VerifyException;
 use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
+use think\exception\HttpException;
 use think\Response;
 use Throwable;
 
@@ -34,7 +32,7 @@ class GroupController extends InsideController
     /**
      * @var AdminGroup
      */
-    protected $model;
+    protected AdminGroup $model;
     
     
     protected function initialize($checkLogin = true)
@@ -46,13 +44,13 @@ class GroupController extends InsideController
     
     
     /**
-     * 管理员角色
+     * 系统角色管理
      * @return Response
      */
     #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-lock', sort: 2)]
     public function index() : Response
     {
-        // 角色列表数据
+        // 系统角色列表数据
         if ($table = Table::initIfRequest()) {
             $table->model($this->model);
             $table->query(function(AdminGroup $model, ArrayOption $option) {
@@ -80,7 +78,7 @@ class GroupController extends InsideController
         // 添加
         if ($this->isPost()) {
             $this->model->create(AdminGroupField::init($this->parseData()));
-            $this->log()->record(self::LOG_INSERT, '添加管理角色');
+            $this->log()->record(self::LOG_INSERT, '添加系统角色');
             
             return $this->success('添加成功');
         }
@@ -111,7 +109,7 @@ class GroupController extends InsideController
         // 修改
         if ($this->isPost()) {
             $this->model->modify(AdminGroupField::init($this->parseData()));
-            $this->log()->record(self::LOG_UPDATE, '修改管理角色');
+            $this->log()->record(self::LOG_UPDATE, '修改系统角色');
             
             return $this->success('修改成功');
         }
@@ -141,7 +139,7 @@ class GroupController extends InsideController
     
     
     /**
-     * 解析上级角色组
+     * 解析上级系统角色组
      * @param AdminGroupField $info
      * @param bool            $hasSelf
      * @return string
@@ -167,92 +165,6 @@ class GroupController extends InsideController
     
     
     /**
-     * 获取树权限节点
-     * @return Response
-     * @throws DataNotFoundException
-     * @throws DbException
-     */
-    public function rule_tree_data() : Response
-    {
-        $id         = $this->get('group_id/d');
-        $parentId   = explode(',', $this->get('parent_group_id/s', 'trim'));
-        $parentId   = (int) end($parentId);
-        $info       = null;
-        $parentInfo = null;
-        if ($id > 0) {
-            $info = $this->model->getInfo($id);
-            if ($info->id == $parentId) {
-                throw new VerifyException('父角色不能是自己');
-            }
-        }
-        if ($parentId > 0) {
-            $parentInfo = $this->model->getInfo($parentId);
-            if (!$parentInfo->ruleIds) {
-                throw new VerifyException('该角色权限信息异常');
-            }
-        }
-        
-        return Tree::init()
-            ->list(
-                SystemMenu::instance()->getList(),
-                function(TreeFlatNode $node, SystemMenuField $item, int $index) use ($info) {
-                    $node->setParent($item->parentHash);
-                    $node->setText($item->name);
-                    $node->setId($item->hash);
-                    $node->setIcon($item->icon);
-                    
-                    if ($info) {
-                        // 展开选中项的父节点
-                        if (in_array($item->hash, $info->ruleIndeterminate)) {
-                            $node->setOpened(true);
-                        }
-                        
-                        // 设为选中
-                        if (in_array($item->hash, $info->rule)) {
-                            $node->setSelected(true);
-                        }
-                    }
-                },
-                function(array $list) use ($parentInfo) {
-                    return array_filter($list, function(SystemMenuField $item) use ($parentInfo) {
-                        if ($item->path === SystemMenu::class()::DEVELOPER_PATH || $item->disabled) {
-                            return false;
-                        }
-                        
-                        if ($parentInfo) {
-                            return in_array($item->hash, $parentInfo->ruleIds);
-                        }
-                        
-                        return true;
-                    });
-                })
-            ->response();
-    }
-    
-    
-    /**
-     * 获取权限选择数据
-     * @return Response
-     */
-    public function linkage_picker_data() : Response
-    {
-        $id = $this->param('id/d');
-        
-        return LinkagePicker::init()
-            ->model($this->model)
-            ->query(function(AdminGroup $model) use ($id) {
-                if ($id > 0) {
-                    $model->where(AdminGroupField::id('<>', $id));
-                }
-                
-                $model->order(AdminGroupField::sort(), 'asc');
-                $model->order(AdminGroupField::id(), 'asc');
-            })
-            ->response();
-    }
-    
-    
-    /**
      * 删除角色
      * @throws Throwable
      */
@@ -263,7 +175,7 @@ class GroupController extends InsideController
             $this->model->remove($id);
         }
         
-        $this->log()->record(self::LOG_DELETE, '删除管理角色');
+        $this->log()->record(self::LOG_DELETE, '删除系统角色');
         
         return $this->success('删除成功');
     }
@@ -279,7 +191,7 @@ class GroupController extends InsideController
     {
         $status = $this->get('status/b');
         $this->model->changeStatus($this->get('id/d'), $status);
-        $this->log()->record(self::LOG_UPDATE, '启用/禁用角色');
+        $this->log()->record(self::LOG_UPDATE, '启用/禁用系统角色');
         
         return $this->success($status ? '启用成功' : '禁用成功');
     }
@@ -294,9 +206,61 @@ class GroupController extends InsideController
     public function sort() : Response
     {
         SimpleForm::init($this->model)->sort('sort', AdminGroupField::sort());
-        $this->log()->record(self::LOG_UPDATE, '排序管理角色');
+        $this->log()->record(self::LOG_UPDATE, '排序系统角色');
         $this->updateCache();
         
         return $this->success('排序成功');
+    }
+    
+    
+    /**
+     * 数据接口
+     * @return Response
+     */
+    public function data() : Response
+    {
+        // tree
+        // data
+        if ($tree = Tree::initIfRequest()) {
+            $groupIds = $this->param('id/s', 'trim');
+            $groupIds = array_map('intval', explode(',', $groupIds));
+            
+            return $tree->model(AdminGroup::init())
+                ->defaultOrder([
+                    (string) AdminGroupField::sort() => 'asc',
+                    (string) AdminGroupField::id()   => 'asc',
+                ])
+                ->list(function(TreeFlatNode $node, AdminGroupField $item, int $index) use ($groupIds) {
+                    $node->setText($item->name);
+                    $node->setParent($item->parentId);
+                    $node->setId($item->id);
+                    $node->setOpened(true);
+                    
+                    if (in_array($item->id, $groupIds)) {
+                        $node->setSelected(true);
+                    }
+                })
+                ->response();
+        }
+        
+        // linkagePicker
+        // data
+        elseif ($linkage = LinkagePicker::initIfRequest()) {
+            $id = $this->param('id/d');
+            
+            return $linkage->model($this->model)
+                ->defaultOrder([
+                    (string) AdminGroupField::sort() => 'asc',
+                    (string) AdminGroupField::id()   => 'asc',
+                ])
+                ->query(function(AdminGroup $model) use ($id) {
+                    if ($id > 0) {
+                        $model->where(AdminGroupField::id('<>', $id));
+                    }
+                })
+                ->response();
+        }
+        
+        throw new HttpException(404);
     }
 }

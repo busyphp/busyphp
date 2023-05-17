@@ -8,6 +8,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\interfaces\FieldGetModelDataInterface;
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Ignore;
 use BusyPHP\model\annotation\field\Separate;
 use BusyPHP\model\annotation\field\ToArrayFormat;
@@ -29,6 +30,7 @@ use think\Validate;
  * @method static Entity rule(mixed $op = null, mixed $condition = null) 权限规则ID集合，英文逗号分割，左右要有逗号
  * @method static Entity status(mixed $op = null, mixed $condition = null) 是否启用
  * @method static Entity sort(mixed $op = null, mixed $condition = null) 排序
+ * @method static Entity remark(mixed $op = null, mixed $condition = null) 描述
  * @method static Entity child() 子节点数据
  * @method static Entity ruleIds() 权限ID集合
  * @method static Entity ruleIndeterminate() 权限所有父节点ID集合
@@ -43,6 +45,7 @@ use think\Validate;
  * @method $this setRule(mixed $rule) 设置权限规则集合，英文逗号分割，左右要有逗号
  * @method $this setStatus(mixed $status) 设置是否启用
  * @method $this setSort(mixed $sort) 设置排序
+ * @method $this setRemark(mixed $sort) 设置描述
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class AdminGroupField extends Field implements ModelValidateInterface, FieldGetModelDataInterface
@@ -51,6 +54,9 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * ID
      * @var int
      */
+    #[Validator(name: Validator::REQUIRE)]
+    #[Validator(name: Validator::IS_NUMBER)]
+    #[Validator(name: Validator::GT, rule: 0)]
     public $id;
     
     /**
@@ -64,6 +70,7 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * @var string
      */
     #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Filter(filter: 'trim')]
     public $name;
     
     /**
@@ -71,6 +78,7 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * @var string
      */
     #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
+    #[Filter(filter: 'trim')]
     public $defaultMenuId;
     
     /**
@@ -99,6 +107,13 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * @var int
      */
     public $sort;
+    
+    /**
+     * 描述
+     * @var string
+     */
+    #[Filter(filter: 'trim')]
+    public $remark;
     
     /**
      * 权限所有父节点ID集合
@@ -145,29 +160,30 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
     
     /**
      * @inheritDoc
+     * @param AdminGroup      $model
      * @param AdminGroupField $data
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
         switch ($scene) {
-            case AdminGroup::SCENE_CREATE:
+            case $model::SCENE_CREATE:
                 $this->setId(0);
                 $this->retain($validate, [
                     $this::parentId(),
                     $this::name(),
                     $this::rule(),
                     $this::defaultMenuId(),
+                    $this::remark(),
                     $this::status()
                 ]);
                 
                 return true;
-            case AdminGroup::SCENE_UPDATE:
+            case $model::SCENE_UPDATE:
                 if ($data->system) {
                     $this->retain($validate, [
                         $this::id(),
                         $this::name(),
-                        $this::rule(),
-                        $this::defaultMenuId(),
+                        $this::remark(),
                     ]);
                 } else {
                     $this->retain($validate, [
@@ -175,6 +191,7 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
                         $this::parentId(),
                         $this::name(),
                         $this::rule(),
+                        $this::remark(),
                         $this::defaultMenuId(),
                         $this::status()
                     ]);
