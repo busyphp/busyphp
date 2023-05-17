@@ -22,6 +22,11 @@ trait ModelOrder
      */
     private $order;
     
+    /**
+     * @var array|string
+     */
+    private $defaultOrder;
+    
     
     /**
      * 获取排序方式
@@ -43,11 +48,7 @@ trait ModelOrder
                 $data[$field] = $type;
             }
             
-            if (!$data) {
-                $this->order = 'id DESC';
-            } else {
-                $this->order = $data;
-            }
+            $this->order = $data;
         }
         
         return $this->order;
@@ -68,14 +69,26 @@ trait ModelOrder
     
     
     /**
+     * 设置默认排序方式
+     * @param $order
+     * @return $this
+     */
+    public function defaultOrder($order) : static
+    {
+        $this->defaultOrder = $order;
+        
+        return $this;
+    }
+    
+    
+    /**
      * 模型排序
      * @return static
      */
     protected function modelOrder() : static
     {
-        $order = $this->getOrder();
-        if ($order && !$this->model->getOptions('order')) {
-            $this->model->order($order);
+        if (!$this->model->getOptions('order')) {
+            $this->model->order($this->getOrder() ?: ($this->defaultOrder ?: 'id DESC'));
         }
         
         return $this;
