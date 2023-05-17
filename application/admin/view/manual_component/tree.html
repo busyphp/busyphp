@@ -120,6 +120,45 @@
 #demo3
 ```
 
+#### 扩展节点HTML
+
+> 通过给组件标签设置自定属性 `data-node-extend="@|Function"` 即可扩展节点HTML
+
+----------
+
+**`baTemplate`模版引擎支持变量**：<br />
+- `id:string` - 节点`id`
+- `text:string` - 节点`text`
+- `group:boolean` - 是否分组
+- `icon:string` - 节点图标
+- `a_attr:object` - `a`标签自定义属性
+- `li_attr:object` - `li`标签自定义属性
+- `parent:string` - 根节点`id`
+- `parents:[string]` - 上级节点`id`集合
+- `state.disabled:boolean` - 节点是否被禁用
+- `state.loaded:boolean` - 节点是否加载完成
+- `state.opened:boolean` - 节点是否已打开
+- `state.selected:boolean` - 节点是否已选中
+- `original:object` - 节点源数据，可以在里面获取到数据源，如：`{{original.source}}`
+- `children:[string]` - 下级节点`id`集合
+- `children_d:[string]` - 所有下级节点`id`集合
+
+
+**赋值 `data-node-extend="@"`**
+
+
+系统会查找在组件标签内包含自定义属性 `data-template="node-extend"` 的模版标签作为渲染模版。
+
+```HTML
+<div data-toggle="busy-tree">
+    <template data-template="node-extend">{{text}}</template>
+</div>
+```
+
+```demo:实例
+#demo5
+```
+
 #### 表单获取
 ```demo:实例
 #demo4
@@ -221,6 +260,18 @@
     <script type="text/html" class="hide" id="demo3">
 <div data-toggle="busy-tree" id="demo3_tree" data-checkbox="true" data-data='[{"id":1, "text": "节点1", "state":{"selected":true}},{"id":2, "text": "节点2", "children":["节点1-1", "节点1-2"]}]'></div>
     </script>
+
+    <template class="hide" id="demo5">
+<div data-toggle="busy-tree"
+     data-checkbox="true"
+     data-node-extend="@"
+     data-url="{:url('system_menu/data')}"
+     data-async-node="false">
+    <script type="text/html" data-template="node-extend">
+        <span> 自定义 <i class="{{icon}}"></i></span>
+    </script>
+</div>
+    </template>
 
     <template type="text/html" class="hide" id="demo4">
 <form id="demo4_form">
