@@ -298,6 +298,36 @@ class SystemMenu extends Model implements ContainerInterface
     
     
     /**
+     * 判断是否开发模式菜单
+     * @param string $hash
+     * @return bool
+     */
+    public function isDeveloper(string $hash) : bool
+    {
+        if ($hash === md5(static::DEVELOPER_PATH)) {
+            return true;
+        }
+        
+        $parentMap = $this->getHashParentMap();
+        $parents   = $parentMap[$hash] ?? null;
+        if (!$parents) {
+            return false;
+        }
+        $parent = end($parents);
+        if (!$parent) {
+            return false;
+        }
+        
+        $info = $this->getHashMap()[$parent] ?? null;
+        if (!$info) {
+            return false;
+        }
+        
+        return $info->path === static::DEVELOPER_PATH;
+    }
+    
+    
+    /**
      * 获取按照hash为下标的上级hash集合
      * @return array<string,string[]>
      */

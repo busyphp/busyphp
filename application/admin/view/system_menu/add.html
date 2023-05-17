@@ -16,7 +16,7 @@
                        placeholder="顶级菜单"
                        value="{$parent_path|default=''}"
                        data-toggle="busy-linkage-picker"
-                       data-url="{:url('data')}?hash={$info.hash|default=''}"
+                       data-url="{:url('data')}?disabled=1&develop=1&hash={$info.hash|default=''}"
                        data-strict="false"
                        data-clear="true"
                 />
@@ -51,7 +51,14 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label required">菜单链接</label>
                 <div class="col-sm-9">
-                    <input class="form-control" name="path" placeholder="请输入菜单链接" required data-toggle="busy-autocomplete" data-url="{:url('data')}" data-model-text-field="path" value="{$info.path|default=''}"/>
+                    <input class="form-control"
+                           name="path"
+                           placeholder="请输入菜单链接"
+                           required
+                           data-toggle="busy-autocomplete"
+                           data-url="{:url('data')}?disabled=1&develop=1&all=1"
+                           data-model-text-field="path"
+                           value="{$info.path|default=''}"/>
                     <span class="help-block">设置菜单链接，如：<code>user/index</code>，外部链接必须填写<code>https://</code>或<code>http://</code>前缀</span>
                 </div>
             </div>
@@ -98,7 +105,14 @@
         <div class="form-group no-margin-bottom" id="topPath">
             <label class="col-sm-2 control-label">访问链接</label>
             <div class="col-sm-9">
-                <input class="form-control" name="top_path" <?=is_disabled($info['system'])?> placeholder="请输入访问链接" data-toggle="busy-autocomplete" data-url="{:url('data')}" data-model-text-field="path" value="{$info.top_path|default=''}"/>
+                <input class="form-control"
+                       name="top_path"
+                       placeholder="请输入访问链接"
+                       data-toggle="busy-autocomplete"
+                       data-url="{:url('data')}?disabled=1&develop=1&all=1"
+                       data-model-text-field="path"
+                       value="{$info.top_path|default=''}"
+                    <?=is_disabled($info['system'])?> />
                 <span class="help-block">设置顶级菜单访问链接，设置后点击顶级菜单将默认访问该链接</span>
             </div>
         </div>

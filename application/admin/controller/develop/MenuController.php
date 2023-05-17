@@ -11,9 +11,14 @@ use BusyPHP\app\admin\component\js\driver\Autocomplete;
 use BusyPHP\app\admin\component\js\driver\LinkagePicker;
 use BusyPHP\app\admin\component\js\driver\LinkagePicker\LinkagePickerFlatNode;
 use BusyPHP\app\admin\component\js\driver\Table;
+use BusyPHP\app\admin\component\js\driver\Tree;
+use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
+use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
 use BusyPHP\app\admin\model\system\menu\SystemMenuField;
+use BusyPHP\helper\FilterHelper;
+use LogicException;
 use RangeException;
 use RuntimeException;
 use think\Collection;
@@ -50,7 +55,7 @@ class MenuController extends InsideController
     /**
      * @var bool 开发模式
      */
-    const DEVELOP = false;
+    const DEVELOP = true;
     
     
     protected function initialize($checkLogin = true)
@@ -295,16 +300,27 @@ class MenuController extends InsideController
     /**
      * 数据接口
      * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
      */
     public function data() : Response
     {
+        $all      = $this->param('all/b'); // 是否显示权限节点菜单
+        $disabled = $this->param('disabled/b');// 是否显示禁用菜单
+        $develop  = $this->param('develop/b'); // 是否显示开发模式菜单
+        
+        // linkagePicker
+        // data
         if ($linkage = LinkagePicker::initIfRequest()) {
-            $hash = $this->param('hash/s', 'trim');
-            $all  = $this->param('all/b');
+            $hash = $this->param('hash/s', 'trim'); // 排除的菜单节点hash
             
             return $linkage
-                ->list($this->model->getList(), function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) use ($hash, $all) {
-                    if ((!self::DEVELOP && $item->path == $this->model::DEVELOPER_PATH) || $item->hash == $hash || (!$all && $item->hide)) {
+                ->list($this->model->getList(), function(LinkagePickerFlatNode $node, SystemMenuField $item, int $index) use ($develop, $hash, $all, $disabled) {
+                    if (!$this->filterItem($item, $all, $disabled, $develop)) {
+                        return false;
+                    }
+                    
+                    if ($item->hash == $hash) {
                         return false;
                     }
                     
@@ -315,14 +331,114 @@ class MenuController extends InsideController
                     return true;
                 })
                 ->response();
-        } elseif ($autocomplete = Autocomplete::initIfRequest()) {
-            return $autocomplete->list($this->model->getList(), null, function($list) use ($autocomplete) {
-                $list = Collection::make($list);
+        }
+        
+        // autocomplete
+        // data
+        elseif ($autocomplete = Autocomplete::initIfRequest()) {
+            return $autocomplete->list($this->model->getList(), null, function($list) use ($autocomplete, $all, $disabled, $develop) {
+                $list = Collection::make(array_filter($list, function(SystemMenuField $item) use ($develop, $all, $disabled) {
+                    return $this->filterItem($item, $all, $disabled, $develop);
+                }));
                 
                 return $list->whereLike(SystemMenuField::path()->name(), $autocomplete->getWord());
             })->response();
         }
         
+        // tree
+        // data
+        elseif ($tree = Tree::initIfRequest()) {
+            $openedHashList   = FilterHelper::trimArray(explode(',', $this->param('opened_hash/s', 'trim')));   // 打开的菜单节点hash集合
+            $selectedHashList = FilterHelper::trimArray(explode(',', $this->param('selected_hash/s', 'trim'))); // 选中的菜单节点hash集合
+            $filterHashList   = FilterHelper::trimArray(explode(',', $this->param('filter_hash/s', 'trim')));   // 过滤的菜单节点hash集合
+            
+            // 角色组
+            $groupId       = $this->param('group_id/d');
+            $parentGroupId = explode(',', $this->param('parent_group_id/s', 'trim'));
+            $parentGroupId = (int) end($parentGroupId);
+            if ($groupId) {
+                $groupInfo = AdminGroup::init()->getInfo($groupId);
+                if ($groupInfo->id === $parentGroupId) {
+                    throw new LogicException('父角色不能是自己');
+                }
+                $openedHashList   = $groupInfo->ruleIndeterminate;
+                $selectedHashList = $groupInfo->rule;
+            }
+            
+            if ($parentGroupId) {
+                $parentGroupInfo = AdminGroup::init()->getInfo($parentGroupId);
+                $filterHashList  = $parentGroupInfo->ruleIds;
+            }
+            
+            return $tree->list(
+                $this->model->getList(),
+                function(TreeFlatNode $node, SystemMenuField $item, int $index) use ($openedHashList, $selectedHashList) {
+                    $node->setParent($item->parentHash);
+                    $node->setText($item->name);
+                    $node->setId($item->hash);
+                    $node->setIcon($item->icon);
+                    
+                    // 展开选中项的父节点
+                    if ($openedHashList && in_array($item->hash, $openedHashList)) {
+                        $node->setOpened(true);
+                    }
+                    
+                    // 设为选中
+                    if ($selectedHashList && in_array($item->hash, $selectedHashList)) {
+                        $node->setSelected(true);
+                    }
+                },
+                function(array $list) use ($filterHashList, $all, $disabled, $develop) {
+                    return array_filter($list, function(SystemMenuField $item) use ($filterHashList, $all, $disabled, $develop) {
+                        if (!$this->filterItem($item, $all, $disabled, $develop)) {
+                            return false;
+                        }
+                        
+                        if ($filterHashList) {
+                            return in_array($item->hash, $filterHashList);
+                        }
+                        
+                        return true;
+                    });
+                })
+                ->response();
+        }
+        
         throw new HttpException(404);
+    }
+    
+    
+    /**
+     * 通用过滤菜单
+     * @param SystemMenuField $item 菜单节点
+     * @param bool            $all 是否显示权限节点
+     * @param bool            $disabled 是否显示禁用节点
+     * @param bool            $develop 是否显示开发模式节点
+     * @return bool
+     */
+    protected function filterItem(SystemMenuField $item, bool $all, bool $disabled, bool $develop = false) : bool
+    {
+        // 不显示禁用菜单节点
+        if (!$disabled && $item->disabled) {
+            return false;
+        }
+        
+        // 不显示权限节点菜单
+        if (!$all && $item->hide) {
+            return false;
+        }
+        
+        // 超级管理员在DEVELOP开启的情况下显示开发模式菜单
+        if ($this->adminUser->groupHasSystem && $develop) {
+            if (!self::DEVELOP && $this->model->isDeveloper($item->hash)) {
+                return false;
+            }
+        } else {
+            if ($this->model->isDeveloper($item->hash)) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
