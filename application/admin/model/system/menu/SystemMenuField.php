@@ -55,7 +55,7 @@ use think\validate\ValidateRule;
  * @method $this setSort(mixed $sort) 设置自定义排序
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
-class SystemMenuField extends Field implements ModelValidateInterface, FieldSetValueInterface
+class SystemMenuField extends Field implements ModelValidateInterface
 {
     /**
      * ID
@@ -80,6 +80,7 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
     #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
     #[Validator(name: Validator::UNIQUE, rule: SystemMenu::class)]
     #[Filter(filter: 'trim')]
+    #[Filter('ltrim', '/')]
     public $path;
     
     /**
@@ -305,7 +306,6 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
             
             return true;
         } elseif ($scene == SystemMenu::SCENE_UPDATE) {
-            
             // annotation菜单
             // 只保留 name icon parent_path
             if ($data->annotation) {
@@ -356,18 +356,5 @@ class SystemMenuField extends Field implements ModelValidateInterface, FieldSetV
         }
         
         return false;
-    }
-    
-    
-    /**
-     * @inheritDoc
-     */
-    public function onSetValue(string $field, string $property, array $attrs, $value)
-    {
-        if ($field == $this::path()) {
-            return ltrim($value, '/');
-        }
-        
-        return $value;
     }
 }
