@@ -7,6 +7,7 @@ use ArrayAccess;
 use ArrayIterator;
 use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\interfaces\FieldGetModelDataInterface;
@@ -40,6 +41,7 @@ use think\contract\Jsonable;
 use think\db\Raw;
 use think\Validate;
 use think\validate\ValidateRule;
+use Throwable;
 
 /**
  * 模型字段基本类
@@ -341,356 +343,370 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     public static function getPropertyAttrs(string $property = null) : ?array
     {
         if (!isset(self::$propertyMap[static::class])) {
-            $class             = ClassHelper::getReflectionClass(static::class);
-            $data              = [];
-            $names             = [];
-            $titleMap          = [];
-            $renames           = [];
-            $fieldMap          = [];
-            $filterMap         = [];
-            $formatMap         = [];
-            $validateMap       = [];
-            $toRenames         = [];
-            $toRenameMap       = [];
-            $toHiddenList      = [];
-            $testFields        = [];
-            $testToRenames     = [];
-            $snakeMap          = [];
-            $modelRelationMap  = [];
-            $valueBindFieldMap = [];
-            $fieldTypeMap      = [];
-            $readonlyList      = [];
-            $createTimeField   = '';
-            $updateTimeField   = '';
-            $softDeleteField   = '';
-            $primaryField      = 'id';
-            
-            // 输出格式化注解
-            $toFormat = null;
-            if ($attributes = $class->getAttributes(ToArrayFormat::class)) {
-                $toFormat = $attributes[count($attributes) - 1]->newInstance();
+            $class    = ClassHelper::getReflectionClass(static::class);
+            $file     = $class->getFileName();
+            $cacheKey = $file . '@' . filemtime($file);
+            try {
+                $cacheData = CacheHelper::get(self::class, $cacheKey);
+            } catch (Throwable) {
+                $cacheData = null;
             }
             
-            // 自动填充时间
-            $autoTimestamp = false;
-            $dateFormat    = '';
-            if ($attributes = $class->getAttributes(AutoTimestamp::class)) {
-                /** @var AutoTimestamp $instance */
-                $instance      = $attributes[count($attributes) - 1]->newInstance();
-                $dateFormat    = $instance->getFormat();
-                $autoTimestamp = $instance->getType();
-            }
-            
-            // 启用软删除
-            $softDeleteDefault = 0;
-            $softDelete        = false;
-            if ($attributes = $class->getAttributes(SoftDelete::class)) {
-                /** @var SoftDelete $instance */
-                $instance          = $attributes[count($attributes) - 1]->newInstance();
-                $softDeleteDefault = $instance->getDefault();
-                $softDelete        = true;
-            }
-            
-            // 绑定模型
-            $model = '';
-            $alias = '';
-            if ($attributes = $class->getAttributes(BindModel::class)) {
-                /** @var BindModel $instance */
-                $instance = $attributes[count($attributes) - 1]->newInstance();
-                $model    = $instance->getModel();
-                $alias    = $instance->getAlias();
-            }
-            if (!$alias) {
-                if ($model) {
-                    $alias = basename(str_replace('\\', '/', $model));
-                } else {
-                    $alias = basename(str_replace('\\', '/', static::class));
-                    if (strtolower(substr($alias, -5)) === 'field') {
-                        $alias = substr($alias, 0, -5);
-                    }
-                }
-            }
-            
-            foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE) as $item) {
-                $name = $item->getName();
-                if ($item->isStatic() || str_starts_with($name, self::PRIVATE_VAR_PREFIX)) {
-                    continue;
+            if (!$cacheData) {
+                $data              = [];
+                $names             = [];
+                $titleMap          = [];
+                $renames           = [];
+                $fieldMap          = [];
+                $filterMap         = [];
+                $formatMap         = [];
+                $validateMap       = [];
+                $toRenames         = [];
+                $toRenameMap       = [];
+                $toHiddenList      = [];
+                $testFields        = [];
+                $testToRenames     = [];
+                $snakeMap          = [];
+                $modelRelationMap  = [];
+                $valueBindFieldMap = [];
+                $fieldTypeMap      = [];
+                $readonlyList      = [];
+                $createTimeField   = '';
+                $updateTimeField   = '';
+                $softDeleteField   = '';
+                $primaryField      = 'id';
+                
+                // 输出格式化注解
+                $toFormat = null;
+                if ($attributes = $class->getAttributes(ToArrayFormat::class)) {
+                    $toFormat = $attributes[count($attributes) - 1]->newInstance();
                 }
                 
-                $access = ReflectionProperty::IS_PUBLIC;
-                if ($item->isProtected()) {
-                    $access = ReflectionProperty::IS_PROTECTED;
-                } elseif ($item->isPrivate()) {
-                    $access = ReflectionProperty::IS_PRIVATE;
+                // 自动填充时间
+                $autoTimestamp = false;
+                $dateFormat    = '';
+                if ($attributes = $class->getAttributes(AutoTimestamp::class)) {
+                    /** @var AutoTimestamp $instance */
+                    $instance      = $attributes[count($attributes) - 1]->newInstance();
+                    $dateFormat    = $instance->getFormat();
+                    $autoTimestamp = $instance->getType();
                 }
                 
-                $snake     = StringHelper::snake($name);
-                $names[]   = $name;
-                $field     = '';
-                $ignore    = false;
-                $attr      = ClassHelper::extractDocAttrs($class, $name, null, $item->getDocComment());
-                $type      = $item->getType();
-                $primary   = $name === 'id';
-                $readonly  = false;
-                $fieldType = '';
-                $feature   = 0;
-                $export    = null;
-                $import    = null;
-                $types     = [];
-                if ($type instanceof ReflectionNamedType) {
-                    $types[] = [
-                        'name'    => $type->getName(),
-                        'builtin' => $type->isBuiltin()
-                    ];
-                } elseif ($type instanceof ReflectionUnionType) {
-                    $types = $type->getTypes();
-                    foreach ($type->getTypes() as $namedType) {
-                        $types[] = [
-                            'name'    => $namedType->getName(),
-                            'builtin' => $namedType->isBuiltin()
-                        ];
-                    }
-                } else {
-                    /** @var \BusyPHP\helper\ReflectionNamedType $namedType */
-                    foreach ($attr[ClassHelper::ATTR_VAR] as $namedType) {
-                        $types[] = [
-                            'name'    => $namedType->getName(),
-                            'builtin' => $namedType->isBuiltin()
-                        ];
+                // 启用软删除
+                $softDeleteDefault = 0;
+                $softDelete        = false;
+                if ($attributes = $class->getAttributes(SoftDelete::class)) {
+                    /** @var SoftDelete $instance */
+                    $instance          = $attributes[count($attributes) - 1]->newInstance();
+                    $softDeleteDefault = $instance->getDefault();
+                    $softDelete        = true;
+                }
+                
+                // 绑定模型
+                $model = '';
+                $alias = '';
+                if ($attributes = $class->getAttributes(BindModel::class)) {
+                    /** @var BindModel $instance */
+                    $instance = $attributes[count($attributes) - 1]->newInstance();
+                    $model    = $instance->getModel();
+                    $alias    = $instance->getAlias();
+                }
+                if (!$alias) {
+                    if ($model) {
+                        $alias = basename(str_replace('\\', '/', $model));
+                    } else {
+                        $alias = basename(str_replace('\\', '/', static::class));
+                        if (strtolower(substr($alias, -5)) === 'field') {
+                            $alias = substr($alias, 0, -5);
+                        }
                     }
                 }
                 
-                foreach ($item->getAttributes() as $attribute) {
-                    $attributeName = $attribute->getName();
-                    switch (true) {
-                        // 字段属性注解
-                        case $attributeName === Column::class:
-                            /** @var Column $instance */
-                            $instance  = $attribute->newInstance();
-                            $fieldType = $instance->getType();
-                            $primary   = $instance->isPrimary();
-                            $readonly  = $instance->isReadonly();
-                            $feature   = $instance->getFeature();
-                            
-                            // 真实字段名称
-                            if ($rename = $instance->getField()) {
-                                if (in_array($rename, $renames)) {
-                                    throw new RuntimeException(sprintf('The annotation "#[%s(field: \'%s\')]" of property "%s" in class "%s" can\'t repeat', Column::class, $rename, $name, static::class));
-                                }
-                                
-                                $field     = $rename;
-                                $renames[] = $rename;
-                                if ($rename !== $name) {
-                                    $testFields[$name] = $rename;
-                                }
-                            }
-                            
-                            // 字段标题
-                            if ('' !== $getTitle = $instance->getTitle()) {
-                                $titleMap[$name] = $getTitle;
-                            }
-                        break;
-                        
-                        // 忽略属性解析为字段
-                        case $attributeName === Ignore::class:
-                            $ignore = true;
-                        break;
-                        
-                        // 过滤注解
-                        case $attributeName === Filter::class:
-                            $filterMap[$name][] = $attribute->newInstance();
-                        break;
-                        
-                        // 输出隐藏注解
-                        case $attributeName === ToArrayHidden::class:
-                            /** @var ToArrayHidden $instance */
-                            $instance    = $attribute->newInstance();
-                            $hiddenValue = $instance->getScene() . '.' . $name;
-                            if (in_array($hiddenValue, $toHiddenList, true)) {
-                                break;
-                            }
-                            
-                            $toHiddenList[] = $hiddenValue;
-                        break;
-                        
-                        // 输出重命名注解
-                        case $attributeName === ToArrayRename::class:
-                            /** @var ToArrayRename $instance */
-                            $instance    = $attribute->newInstance();
-                            $scene       = $instance->getScene();
-                            $renameValue = $instance->getName();
-                            if ($renameValue === '') {
-                                break;
-                            }
-                            
-                            $toRenames[$scene] = $toRenames[$scene] ?? [];
-                            if (in_array($renameValue, $toRenames[$scene])) {
-                                throw new RuntimeException(sprintf('The annotation "#[%s(\'%s\', \'%s\')]" of property "%s" in class "%s" can\'t repeat', ToArrayRename::class, $renameValue, $scene, $name, static::class));
-                            }
-                            
-                            $toRenames[$scene][]               = $renameValue;
-                            $toRenameMap[$scene . '.' . $name] = $renameValue;
-                            if ($renameValue !== $name) {
-                                $testToRenames[$scene][$name] = $renameValue;
-                            }
-                        break;
-                        
-                        // 数据格式化注解
-                        case is_a($attributeName, Format::class, true):
-                            $formatMap[$name] = $attribute->newInstance();
-                        break;
-                        
-                        // 验证规则注解
-                        case $attributeName === Validator::class:
-                            /** @var Validator $instance */
-                            $instance             = $attribute->newInstance();
-                            $validateMap[$name][] = [
-                                $instance->getName(),
-                                $instance->getRule(),
-                                $instance->getMsg()
-                            ];
-                        break;
-                        
-                        // 关联
-                        case is_a($attributeName, Relation::class, true):
-                            /** @var Relation $relation */
-                            $relation                = $attribute->newInstance();
-                            $modelRelationMap[$name] = $relation($item);
-                        break;
-                        
-                        // 值绑定
-                        case $attributeName === ValueBindField::class:
-                            $valueBindFieldMap[$name] = $attribute->newInstance();
-                        break;
-                        
-                        // 导出
-                        case $attributeName === Export::class:
-                            /** @var Export $export */
-                            $export = $attribute->newInstance();
-                        break;
-                        
-                        // 导入
-                        case $attributeName === Import::class:
-                            $import = $attribute->newInstance();
-                        break;
+                foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE) as $item) {
+                    $name = $item->getName();
+                    if ($item->isStatic() || str_starts_with($name, self::PRIVATE_VAR_PREFIX)) {
+                        continue;
                     }
-                }
-                
-                // 字段标题
-                $title = $titleMap[$name] ?? '';
-                $title = $title === '' ? $attr[ClassHelper::ATTR_NAME] : $title;
-                $title = $title === '' ? $name : $title;
-                
-                // 导出名称
-                $export?->setName($title);
-                
-                // 属性类型
-                $varType = 'mixed';
-                if ($type = ($types[0] ?? null)) {
-                    $varType = $type['name'];
-                }
-                
-                // 字段
-                $snakeMap[$snake] = $name;
-                if (!$ignore) {
-                    $fieldMap[$name] = $field ?: $snake;
                     
-                    // 真实字段类型解析
-                    if ($fieldType === Column::TYPE_DEFAULT || !$fieldType) {
-                        if (in_array($varType, [Column::TYPE_INT, Column::TYPE_FLOAT, Column::TYPE_BOOL])) {
-                            $fieldType = $varType;
-                        } else {
-                            $fieldType = Column::TYPE_STRING;
+                    $access = ReflectionProperty::IS_PUBLIC;
+                    if ($item->isProtected()) {
+                        $access = ReflectionProperty::IS_PROTECTED;
+                    } elseif ($item->isPrivate()) {
+                        $access = ReflectionProperty::IS_PRIVATE;
+                    }
+                    
+                    $snake     = StringHelper::snake($name);
+                    $names[]   = $name;
+                    $field     = '';
+                    $ignore    = false;
+                    $attr      = ClassHelper::extractDocAttrs($class, $name, null, $item->getDocComment());
+                    $type      = $item->getType();
+                    $primary   = $name === 'id';
+                    $readonly  = false;
+                    $fieldType = '';
+                    $feature   = 0;
+                    $export    = null;
+                    $import    = null;
+                    $types     = [];
+                    if ($type instanceof ReflectionNamedType) {
+                        $types[] = [
+                            'name'    => $type->getName(),
+                            'builtin' => $type->isBuiltin()
+                        ];
+                    } elseif ($type instanceof ReflectionUnionType) {
+                        $types = $type->getTypes();
+                        foreach ($type->getTypes() as $namedType) {
+                            $types[] = [
+                                'name'    => $namedType->getName(),
+                                'builtin' => $namedType->isBuiltin()
+                            ];
+                        }
+                    } else {
+                        /** @var \BusyPHP\helper\ReflectionNamedType $namedType */
+                        foreach ($attr[ClassHelper::ATTR_VAR] as $namedType) {
+                            $types[] = [
+                                'name'    => $namedType->getName(),
+                                'builtin' => $namedType->isBuiltin()
+                            ];
                         }
                     }
                     
-                    $fieldTypeMap[$fieldMap[$name]] = $fieldType;
-                    
-                    // 主键
-                    if ($primary) {
-                        $primaryField = $fieldMap[$name];
+                    foreach ($item->getAttributes() as $attribute) {
+                        $attributeName = $attribute->getName();
+                        switch (true) {
+                            // 字段属性注解
+                            case $attributeName === Column::class:
+                                /** @var Column $instance */
+                                $instance  = $attribute->newInstance();
+                                $fieldType = $instance->getType();
+                                $primary   = $instance->isPrimary();
+                                $readonly  = $instance->isReadonly();
+                                $feature   = $instance->getFeature();
+                                
+                                // 真实字段名称
+                                if ($rename = $instance->getField()) {
+                                    if (in_array($rename, $renames)) {
+                                        throw new RuntimeException(sprintf('The annotation "#[%s(field: \'%s\')]" of property "%s" in class "%s" can\'t repeat', Column::class, $rename, $name, static::class));
+                                    }
+                                    
+                                    $field     = $rename;
+                                    $renames[] = $rename;
+                                    if ($rename !== $name) {
+                                        $testFields[$name] = $rename;
+                                    }
+                                }
+                                
+                                // 字段标题
+                                if ('' !== $getTitle = $instance->getTitle()) {
+                                    $titleMap[$name] = $getTitle;
+                                }
+                            break;
+                            
+                            // 忽略属性解析为字段
+                            case $attributeName === Ignore::class:
+                                $ignore = true;
+                            break;
+                            
+                            // 过滤注解
+                            case $attributeName === Filter::class:
+                                $filterMap[$name][] = $attribute->newInstance();
+                            break;
+                            
+                            // 输出隐藏注解
+                            case $attributeName === ToArrayHidden::class:
+                                /** @var ToArrayHidden $instance */
+                                $instance    = $attribute->newInstance();
+                                $hiddenValue = $instance->getScene() . '.' . $name;
+                                if (in_array($hiddenValue, $toHiddenList, true)) {
+                                    break;
+                                }
+                                
+                                $toHiddenList[] = $hiddenValue;
+                            break;
+                            
+                            // 输出重命名注解
+                            case $attributeName === ToArrayRename::class:
+                                /** @var ToArrayRename $instance */
+                                $instance    = $attribute->newInstance();
+                                $scene       = $instance->getScene();
+                                $renameValue = $instance->getName();
+                                if ($renameValue === '') {
+                                    break;
+                                }
+                                
+                                $toRenames[$scene] = $toRenames[$scene] ?? [];
+                                if (in_array($renameValue, $toRenames[$scene])) {
+                                    throw new RuntimeException(sprintf('The annotation "#[%s(\'%s\', \'%s\')]" of property "%s" in class "%s" can\'t repeat', ToArrayRename::class, $renameValue, $scene, $name, static::class));
+                                }
+                                
+                                $toRenames[$scene][]               = $renameValue;
+                                $toRenameMap[$scene . '.' . $name] = $renameValue;
+                                if ($renameValue !== $name) {
+                                    $testToRenames[$scene][$name] = $renameValue;
+                                }
+                            break;
+                            
+                            // 数据格式化注解
+                            case is_a($attributeName, Format::class, true):
+                                $formatMap[$name] = $attribute->newInstance();
+                            break;
+                            
+                            // 验证规则注解
+                            case $attributeName === Validator::class:
+                                /** @var Validator $instance */
+                                $instance             = $attribute->newInstance();
+                                $validateMap[$name][] = [
+                                    $instance->getName(),
+                                    $instance->getRule(),
+                                    $instance->getMsg()
+                                ];
+                            break;
+                            
+                            // 关联
+                            case is_a($attributeName, Relation::class, true):
+                                /** @var Relation $relation */
+                                $relation                = $attribute->newInstance();
+                                $modelRelationMap[$name] = $relation($item);
+                            break;
+                            
+                            // 值绑定
+                            case $attributeName === ValueBindField::class:
+                                $valueBindFieldMap[$name] = $attribute->newInstance();
+                            break;
+                            
+                            // 导出
+                            case $attributeName === Export::class:
+                                /** @var Export $export */
+                                $export = $attribute->newInstance();
+                            break;
+                            
+                            // 导入
+                            case $attributeName === Import::class:
+                                $import = $attribute->newInstance();
+                            break;
+                        }
                     }
                     
-                    // 只读
-                    if ($readonly) {
-                        $readonlyList[] = $fieldMap[$name];
+                    // 字段标题
+                    $title = $titleMap[$name] ?? '';
+                    $title = $title === '' ? $attr[ClassHelper::ATTR_NAME] : $title;
+                    $title = $title === '' ? $name : $title;
+                    
+                    // 导出名称
+                    $export?->setName($title);
+                    
+                    // 属性类型
+                    $varType = 'mixed';
+                    if ($type = ($types[0] ?? null)) {
+                        $varType = $type['name'];
                     }
                     
-                    switch ($feature) {
-                        // 自动创建时间
-                        case Column::FEATURE_CREATE_TIME:
-                            $createTimeField = $fieldMap[$name];
-                        break;
-                        // 自动更新时间
-                        case Column::FEATURE_UPDATE_TIME:
-                            $updateTimeField = $fieldMap[$name];
-                        break;
-                        // 软删除字段
-                        case Column::FEATURE_SOFT_DELETE:
-                            $softDeleteField = $fieldMap[$name];
-                        break;
+                    // 字段
+                    $snakeMap[$snake] = $name;
+                    if (!$ignore) {
+                        $fieldMap[$name] = $field ?: $snake;
+                        
+                        // 真实字段类型解析
+                        if ($fieldType === Column::TYPE_DEFAULT || !$fieldType) {
+                            if (in_array($varType, [Column::TYPE_INT, Column::TYPE_FLOAT, Column::TYPE_BOOL])) {
+                                $fieldType = $varType;
+                            } else {
+                                $fieldType = Column::TYPE_STRING;
+                            }
+                        }
+                        
+                        $fieldTypeMap[$fieldMap[$name]] = $fieldType;
+                        
+                        // 主键
+                        if ($primary) {
+                            $primaryField = $fieldMap[$name];
+                        }
+                        
+                        // 只读
+                        if ($readonly) {
+                            $readonlyList[] = $fieldMap[$name];
+                        }
+                        
+                        switch ($feature) {
+                            // 自动创建时间
+                            case Column::FEATURE_CREATE_TIME:
+                                $createTimeField = $fieldMap[$name];
+                            break;
+                            // 自动更新时间
+                            case Column::FEATURE_UPDATE_TIME:
+                                $updateTimeField = $fieldMap[$name];
+                            break;
+                            // 软删除字段
+                            case Column::FEATURE_SOFT_DELETE:
+                                $softDeleteField = $fieldMap[$name];
+                            break;
+                        }
+                    }
+                    
+                    $data[$name] = [
+                        self::ATTR_TITLE      => $title,
+                        self::ATTR_NAME       => $name,
+                        self::ATTR_FIELD      => $fieldMap[$name] ?? '',
+                        self::ATTR_TYPES      => $types,
+                        self::ATTR_VAR_TYPE   => $varType,
+                        self::ATTR_FIELD_TYPE => $fieldType,
+                        self::ATTR_FILTER     => $filterMap[$name] ?? [],
+                        self::ATTR_FORMAT     => $formatMap[$name] ?? null,
+                        self::ATTR_VALIDATE   => $validateMap[$name] ?? [],
+                        self::ATTR_ACCESS     => $access,
+                        self::ATTR_EXPORT     => $export,
+                        self::ATTR_IMPORT     => $import,
+                    ];
+                }
+                
+                // 指定的字段名称不能和已有的属性一样
+                foreach ($testFields as $name => $rename) {
+                    if (in_array($rename, $names, true)) {
+                        throw new RuntimeException(sprintf('The annotation "#[%s(field: \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', Column::class, $rename, $name, static::class));
                     }
                 }
                 
-                $data[$name] = [
-                    self::ATTR_TITLE      => $title,
-                    self::ATTR_NAME       => $name,
-                    self::ATTR_FIELD      => $fieldMap[$name] ?? '',
-                    self::ATTR_TYPES      => $types,
-                    self::ATTR_VAR_TYPE   => $varType,
-                    self::ATTR_FIELD_TYPE => $fieldType,
-                    self::ATTR_FILTER     => $filterMap[$name] ?? [],
-                    self::ATTR_FORMAT     => $formatMap[$name] ?? null,
-                    self::ATTR_VALIDATE   => $validateMap[$name] ?? [],
-                    self::ATTR_ACCESS     => $access,
-                    self::ATTR_EXPORT     => $export,
-                    self::ATTR_IMPORT     => $import,
-                ];
-            }
-            
-            // 指定的字段名称不能和已有的属性一样
-            foreach ($testFields as $name => $rename) {
-                if (in_array($rename, $names, true)) {
-                    throw new RuntimeException(sprintf('The annotation "#[%s(field: \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', Column::class, $rename, $name, static::class));
-                }
-            }
-            
-            // 指定的重命名不能和已有的属性一样
-            foreach ($testToRenames as $scene => $values) {
-                foreach ($values as $f => $value) {
-                    if (in_array($value, $names, true)) {
-                        throw new RuntimeException(sprintf('The annotation "#[%s(\'%s\', \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', ToArrayRename::class, $value, $scene, $f, static::class));
+                // 指定的重命名不能和已有的属性一样
+                foreach ($testToRenames as $scene => $values) {
+                    foreach ($values as $f => $value) {
+                        if (in_array($value, $names, true)) {
+                            throw new RuntimeException(sprintf('The annotation "#[%s(\'%s\', \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', ToArrayRename::class, $value, $scene, $f, static::class));
+                        }
                     }
                 }
+                
+                $cacheData = [
+                    self::MAP_TO_ARRAY_FORMAT  => $toFormat,
+                    self::MAP_TO_ARRAY_RENAME  => $toRenameMap,
+                    self::MAP_TO_ARRAY_HIDDEN  => $toHiddenList,
+                    self::MAP_PROPERTY_LIST    => $names,
+                    self::MAP_PROPERTY_ATTR    => $data,
+                    self::MAP_PROPERTY_FIELD   => $fieldMap,
+                    self::MAP_PROPERTY_SNAKE   => $snakeMap,
+                    self::MAP_VALUE_BIND_FIELD => $valueBindFieldMap,
+                    self::MAP_MODEL_PARAMS     => [
+                        'type'                => $fieldTypeMap,
+                        'readonly'            => $readonlyList,
+                        'pk'                  => $primaryField,
+                        'auto_timestamp'      => $autoTimestamp,
+                        'date_format'         => $dateFormat,
+                        'create_time_field'   => $createTimeField,
+                        'update_time_field'   => $updateTimeField,
+                        'soft_delete'         => $softDelete,
+                        'soft_delete_field'   => $softDeleteField,
+                        'soft_delete_default' => $softDeleteDefault,
+                        'relation'            => $modelRelationMap,
+                        'alias'               => $alias,
+                        'model'               => $model
+                    ]
+                ];
+                
+                CacheHelper::set(self::class, $cacheKey, $cacheData, 0);
+                
+                unset($types, $toRenames, $titleMap, $testToRenames, $testFields, $names, $data, $toRenameMap, $toHiddenList, $formatMap, $validateMap, $fieldMap, $snakeMap, $modelRelationMap, $valueBindFieldMap, $fieldTypeMap, $readonlyList);
             }
             
-            self::$propertyMap[static::class] = [
-                self::MAP_TO_ARRAY_FORMAT  => $toFormat,
-                self::MAP_TO_ARRAY_RENAME  => $toRenameMap,
-                self::MAP_TO_ARRAY_HIDDEN  => $toHiddenList,
-                self::MAP_PROPERTY_LIST    => $names,
-                self::MAP_PROPERTY_ATTR    => $data,
-                self::MAP_PROPERTY_FIELD   => $fieldMap,
-                self::MAP_PROPERTY_SNAKE   => $snakeMap,
-                self::MAP_VALUE_BIND_FIELD => $valueBindFieldMap,
-                self::MAP_MODEL_PARAMS     => [
-                    'type'                => $fieldTypeMap,
-                    'readonly'            => $readonlyList,
-                    'pk'                  => $primaryField,
-                    'auto_timestamp'      => $autoTimestamp,
-                    'date_format'         => $dateFormat,
-                    'create_time_field'   => $createTimeField,
-                    'update_time_field'   => $updateTimeField,
-                    'soft_delete'         => $softDelete,
-                    'soft_delete_field'   => $softDeleteField,
-                    'soft_delete_default' => $softDeleteDefault,
-                    'relation'            => $modelRelationMap,
-                    'alias'               => $alias,
-                    'model'               => $model
-                ]
-            ];
-            
-            unset($types, $toRenames, $titleMap, $testToRenames, $testFields, $names, $data, $toRenameMap, $toHiddenList, $formatMap, $validateMap, $fieldMap, $snakeMap, $modelRelationMap, $valueBindFieldMap, $fieldTypeMap, $readonlyList);
+            self::$propertyMap[static::class] = $cacheData;
         }
         
         $map = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
