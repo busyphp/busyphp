@@ -32,7 +32,7 @@ class ModelHelper
             $model = new $model();
         }
         
-        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValueByObject($model, 'fieldClass'), true);
+        $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValue($model, 'fieldClass'), true);
         $entityClass          = ClassHelper::getAbsoluteClassname(Entity::class, true);
         $pk                   = $model->getPk();
         $pkType               = 'mixed';

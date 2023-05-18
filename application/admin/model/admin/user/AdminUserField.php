@@ -682,7 +682,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     /**
      * @inheritDoc
      */
-    public function onGetModelData(string $field, string $property, array $attrs, $value)
+    public function onGetModelData(string $field, string $property, mixed $value) : mixed
     {
         if ($field == $this::password()) {
             return AdminUser::class()::createPassword($value);

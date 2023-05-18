@@ -428,45 +428,22 @@ class ClassHelper
     
     /**
      * 通过ReflectionProperty获取值
-     * @param object             $object 对象
-     * @param ReflectionProperty $property ReflectionProperty
+     * @param object                    $object 对象
+     * @param ReflectionProperty|string $property ReflectionProperty
      * @return mixed
      */
-    public static function getPropertyValue(object $object, ReflectionProperty $property)
-    {
-        if (!$property->isPublic()) {
-            $property->setAccessible(true);
-        }
-        
-        return $property->getValue($object);
-    }
-    
-    
-    /**
-     * 通过Object获取属性值
-     * @param object $object 类对象
-     * @param string $name 属性名称
-     * @return mixed
-     */
-    public static function getPropertyValueByObject(object $object, string $name)
+    public static function getPropertyValue(object $object, ReflectionProperty|string $property) : mixed
     {
         try {
-            return self::getPropertyValue($object, self::getReflectionClass($object)->getProperty($name));
-        } catch (Throwable $e) {
-            throw new RuntimeException($e->getMessage());
-        }
-    }
-    
-    
-    /**
-     * 通过Object设置属性值
-     * @param object $object 类对象
-     * @param string $name 属性名称
-     */
-    public static function setPropertyValueByObject(object $object, string $name, $value)
-    {
-        try {
-            self::setPropertyValue($object, self::getReflectionClass($object)->getProperty($name), $value);
+            if (!$property instanceof ReflectionProperty) {
+                $property = self::getReflectionClass($object)->getProperty($property);
+            }
+            
+            if (!$property->isPublic()) {
+                $property->setAccessible(true);
+            }
+            
+            return $property->getValue($object);
         } catch (Throwable $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -475,18 +452,26 @@ class ClassHelper
     
     /**
      * 通过ReflectionProperty设置值
-     * @param object             $object 对象
-     * @param ReflectionProperty $property ReflectionProperty
-     * @param mixed              $value 值
+     * @param object                    $object 对象
+     * @param ReflectionProperty|string $property ReflectionProperty
+     * @param mixed                     $value 值
      * @return void
      */
-    public static function setPropertyValue(object $object, ReflectionProperty $property, $value)
+    public static function setPropertyValue(object $object, ReflectionProperty|string $property, $value) : void
     {
-        if (!$property->isPublic()) {
-            $property->setAccessible(true);
+        try {
+            if (!$property instanceof ReflectionProperty) {
+                $property = self::getReflectionClass($object)->getProperty($property);
+            }
+            
+            if (!$property->isPublic()) {
+                $property->setAccessible(true);
+            }
+            
+            $property->setValue($object, $value);
+        } catch (Throwable $e) {
+            throw new RuntimeException($e->getMessage());
         }
-        
-        $property->setValue($object, $value);
     }
     
     

@@ -49,9 +49,6 @@ use think\validate\ValidateRule;
  */
 class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
-    /** @var string 属性反射对象 */
-    private const ATTR_PROPERTY = 'property';
-    
     /** @var string 属性的权限 */
     private const ATTR_ACCESS = 'access';
     
@@ -227,7 +224,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 break;
                 
                 // 通过属性取属性
-                case in_array($name, self::getPropertyList()):
+                case in_array($name, self::getPropertyList(), true):
                     self::$propertyNameMap[static::class][$name] = $name;
                 break;
                 
@@ -273,7 +270,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 执行处理
         if ($field instanceof FieldSetValueInterface) {
-            $value = $field->onSetValue($attrs[self::ATTR_FIELD], $property, $attrs, $value);
+            $value = $field->onSetValue($attrs[self::ATTR_FIELD], $property, $value);
         }
         
         // 强制转换
@@ -326,8 +323,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 设置值
         end:
-        if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
-            ClassHelper::setPropertyValue($field, $attrs[self::ATTR_PROPERTY], $value);
+        if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
+            ClassHelper::setPropertyValue($field, $attrs[self::ATTR_NAME], $value);
         } else {
             $field->{$property} = $value;
         }
@@ -339,7 +336,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /**
      * 获取当前类属性的注释属性
      * @param string|null $property
-     * @return array[]|array{title: string, name: string, field: string|false, type: array<ReflectionNamedType>, filter: array<callable>, ignore: array, property: ReflectionProperty}
+     * @return array|null
      */
     public static function getPropertyAttrs(string $property = null) : ?array
     {
@@ -646,7 +643,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     self::ATTR_FORMAT     => $formatMap[$name] ?? null,
                     self::ATTR_VALIDATE   => $validateMap[$name] ?? [],
                     self::ATTR_ACCESS     => $access,
-                    self::ATTR_PROPERTY   => $item,
                     self::ATTR_EXPORT     => $export,
                     self::ATTR_IMPORT     => $import,
                 ];
@@ -654,7 +650,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             
             // 指定的字段名称不能和已有的属性一样
             foreach ($testFields as $name => $rename) {
-                if (in_array($rename, $names)) {
+                if (in_array($rename, $names, true)) {
                     throw new RuntimeException(sprintf('The annotation "#[%s(field: \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', Column::class, $rename, $name, static::class));
                 }
             }
@@ -662,7 +658,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             // 指定的重命名不能和已有的属性一样
             foreach ($testToRenames as $scene => $values) {
                 foreach ($values as $f => $value) {
-                    if (in_array($value, $names)) {
+                    if (in_array($value, $names, true)) {
                         throw new RuntimeException(sprintf('The annotation "#[%s(\'%s\', \'%s\')]" of property "%s" in class "%s" cannot overwrite the existing property', ToArrayRename::class, $value, $scene, $f, static::class));
                     }
                 }
@@ -713,7 +709,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     protected static function eachPropertyAttrs(callable $callback)
     {
         foreach (self::getPropertyAttrs() as $item) {
-            call_user_func($callback, $item[self::ATTR_FIELD], $item[self::ATTR_PROPERTY], $item);
+            call_user_func($callback, $item);
         }
     }
     
@@ -866,7 +862,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         $data = [];
         foreach ($list as $property) {
-            if (in_array($property, $excludes)) {
+            if (in_array($property, $excludes, true)) {
                 continue;
             }
             $data[] = $property;
@@ -893,7 +889,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         $data = [];
         foreach (self::getPropertyToFieldMap() as $field) {
-            if (in_array($field, $excludes)) {
+            if (in_array($field, $excludes, true)) {
                 continue;
             }
             $data[] = $field;
@@ -1072,7 +1068,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             $attrs = $map[$property];
             
             // setField
-            if ($prefix == 'set') {
+            if ('set' === $prefix) {
                 // 设置值
                 self::setPropertyValue($this, $property, $arguments[0] ?? null);
                 
@@ -1081,9 +1077,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             
             //
             // getField
-            elseif ($prefix == 'get') {
+            elseif ('get' === $prefix) {
                 if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
-                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]);
+                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_NAME]);
                 } else {
                     return $this->{$property};
                 }
@@ -1093,7 +1089,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             // hasField
             else {
                 if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
-                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]) !== null;
+                    return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_NAME]) !== null;
                 } else {
                     return isset($this->{$property});
                 }
@@ -1101,7 +1097,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }
         
         // 反射静态实体方法
-        if (in_array($name, self::getPropertyList())) {
+        if (in_array($name, self::getPropertyList(), true)) {
             return self::__callStatic($name, $arguments);
         }
         
@@ -1217,28 +1213,37 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
         $data          = [];
         
-        self::eachPropertyAttrs(function(string $field, ReflectionProperty $property, array $attrs) use (&$data, $limitProperty, $limitExclude) {
+        self::eachPropertyAttrs(function(array $attrs) use (&$data, $limitProperty, $limitExclude) {
+            $field  = $attrs[self::ATTR_FIELD];
+            $name   = $attrs[self::ATTR_NAME];
+            $access = $attrs[self::ATTR_ACCESS];
+            
             if (!$field) {
                 return;
             }
             
             if ($limitExclude) {
-                if (in_array($property->getName(), $limitProperty)) {
+                if (in_array($name, $limitProperty)) {
                     return;
                 }
             } else {
-                if (!in_array($property->getName(), $limitProperty)) {
+                if (!in_array($name, $limitProperty)) {
                     return;
                 }
             }
             
             // 获取值
-            if (null === $value = ClassHelper::getPropertyValue($this, $property)) {
+            if (ReflectionProperty::IS_PRIVATE === $access) {
+                $value = ClassHelper::getPropertyValue($this, $name);
+            } else {
+                $value = $this->{$name};
+            }
+            if (null === $value) {
                 return;
             }
             
             // 触发获取值接口
-            if ($this instanceof FieldGetModelDataInterface && null === $value = $this->onGetModelData($field, $property->getName(), $attrs, $value)) {
+            if ($this instanceof FieldGetModelDataInterface && null === $value = $this->onGetModelData($field, $name, $value)) {
                 return;
             }
             
@@ -1288,11 +1293,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public function toArray() : array
     {
-        if (!isset(self::$propertyMap[static::class])) {
-            self::getPropertyAttrs();
-        }
-        
-        $map           = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
         $scene         = $this->__private__options['scene'] ?? '';
         $limitProperty = $this->__private__options['limit_property'] ?? [];
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
@@ -1312,16 +1312,17 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         // 遍历所有
         $array   = [];
         $ignores = self::getIgnorePropertyList();
+        $map     = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
         foreach ($vars as $property => $value) {
-            if (str_starts_with($property, self::PRIVATE_VAR_PREFIX) || in_array($scene . '.' . $property, $ignores) || in_array('.' . $property, $ignores)) {
+            if (str_starts_with($property, self::PRIVATE_VAR_PREFIX) || in_array($scene . '.' . $property, $ignores) || in_array('.' . $property, $ignores, true)) {
                 continue;
             }
             if ($limitExclude) {
-                if (in_array($property, $limitProperty)) {
+                if (in_array($property, $limitProperty, true)) {
                     continue;
                 }
             } else {
-                if (!in_array($property, $limitProperty)) {
+                if (!in_array($property, $limitProperty, true)) {
                     continue;
                 }
             }
@@ -1362,7 +1363,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         if ($property = self::getPropertyName($offset)) {
             $method = 'has' . ucfirst($property);
             
-            return call_user_func([$this, $method]);
+            return $this->$method();
         }
         
         return isset($this->{$offset});
@@ -1375,7 +1376,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         if ($property = self::getPropertyName($offset)) {
             $method = 'get' . ucfirst($property);
             
-            return call_user_func([$this, $method]);
+            return $this->{$method}();
         }
         
         return $this->{$offset};
@@ -1387,8 +1388,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     {
         if ($property = self::getPropertyName($offset)) {
             $method = 'set' . ucfirst($property);
-            
-            call_user_func([$this, $method], $value);
+            $this->{$method}($value);
             
             return;
         }

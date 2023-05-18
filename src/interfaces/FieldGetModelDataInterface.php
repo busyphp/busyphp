@@ -17,9 +17,8 @@ interface FieldGetModelDataInterface
      * 执行 {@see Field::getModelData()} 时处理属性值
      * @param string $field 真实字段名
      * @param string $property 类属性名称
-     * @param array  $attrs 类属性的注释属性
      * @param mixed  $value 属性值
      * @return mixed 处理后的属性值
      */
-    public function onGetModelData(string $field, string $property, array $attrs, $value);
+    public function onGetModelData(string $field, string $property, mixed $value) : mixed;
 }

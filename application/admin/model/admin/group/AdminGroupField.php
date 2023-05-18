@@ -245,7 +245,7 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * @inheritDoc
      * @throws
      */
-    public function onGetModelData(string $field, string $property, array $attrs, $value)
+    public function onGetModelData(string $field, string $property, mixed $value) : mixed
     {
         if ($field == $this::rule()) {
             $hashMap = SystemMenu::init()->getHashMap();

@@ -5,7 +5,6 @@ namespace BusyPHP\app\admin\model\system\menu;
 
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\helper\StringHelper;
-use BusyPHP\interfaces\FieldSetValueInterface;
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
 use BusyPHP\model\annotation\field\Filter;

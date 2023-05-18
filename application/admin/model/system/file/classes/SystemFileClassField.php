@@ -199,7 +199,7 @@ class SystemFileClassField extends Field implements ModelValidateInterface, Fiel
     /**
      * @inheritDoc
      */
-    public function onGetModelData(string $field, string $property, array $attrs, $value)
+    public function onGetModelData(string $field, string $property, mixed $value) : mixed
     {
         if ($field == $this::extensions() || $field == $this::mimetype()) {
             return StringHelper::formatSplit((string) $value);
