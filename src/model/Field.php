@@ -218,8 +218,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     public static function getPropertyName(string $name) : ?string
     {
-        self::getPropertyAttrs();
-        
         if (!isset(self::$propertyNameMap[static::class][$name])) {
             switch (true) {
                 // 通过字段取属性
@@ -251,13 +249,17 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function setPropertyValue(Field $field, string $property, mixed $value) : mixed
     {
-        $attrs = self::getPropertyAttrs($property);
-        if (!$attrs) {
-            throw new RuntimeException(sprintf('Property "%s" does not exist in class "%s"', $property, get_class($field)));
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
         }
         
+        if (!isset(self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR][$property])) {
+            throw new RuntimeException(sprintf('Property "%s" does not exist in class "%s"', $property, get_class($field)));
+        }
+        $attrs = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR][$property];
+        
         // 直接设置
-        if (is_null($value) || $value instanceof Entity || $value instanceof Raw) {
+        if (null === $value || $value instanceof Entity || $value instanceof Raw) {
             goto end;
         }
         
@@ -437,12 +439,28 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 $feature   = 0;
                 $export    = null;
                 $import    = null;
+                $types     = [];
                 if ($type instanceof ReflectionNamedType) {
-                    $types = [$type];
+                    $types[] = [
+                        'name'    => $type->getName(),
+                        'builtin' => $type->isBuiltin()
+                    ];
                 } elseif ($type instanceof ReflectionUnionType) {
                     $types = $type->getTypes();
+                    foreach ($type->getTypes() as $namedType) {
+                        $types[] = [
+                            'name'    => $namedType->getName(),
+                            'builtin' => $namedType->isBuiltin()
+                        ];
+                    }
                 } else {
-                    $types = $attr[ClassHelper::ATTR_VAR];
+                    /** @var \BusyPHP\helper\ReflectionNamedType $namedType */
+                    foreach ($attr[ClassHelper::ATTR_VAR] as $namedType) {
+                        $types[] = [
+                            'name'    => $namedType->getName(),
+                            'builtin' => $namedType->isBuiltin()
+                        ];
+                    }
                 }
                 
                 foreach ($item->getAttributes() as $attribute) {
@@ -527,7 +545,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                         
                         // 验证规则注解
                         case $attributeName === Validator::class:
-                            $validateMap[$name][] = $attribute->newInstance();
+                            /** @var Validator $instance */
+                            $instance             = $attribute->newInstance();
+                            $validateMap[$name][] = [
+                                $instance->getName(),
+                                $instance->getRule(),
+                                $instance->getMsg()
+                            ];
                         break;
                         
                         // 关联
@@ -566,7 +590,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 // 属性类型
                 $varType = 'mixed';
                 if ($type = ($types[0] ?? null)) {
-                    $varType = $type->getName();
+                    $varType = $type['name'];
                 }
                 
                 // 字段
@@ -673,7 +697,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             unset($types, $toRenames, $titleMap, $testToRenames, $testFields, $names, $data, $toRenameMap, $toHiddenList, $formatMap, $validateMap, $fieldMap, $snakeMap, $modelRelationMap, $valueBindFieldMap, $fieldTypeMap, $readonlyList);
         }
         
-        return ArrayHelper::getValueOrSelf(self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR], $property);
+        $map = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
+        if (null === $property) {
+            return $map;
+        }
+        
+        return $map[$property] ?? null;
     }
     
     
@@ -695,7 +724,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getIgnorePropertyList() : array
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
         return self::$propertyMap[static::class][self::MAP_TO_ARRAY_HIDDEN];
     }
@@ -708,9 +739,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getPropertyToFieldMap(string $property = null) : array|string|null
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
-        return ArrayHelper::getValueOrSelf(self::$propertyMap[static::class][self::MAP_PROPERTY_FIELD], $property);
+        $map = self::$propertyMap[static::class][self::MAP_PROPERTY_FIELD];
+        if (null === $property) {
+            return $map;
+        }
+        
+        return $map[$property] ?? null;
     }
     
     
@@ -721,9 +759,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getSnakeToPropertyMap(string $snake = null) : array|string|null
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
-        return ArrayHelper::getValueOrSelf(self::$propertyMap[static::class][self::MAP_PROPERTY_SNAKE], $snake);
+        $map = self::$propertyMap[static::class][self::MAP_PROPERTY_SNAKE];
+        if (null === $snake) {
+            return $map;
+        }
+        
+        return $map[$snake] ?? null;
     }
     
     
@@ -738,7 +783,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             self::$fieldToPropertyMap[static::class] = array_flip(self::getPropertyToFieldMap());
         }
         
-        return ArrayHelper::getValueOrSelf(self::$fieldToPropertyMap[static::class], $field);
+        $map = self::$fieldToPropertyMap[static::class];
+        if (null === $field) {
+            return $map;
+        }
+        
+        return $map[$field] ?? null;
     }
     
     
@@ -749,9 +799,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getPropertyToRenameMap(string $property = null) : array|string|null
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
-        return ArrayHelper::getValueOrSelf(self::$propertyMap[static::class][self::MAP_TO_ARRAY_RENAME], $property);
+        $map = self::$propertyMap[static::class][self::MAP_TO_ARRAY_RENAME];
+        if (null === $property) {
+            return $map;
+        }
+        
+        return $map[$property] ?? null;
     }
     
     
@@ -761,7 +818,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getToFormatAnnotation() : ?ToArrayFormat
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
         return self::$propertyMap[static::class][self::MAP_TO_ARRAY_FORMAT];
     }
@@ -774,7 +833,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     protected static function getValueBindFieldMap() : array
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
         return self::$propertyMap[static::class][self::MAP_VALUE_BIND_FIELD];
     }
@@ -787,7 +848,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     public static function getPropertyList(...$excludes) : array
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
+        $list = self::$propertyMap[static::class][self::MAP_PROPERTY_LIST];
+        if (!$excludes) {
+            return $list;
+        }
         
         $excludes = array_map(function($item) {
             if ($item instanceof Entity) {
@@ -798,7 +865,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         }, ArrayHelper::flat($excludes));
         
         $data = [];
-        foreach (self::$propertyMap[static::class][self::MAP_PROPERTY_LIST] as $property) {
+        foreach ($list as $property) {
             if (in_array($property, $excludes)) {
                 continue;
             }
@@ -842,7 +909,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
      */
     public static function getModelParams() : array
     {
-        self::getPropertyAttrs();
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
         
         return self::$propertyMap[static::class][self::MAP_MODEL_PARAMS];
     }
@@ -894,11 +963,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             
             $rule = ValidateRule::init()->title($attr[self::ATTR_TITLE]);
             
-            /** @var Validator $item */
             foreach ($attr[self::ATTR_VALIDATE] as $item) {
-                $msg  = $item->getMsg();
-                $name = $item->getName();
-                $rule->addItem($name, $item->getRule(), $msg);
+                $msg  = $item[2];
+                $name = $item[0];
+                $rule->addItem($name, $item[1], $msg);
                 if ($msg !== '') {
                     $messages[$property . '.' . $name] = $msg;
                 }
@@ -935,7 +1003,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 break;
                 case 2:
                     // null
-                    if (is_bool($arguments[0]) && is_null($arguments[1])) {
+                    if (is_bool($arguments[0]) && null === $arguments[1]) {
                         $arguments[0] = $arguments[0] ? 'NULL' : 'NOTNULL';
                         $arguments[1] = null;
                     }
@@ -986,16 +1054,22 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // set get has
         if (in_array($prefix, ['set', 'get', 'has']) && $length > 3) {
+            if (!isset(self::$propertyMap[static::class])) {
+                self::getPropertyAttrs();
+            }
+            
             // 排除引起歧义的属性，如属性名称为：hash，setting, getting 等包含特殊前缀的，直接返回
-            if (static::getPropertyAttrs($name)) {
+            $map = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
+            if (isset($map[$name])) {
                 return static::__callStatic($name, $arguments);
             }
             
             $property = StringHelper::camel(substr($name, 3));
-            $attrs    = static::getPropertyAttrs($property);
-            if (!$attrs) {
+            if (!isset($map[$property])) {
                 throw new RuntimeException(sprintf('The property "%s" of the class "%s" does not exist', $property, static::class));
             }
+            
+            $attrs = $map[$property];
             
             // setField
             if ($prefix == 'set') {
@@ -1008,7 +1082,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             //
             // getField
             elseif ($prefix == 'get') {
-                if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
+                if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
                     return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]);
                 } else {
                     return $this->{$property};
@@ -1018,7 +1092,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             //
             // hasField
             else {
-                if ($attrs[self::ATTR_ACCESS] == ReflectionProperty::IS_PRIVATE) {
+                if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
                     return ClassHelper::getPropertyValue($this, $attrs[self::ATTR_PROPERTY]) !== null;
                 } else {
                     return isset($this->{$property});
@@ -1159,12 +1233,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             }
             
             // 获取值
-            if (is_null($value = ClassHelper::getPropertyValue($this, $property))) {
+            if (null === $value = ClassHelper::getPropertyValue($this, $property)) {
                 return;
             }
             
             // 触发获取值接口
-            if ($this instanceof FieldGetModelDataInterface && is_null($value = $this->onGetModelData($field, $property->getName(), $attrs, $value))) {
+            if ($this instanceof FieldGetModelDataInterface && null === $value = $this->onGetModelData($field, $property->getName(), $attrs, $value)) {
                 return;
             }
             
@@ -1214,6 +1288,11 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public function toArray() : array
     {
+        if (!isset(self::$propertyMap[static::class])) {
+            self::getPropertyAttrs();
+        }
+        
+        $map           = self::$propertyMap[static::class][self::MAP_PROPERTY_ATTR];
         $scene         = $this->__private__options['scene'] ?? '';
         $limitProperty = $this->__private__options['limit_property'] ?? [];
         $limitExclude  = $this->__private__options['limit_exclude'] ?? true;
@@ -1255,7 +1334,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             } else {
                 $key = $property;
                 if ($toFormat = self::getToFormatAnnotation()) {
-                    $key = $toFormat->build($property, self::getPropertyAttrs($property)[self::ATTR_FIELD] ?? '');
+                    $key = $toFormat->build($property, $map[self::ATTR_FIELD] ?? '');
                 }
                 $array[$key] = $value;
             }
