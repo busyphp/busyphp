@@ -233,12 +233,12 @@ class SystemMenuField extends Field implements ModelValidateInterface
         } elseif (str_contains($this->path, '://')) {
             $this->url = $this->path;
         } else {
-            $this->url = Route::buildUrl('/' . ltrim($this->routePath, '/'))->build();
+            $this->url = '/' . $this->routePath . '.html';
         }
         
         $this->topUrl = '';
         if ($this->topPath) {
-            $this->topUrl = Route::buildUrl('/' . ltrim($this->topPath, '/'))->build();
+            $this->topUrl = '/' . ltrim($this->topPath, '/') . '.html';
         }
         
         // 非注解菜单判断是否复制的注解菜单
@@ -259,6 +259,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
     
     /**
      * @inheritDoc
+     * @param SystemMenu      $model
      * @param SystemMenuField $data
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
@@ -266,7 +267,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
         $validate
             ->append(
                 $this::target(),
-                ValidateRule::init()->in(array_keys(SystemMenu::class()::getTargets()), '请选择有效的:attribute')
+                ValidateRule::init()->in(array_keys($model::getTargets()), '请选择有效的:attribute')
             )
             ->append(
                 $this::topPath(),
@@ -288,7 +289,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
                     return true;
                 }, ':attribute必须是已定义的菜单链接'));
         
-        if ($scene == SystemMenu::SCENE_CREATE) {
+        if ($scene == $model::SCENE_CREATE) {
             $this->setId(0);
             $this->retain($validate, [
                 $this::parentPath(),
@@ -304,7 +305,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
             ]);
             
             return true;
-        } elseif ($scene == SystemMenu::SCENE_UPDATE) {
+        } elseif ($scene == $model::SCENE_UPDATE) {
             // annotation菜单
             // 只保留 name icon parent_path
             if ($data->annotation) {
