@@ -216,6 +216,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
      * 是否允许操作禁用字段
      * @var bool
      */
+    #[Ignore]
     public $operateDisable;
     
     
