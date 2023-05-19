@@ -6,6 +6,7 @@ namespace BusyPHP\helper;
 use BusyPHP\exception\FileNotFoundException;
 use FilesystemIterator;
 use InvalidArgumentException;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use LengthException;
@@ -153,7 +154,11 @@ class FileHelper
     protected static function mimeTypeDetector() : MimeTypeDetector
     {
         if (!static::$mimeTypeDetector instanceof MimeTypeDetector) {
-            static::$mimeTypeDetector = new FinfoMimeTypeDetector();
+            if (class_exists('\finfo')) {
+                static::$mimeTypeDetector = new FinfoMimeTypeDetector();
+            } else {
+                static::$mimeTypeDetector = new ExtensionMimeTypeDetector();
+            }
         }
         
         return static::$mimeTypeDetector;
