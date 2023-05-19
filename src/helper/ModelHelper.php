@@ -6,6 +6,8 @@ namespace BusyPHP\helper;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
+use ReflectionUnionType;
+use think\Container;
 use think\exception\HttpResponseException;
 use think\response\View;
 
@@ -29,7 +31,7 @@ class ModelHelper
         }
         
         if (is_string($model)) {
-            $model = new $model();
+            $model = Container::getInstance()->make($model);
         }
         
         $bindParseClass       = ClassHelper::getAbsoluteClassname(ClassHelper::getPropertyValue($model, 'fieldClass'), true);
@@ -93,6 +95,80 @@ PHP;
             $commonList[] = sprintf('@method %s[] indexListIn(array $range, string|%s $key = \'\', string|%s $field = \'\')', $bindParseClass, $entityClass, $entityClass);
         }
         
+        $macroList = [];
+        $macros    = ClassHelper::getPropertyValue($model, 'macro')[get_class($model)] ?? [];
+        foreach ($macros as $method => $macro) {
+            $func       = new \ReflectionFunction($macro);
+            $parameters = [];
+            foreach ($func->getParameters() as $parameter) {
+                $namedType  = $parameter->getType();
+                $namedTypes = [];
+                $allowNull  = false;
+                if ($namedType instanceof ReflectionUnionType) {
+                    $allowNull  = $namedType->allowsNull();
+                    $namedTypes = $namedType->getTypes();
+                } elseif ($namedType instanceof \ReflectionNamedType) {
+                    $allowNull  = $namedType->allowsNull();
+                    $namedTypes = [$namedType];
+                }
+                
+                $type = [];
+                foreach ($namedTypes as $namedType) {
+                    if ($namedType->isBuiltin()) {
+                        $type[] = $namedType->getName();
+                    } else {
+                        $type[] = ClassHelper::getAbsoluteClassname($namedType->getName(), true);
+                    }
+                }
+                
+                $value = '';
+                if ($parameter->isDefaultValueAvailable()) {
+                    $defaultValue = $parameter->getDefaultValue();
+                    if (is_string($defaultValue)) {
+                        $defaultValue = sprintf("'%s'", $defaultValue);
+                    } elseif (is_bool($defaultValue)) {
+                        $defaultValue = $defaultValue ? 'true' : 'false';
+                    } elseif (is_null($defaultValue)) {
+                        $defaultValue = 'null';
+                    } elseif (is_array($defaultValue)) {
+                        $defaultValue = json_encode($defaultValue, JSON_UNESCAPED_UNICODE);
+                    }
+                    $value = sprintf(' = %s', $defaultValue);
+                }
+                if ($allowNull && !$value) {
+                    $type[] = 'null';
+                }
+                
+                $parameters[] = sprintf('%s $%s%s', implode('|', $type), $parameter->getName(), $value);
+            }
+            $parameters = implode(', ', $parameters);
+            $return     = '';
+            
+            if ($returnType = $func->getReturnType()) {
+                $allowNull   = false;
+                $returnTypes = [];
+                if ($returnType instanceof ReflectionUnionType) {
+                    $returnTypes = $returnType->getTypes();
+                    $allowNull   = $returnType->allowsNull();
+                } elseif ($returnType instanceof \ReflectionNamedType) {
+                    $returnTypes = [$returnType];
+                    $allowNull   = $returnType->allowsNull();
+                }
+                
+                $type = [];
+                foreach ($returnTypes as $returnType) {
+                    if ($returnType->isBuiltin()) {
+                        $type[] = $returnType->getName();
+                    } else {
+                        $type[] = ClassHelper::getAbsoluteClassname($returnType->getName(), true);
+                    }
+                }
+                $return = sprintf('%s%s ', implode('|', $type), $allowNull ? '|null' : '');
+            }
+            
+            $macroList[] = sprintf('@method %s%s(%s)', $return, $method, $parameters);
+        }
+        
         return [
             'get_by'              => $getByList,
             'get_field_by'        => $getFieldByList,
@@ -103,6 +179,7 @@ PHP;
             'where_or'            => $whereOrList,
             'where'               => $whereList,
             'common'              => $commonList,
+            'macro'               => $macroList,
             'field_static'        => $fieldStaticList,
             'field_public'        => $fieldPublicList,
             'field_protected'     => $fieldProtectedList,
@@ -188,8 +265,12 @@ PHP;
                 'content' => implode(PHP_EOL . '* ', $builds['where'])
             ],
             [
+                'name'    => '虚拟 macro 方法',
+                'content' => implode(PHP_EOL . '* ', $builds['macro'])
+            ],
+            [
                 'name'    => '所有虚拟方法',
-                'content' => implode(PHP_EOL . '* ', array_merge($builds['common'], $builds['get_by'], $builds['get_field_by'], $builds['get_info_by'], $builds['find_info_by'], $builds['where_or'], $builds['where']))
+                'content' => implode(PHP_EOL . '* ', array_merge($builds['common'], $builds['get_by'], $builds['get_field_by'], $builds['get_info_by'], $builds['find_info_by'], $builds['where_or'], $builds['where'], $builds['macro']))
             ],
         ]);
     }
