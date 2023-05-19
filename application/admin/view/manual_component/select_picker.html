@@ -679,7 +679,7 @@
 <div class="form-group-title">内联</div>
 
 <hr />
-<div class="form-inline">
+<form class="form-inline" onsubmit="return false;" data-toggle="">
     <div class="input-group">
         <div class="input-group-addon">关键词</div>
         <input type="text" class="form-control" placeholder="关键词"/>
@@ -701,7 +701,8 @@
         </select>
     </div>
     <button class="btn btn-primary">搜索</button>
-</div>
+    <button class="btn btn-default" type="reset">重置</button>
+</form>
     </script>
 
     <script id="demo20" type="text/html">
