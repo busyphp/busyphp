@@ -13,7 +13,6 @@ use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
-use think\facade\Route;
 use think\Validate;
 use think\validate\ValidateRule;
 
