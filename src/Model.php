@@ -315,12 +315,17 @@ abstract class Model extends Query
     
     /**
      * 获取绑定的字段结构类
-     * @return class-string<Field>|Field
+     * @param bool $fail
+     * @return class-string<Field>|Field|null
      */
-    public function getFieldClass() : mixed
+    public function getFieldClass(bool $fail = true) : mixed
     {
         if (!$this->fieldClass) {
-            throw new RuntimeException(sprintf('Field structure class is not set in the model "%s"', get_class($this)));
+            if ($fail) {
+                throw new RuntimeException(sprintf('Field structure class is not set in the model "%s"', get_class($this)));
+            }
+            
+            return null;
         }
         
         return $this->fieldClass;
