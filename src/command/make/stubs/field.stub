@@ -1,0 +1,12 @@
+<?php
+declare (strict_types = 1);
+
+namespace {%namespace%};
+
+use BusyPHP\model\annotation\field\BindModel;
+use BusyPHP\model\Field;
+
+#[BindModel(model: \{%modelClass%}::class)]
+class {%className%} extends Field
+{
+}

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
+use BusyPHP\command\make\Field;
 use BusyPHP\command\Publish;
 use BusyPHP\command\Version;
 use BusyPHP\facade\Captcha;
@@ -84,7 +85,12 @@ class Service extends ThinkService
         });
         
         // 绑定命令行
-        $this->commands([Publish::class, Version::class]);
+        $this->commands([
+            Publish::class,
+            Version::class,
+            \BusyPHP\command\make\Model::class,
+            Field::class
+        ]);
         
         // 多应用支持
         $this->app->event->listen(HttpRun::class, function() {
