@@ -5,6 +5,7 @@ namespace BusyPHP\model;
 
 use ArrayAccess;
 use ArrayIterator;
+use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\MethodNotFoundException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\CacheHelper;
@@ -124,6 +125,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     protected static array $maker = [];
     
     /**
+     * 方法注入
+     * @var Closure[][]
+     */
+    protected static array $macro = [];
+    
+    /**
      * 字段=>子类属性映射
      * @var string[][]
      */
@@ -167,6 +174,21 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     public static function maker(Closure $maker)
     {
         static::$maker[] = $maker;
+    }
+    
+    
+    /**
+     * 设置方法注入
+     * @param string  $method
+     * @param Closure $closure
+     * @return void
+     */
+    public static function macro(string $method, Closure $closure)
+    {
+        if (!isset(static::$macro[static::class])) {
+            static::$macro[static::class] = [];
+        }
+        static::$macro[static::class][$method] = $closure;
     }
     
     
@@ -930,6 +952,40 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     
     /**
+     * 获取绑定的模型类
+     * @return class-string<Model>|Model|null
+     */
+    public static function getModelClass(bool $fail = true) : mixed
+    {
+        $class = self::getModelParams()['model'];
+        if ($class && !is_subclass_of($class, Model::class)) {
+            if ($fail) {
+                throw new ClassNotExtendsException($class, Model::class);
+            }
+            
+            return null;
+        }
+        
+        // 如果没有绑定model类，则尝试在当前namespace下自动识别
+        if (!$class) {
+            // 识别规则为：去掉Field后缀，并判断是否继承自Model
+            if (str_ends_with(strtolower(static::class), 'field')) {
+                $class = substr(static::class, 0, -5);
+                if (!$class || !is_subclass_of($class, Model::class)) {
+                    if ($fail) {
+                        throw new RuntimeException('Can\'t found model class');
+                    }
+                    
+                    return null;
+                }
+            }
+        }
+        
+        return $class;
+    }
+    
+    
+    /**
      * 生成包含JOIN别名的 "*" 字段
      * @return string
      */
@@ -996,6 +1052,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public static function __callStatic($name, $arguments)
     {
+        if (isset(static::$macro[static::class][$name])) {
+            return call_user_func_array(static::$macro[static::class][$name]->bindTo(null, static::class), $arguments);
+        }
+        
         // 静态方法名称存在属性中，则返回属性实体
         $field   = self::getPropertyToFieldMap($name);
         $virtual = false;
@@ -1060,6 +1120,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     public function __call($name, $arguments)
     {
+        if (isset(static::$macro[static::class][$name])) {
+            return call_user_func_array(static::$macro[static::class][$name]->bindTo($this, static::class), $arguments);
+        }
+        
         $lower  = strtolower($name);
         $length = strlen($lower);
         $prefix = substr($lower, 0, 3);
