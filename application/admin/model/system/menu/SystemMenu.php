@@ -20,11 +20,10 @@ use BusyPHP\model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\Service;
-use FilesystemIterator;
+use Ergebnis\Classy\Constructs;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
-use SplFileInfo;
 use think\Container;
 use think\db\exception\DbException;
 use think\facade\Route;
@@ -452,10 +451,15 @@ class SystemMenu extends Model implements ContainerInterface
                 $classList = [];
                 foreach (static::$annotationList as $annotation) {
                     if (str_contains($annotation, '/')) {
-                        if (is_dir($annotation)) {
-                            $list = [];
-                            static::scanAnnotation($annotation, $list);
-                            $classList = array_merge($classList, $list);
+                        if (!is_dir($annotation)) {
+                            continue;
+                        }
+                        $constructs = Constructs::fromDirectory($annotation);
+                        foreach ($constructs as $construct) {
+                            if (!is_subclass_of($construct->name(), AdminController::class)) {
+                                continue;
+                            }
+                            $classList[] = $construct->name();
                         }
                     } elseif (class_exists($annotation) && is_subclass_of($annotation, AdminController::class)) {
                         $classList[] = ClassHelper::getAbsoluteClassname($annotation);
@@ -708,30 +712,5 @@ class SystemMenu extends Model implements ContainerInterface
     public static function isExcludeLogin(string $controllerClassname, string $actionName) : bool
     {
         return in_array($controllerClassname . '::' . $actionName, static::extractAnnotation()['exclude_login'], true) || in_array($controllerClassname, static::extractAnnotation()['exclude_login'], true);
-    }
-    
-    
-    /**
-     * 递归扫描菜单目录并获取控制器类
-     * @param string $dir 目录
-     * @param array  $list 获取的类数据
-     */
-    protected static function scanAnnotation(string $dir, array &$list = [])
-    {
-        /** @var SplFileInfo $item */
-        foreach (new FilesystemIterator($dir) as $item) {
-            if ($item->isDir()) {
-                static::scanAnnotation($item->getRealPath(), $list);
-            } else {
-                $content = file_get_contents($item->getRealPath());
-                if (!preg_match('/<\?php.*namespace\s(.*?);/is', $content, $match)) {
-                    continue;
-                }
-                $classname = $match[1] . '\\' . $item->getBasename('.php');
-                if (class_exists($classname) && is_subclass_of($classname, AdminController::class)) {
-                    $list[] = ClassHelper::getAbsoluteClassname($classname);
-                }
-            }
-        }
     }
 }

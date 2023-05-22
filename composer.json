@@ -38,7 +38,8 @@
 		"endroid/qr-code"           : "3.9.6",
 		"phpoffice/phpspreadsheet"  : "1.28.0",
 		"symfony/process"           : "^6.0",
-		"scssphp/scssphp"           : "^1.0"
+		"scssphp/scssphp"           : "^1.0",
+		"ergebnis/classy"           : "^1.4"
 	},
 	"require-dev"  : {
 		"symfony/var-dumper" : "^4.2",
