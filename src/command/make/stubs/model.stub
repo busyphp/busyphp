@@ -5,6 +5,12 @@ namespace {%namespace%};
 
 use BusyPHP\Model;
 
+/**
+ * {%className%}
+ * @author {%authorName%} <{%authorEmail%}>
+ * @copyright (c) {%copyright%}
+ * @version $Id: {%datetime%} {%className%}.php $
+ */
 class {%className%} extends Model
 {
     protected string $fieldClass = \{%fieldClass%}::class;

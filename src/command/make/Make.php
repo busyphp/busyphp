@@ -18,4 +18,22 @@ abstract class Make extends \think\console\command\Make
         
         return parent::execute($input, $output);
     }
+    
+    
+    protected function buildClass(string $name)
+    {
+        return str_replace([
+            '{%datetime%}',
+            '{%year%}',
+            '{%authorName%}',
+            '{%authorEmail%}',
+            '{%copyright%}',
+        ], [
+            date('Y/m/d H:i:s'),
+            date('Y'),
+            $this->app->config->get('console.make.author_name') ?: 'busy^life',
+            $this->app->config->get('console.make.author_email') ?: 'busy.life@qq.com',
+            $this->app->config->get('console.make.copyright') ?: '2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.'
+        ], parent::buildClass($name));
+    }
 }

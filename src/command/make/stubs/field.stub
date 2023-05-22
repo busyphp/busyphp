@@ -6,6 +6,12 @@ namespace {%namespace%};
 use BusyPHP\model\annotation\field\BindModel;
 use BusyPHP\model\Field;
 
+/**
+ * {%className%}
+ * @author {%authorName%} <{%authorEmail%}>
+ * @copyright (c) {%copyright%}
+ * @version $Id: {%datetime%} {%className%}.php $
+ */
 #[BindModel(model: \{%modelClass%}::class)]
 class {%className%} extends Field
 {
