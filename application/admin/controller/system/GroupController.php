@@ -52,11 +52,8 @@ class GroupController extends InsideController
     {
         // 系统角色列表数据
         if ($table = Table::initIfRequest()) {
+            $this->model->order(AdminGroupField::sort(), 'asc')->order(AdminGroupField::id(), 'asc');
             $table->model($this->model);
-            $table->query(function(AdminGroup $model, ArrayOption $option) {
-                $model->order(AdminGroupField::sort(), 'asc');
-                $model->order(AdminGroupField::id(), 'asc');
-            });
             
             return $table->response();
         }
