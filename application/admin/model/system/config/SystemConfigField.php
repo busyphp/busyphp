@@ -6,13 +6,12 @@ namespace BusyPHP\app\admin\model\system\config;
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
 use BusyPHP\model\annotation\field\Filter;
-use BusyPHP\model\annotation\field\Serialize;
+use BusyPHP\model\annotation\field\Json;
 use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\Validate;
-use think\validate\ValidateRule;
 
 /**
  * 系统键值对配置数据模型字段
@@ -37,17 +36,15 @@ class SystemConfigField extends Field implements ModelValidateInterface
 {
     /**
      * ID
-     * @var int
+     * @var string
      */
-    #[Validator(name: Validator::REQUIRE)]
-    #[Validator(name: Validator::GT, rule: 0)]
     public $id;
     
     /**
      * content
      * @var array
      */
-    #[Serialize]
+    #[Json]
     public $content;
     
     /**
@@ -63,6 +60,8 @@ class SystemConfigField extends Field implements ModelValidateInterface
      * @var string
      */
     #[Validator(name: Validator::REQUIRE, msg: '请输入:attribute')]
+    #[Validator(name: Validator::IS_FIRST_ALPHA_NUM_DASH, msg: '请输入有效的:attribute')]
+    #[Validator(name: Validator::UNIQUE, rule: SystemConfig::class, msg: '该配置标识已被使用')]
     #[Filter(filter: 'trim')]
     public $type;
     
@@ -79,25 +78,22 @@ class SystemConfigField extends Field implements ModelValidateInterface
     public $append;
     
     
+    protected function onParseAfter()
+    {
+        $this->content = $this->content ?: [];
+    }
+    
+    
     /**
      * @inheritDoc
-     * @param null|SystemConfigField $data
+     * @param SystemConfig      $model
+     * @param SystemConfigField $data
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
-        $validate->append(
-            $this::type(),
-            ValidateRule::init()->isFirstAlphaNumDash()->unique($model)
-        );
-        
-        if ($data instanceof SystemConfigField && $data->system) {
-            $this->setSystem(true);
-        }
-        
-        if ($scene == SystemConfig::SCENE_CREATE) {
-            $this->setId(0);
-            $this->setContent([]);
+        if ($scene == $model::SCENE_CREATE) {
             $this->retain($validate, [
+                $this::id(),
                 $this::name(),
                 $this::type(),
                 $this::content(),
@@ -106,19 +102,24 @@ class SystemConfigField extends Field implements ModelValidateInterface
             ]);
             
             return true;
-        } elseif ($scene == SystemConfig::SCENE_UPDATE) {
-            if (!$this->append) {
-                $this->setAppend(false);
+        } elseif ($scene == $model::SCENE_UPDATE) {
+            if ($data->system) {
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::name(),
+                    $this::content(),
+                    $this::append()
+                ]);
+            } else {
+                $this->retain($validate, [
+                    $this::id(),
+                    $this::name(),
+                    $this::type(),
+                    $this::content(),
+                    $this::system(),
+                    $this::append()
+                ]);
             }
-            
-            $this->retain($validate, [
-                $this::id(),
-                $this::name(),
-                $this::type(),
-                $this::content(),
-                $this::system(),
-                $this::append()
-            ]);
             
             return true;
         }

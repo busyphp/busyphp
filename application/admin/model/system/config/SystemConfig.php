@@ -20,8 +20,8 @@ use Throwable;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2021 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2021/6/25 下午下午3:20 SystemConfig.php $
- * @method SystemConfigField getInfo(int $id, string $notFoundMessage = null)
- * @method SystemConfigField|null findInfo(int $id = null)
+ * @method SystemConfigField getInfo(string $id, string $notFoundMessage = null)
+ * @method SystemConfigField|null findInfo(string $id = null)
  * @method SystemConfigField[] selectList()
  * @method SystemConfigField[] indexList(string|Entity $key = '')
  * @method SystemConfigField[] indexListIn(array $range, string|Entity $key = '', string|Entity $field = '')
@@ -45,39 +45,60 @@ class SystemConfig extends Model implements ContainerInterface, SettingInterface
     
     
     /**
-     * 添加配置
+     * 生成ID
+     * @param string $type
+     * @return string
+     */
+    public static function createId(string $type) : string
+    {
+        return md5($type);
+    }
+    
+    
+    /**
+     * 设置配置
      * @param SystemConfigField $data
-     * @return int
+     * @return string
      * @throws DbException
      */
-    public function create(SystemConfigField $data) : int
+    public function create(SystemConfigField $data) : string
     {
-        return (int) $this->validate($data, static::SCENE_CREATE)->insert();
+        $this->validate($data, static::SCENE_CREATE);
+        $data->setId(static::createId($data->type));
+        $this->insert($data);
+        
+        return $data->id;
     }
     
     
     /**
      * 修改配置
      * @param SystemConfigField $data
-     * @param string            $scene
      * @throws Throwable
      */
-    public function modify(SystemConfigField $data, string $scene = self::SCENE_UPDATE)
+    public function modify(SystemConfigField $data)
     {
-        $this->transaction(function() use ($data, $scene) {
+        $this->transaction(function() use ($data) {
             $info = $this->lock(true)->getInfo($data->id);
-            $this->validate($data, $scene, $info)->update();
+            $this->validate($data, static::SCENE_UPDATE, $info);
+            
+            // 如果更改了type则同时更改ID
+            if (!$info->system && $data->type !== $info->type) {
+                $data->setId(static::createId($data->type));
+            }
+            
+            $this->where(SystemConfigField::id($info->id))->update($data);
         });
     }
     
     
     /**
      * 删除配置
-     * @param int $id
+     * @param string $id
      * @return int
      * @throws Throwable
      */
-    public function remove(int $id) : int
+    public function remove(string $id) : int
     {
         return $this->transaction(function() use ($id) {
             $info = $this->lock(true)->getInfo($id);
@@ -91,19 +112,50 @@ class SystemConfig extends Model implements ContainerInterface, SettingInterface
     
     
     /**
+     * 设置配置
+     * @param string            $type
+     * @param SystemConfigField $data
+     * @return string
+     * @throws Throwable
+     */
+    public function setting(string $type, SystemConfigField $data) : string
+    {
+        $type = trim($type);
+        if (!$type) {
+            throw new ParamInvalidException('$type');
+        }
+        $data->setType($type);
+        
+        return $this->transaction(function() use ($type, $data) {
+            $id = static::createId($type);
+            if (!$this->lock(true)->findInfo($id)) {
+                if (!$data->name) {
+                    $data->setName($type);
+                }
+                $this->create($data);
+                
+                return $id;
+            }
+            
+            $this->where(SystemConfigField::id($id))->update($data->exclude(SystemConfigField::type()));
+            
+            return $id;
+        });
+    }
+    
+    
+    /**
      * @inheritDoc
-     * @throws DbException
+     * @param string $name
+     * @param array  $data
+     * @throws Throwable
      */
     public function setSettingData(string $name, array $data)
     {
-        $key = trim($name);
-        if (!$key) {
-            throw new ParamInvalidException('name');
-        }
+        $setting = SystemConfigField::init();
+        $setting->setContent($data);
         
-        $saveData = SystemConfigField::init();
-        $saveData->setContent($data);
-        $this->where(SystemConfigField::type($key))->update($saveData);
+        $this->setting($name, $setting);
     }
     
     

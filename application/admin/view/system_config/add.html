@@ -13,7 +13,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label required">配置标识</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="type" value="{$info.type|default=''}" placeholder="请输入配置标识" required <?=is_readonly($info['system'] ?? 0)?>/>
+                <input type="text" class="form-control" name="type" value="{$info.type|default=''}" placeholder="请输入配置标识" required <?=is_disabled($info['system'] ?? 0)?>/>
                 <div class="help-block">英文字母数字下划线，不能重复</div>
             </div>
         </div>

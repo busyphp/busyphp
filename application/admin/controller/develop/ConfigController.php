@@ -92,7 +92,7 @@ class ConfigController extends InsideController
             return $this->success('修改成功');
         }
         
-        $this->assign('info', $this->model->getInfo($this->get('id/d')));
+        $this->assign('info', $this->model->getInfo($this->get('id/s', 'trim')));
         
         return $this->insideDisplay('add');
     }
@@ -105,7 +105,7 @@ class ConfigController extends InsideController
     #[MenuNode(menu: false, parent: '/index')]
     public function delete() : Response
     {
-        SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的配置', function(int $id) {
+        SimpleForm::init()->batch($this->param('id/a', 'trim'), '请选择要删除的配置', function(string $id) {
             $this->model->remove($id);
         });
         
