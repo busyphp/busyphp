@@ -48,7 +48,7 @@ class ConfigController extends InsideController
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
-            return $table->model($this->model)->response();
+            return $table->model($this->model)->setOrderType('desc')->setOrderField(SystemConfigField::createTime())->response();
         }
         
         return $this->insideDisplay();

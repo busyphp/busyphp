@@ -5,6 +5,8 @@ namespace BusyPHP\app\admin\model\system\config;
 
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\AutoTimestamp;
+use BusyPHP\model\annotation\field\Column;
 use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Json;
 use BusyPHP\model\annotation\field\ToArrayFormat;
@@ -24,14 +26,19 @@ use think\Validate;
  * @method static Entity type(mixed $op = null, mixed $condition = null) 类型
  * @method static Entity system(mixed $op = null, mixed $condition = null) 系统配置
  * @method static Entity append(mixed $op = null, mixed $condition = null) 是否加入全局配置
+ * @method static Entity createTime(mixed $op = null, mixed $condition = null) 创建时间
+ * @method static Entity updateTime(mixed $op = null, mixed $condition = null) 更新时间
  * @method $this setId(mixed $id) 设置ID
  * @method $this setContent(mixed $content) 设置content
  * @method $this setName(mixed $name) 设置备注
  * @method $this setType(mixed $type) 设置类型
  * @method $this setSystem(mixed $system) 设置系统配置
  * @method $this setAppend(mixed $append) 设置是否加入全局配置
+ * @method $this setCreateTime(mixed $createTime) 设置创建时间
+ * @method $this setUpdateTime(mixed $updateTime) 设置更新时间
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
+#[AutoTimestamp(type: AutoTimestamp::TYPE_INT)]
 class SystemConfigField extends Field implements ModelValidateInterface
 {
     /**
@@ -76,6 +83,18 @@ class SystemConfigField extends Field implements ModelValidateInterface
      * @var bool
      */
     public $append;
+    
+    /**
+     * @var int
+     */
+    #[Column(feature: Column::FEATURE_CREATE_TIME)]
+    public $createTime;
+    
+    /**
+     * @var int
+     */
+    #[Column(feature: Column::FEATURE_UPDATE_TIME)]
+    public $updateTime;
     
     
     protected function onParseAfter()
