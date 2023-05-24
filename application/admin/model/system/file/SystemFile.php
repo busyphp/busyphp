@@ -14,7 +14,7 @@ use BusyPHP\helper\FilesystemHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\image\parameter\FormatParameter;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\Upload;
 use BusyPHP\upload\front\Local;

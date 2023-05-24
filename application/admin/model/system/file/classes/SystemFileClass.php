@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\model\system\file\classes;
 
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\model\Entity;
 use think\db\exception\DbException;

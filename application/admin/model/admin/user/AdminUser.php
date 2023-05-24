@@ -9,7 +9,7 @@ use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use Closure;
 use RuntimeException;

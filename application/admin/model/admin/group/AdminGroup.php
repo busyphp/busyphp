@@ -10,7 +10,7 @@ use BusyPHP\app\admin\model\system\menu\SystemMenuField;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use RuntimeException;
 use Throwable;

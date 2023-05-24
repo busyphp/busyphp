@@ -16,7 +16,7 @@ use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\Service;

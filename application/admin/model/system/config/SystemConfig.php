@@ -8,7 +8,7 @@ use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\interfaces\SettingInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;

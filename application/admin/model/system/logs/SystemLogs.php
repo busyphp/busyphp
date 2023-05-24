@@ -8,7 +8,7 @@ use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\interfaces\ContainerInterface;
-use BusyPHP\model;
+use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\Service;
 use Exception;
