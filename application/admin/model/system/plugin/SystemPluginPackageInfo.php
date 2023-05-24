@@ -77,10 +77,16 @@ class SystemPluginPackageInfo extends Field
     public $class;
     
     /**
-     * 是否可以安装/卸载
+     * 是否可以安装
      * @var bool
      */
     public $install;
+    
+    /**
+     * 是否可以卸载
+     * @var bool
+     */
+    public $uninstall;
     
     /**
      * 安装/卸载配置
@@ -152,7 +158,7 @@ class SystemPluginPackageInfo extends Field
             // 已标记安装
             if ($pluginInfo->install) {
                 $canInstall   = false;
-                $canUninstall = $this->install;
+                $canUninstall = $this->uninstall;
                 $canSetting   = $this->setting;
             } else {
                 $canInstall   = $this->install;

@@ -25,7 +25,7 @@ use think\db\exception\DbException;
  */
 class SystemPlugin extends Model implements ContainerInterface
 {
-    protected string $fieldClass = SystemPluginField::class;
+    protected string $fieldClass          = SystemPluginField::class;
     
     protected string $dataNotFoundMessage = '插件不存在';
     
@@ -180,17 +180,19 @@ class SystemPlugin extends Model implements ContainerInterface
             }
             
             // 安装配置
-            $install                     = $manager['install'] ?? false;
-            $manager['install']          = (bool) $install;
-            $config                      = is_bool($install) ? [] : (array) $install;
-            $config['install_operate']   = SystemPluginOperateConfig::parse((array) ($config['install_operate'] ?? []));
-            $config['uninstall_operate'] = SystemPluginOperateConfig::parse((array) ($config['uninstall_operate'] ?? []));
-            $manager['install_config']   = SystemPluginInstallConfig::parse($config);
+            $install                      = $manager['install'] ?? [];
+            $install['install_operate']   = $install['install_operate'] ?? [];
+            $install['uninstall_operate'] = $install['uninstall_operate'] ?? [];
+            $manager['install']           = !empty($install['install_operate']);
+            $manager['uninstall']         = !empty($install['uninstall_operate']);
+            $install['install_operate']   = SystemPluginOperateConfig::parse($install['install_operate']);
+            $install['uninstall_operate'] = SystemPluginOperateConfig::parse($install['uninstall_operate']);
+            $manager['install_config']    = SystemPluginInstallConfig::parse($install);
             
             // 设置配置
-            $setting                   = $manager['setting'] ?? false;
-            $manager['setting']        = (bool) $setting;
-            $manager['setting_config'] = SystemPluginSettingConfig::parse(is_bool($setting) ? [] : (array) $setting);
+            $setting                   = $manager['setting'] ?? [];
+            $manager['setting']        = !empty($setting);
+            $manager['setting_config'] = SystemPluginSettingConfig::parse($setting);
             
             $list[] = SystemPluginPackageInfo::parse($manager);
         }
