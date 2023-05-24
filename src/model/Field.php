@@ -405,13 +405,15 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                 }
                 
                 // 自动填充时间
-                $autoTimestamp = false;
-                $dateFormat    = '';
+                $autoTimestamp  = false;
+                $dateFormat     = '';
+                $updateTimeSync = true;
                 if ($attributes = $class->getAttributes(AutoTimestamp::class)) {
                     /** @var AutoTimestamp $instance */
-                    $instance      = $attributes[count($attributes) - 1]->newInstance();
-                    $dateFormat    = $instance->getFormat();
-                    $autoTimestamp = $instance->getType();
+                    $instance       = $attributes[count($attributes) - 1]->newInstance();
+                    $dateFormat     = $instance->getFormat();
+                    $autoTimestamp  = $instance->getType();
+                    $updateTimeSync = $instance->isUpdateTimeSync();
                 }
                 
                 // 启用软删除
@@ -711,6 +713,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                         'readonly'            => $readonlyList,
                         'pk'                  => $primaryField,
                         'auto_timestamp'      => $autoTimestamp,
+                        'update_time_sync'    => $updateTimeSync,
                         'date_format'         => $dateFormat,
                         'create_time_field'   => $createTimeField,
                         'update_time_field'   => $updateTimeField,
@@ -939,7 +942,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 获取模型参数
-     * @return array{type: array<string,string>, readonly: array<string>, pk: string, create_time_field: string, update_time_field: string, soft_delete_field: string, soft_delete_default: string, soft_delete: bool, relation: array<string,Relation>, auto_timestamp: string|bool, date_format: string, alias: string, model: class-string<Model>}
+     * @return array{type: array<string,string>, readonly: array<string>, pk: string, create_time_field: string, update_time_field: string, update_time_sync: bool, soft_delete_field: string, soft_delete_default: string, soft_delete: bool, relation: array<string,Relation>, auto_timestamp: string|bool, date_format: string, alias: string, model: class-string<Model>}
      */
     public static function getModelParams() : array
     {

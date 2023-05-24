@@ -136,6 +136,12 @@ abstract class Model extends Query
     protected bool $softDelete = false;
     
     /**
+     * 自动写入时间字段update_time时间字段在insert时是否同步create_time字段值
+     * @var bool|mixed
+     */
+    protected bool $autoWriteUpdateTimeSync = true;
+    
+    /**
      * Db对象
      * @var Db
      */
@@ -279,6 +285,7 @@ abstract class Model extends Query
             $this->setFieldType($modelParams['type']);
             
             // 自动写入时间
+            $this->autoWriteUpdateTimeSync = $modelParams['update_time_sync'];
             if ($modelParams['auto_timestamp']) {
                 $this->isAutoWriteTimestamp($modelParams['auto_timestamp']);
             }
@@ -982,8 +989,14 @@ abstract class Model extends Query
             $data = array_merge($this->options['data'] ?? [], $this->parseData($data));
             
             // 自动写入增加时间
-            if ($this->autoWriteTimestamp && $this->createTime && !isset($data[$this->createTime])) {
-                $data[$this->createTime] = $this->autoWriteTimestamp();
+            if ($this->autoWriteTimestamp) {
+                $time = $this->autoWriteTimestamp();
+                if ($this->createTime && !isset($data[$this->createTime])) {
+                    $data[$this->createTime] = $time;
+                }
+                if ($this->autoWriteUpdateTimeSync && $this->updateTime && !isset($data[$this->updateTime])) {
+                    $data[$this->updateTime] = $time;
+                }
             }
             
             $this->data($data);

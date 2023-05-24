@@ -28,16 +28,29 @@ class AutoTimestamp
     
     private string      $format;
     
+    private bool        $updateTimeSync;
+    
     
     /**
      * 构造函数
      * @param string|bool $type 时间类型
      * @param string      $format 格式化
+     * @param bool        $updateTimeSync 更新时间在create时是否同步createTime
      */
-    public function __construct(string|bool $type = true, string $format = 'Y-m-d H:i:s')
+    public function __construct(string|bool $type = true, string $format = 'Y-m-d H:i:s', bool $updateTimeSync = true)
     {
-        $this->type   = $type;
-        $this->format = $format;
+        $this->type           = $type;
+        $this->format         = $format;
+        $this->updateTimeSync = $updateTimeSync;
+    }
+    
+    
+    /**
+     * @return bool
+     */
+    public function isUpdateTimeSync() : bool
+    {
+        return $this->updateTimeSync;
     }
     
     
