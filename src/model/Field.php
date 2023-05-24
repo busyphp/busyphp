@@ -590,7 +590,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                             case is_a($attributeName, Relation::class, true):
                                 /** @var Relation $relation */
                                 $relation                = $attribute->newInstance();
-                                $modelRelationMap[$name] = $relation($item);
+                                $modelRelationMap[$name] = $relation($name);
                             break;
                             
                             // 值绑定

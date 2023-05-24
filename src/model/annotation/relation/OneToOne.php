@@ -30,7 +30,7 @@ class OneToOne extends Relation
     
     protected string|array $order;
     
-    protected ?Model       $model   = null;
+    protected mixed        $model;
     
     protected string       $dataKey = '';
     
@@ -59,7 +59,7 @@ class OneToOne extends Relation
      */
     protected function getModel() : Model
     {
-        if (!$this->model) {
+        if (!isset($this->model)) {
             if (!is_subclass_of($this->modelName, Model::class)) {
                 throw new ClassNotExtendsException($this->modelName, Model::class);
             }
@@ -137,7 +137,6 @@ class OneToOne extends Relation
      */
     public function handle(Model $model, array &$list)
     {
-        $property = $this->property->getName();
         $localKey = $this->getLocalKey($model);
         $range    = array_column($list, $localKey);
         $data     = $this->prepareModel()
@@ -146,7 +145,7 @@ class OneToOne extends Relation
             ->selectList();
         $data     = ArrayHelper::listByKey($data, $this->getDataKey($model));
         foreach ($list as &$vo) {
-            $vo[$property] = $data[$vo[$localKey]] ?? null;
+            $vo[$this->propertyName] = $data[$vo[$localKey]] ?? null;
         }
     }
     

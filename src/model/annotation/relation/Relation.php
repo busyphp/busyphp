@@ -15,12 +15,12 @@ use RuntimeException;
  */
 abstract class Relation
 {
-    protected ReflectionProperty $property;
+    protected string $propertyName;
     
     
-    public function __invoke(ReflectionProperty $property) : static
+    public function __invoke(string $propertyName) : static
     {
-        $this->property = $property;
+        $this->propertyName = $propertyName;
         
         return $this;
     }

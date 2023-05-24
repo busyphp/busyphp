@@ -17,7 +17,6 @@ class OneToMany extends OneToOne
 {
     public function handle(Model $model, array &$list)
     {
-        $property = $this->property->getName();
         $dataKey  = $this->getDataKey($model);
         $localKey = $this->getLocalKey($model);
         $dataList = $this->prepareModel()
@@ -31,7 +30,7 @@ class OneToMany extends OneToOne
         }
         
         foreach ($list as &$vo) {
-            $vo[$property] = $data[$vo[$localKey]] ?? [];
+            $vo[$this->propertyName] = $data[$vo[$localKey]] ?? [];
         }
     }
 }

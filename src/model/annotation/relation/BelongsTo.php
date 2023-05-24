@@ -40,7 +40,7 @@ class BelongsTo extends OneToOne
             $this->dataKey    = $obj();
         } else {
             if ($this->foreignKey === true) {
-                $this->foreignKey = StringHelper::snake($this->property->getName()) . '_id';
+                $this->foreignKey = StringHelper::snake($this->propertyName) . '_id';
             }
             if (!$this->foreignKey) {
                 $this->foreignKey = $this->getModel()->getName() . '_id';
@@ -75,7 +75,6 @@ class BelongsTo extends OneToOne
     
     public function handle(Model $model, array &$list)
     {
-        $property   = $this->property->getName();
         $foreignKey = $this->getForeignKey($model);
         $data       = $this->prepareModel()
             ->extend(false)
@@ -83,7 +82,7 @@ class BelongsTo extends OneToOne
             ->selectList();
         $data       = ArrayHelper::listByKey($data, $this->getDataKey($model));
         foreach ($list as &$vo) {
-            $vo[$property] = $data[$vo[$foreignKey]] ?? null;
+            $vo[$this->propertyName] = $data[$vo[$foreignKey]] ?? null;
         }
     }
 }
