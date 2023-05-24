@@ -825,29 +825,34 @@ abstract class Model extends Query
     
     /**
      * 数据校验
-     * @param array|Field|Validate|string $data 要验证的数据或验证器
-     * @param string|Validate|Field|null  $validate 验证器、验证器类名、验证场景名称
-     * @param mixed                       $sceneName 验证场景或场景数据
-     * @param mixed                       $sceneData 场景数据
+     * @param array|Field|Validate|string                                 $data 要验证的数据或验证器
+     * @param string|Validate|Field|Closure(Validate $validate):void|null $validate 验证器、验证器类名、验证场景名称、或验证器回调
+     * @param mixed                                                       $sceneName 验证场景或场景数据
+     * @param mixed                                                       $sceneData 场景数据
      * @return $this
      */
     public function validate($data, $validate = null, $sceneName = null, $sceneData = null) : static
     {
-        $field = null;
+        $field            = null;
+        $validateCallback = null;
         if (is_array($data) && $validate) {
             if (is_subclass_of($validate, Field::class)) {
                 $field    = $validate;
                 $validate = null;
-            } elseif (!is_subclass_of($validate, Validate::class) || !$validate instanceof Validate) {
+            } elseif (!is_a($validate, Validate::class, true)) {
                 throw new ClassNotExtendsException($validate, Validate::class);
             }
         } elseif (is_subclass_of($data, Field::class)) {
-            $field     = $data;
-            $sceneData = $sceneName;
-            $sceneName = $validate;
-            $validate  = null;
-            $data      = [];
-        } elseif (is_subclass_of($data, Validate::class) || $data instanceof Validate) {
+            $field = $data;
+            $data  = [];
+            if ($validate instanceof Closure) {
+                $validateCallback = $validate;
+            } else {
+                $sceneData = $sceneName;
+                $sceneName = $validate;
+            }
+            $validate = null;
+        } elseif (is_a($data, Validate::class, true)) {
             $sceneData = $sceneName;
             $sceneName = $validate;
             $validate  = $data;
@@ -901,6 +906,9 @@ abstract class Model extends Query
                 }
             }
             
+            if ($validateCallback) {
+                $validateCallback($validate);
+            }
             $validate->setDb(static::$db);
             $validate->failException(true);
             $validate->check($checkData);
