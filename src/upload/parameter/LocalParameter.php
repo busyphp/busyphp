@@ -19,25 +19,25 @@ class LocalParameter implements BindDriverParameterInterface
 {
     use BasenameMimetypeConcern;
     
-    /** @var File|string|array */
-    private $file;
+    /** @var File */
+    private File $file;
     
     
     /**
      * 构造函数
-     * @param File|string|array $file 文件对象或文件字段名或$_FILES['字段']数组
+     * @param File $file 文件对象
      */
-    public function __construct($file)
+    public function __construct(File $file)
     {
         $this->file = $file;
     }
     
     
     /**
-     * 获取文件对象或文件字段名或$_FILES['字段']数组
-     * @return array|File|string
+     * 获取文件对象
+     * @return File
      */
-    public function getFile()
+    public function getFile() : File
     {
         return $this->file;
     }

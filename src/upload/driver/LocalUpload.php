@@ -31,7 +31,7 @@ class LocalUpload extends Upload
             throw new ClassNotExtendsException($this->parameter, LocalParameter::class);
         }
         
-        $file = FileHelper::convertUploadToFile($this->parameter->getFile());
+        $file = $this->parameter->getFile();
         switch (true) {
             case $file instanceof UploadedFile:
                 $basename = $file->getOriginalName();

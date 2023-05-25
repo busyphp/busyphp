@@ -692,14 +692,15 @@ class SystemFile extends Model implements ContainerInterface
     
     /**
      * 前端上传整个文件或分块到本地磁盘
-     * @param int          $id 文件ID
-     * @param UploadedFile $file 上传文件对象
-     * @param string       $uploadId uploadId
-     * @param int          $partNumber 分块编号
+     * @param int         $id 文件ID
+     * @param File|string $file 上传文件对象
+     * @param string      $uploadId uploadId
+     * @param int         $partNumber 分块编号
      * @return string ETag
-     * @throws Throwable
+     * @throws DataNotFoundException
+     * @throws DbException
      */
-    public function frontLocalUpload(int $id, UploadedFile $file, string $uploadId = '', int $partNumber = 0) : string
+    public function frontLocalUpload(int $id, File|string $file, string $uploadId = '', int $partNumber = 0) : string
     {
         $front = FilesystemHelper::public()->front();
         if (!$front instanceof Local) {

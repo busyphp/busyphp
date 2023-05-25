@@ -13,21 +13,21 @@ use think\File;
  */
 class PartPutParameter
 {
-    /** @var File|string|array */
-    protected $file;
+    /** @var File|string */
+    protected string|File $file;
     
     /** @var string */
-    protected $uploadId;
+    protected string $uploadId;
     
     /** @var int */
-    protected $partNumber;
+    protected int $partNumber;
     
     
     /**
      * 构造函数
-     * @param File|string|array $file 文件对象或文件字段名或$_FILES['字段']数组
+     * @param File|string $file 文件对象或文件内容
      */
-    public function __construct($file, string $uploadId, int $partNumber)
+    public function __construct(File|string $file, string $uploadId, int $partNumber)
     {
         $this->file       = $file;
         $this->uploadId   = $uploadId;
@@ -36,10 +36,10 @@ class PartPutParameter
     
     
     /**
-     * 获取文件对象或文件字段名或$_FILES['字段']数组
-     * @return array|File|string
+     * 获取文件对象或文件内容
+     * @return array|File
      */
-    public function getFile()
+    public function getFile() : File|string
     {
         return $this->file;
     }
@@ -60,7 +60,7 @@ class PartPutParameter
      * @param string $uploadId
      * @return $this
      */
-    public function setUploadId(string $uploadId) : self
+    public function setUploadId(string $uploadId) : static
     {
         $this->uploadId = $uploadId;
         
@@ -83,7 +83,7 @@ class PartPutParameter
      * @param int $partNumber
      * @return $this
      */
-    public function setPartNumber(int $partNumber) : self
+    public function setPartNumber(int $partNumber) : static
     {
         $this->partNumber = $partNumber;
         

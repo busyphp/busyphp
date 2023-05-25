@@ -11,9 +11,8 @@ use BusyPHP\upload\parameter\PartCompleteParameter;
 use BusyPHP\upload\parameter\PartInitParameter;
 use BusyPHP\upload\parameter\PartPutParameter;
 use League\Flysystem\FilesystemException;
-use think\file\UploadedFile;
+use think\File;
 use think\filesystem\Driver;
-use Throwable;
 
 /**
  * 本地前端服务类
@@ -73,14 +72,13 @@ class Local implements FrontInterface
     
     /**
      * 上传文件或分块
-     * @param string       $path 存储路径
-     * @param UploadedFile $file 文件对象
-     * @param string       $uploadId UploadId
-     * @param int          $partNumber 分块编号
+     * @param string      $path 存储路径
+     * @param string|File $file 文件对象或文件内容
+     * @param string      $uploadId UploadId
+     * @param int         $partNumber 分块编号
      * @return string ETag
-     * @throws Throwable
      */
-    public function upload(string $path, UploadedFile $file, string $uploadId, int $partNumber) : string
+    public function upload(string $path, string|File $file, string $uploadId, int $partNumber) : string
     {
         if ($uploadId) {
             $result = $this->driver->part()->put(new PartPutParameter($file, $uploadId, $partNumber));

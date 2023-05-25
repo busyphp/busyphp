@@ -11,11 +11,8 @@ use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use LengthException;
 use RangeException;
-use think\exception\FileException;
 use think\exception\HttpException;
 use think\facade\Request;
-use think\File;
-use think\file\UploadedFile;
 use think\Response;
 use Throwable;
 
@@ -339,69 +336,6 @@ class FileHelper
         if ($maxsize > 0 && $filesize > $maxsize) {
             throw new LengthException(sprintf('请上传%s内的文件', TransHelper::formatBytes($maxsize)));
         }
-    }
-    
-    
-    /**
-     * 将上传的文件转为File对象
-     * @param File|string|array $file
-     * @return File
-     */
-    public static function convertUploadToFile($file) : File
-    {
-        if (!$file) {
-            throw new InvalidArgumentException('没有要上传的数据');
-        }
-        
-        if (!$file instanceof File) {
-            // 通过键取文件
-            if (is_string($file)) {
-                $file = Request::file($file);
-                if (!$file) {
-                    throw new InvalidArgumentException('没有文件被上传');
-                }
-                
-                if (is_array($file)) {
-                    if (count($file) > 1) {
-                        throw new RangeException('不支持同时上传多个文件，请分开上传');
-                    }
-                    
-                    $file = $file[0];
-                }
-            }
-            
-            //
-            // 是$_FILES
-            elseif (is_array($file) && isset($file['name'])) {
-                if (is_array($file['name'])) {
-                    if (count($file['name']) > 1) {
-                        throw new RangeException('不支持同时上传多个文件，请分开上传');
-                    }
-                    
-                    $newFile = [
-                        'name'     => $file['name'][0],
-                        'tmp_name' => $file['tmp_name'][0],
-                        'type'     => $file['type'][0],
-                        'error'    => $file['error'][0],
-                    ];
-                    $file    = $newFile;
-                }
-                
-                if ($file['error'] > 0) {
-                    throw new FileException(static::$uploadErrorMap[$file['error']] ?? "上传错误{$file['error']}", $file['error']);
-                }
-                
-                $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['error']);
-            }
-            
-            //
-            // 其它数据
-            else {
-                throw new RangeException('上传数据异常');
-            }
-        }
-        
-        return $file;
     }
     
     
