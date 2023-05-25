@@ -179,7 +179,7 @@ class QrCode
     public function format(string $format) : static
     {
         $format = strtolower($format);
-        $format = in_array($format, array_keys(self::getFormats())) ? $format : self::FORMAT_PNG;
+        $format = in_array($format, array_keys(static::getFormatMap())) ? $format : self::FORMAT_PNG;
         
         $this->options['format'] = $format;
         
@@ -477,20 +477,22 @@ class QrCode
     
     /**
      * 获取还原率
-     * @return array
+     * @param int|null $level
+     * @return array|string|null
      */
-    public static function getLevels() : array
+    public static function getLevelMap(int $level = null) : array|string|null
     {
-        return ClassHelper::getConstAttrs(self::class, 'LEVEL_', ClassHelper::ATTR_NAME);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'LEVEL_', ClassHelper::ATTR_NAME), $level);
     }
     
     
     /**
      * 获取输出类型
-     * @return array
+     * @param int|null $format
+     * @return array|string|null
      */
-    public static function getFormats() : array
+    public static function getFormatMap(int $format = null) : array|string|null
     {
-        return ClassHelper::getConstAttrs(self::class, 'FORMAT_', ClassHelper::ATTR_NAME);
+        return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FORMAT_', ClassHelper::ATTR_NAME), $format);
     }
 }
