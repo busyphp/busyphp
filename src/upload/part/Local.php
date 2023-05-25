@@ -165,7 +165,7 @@ class Local implements PartInterface
                 
                 // 对比
                 if (($parts[$item['number']]['etag'] ?? '') != $partFile->md5()) {
-                    throw new FileException('碎片不匹配: %s', $item['number']);
+                    throw new FileException(sprintf('碎片不匹配: %s', $item['number']));
                 }
                 
                 try {
