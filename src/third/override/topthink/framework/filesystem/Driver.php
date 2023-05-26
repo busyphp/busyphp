@@ -13,8 +13,8 @@ declare (strict_types = 1);
 namespace think\filesystem;
 
 use BusyPHP\image\Driver as ImageDriver;
-use BusyPHP\upload\interfaces\FrontInterface;
-use BusyPHP\upload\interfaces\PartInterface;
+use BusyPHP\uploader\interfaces\FrontInterface;
+use BusyPHP\uploader\interfaces\PartInterface;
 use Closure;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;

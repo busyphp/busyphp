@@ -14,10 +14,10 @@ namespace think\filesystem\driver;
 
 use BusyPHP\image\Driver as ImageDriver;
 use BusyPHP\image\driver\Local as LocalImage;
-use BusyPHP\upload\front\Local as LocalFront;
-use BusyPHP\upload\interfaces\FrontInterface;
-use BusyPHP\upload\interfaces\PartInterface;
-use BusyPHP\upload\part\Local as LocalPart;
+use BusyPHP\uploader\front\Local as LocalFront;
+use BusyPHP\uploader\interfaces\FrontInterface;
+use BusyPHP\uploader\interfaces\PartInterface;
+use BusyPHP\uploader\part\Local as LocalPart;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\PathNormalizer;

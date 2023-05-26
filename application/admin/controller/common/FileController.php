@@ -10,12 +10,13 @@ use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\app\admin\model\system\file\SystemFileField;
-use BusyPHP\app\admin\model\system\file\SystemFilePrepareUploadParameter;
-use BusyPHP\app\admin\model\system\file\SystemFileUploadParameter;
+use BusyPHP\app\admin\model\system\file\SystemFileFrontPrepareUploadData;
+use BusyPHP\app\admin\model\system\file\SystemFileUploadData;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\helper\FileHelper;
 use BusyPHP\helper\FilterHelper;
-use BusyPHP\upload\parameter\LocalParameter;
+use BusyPHP\uploader\driver\Local;
+use BusyPHP\uploader\driver\local\LocalData;
 use League\Flysystem\FilesystemException;
 use stdClass;
 use think\db\exception\DataNotFoundException;
@@ -34,7 +35,7 @@ class FileController extends InsideController
     /**
      * @var SystemFile
      */
-    protected $model;
+    protected SystemFile $model;
     
     
     protected function initialize($checkLogin = true)
@@ -54,7 +55,7 @@ class FileController extends InsideController
      */
     public function front_prepare() : Response
     {
-        $parameter = new SystemFilePrepareUploadParameter(
+        $parameter = new SystemFileFrontPrepareUploadData(
             $this->post('md5/s', 'trim'),
             $this->post('filename/s', 'trim'),
             $this->post('filesize/d', 'intval'),
@@ -99,7 +100,7 @@ class FileController extends InsideController
      */
     public function front_token() : Response
     {
-        return $this->success($this->model->frontTmpToken($this->post('file_id/d')));
+        return $this->success($this->model->getFrontTmpToken($this->post('file_id/d')));
     }
     
     
@@ -131,14 +132,14 @@ class FileController extends InsideController
     {
         $this->request->setToAjax();
         
-        $etag = $this->model->frontLocalUpload(
+        $result = $this->model->frontLocalUpload(
             $this->post('file_id/d'),
             $this->request->file('upload'),
             $this->post('upload_id/s', 'trim'),
             $this->post('part_number/d')
         );
         
-        return $this->success()->header(['ETag' => $etag]);
+        return $this->success()->header(['ETag' => $result['etag']]);
     }
     
     
@@ -149,12 +150,12 @@ class FileController extends InsideController
     public function upload() : Response
     {
         $this->request->setToAjax();
-        $parameter = new SystemFileUploadParameter(new LocalParameter($this->request->file('upload')));
-        $parameter->setUserId($this->adminUserId);
-        $parameter->setClassType($this->post('class_type/s', 'trim'));
-        $parameter->setClassValue($this->post('class_value/s', 'trim'));
-        $parameter->setDisk($this->post('disk/s', 'trim'));
-        $result = $this->model->upload($parameter);
+        $uploadData = new SystemFileUploadData(Local::class, new LocalData($this->request->file('upload')));
+        $uploadData->setUserId($this->adminUserId);
+        $uploadData->setClassType($this->post('class_type/s', 'trim'));
+        $uploadData->setClassValue($this->post('class_value/s', 'trim'));
+        $uploadData->setDisk($this->post('disk/s', 'trim'));
+        $result = $this->model->upload($uploadData);
         $data   = [
             'file_url'  => $result->url,
             'file_id'   => $result->id,

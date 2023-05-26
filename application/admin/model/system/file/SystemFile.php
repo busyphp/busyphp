@@ -7,6 +7,7 @@ use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\exception\ParamInvalidException;
 use BusyPHP\facade\Image;
+use BusyPHP\facade\Uploader;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\FileHelper;
@@ -16,8 +17,7 @@ use BusyPHP\image\parameter\FormatParameter;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
-use BusyPHP\Upload;
-use BusyPHP\upload\front\Local;
+use BusyPHP\uploader\front\Local;
 use League\Flysystem\FilesystemException;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
@@ -445,36 +445,35 @@ class SystemFile extends Model implements ContainerInterface
     
     /**
      * 上传文件
-     * @param SystemFileUploadParameter $parameter
+     * @param SystemFileUploadData $uploadData
      * @return SystemFileField
      * @throws Throwable
      */
-    public function upload(SystemFileUploadParameter $parameter) : SystemFileField
+    public function upload(SystemFileUploadData $uploadData) : SystemFileField
     {
         $storage    = StorageSetting::instance();
-        $disk       = $parameter->getDisk() ?: $storage->getDisk();
-        $filesystem = Filesystem::disk($disk);
-        $result     = Upload::init(
-            $parameter->getParameter(),
-            $filesystem,
-            function($file, $extension) use ($parameter) {
+        $diskName   = $uploadData->getDisk() ?: $storage->getDisk();
+        $filesystem = Filesystem::disk($diskName);
+        $result     = Uploader::driver($uploadData->getDriver())
+            ->disk($filesystem)
+            ->path(function($file, $extension) use ($uploadData) {
                 return static::createFilename(
-                    $parameter->getClassType(),
-                    $parameter->getClassValue(),
-                    $parameter->getUserId(),
+                    $uploadData->getClassType(),
+                    $uploadData->getClassValue(),
+                    $uploadData->getUserId(),
                     $file,
                     $extension
                 );
             })
-            ->limitMaxsize($storage->getMaxSize($parameter->getClassType()))
-            ->limitMimetypes($storage->getMimeType($parameter->getClassType()))
-            ->limitExtensions($storage->getAllowExtensions($parameter->getClassType()))
-            ->save();
+            ->limitMaxsize($storage->getMaxSize($uploadData->getClassType()))
+            ->limitMimetypes($storage->getMimeType($uploadData->getClassType()))
+            ->limitExtensions($storage->getAllowExtensions($uploadData->getClassType()))
+            ->upload($uploadData->getData());
         
         try {
             // 处理图片
             $extension  = strtolower(pathinfo($result->getPath(), PATHINFO_EXTENSION));
-            $imageStyle = $storage->getImageStyle($parameter->getClassType(), $disk);
+            $imageStyle = $storage->getImageStyle($uploadData->getClassType(), $diskName);
             $styleRule  = '';
             if (array_key_exists($extension, FormatParameter::getFormats()) && $imageStyle !== '') {
                 $imageResult = Image::path($result->getPath())->style($imageStyle)->disk($filesystem)->save();
@@ -486,12 +485,14 @@ class SystemFile extends Model implements ContainerInterface
             
             // 秒传
             $uniqueId = static::createUniqueId($result->getMd5(), $styleRule);
-            if ($info = $this->where(SystemFileField::disk($disk))->whereComplete()->findInfoByUniqueId($uniqueId)) {
+            if ($info = $this->where(SystemFileField::disk($diskName))
+                ->whereComplete()
+                ->findInfoByUniqueId($uniqueId)) {
                 $data = clone $info;
                 $data->setId(null);
-                $data->setUserId($parameter->getUserId());
-                $data->setClassType($parameter->getClassType());
-                $data->setClassValue($parameter->getClassValue());
+                $data->setUserId($uploadData->getUserId());
+                $data->setClassType($uploadData->getClassType());
+                $data->setClassValue($uploadData->getClassValue());
                 $data->setName($result->getBasename());
                 $data->setFast(true);
                 $data->setPending(false);
@@ -506,11 +507,11 @@ class SystemFile extends Model implements ContainerInterface
                 $data->setWidth($result->getWidth());
                 $data->setHeight($result->getHeight());
                 $data->setPath($result->getPath());
-                $data->setUserId($parameter->getUserId());
-                $data->setClassValue($parameter->getClassValue());
-                $data->setClassType($parameter->getClassType());
+                $data->setUserId($uploadData->getUserId());
+                $data->setClassValue($uploadData->getClassValue());
+                $data->setClassType($uploadData->getClassType());
                 $data->setExtension($extension);
-                $data->setDisk($disk);
+                $data->setDisk($diskName);
             }
             
             return $this->create($data);
@@ -529,26 +530,26 @@ class SystemFile extends Model implements ContainerInterface
     
     
     /**
-     * 前端准备上传
-     * @param SystemFilePrepareUploadParameter $parameter
-     * @return SystemFilePrepareUploadResult
+     * 前端准备上传，进行秒传验证，如果不存在则创建一个准备上传的记录
+     * @param SystemFileFrontPrepareUploadData $prepare
+     * @return SystemFilePartPrepareResult
      * @throws DataNotFoundException
      * @throws DbException
      * @throws FilesystemException
      */
-    public function frontPrepareUpload(SystemFilePrepareUploadParameter $parameter) : SystemFilePrepareUploadResult
+    public function frontPrepareUpload(SystemFileFrontPrepareUploadData $prepare) : SystemFilePartPrepareResult
     {
-        $md5        = $parameter->getMd5();
-        $userId     = $parameter->getUserId();
-        $classType  = $parameter->getClassType();
-        $classValue = $parameter->getClassValue();
-        $filename   = $parameter->getFilename();
-        $mimetype   = $parameter->getMimetype();
-        $filesize   = $parameter->getFilesize();
+        $md5        = $prepare->getMd5();
+        $userId     = $prepare->getUserId();
+        $classType  = $prepare->getClassType();
+        $classValue = $prepare->getClassValue();
+        $filename   = $prepare->getFilename();
+        $mimetype   = $prepare->getMimetype();
+        $filesize   = $prepare->getFilesize();
         $fast       = false;
         $path       = '';
         $setting    = StorageSetting::instance();
-        $disk       = $parameter->getDisk() ?: $setting->getDisk();
+        $disk       = $prepare->getDisk() ?: $setting->getDisk();
         $filesystem = Filesystem::disk($disk);
         
         // 处理图片
@@ -605,13 +606,13 @@ class SystemFile extends Model implements ContainerInterface
         $uploadId = '';
         if (!$fast) {
             $uploadId = $filesystem->front()
-                ->prepareUpload($data->path, $md5, $filesize, $mimetype, $parameter->isPart());
+                ->frontPrepareUpload($data->path, $filename, $md5, $filesize, $mimetype, $prepare->isPart());
         }
         
-        return new SystemFilePrepareUploadResult(
+        return new SystemFilePartPrepareResult(
             $info,
             $uploadId,
-            $filesystem->front()->getUrl(Request::isSsl())
+            $filesystem->front()->getFrontServerUrl(Request::isSsl())
         );
     }
     
@@ -633,7 +634,7 @@ class SystemFile extends Model implements ContainerInterface
         $filesystem = Filesystem::disk($info->disk);
         $setting    = StorageSetting::instance();
         try {
-            $result   = $filesystem->front()->doneUpload($info->path, $uploadId, $parts);
+            $result   = $filesystem->front()->frontDoneUpload($info->path, $uploadId, $parts);
             $filesize = $result['filesize'] ?? 0;
             $mimetype = $result['mimetype'] ?? '';
             
@@ -679,28 +680,28 @@ class SystemFile extends Model implements ContainerInterface
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function frontTmpToken(int $id, int $expire = 1800) : array
+    public function getFrontTmpToken(int $id, int $expire = 1800) : array
     {
         $info = $this->getInfo($id);
         if (!$info->pending) {
             throw new RuntimeException('该文件已上传完成');
         }
         
-        return Filesystem::disk($info->disk)->front()->getTmpToken($info->path, $expire);
+        return Filesystem::disk($info->disk)->front()->getFrontTmpToken($info->path, $expire);
     }
     
     
     /**
-     * 前端上传整个文件或分块到本地磁盘
+     * 上传分块到本地磁盘
      * @param int         $id 文件ID
      * @param File|string $file 上传文件对象
      * @param string      $uploadId uploadId
      * @param int         $partNumber 分块编号
-     * @return string ETag
+     * @return array{etag: string, filesize: int, part_number: int} 该数据用于执行 {@see SystemFile::frontDoneUpload()} 时回传
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function frontLocalUpload(int $id, File|string $file, string $uploadId = '', int $partNumber = 0) : string
+    public function frontLocalUpload(int $id, File|string $file, string $uploadId = '', int $partNumber = 0) : array
     {
         $front = FilesystemHelper::public()->front();
         if (!$front instanceof Local) {

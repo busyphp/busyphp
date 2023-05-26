@@ -5,13 +5,16 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\system\file\classes\SystemFileClass;
-use BusyPHP\app\admin\model\system\file\SystemFileUploadParameter;
 use BusyPHP\app\admin\model\system\file\SystemFile;
+use BusyPHP\app\admin\model\system\file\SystemFileUploadData;
 use BusyPHP\app\admin\setting\StorageSetting;
 use BusyPHP\exception\VerifyException;
-use BusyPHP\upload\parameter\Base64Parameter;
-use BusyPHP\upload\parameter\LocalParameter;
-use BusyPHP\upload\parameter\RemoteParameter;
+use BusyPHP\uploader\driver\Base64;
+use BusyPHP\uploader\driver\base64\Base64Data;
+use BusyPHP\uploader\driver\Local;
+use BusyPHP\uploader\driver\local\LocalData;
+use BusyPHP\uploader\driver\Remote;
+use BusyPHP\uploader\driver\remote\RemoteData;
 use stdClass;
 use think\Response;
 use think\response\Json;
@@ -228,12 +231,14 @@ JS;
             $classValue = $this->param('class_value/s', 'trim');
             if ($isBase64) {
                 // TODO mimetype 和 basename
-                $driverParameter = new Base64Parameter($this->post('upload/s', 'trim'));
+                $data   = new Base64Data($this->post('upload/s', 'trim'));
+                $driver = Base64::class;
             } else {
-                $driverParameter = new LocalParameter($this->request->file('upload'));
+                $data   = new LocalData($this->request->file('upload'));
+                $driver = Local::class;
             }
             
-            $parameter = new SystemFileUploadParameter($driverParameter);
+            $parameter = new SystemFileUploadData($driver, $data);
             $parameter->setUserId($this->adminUserId);
             $parameter->setClassType($classType);
             $parameter->setClassValue($classValue);
@@ -289,9 +294,9 @@ JS;
                 $url = str_replace('&amp;', '&', $url);
                 try {
                     // TODO 默认mimetype 和 basename
-                    $remote = new RemoteParameter($url);
+                    $remote = new RemoteData($url);
                     $remote->setIgnoreHosts(StorageSetting::instance()->getRemoteIgnoreDomains());
-                    $parameter = new SystemFileUploadParameter($remote);
+                    $parameter = new SystemFileUploadData(Remote::class, $remote);
                     $parameter->setUserId($this->adminUserId);
                     $parameter->setClassType($classType);
                     $parameter->setClassValue($classValue);
@@ -311,7 +316,8 @@ JS;
             $jsonData['list'] = $list;
             
             if ($success) {
-                $this->log()->record(self::LOG_INSERT, 'UEditor抓取图片', json_encode($success, JSON_UNESCAPED_UNICODE));
+                $this->log()
+                    ->record(self::LOG_INSERT, 'UEditor抓取图片', json_encode($success, JSON_UNESCAPED_UNICODE));
             }
         } catch (Throwable $e) {
             $jsonData['state'] = $e->getMessage();
