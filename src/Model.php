@@ -879,19 +879,15 @@ abstract class Model extends Query
         
         // 场景验证
         $needCheck = true;
-        if ($sceneName !== '' && $sceneName !== null) {
-            if ($field) {
-                if ($field instanceof ModelValidateInterface) {
-                    $result = $field->onModelValidate($this, $validate, $sceneName, $sceneData);
-                    if ($result === false) {
-                        $needCheck = false;
-                    } elseif (is_array($result)) {
-                        $field->retain($validate, ...$result);
-                    }
-                }
-            } else {
-                $validate->scene($sceneName);
+        if ($field instanceof ModelValidateInterface) {
+            $result = $field->onModelValidate($this, $validate, (string) $sceneName, $sceneData);
+            if ($result === false) {
+                $needCheck = false;
+            } elseif (is_array($result)) {
+                $field->retain($validate, ...$result);
             }
+        } elseif ($sceneName) {
+            $validate->scene($sceneName);
         }
         
         // 执行验证
