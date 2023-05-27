@@ -385,7 +385,7 @@
 
 ##### 自定义搜索框
 
-> 通过给组件标签设置自定义属性 `data-search-selector="selector"` 来定义自定义搜索框
+> 通过给组件标签设置自定义属性 `data-search-selector="selector"` 来定义自定义搜索框 `data-toolbar-selector="selector"` 来自定义系统按钮位置
 
 ```demo:实例
 #demo19
@@ -1159,12 +1159,17 @@
     <template class="hide" id="demo19">
 <div class="panel panel-default">
     <div class="panel-body">
-        <div class="input-group">
-            <input type="search" class="form-control" id="demo19Search" placeholder="请输入关键词按回车搜索"/>
-            <div class="input-group-btn">
-                <button class="btn btn-primary" onclick="$('#demo19Table').baTable('doSearch')">搜索</button>
-                <button class="btn btn-secondary" onclick="$('#demo19Table').baTable('resetSearch')">重置</button>
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="input-group">
+                    <input type="search" class="form-control" id="demo19Search" placeholder="请输入关键词按回车搜索"/>
+                    <div class="input-group-btn">
+                        <button class="btn btn-primary" onclick="$('#demo19Table').baTable('doSearch')">搜索</button>
+                        <button class="btn btn-secondary" onclick="$('#demo19Table').baTable('resetSearch')">重置</button>
+                    </div>
+                </div>
             </div>
+            <div class="col-sm-4" id="demo19Toolbar"></div>
         </div>
     </div>
 </div>
@@ -1174,6 +1179,7 @@
      data-show-refresh="true"
      data-search="true"
      data-search-selector="#demo19Search"
+     data-toolbar-selector="#demo19Toolbar"
      data-toolbar="@"
      data-data="demo19Data">
     <table class="table-hover table-striped table-bordered">
@@ -1239,6 +1245,7 @@
     </table>
     <template data-template="search">
         <div data-toggle="busy-search-bar"
+             class="fieldset no-legend"
              data-url="{$url.self}"
              data-accurate-show="true"
              data-fields="name:操作名称,username:操作用户名,user_id:操作用户ID">
