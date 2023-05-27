@@ -256,7 +256,7 @@
 
                         // 重置文件分类
                         var categoryList = [{
-                            name : me.options.locale.currentInfo,
+                            name : me.options.currentInfo || me.options.locale.currentInfo,
                             var  : ''
                         }, {
                             name : me.options.locale.allCategory,
@@ -266,6 +266,14 @@
                             categoryList.push(me.info.category_map[key]);
                         }
                         me.category_list = categoryList;
+
+                        if (!$.baIsEmpty(me.options.classValue) && me.options.classValue !== '') {
+                            me.category = '';
+                        } else if (!$.baIsEmpty(me.options.classType) && me.options.classType !== '') {
+                            me.category = me.options.classType;
+                        } else {
+                            me.category = categoryList[1].var;
+                        }
 
                         // 监听分页事件
                         $(me.$refs.foot).on('click', 'a', function () {
@@ -439,7 +447,9 @@
                                 return false;
                             })
                             .error(function (response, type, xhr) {
-
+                                me.empty_text = response.message;
+                                me.list       = [];
+                                return false;
                             })
                             .exec();
                     },
