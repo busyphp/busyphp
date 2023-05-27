@@ -255,13 +255,17 @@
                         me.type_list = typeList;
 
                         // 重置文件分类
-                        var categoryList = [{
-                            name : me.options.currentInfo || me.options.locale.currentInfo,
-                            var  : ''
-                        }, {
+                        var categoryList = [];
+                        if (!$.baIsEmpty(me.options.classValue) && me.options.classValue !== '') {
+                            categoryList.push({
+                                name : me.options.currentInfo || me.options.locale.currentInfo,
+                                var  : ''
+                            });
+                        }
+                        categoryList.push({
                             name : me.options.locale.allCategory,
                             var  : ':all',
-                        }];
+                        });
                         for (key in me.info.category_map) {
                             categoryList.push(me.info.category_map[key]);
                         }
@@ -272,7 +276,7 @@
                         } else if (!$.baIsEmpty(me.options.classType) && me.options.classType !== '') {
                             me.category = me.options.classType;
                         } else {
-                            me.category = categoryList[1].var;
+                            me.category = ':all';
                         }
 
                         // 监听分页事件

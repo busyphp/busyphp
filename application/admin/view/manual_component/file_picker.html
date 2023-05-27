@@ -26,7 +26,7 @@
 | data-zindex | number | `否` | `auto` | 对话框层级 |
 | data-class-type | string | `否` | `file` | 文件类型 |
 | data-class-value | string | `否` | - | 文件标识 |
-| data-current-info | string | `否` | `当前信息` | 指定当前信息文案，如：当前文章 |
+| data-current-info | string | `否` | `当前信息` | 指定当前信息文案，如：当前文章，只有在 `data-class-value` 有值的时候才显示 |
 | data-count | number | `否` | 9 | 多选情况单次最多允许选择数，0为不限 |
 | data-extensions | string | `否` | - | 允许的文件后缀，多个用英文逗号隔开，不包含`.` |
 | data-mimetypes | string | `否` | - | 允许上传mimetype，多个用英文逗号隔开 |
@@ -46,7 +46,7 @@
     </div>
 
     <template class="hide" id="demo1">
-<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="1" data-current-info="当前文章">单选</button>
+<button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="1" data-current-info="当前文章" data-class-value="1">单选</button>
 <button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-count="3">多选</button>
 <button class="btn btn-primary file-picker1" data-toggle="busy-file-picker" data-class-value="1" data-count="0">多选(不限数量)</button>
 <script>
