@@ -81,8 +81,10 @@
 | data-single-preview-size | string | `否` | `100px,100px` | 设置预览尺寸，留空则默认大小，格式：`宽,高`，针对`音频`无效，`图片`可以设置另外另外一项为0则自动适配 |
 | 多文件上传 `type="files"`:title |  |  |  |  |
 | data-files-ui | string | `否` | `true` | UI模式，`all:全部`,`result:只显示结果区域`,`queue:只显示上传队列区域` |
-| data-files-image-width | number | `否` | `null` | 图片宽度 |
+| data-files-grid | boolean | `否` | `false` | 是否使用网格布局 |
+| data-files-grid-width | number | `否` | `null` | 网格宽度 |
 | data-files-edit-filename | boolean | `否` | `true` | 是否允许修改文件名 |
+| data-files-value-url | boolean | `否` | `false` | 是否只输出URL，如果指定字符串，将按照该字符串分割 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形` |
 | data-card-size | string | `否` | - | 设置card尺寸依据，支持：`parent` 依据上级大小调整 |
@@ -159,16 +161,21 @@
     </template>
 
     <script type="text/html" class="hide" id="demo2">
-<h5>图片上传</h5>
-<div id="demo2_banner" title="图片"
+<h5>网格</h5>
+<div id="demo2_banner"
+     title="图片/视频"
      data-toggle="busy-upload"
      data-type="files"
      data-class-type="banner"
      data-auto="false"
      data-name="demo2_banner"
+     data-files-grid="true"
+     data-files-value-url=","
+     data-allow-extensions="jpeg,jpg,png,gif,mp4"
+     data-allow-mimetypes="image/*,video/mp4"
      data-value="{$skin.images}login/1.jpg,{$skin.images}login/2.jpg,{$skin.images}login/3.jpg"></div>
 <hr/>
-<h5>文件上传</h5>
+<h5>列表</h5>
 <div id="demo2_file"
      data-toggle="busy-upload"
      data-type="files"
