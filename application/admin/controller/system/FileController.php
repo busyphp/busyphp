@@ -27,15 +27,9 @@ use Throwable;
 #[MenuRoute(path: 'system_file', class: true)]
 class FileController extends InsideController
 {
-    /**
-     * @var SystemFile
-     */
-    protected $model;
+    protected SystemFile      $model;
     
-    /**
-     * @var SystemFileClass
-     */
-    protected $fileClassModel;
+    protected SystemFileClass $fileClassModel;
     
     
     protected function initialize($checkLogin = true)
@@ -51,7 +45,7 @@ class FileController extends InsideController
      * 文件管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text', sort: 3)]
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text', sort: -70)]
     public function index() : Response
     {
         $type = $this->param('type/s', 'trim');
@@ -138,7 +132,7 @@ class FileController extends InsideController
      * 上传文件
      * @return Response
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function upload() : Response
     {
         return $this->insideDisplay();
@@ -150,7 +144,7 @@ class FileController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function delete() : Response
     {
         SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的文件', function(int $id) {
@@ -168,7 +162,7 @@ class FileController extends InsideController
      * @return Response
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function clear_repeat() : Response
     {
         $invalid = $this->model->clearInvalid();
@@ -184,7 +178,7 @@ class FileController extends InsideController
      * @return Response
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function clear_invalid() : Response
     {
         $total = $this->model->clearInvalid();

@@ -35,27 +35,24 @@ use Throwable;
  * @version $Id: 2020/6/1 下午3:35 下午 MenuController.php $
  */
 // 开发模式
-#[MenuGroup(path: '#developer', name: "开发模式", icon: 'fa fa-folder-open-o', sort: 0, default: true, canDisable: false)]
-#[MenuGroup(path: '#developer_manual', name: "开发手册", parent: "#developer", icon: 'fa fa-book', sort: 50, canDisable: false)]
+#[MenuGroup(path: '#developer', name: "开发模式", icon: 'fa fa-folder-open-o', sort: -200, default: true, canDisable: false)]
+#[MenuGroup(path: '#developer_manual', name: "开发手册", parent: "#developer", icon: 'fa fa-book', sort: -70, canDisable: false)]
 
 // 系统
-#[MenuGroup(path: '#system', name: "系统", icon: 'glyphicon glyphicon-cog', sort: 1, canDisable: false)]
-#[MenuGroup(path: '#system_manager', name: "系统管理", parent: "#system", icon: 'fa fa-anchor', sort: 0)]
-#[MenuGroup(path: '#system_user', name: "系统用户", parent: "#system", icon: 'fa fa-user-circle', sort: 1)]
+#[MenuGroup(path: '#system', name: "系统", icon: 'glyphicon glyphicon-cog', sort: -100, canDisable: false)]
+#[MenuGroup(path: '#system_manager', name: "系统管理", parent: "#system", icon: 'fa fa-anchor', sort: -100)]
+#[MenuGroup(path: '#system_user', name: "系统用户", parent: "#system", icon: 'fa fa-user-circle', sort: -90)]
 
 // 路由转发为class
 #[MenuRoute(path: 'system_menu', class: true)]
 class MenuController extends InsideController
 {
-    /**
-     * @var SystemMenu
-     */
-    protected $model;
+    protected SystemMenu $model;
     
     /**
      * @var bool 开发模式
      */
-    const DEVELOP = false;
+    const DEVELOP = true;
     
     
     protected function initialize($checkLogin = true)
@@ -72,7 +69,7 @@ class MenuController extends InsideController
      * 菜单管理
      * @return Response
      */
-    #[MenuNode(menu: true, icon: 'bicon bicon-menu', sort: 1, canDisable: false)]
+    #[MenuNode(menu: true, icon: 'bicon bicon-menu', sort: -100, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
@@ -106,7 +103,7 @@ class MenuController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function add() : Response
     {
         if ($this->isPost()) {
@@ -148,7 +145,7 @@ class MenuController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function edit() : Response
     {
         if ($this->isPost()) {
@@ -214,12 +211,63 @@ class MenuController extends InsideController
     
     
     /**
-     * 快速设置属性
+     * 删除菜单
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
+    public function delete() : Response
+    {
+        $deleteIds = [];
+        foreach ($this->param('id/a', 'intval') as $id) {
+            if ($id <= 0) {
+                continue;
+            }
+            $deleteIds[] = $id;
+        }
+        
+        SimpleForm::init()->batch($deleteIds, '请选择要删除的菜单', function(int $id) {
+            $this->model->remove($id);
+        });
+        
+        $this->log()->record(self::LOG_DELETE, '删除系统菜单');
+        $this->updateCache();
+        
+        return $this->success('删除成功');
+    }
+    
+    
+    /**
+     * 排序菜单
+     * @throws DbException
+     * @throws Throwable
+     */
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
+    public function sort() : Response
+    {
+        $data = [];
+        foreach ($this->request->param("sort/a", [], 'intval') as $id => $item) {
+            if ($id <= 0) {
+                continue;
+            }
+            $data[$id] = $item;
+        }
+        
+        SimpleForm::init($this->model)->sort($data, SystemMenuField::sort());
+        $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
+        $this->updateCache();
+        
+        return $this->success('排序成功');
+    }
+    
+    
+    /**
+     * 设置属性
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Throwable
      */
+    #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function set_attr() : Response
     {
         $type   = $this->get('type/s', 'trim');
@@ -244,56 +292,6 @@ class MenuController extends InsideController
         $this->log()->record(self::LOG_UPDATE, '修改系统菜单属性');
         
         return $this->success('设置成功');
-    }
-    
-    
-    /**
-     * 排序菜单
-     * @throws DbException
-     * @throws Throwable
-     */
-    #[MenuNode(menu: false, parent: '/index')]
-    public function sort() : Response
-    {
-        $data = [];
-        foreach ($this->request->param("sort/a", [], 'intval') as $id => $item) {
-            if ($id <= 0) {
-                continue;
-            }
-            $data[$id] = $item;
-        }
-        
-        SimpleForm::init($this->model)->sort($data, SystemMenuField::sort());
-        $this->log()->record(self::LOG_UPDATE, '排序系统菜单');
-        $this->updateCache();
-        
-        return $this->success('排序成功');
-    }
-    
-    
-    /**
-     * 删除菜单
-     * @throws Throwable
-     */
-    #[MenuNode(menu: false, parent: '/index')]
-    public function delete() : Response
-    {
-        $deleteIds = [];
-        foreach ($this->param('id/a', 'intval') as $id) {
-            if ($id <= 0) {
-                continue;
-            }
-            $deleteIds[] = $id;
-        }
-        
-        SimpleForm::init()->batch($deleteIds, '请选择要删除的菜单', function(int $id) {
-            $this->model->remove($id);
-        });
-        
-        $this->log()->record(self::LOG_DELETE, '删除系统菜单');
-        $this->updateCache();
-        
-        return $this->success('删除成功');
     }
     
     

@@ -24,10 +24,7 @@ use Throwable;
 #[MenuRoute(path: 'system_config', class: true)]
 class ConfigController extends InsideController
 {
-    /**
-     * @var SystemConfig
-     */
-    protected $model;
+    protected SystemConfig $model;
     
     
     protected function initialize($checkLogin = true)
@@ -44,11 +41,14 @@ class ConfigController extends InsideController
      * 配置管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-cube', sort: 20, canDisable: false)]
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-cube', sort: -90, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
-            return $table->model($this->model)->setOrderType('desc')->setOrderField(SystemConfigField::createTime())->response();
+            return $table->model($this->model)
+                ->setOrderType('desc')
+                ->setOrderField(SystemConfigField::createTime())
+                ->response();
         }
         
         return $this->insideDisplay();
@@ -61,7 +61,7 @@ class ConfigController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function add() : Response
     {
         if ($this->isPost()) {
@@ -82,7 +82,7 @@ class ConfigController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function edit() : Response
     {
         if ($this->isPost()) {
@@ -102,7 +102,7 @@ class ConfigController extends InsideController
      * 删除配置
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function delete() : Response
     {
         SimpleForm::init()->batch($this->param('id/a', 'trim'), '请选择要删除的配置', function(string $id) {

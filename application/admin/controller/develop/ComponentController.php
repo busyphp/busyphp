@@ -18,7 +18,7 @@ use think\Response;
  * @version $Id: 2021/2/28 下午9:01 下午 ComponentController.php $
  */
 #[MenuRoute(path: 'manual_component', class: true)]
-#[MenuGroup(path: 'developer_manual_component', parent: '#developer_manual', icon: 'fa fa-sliders', canDisable: false)]
+#[MenuGroup(path: 'developer_manual_component', parent: '#developer_manual', icon: 'fa fa-sliders', sort: -90, canDisable: false)]
 class ComponentController extends InsideController
 {
     protected function initialize($checkLogin = true)

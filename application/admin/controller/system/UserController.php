@@ -29,9 +29,6 @@ use Throwable;
 #[MenuRoute(path: 'system_user', class: true)]
 class UserController extends InsideController
 {
-    /**
-     * @var AdminUser
-     */
     protected AdminUser $model;
     
     
@@ -47,7 +44,7 @@ class UserController extends InsideController
      * 系统用户管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-manager', sort: 1)]
+    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-manager', sort: -100)]
     public function index() : Response
     {
         // 管理员列表数据
@@ -106,7 +103,7 @@ class UserController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function add() : Response
     {
         if ($this->isPost()) {
@@ -142,7 +139,7 @@ class UserController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function edit() : Response
     {
         if ($this->isPost()) {
@@ -173,7 +170,7 @@ class UserController extends InsideController
      * 删除用户
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function delete() : Response
     {
         SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的用户', function(int $id) {
@@ -191,7 +188,7 @@ class UserController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function password() : Response
     {
         if ($this->isPost()) {
@@ -211,7 +208,7 @@ class UserController extends InsideController
      * 启用/禁用用户
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -50)]
     public function change_checked() : Response
     {
         $id = $this->get('id/d');
@@ -231,7 +228,7 @@ class UserController extends InsideController
      * 解锁用户
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -40)]
     public function unlock() : Response
     {
         $this->model->unlock($this->get('id/d'));
@@ -244,7 +241,7 @@ class UserController extends InsideController
     /**
      * 查看重要资料
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -30)]
     public function show_detail_important_info()
     {
         throw new HttpException(404);

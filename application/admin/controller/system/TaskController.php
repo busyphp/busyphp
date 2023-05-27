@@ -26,9 +26,6 @@ use Throwable;
 #[MenuRoute(path: 'system_task', class: true)]
 class TaskController extends InsideController
 {
-    /**
-     * @var SystemTask
-     */
     protected SystemTask $model;
     
     
@@ -44,7 +41,7 @@ class TaskController extends InsideController
      * 系统任务
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-server', sort: 1)]
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-server', sort: -90)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
@@ -73,7 +70,7 @@ class TaskController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function delete() : Response
     {
         SimpleForm::init()->batch($this->param('id/a', 'trim'), '请选择要删除的任务', function(string $id) {
@@ -91,7 +88,7 @@ class TaskController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function reset() : Response
     {
         $this->model->reset($this->param('id/s', 'trim'));
@@ -107,7 +104,7 @@ class TaskController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function clean() : Response
     {
         $res = $this->model->clean();
@@ -123,7 +120,7 @@ class TaskController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function optimize() : Response
     {
         return $this->task(Database::class, Database::TYPE_OPTIMIZE)->log(self::LOG_DEFAULT, '优化数据表')->create();
@@ -135,7 +132,7 @@ class TaskController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function repair() : Response
     {
         return $this->task(Database::class, Database::TYPE_REPAIR)->log(self::LOG_DEFAULT, '修复数据表')->create();

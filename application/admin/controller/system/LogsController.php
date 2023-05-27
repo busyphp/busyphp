@@ -24,10 +24,7 @@ use think\Response;
 #[MenuRoute(path: 'system_logs', class: true)]
 class LogsController extends InsideController
 {
-    /**
-     * @var SystemLogs
-     */
-    protected $model;
+    protected SystemLogs $model;
     
     
     protected function initialize($checkLogin = true)
@@ -42,7 +39,7 @@ class LogsController extends InsideController
      * 操作记录
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text-o', sort: 2)]
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text-o', sort: -80)]
     public function index() : Response
     {
         $timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
@@ -93,7 +90,7 @@ class LogsController extends InsideController
      * 清理操作记录
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function clear() : Response
     {
         $len = $this->model->clear();
@@ -109,7 +106,7 @@ class LogsController extends InsideController
      * @throws DataNotFoundException
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function detail() : Response
     {
         $this->assign('info', $this->model->getInfo($this->get('id/d')));

@@ -16,7 +16,7 @@ use think\Response;
  * @version $Id: 2021/2/28 下午9:01 下午 ElementController.php $
  */
 #[MenuRoute(path: 'manual_element', class: true)]
-#[MenuGroup(path: 'developer_manual_element', parent: '#developer_manual', icon: 'fa fa-wpforms', canDisable: false)]
+#[MenuGroup(path: 'developer_manual_element', parent: '#developer_manual', icon: 'fa fa-wpforms', sort: -100, canDisable: false)]
 class ElementController extends InsideController
 {
     protected function initialize($checkLogin = true)

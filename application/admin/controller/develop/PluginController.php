@@ -38,7 +38,7 @@ class PluginController extends InsideController
     /**
      * 插件管理
      */
-    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-plug', sort: 30, canDisable: false)]
+    #[MenuNode(menu: true, parent: '#developer', icon: 'fa fa-plug', sort: -80, canDisable: false)]
     public function index() : Response
     {
         if ($table = Table::initIfRequest()) {
@@ -61,7 +61,7 @@ class PluginController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function install() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->install();
@@ -73,7 +73,7 @@ class PluginController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function uninstall() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->uninstall();
@@ -85,7 +85,7 @@ class PluginController extends InsideController
      * @return Response
      * @throws DataNotFoundException
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function setting() : Response
     {
         return $this->manager($this->param('package/s', 'trim'))->setting();

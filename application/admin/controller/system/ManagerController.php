@@ -42,10 +42,7 @@ use Throwable;
 #[MenuRoute(path: 'system_manager', class: true)]
 class ManagerController extends InsideController
 {
-    /**
-     * @var string
-     */
-    protected $disk;
+    protected string $disk;
     
     
     protected function initialize($checkLogin = true)
@@ -78,7 +75,7 @@ class ManagerController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-cogs', sort: 1)]
+    #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-cogs', sort: -100)]
     public function index() : Response
     {
         if ($this->isPost()) {
@@ -106,7 +103,7 @@ class ManagerController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function admin() : Response
     {
         if ($this->isPost()) {
@@ -134,7 +131,7 @@ class ManagerController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function storage() : Response
     {
         $setting = StorageSetting::instance();
@@ -162,7 +159,7 @@ class ManagerController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function file_class() : Response
     {
         // 分类列表数据
@@ -191,7 +188,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/file_class')]
+    #[MenuNode(menu: false, parent: '/file_class', sort: -100)]
     public function file_class_add() : Response
     {
         if ($this->isPost()) {
@@ -219,7 +216,7 @@ class ManagerController extends InsideController
      * @throws DataNotFoundException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/file_class')]
+    #[MenuNode(menu: false, parent: '/file_class', sort: -90)]
     public function file_class_edit() : Response
     {
         if ($this->isPost()) {
@@ -245,7 +242,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/file_class')]
+    #[MenuNode(menu: false, parent: '/file_class', sort: -80)]
     public function file_class_delete() : Response
     {
         $model = SystemFileClass::init();
@@ -264,7 +261,7 @@ class ManagerController extends InsideController
      * 排序文件分类
      * @throws DbException
      */
-    #[MenuNode(menu: false, parent: '/file_class')]
+    #[MenuNode(menu: false, parent: '/file_class', sort: -70)]
     public function file_class_sort() : Response
     {
         SimpleForm::init(SystemFileClass::init())->sort('sort', SystemFileClassField::sort());
@@ -279,7 +276,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function image_style() : Response
     {
         if ($table = Table::initIfRequest()) {
@@ -304,7 +301,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws ReflectionException
      */
-    #[MenuNode(menu: false, parent: '/image_style')]
+    #[MenuNode(menu: false, parent: '/image_style', sort: -100)]
     public function image_style_add() : Response
     {
         if ($this->isPost()) {
@@ -329,7 +326,7 @@ class ManagerController extends InsideController
      * 修改图片样式
      * @return Response
      */
-    #[MenuNode(menu: false, parent: '/image_style')]
+    #[MenuNode(menu: false, parent: '/image_style', sort: -90)]
     public function image_style_edit() : Response
     {
         if ($this->isPost()) {
@@ -353,7 +350,7 @@ class ManagerController extends InsideController
     /**
      * 删除图片样式
      */
-    #[MenuNode(menu: false, parent: '/image_style')]
+    #[MenuNode(menu: false, parent: '/image_style', sort: -80)]
     public function image_style_delete() : Response
     {
         $driver = Filesystem::disk($this->disk)->image();
@@ -424,7 +421,7 @@ class ManagerController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -50)]
     public function captcha() : Response
     {
         $setting = CaptchaSetting::instance();
@@ -450,7 +447,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '#system_manager')]
+    #[MenuNode(menu: false, parent: '#system_manager', sort: 1000)]
     public function cache_clear() : Response
     {
         $this->clearCache();
@@ -465,7 +462,7 @@ class ManagerController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '#system_manager')]
+    #[MenuNode(menu: false, parent: '#system_manager', sort: 1010)]
     public function cache_create() : Response
     {
         $this->updateCache();

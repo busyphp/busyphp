@@ -29,9 +29,6 @@ use Throwable;
 #[MenuRoute(path: 'system_group', class: true)]
 class GroupController extends InsideController
 {
-    /**
-     * @var AdminGroup
-     */
     protected AdminGroup $model;
     
     
@@ -47,7 +44,7 @@ class GroupController extends InsideController
      * 系统角色管理
      * @return Response
      */
-    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-lock', sort: 2)]
+    #[MenuNode(menu: true, parent: '#system_user', icon: 'bicon bicon-user-lock', sort: -90)]
     public function index() : Response
     {
         // 系统角色列表数据
@@ -69,7 +66,7 @@ class GroupController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -100)]
     public function add() : Response
     {
         // 添加
@@ -100,7 +97,7 @@ class GroupController extends InsideController
      * @throws DbException
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function edit() : Response
     {
         // 修改
@@ -165,7 +162,7 @@ class GroupController extends InsideController
      * 删除角色
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function delete() : Response
     {
         foreach ($this->param('id/a', 'intval') as $id) {
@@ -183,7 +180,7 @@ class GroupController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -70)]
     public function change_status() : Response
     {
         $status = $this->get('status/b');
@@ -199,7 +196,7 @@ class GroupController extends InsideController
      * @return Response
      * @throws Throwable
      */
-    #[MenuNode(menu: false, parent: '/index')]
+    #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function sort() : Response
     {
         SimpleForm::init($this->model)->sort('sort', AdminGroupField::sort());
