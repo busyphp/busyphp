@@ -270,20 +270,27 @@ class AdminHandle extends Handle implements ContainerInterface
     
     /**
      * Rest响应
-     * @param int    $code 错误码，1为成功
-     * @param string $message 消息
-     * @param array  $result 数据
-     * @param mixed  $url 跳转的URL
+     * @param int              $code 错误码，1为成功
+     * @param string|Throwable $message 消息
+     * @param array            $result 数据
+     * @param string|Url       $url 跳转的URL
      * @return Response
      */
-    public function json(int $code = 1, string $message = '', array $result = [], $url = '') : Response
+    public function json(int $code = 1, string|Throwable $message = '', array $result = [], string|Url $url = '') : Response
     {
-        $app = $this->app;
-        $url = (string) $url;
+        $app       = $this->app;
+        $url       = (string) $url;
+        $exception = [];
         
         if ($code === 1) {
             if ($result && !ArrayHelper::isAssoc($result)) {
                 return $this->json(0, '返回数据结构必须是键值对形式');
+            }
+        } elseif ($message instanceof Throwable) {
+            $exception = $this->convertExceptionToArray($message);
+            $message   = $exception['message'];
+            if (!$code && $exception['code'] !== 1) {
+                $code = $exception['code'];
             }
         }
         
@@ -295,22 +302,22 @@ class AdminHandle extends Handle implements ContainerInterface
         ];
         
         if ($app->isDebug()) {
-            $runtime = number_format(microtime(true) - $app->getBeginTime(), 10, '.', '');
-            $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
-            $mem     = number_format((memory_get_usage() - $app->getBeginMem()) / 1024, 2);
-            $uri     = $app->request->protocol() . ' ' . $app->request->method() . ' : ' . $app->request->url(true);
-            $files   = get_included_files();
-            
-            $data['debugs'] = [
-                'request' => sprintf("%s %s", date('Y-m-d H:i:s', $app->request->time() ?: time()), $uri),
-                'runtime' => sprintf("%ss [ 吞吐率：%sreq/s ] 内存消耗：%skb 文件加载：%s", number_format((float) $runtime, 6), $reqs, $mem, count($files)),
+            $runtime       = number_format(microtime(true) - $app->getBeginTime(), 10, '.', '');
+            $data['debug'] = [
+                'runtime' => sprintf("%ss", number_format((float) $runtime, 6)),
+                'mbps'    => sprintf("%sreq/s", $runtime > 0 ? number_format(1 / $runtime, 2) : '∞'),
+                'memory'  => sprintf("%skb", number_format((memory_get_usage() - $app->getBeginMem()) / 1024, 2)),
                 'query'   => sprintf("%s queries", $app->db->getQueryTimes()),
                 'cache'   => sprintf("%s reads,%s writes", $app->cache->getReadTimes(), $app->cache->getWriteTimes()),
                 'cookies' => $app->request->cookie(),
                 'session' => $app->exists('session') ? $app->session->all() : [],
-                'files'   => $files,
+                'files'   => get_included_files(),
             ];
-            $data['traces'] = trace();
+            $data['trace'] = trace();
+            
+            if ($exception) {
+                $data['exception'] = $exception;
+            }
         }
         
         return Response::create($data, 'json');
@@ -347,27 +354,15 @@ class AdminHandle extends Handle implements ContainerInterface
      */
     public function jsonError(mixed $message = '', string|Url|int|array $url = '', int $code = 0) : Response
     {
-        $errorCode = 0;
-        $result    = [];
-        if ($message instanceof Throwable) {
-            $result    = $this->convertExceptionToArray($message);
-            $message   = $result['message'];
-            $errorCode = $result['code'];
-            unset($result['message'], $result['code']);
-        }
-        
+        $result = [];
         if (is_int($url)) {
-            $code = (int) $url;
+            $code = $url;
             $url  = '';
         } elseif (is_array($url)) {
             if (ArrayHelper::isAssoc($url)) {
                 $result += $url;
             }
             $url = '';
-        }
-        
-        if (!$code) {
-            $code = $errorCode;
         }
         
         return $this->json($code === 1 ? 0 : $code, $message, $result, $url);
