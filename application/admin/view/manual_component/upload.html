@@ -83,11 +83,11 @@
 | data-files-ui | string | `否` | `true` | UI模式，`all:全部`,`result:只显示结果区域`,`queue:只显示上传队列区域` |
 | data-files-grid | boolean | `否` | `false` | 是否使用网格布局 |
 | data-files-grid-width | number | `否` | `null` | 网格宽度 |
-| data-files-edit-filename | boolean | `否` | `true` | 是否允许修改文件名 |
+| data-files-edit-filename | boolean | `否` | `false` | 是否允许修改文件名 |
 | data-files-value-url | boolean | `否` | `false` | 是否只输出URL，如果指定字符串，将按照该字符串分割 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形` |
-| data-card-size | string | `否` | - | 设置card尺寸依据，支持：`parent` 依据上级大小调整 |
+| data-card-size | string,array | `否` | - | 设置card尺寸，格式：`width,height`，支持指定：`parent` 则依据父节点大小调整 |
 | data-card-icon | string | `否` | - | 设置card图标 |
 | data-card-radius | string | `否` | - | 设置card圆角大小 |
 | 自定义上传 `type="use"`:title |  |  |  |  |
@@ -95,6 +95,26 @@
 | data-use-dnd | string | `否` | - | 设置接收文件拖拽的容器jQuery选择器，如`#dndBox` |
 | data-use-progress | boolean | `否` | `false` | 是否自定义进度UI |
 | data-use-error | boolean | `否` | `false` | 是否自定义错误提示UI |
+| 事件回调 :title |  |  |  |  |
+| data-on-ready | string,Function | `否` | - | 准备完成 |
+| data-on-before-send | string,Function | `否` | - | 当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次 |
+| data-on-result-accept | string,Function | `否` | - | 文件校验回调 |
+| data-on-file-error | string,Function | `否` | - | 文件校验失败回调 |
+| data-on-file-queued | string,Function | `否` | - | 文件加入列队后触发 |
+| data-on-files-queued | string,Function | `否` | - | 一批文件加入列队后触发 |
+| data-on-file-dequeued | string,Function | `否` | - | 当文件被移除队列后触发 |
+| data-on-reset | string,Function | `否` | - | 被重置的时候触发 |
+| data-on-begin | string,Function | `否` | - | 当开始上传流程时触发 |
+| data-on-stop | string,Function | `否` | - | 当开始上传流程暂停时触发 |
+| data-on-finished | string,Function | `否` | - | 当所有文件上传结束时触发 |
+| data-on-start | string,Function | `否` | - | 单个文件开始上传时触发 |
+| data-on-progress | string,Function | `否` | - | 传过程中触发，上传进度 |
+| data-on-complete | string,Function | `否` | - | 上传完成触发 |
+| data-on-error | string,Function | `否` | - | 上传失败触发 |
+| data-on-success | string,Function | `否` | - | 上传成功触发 |
+| data-on-result | string,Function | `否` | - | 结果变化时触发 |
+| data-on-change | string,Function | `否` | - | value变化时触发 |
+
 
 ### 使用示例
 
@@ -186,8 +206,10 @@
 
     <template class="hide" id="demo3">
 <h5>图片上传</h5>
-<div style="width: 150px;" id="demo3_image" data-toggle="busy-upload"
+<div id="demo3_image" data-toggle="busy-upload"
      data-type="card"
+     data-title="图片"
+     data-card-size="100%,200px"
      data-allow-extensions="jpg,jpeg,png,webp,gif"
      data-allow-mimetypes="image/*"
      data-auto="false"
@@ -196,27 +218,28 @@
 
 <h5>视频上传</h5>
 
-<div style="width: 150px;" id="demo3_video" data-toggle="busy-upload"
+<input style="width: 150px; height: 150px" id="demo3_video" data-toggle="busy-upload"
      data-type="card"
+     data-title="视频"
      data-allow-extensions="mp4"
      data-allow-mimetypes="video/mp4"
      data-card-icon="fa fa-file-video-o"
      data-auto="false"
-     data-name="demo3_video"></div>
+     data-name="demo3_video" />
 
 <hr/>
 
 <h5>头像上传</h5>
-<div style="width: 200px; height: 200px;">
-    <input style="width: 150px;" id="demo3_avatar" data-toggle="busy-upload"
+<div style="height: 200px; width: 200px;">
+    <input id="demo3_avatar" data-toggle="busy-upload"
            data-type="card"
+           data-title="头像"
            data-allow-extensions="jpg,jpeg,png,webp,gif"
            data-allow-mimetypes="image/*"
            data-card-type="circle"
            data-card-icon="fa fa-image"
            data-card-size="parent"
-           data-auto="false"
-           data-placeholder="请上传头像" />
+           data-auto="false" />
 </div>
 
     </template>
@@ -227,6 +250,8 @@
        data-toggle="busy-upload"
        data-use-select="#demo4SelectBtn"
        id="demo4UploadBtn"
+       data-on-result="demo4OnResult"
+       data-on-change="demo4OnChange"
        data-type="use">
         <i class="fa fa-file"></i> 上传文件
     </a>
@@ -236,6 +261,12 @@
 </div>
 
 <script>
+    busyAdmin.data.demo4OnResult = function () {
+        console.log(arguments);
+    }
+    busyAdmin.data.demo4OnChange = function () {
+        console.log(1, arguments);
+    }
     $('#demo4UploadBtn').on(busyAdmin.e.uploadResult, function (e, file) {
         busyAdmin.dialog.toast(file.url);
     });
