@@ -85,6 +85,7 @@
 | data-files-grid-width | number | `否` | `null` | 网格宽度 |
 | data-files-edit-filename | boolean | `否` | `false` | 是否允许修改文件名 |
 | data-files-value-url | boolean | `否` | `false` | 是否只输出URL，如果指定字符串，将按照该字符串分割 |
+| data-files-sortable | boolean | `否` | `false` | 是否允许拖拽排序 |
 | 卡片上传 `type="card"`:title |  |  |  |  |
 | data-card-type | string | `否` | - | 设置card类型，支持：`circle：圆形` |
 | data-card-size | string,array | `否` | - | 设置card尺寸，格式：`width,height`，支持指定：`parent` 则依据父节点大小调整 |
@@ -190,6 +191,7 @@
      data-auto="false"
      data-name="demo2_banner"
      data-files-grid="true"
+     data-files-sortable="true"
      data-files-value-url=","
      data-allow-extensions="jpeg,jpg,png,gif,mp4"
      data-allow-mimetypes="image/*,video/mp4"
