@@ -183,7 +183,7 @@ class ClassHelper
                 $type = trim($match[1]);
                 $name = trim($match[2]);
             } else {
-                $type = 'mixed';
+                $type = trim($match[1]);
             }
             $item[self::ATTR_VAR] = $type;
         } else {
@@ -229,13 +229,16 @@ class ClassHelper
         
         // 解析类型
         $vars = [];
-        foreach (explode('|', $item[self::ATTR_VAR] ?? 'mixed') as $var) {
+        foreach (explode('|', preg_replace('/array(\{.*?}|\<.*?>)/i', 'array', $item[self::ATTR_VAR] ?? 'mixed')) as $var) {
             $var = trim($var);
             if ($var === '') {
                 continue;
             }
             
             $builtin = true;
+            if (str_contains($var, '[]') || 0 === stripos($var, 'array')) {
+                $var = 'array';
+            }
             if (!isset(self::PRIMITIVE_TYPES[$var])) {
                 $var = self::parseValue($class, $var, self::CAST_CLASS);
                 if (!$var) {
