@@ -53,40 +53,40 @@ use Throwable;
 class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, IteratorAggregate, Countable
 {
     /** @var string 属性的权限 */
-    private const ATTR_ACCESS = 'access';
+    public const ATTR_ACCESS = 'access';
     
     /** @var string 属性的类型 */
-    private const ATTR_TYPES = 'types';
+    public const ATTR_TYPES = 'types';
     
     /** @var string 属性的第一个类型 */
-    private const ATTR_VAR_TYPE = 'var_type';
+    public const ATTR_VAR_TYPE = 'var_type';
     
     /** @var string 属性的过滤方法 */
-    private const ATTR_FILTER = 'filter';
+    public const ATTR_FILTER = 'filter';
     
     /** @var string 属性的格式化 */
-    private const ATTR_FORMAT = 'format';
+    public const ATTR_FORMAT = 'format';
     
     /** @var string 属性的说明 */
-    private const ATTR_TITLE = 'title';
+    public const ATTR_TITLE = 'title';
     
     /** @var string 属性的字段名称 */
-    private const ATTR_FIELD = 'field';
+    public const ATTR_FIELD = 'field';
     
     /** @var string 属性的字段类型 */
-    private const ATTR_FIELD_TYPE = 'field_type';
+    public const ATTR_FIELD_TYPE = 'field_type';
     
     /** @var string 属性名称 */
-    private const ATTR_NAME = 'name';
+    public const ATTR_NAME = 'name';
     
     /** @var string 属性验证规则 */
-    private const ATTR_VALIDATE = 'validate';
+    public const ATTR_VALIDATE = 'validate';
     
     /** @var string 导出字段 */
-    private const ATTR_EXPORT = 'export';
+    public const ATTR_EXPORT = 'export';
     
     /** @var string 导入字段 */
-    private const ATTR_IMPORT = 'import';
+    public const ATTR_IMPORT = 'import';
     
     /** @var string 输出属性格式注解 */
     private const MAP_TO_ARRAY_FORMAT = 'to_array_format';
