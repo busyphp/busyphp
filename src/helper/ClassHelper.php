@@ -132,7 +132,7 @@ class ClassHelper
     public static function getConstAttrs($objectOrClass, string $prefix = '', $attrsOrMapKey = [], $mapKey = null, string $memoryCacheKey = '') : array
     {
         $classname = self::getAbsoluteClassname($objectOrClass);
-        $key       = md5($classname . serialize($attrsOrMapKey) . $memoryCacheKey);
+        $key       = md5($classname . $prefix . serialize($attrsOrMapKey) . $memoryCacheKey);
         
         if (isset(self::$constAttrs[$key])) {
             return self::$constAttrs[$key];
