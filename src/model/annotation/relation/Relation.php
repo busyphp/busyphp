@@ -36,7 +36,7 @@ abstract class Relation
     {
         $fieldClass = $model->getFieldClass();
         if (!$name = $fieldClass::getPropertyName($field)) {
-            throw new RuntimeException('Cannot find property "%s" in class "%s"', $this->foreignKey, $fieldClass);
+            throw new RuntimeException(sprintf('Cannot find property "%s" in class "%s"', $this->foreignKey, $fieldClass));
         }
         
         return $name;
