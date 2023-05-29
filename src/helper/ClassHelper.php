@@ -229,7 +229,7 @@ class ClassHelper
         
         // 解析类型
         $vars = [];
-        foreach (explode('|', preg_replace('/array(\{.*?}|\<.*?>)/i', 'array', $item[self::ATTR_VAR] ?? 'mixed')) as $var) {
+        foreach (explode('|', preg_replace('/array(\{.*?}|<.*?>)/i', 'array', $item[self::ATTR_VAR] ?? 'mixed')) as $var) {
             $var = trim($var);
             if ($var === '') {
                 continue;
