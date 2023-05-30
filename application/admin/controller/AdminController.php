@@ -236,59 +236,97 @@ abstract class AdminController extends Controller
     
     /**
      * 成功提示
-     * @param string|array $message 消息或成功数据
-     * @param string|array $jumpUrl 跳转地址或成功数据
-     * @param array        $data 成功数据
+     * @param mixed $message 成功消息/成功数据/跳转URL
+     * @param mixed $url 成功数据/跳转地址
+     * @param mixed $data 成功数据
      * @return Response
      */
-    protected function success($message = '', $jumpUrl = '', array $data = []) : Response
+    protected function success(mixed $message = null, mixed $url = null, mixed $data = null) : Response
     {
-        if (is_array($jumpUrl)) {
-            $data    = $jumpUrl;
-            $jumpUrl = '';
+        $redirect = false;
+        
+        // $message 是 Url 对象
+        if ($message instanceof Url) {
+            $redirect = true;
+            $url      = $message;
+            $message  = '';
+            $data     = [];
         }
         
-        if (is_array($message)) {
+        // $message 为 array 或 object
+        // 此时 $url 只能是 string 或 Url 对象
+        if (is_array($message) || is_object($message)) {
             $data    = $message;
             $message = '';
+            
+            if (!$url instanceof Url) {
+                $url = (string) $url;
+            }
         }
         
-        if (($this->isAjax() || $data) && !AdminHandle::isSinglePage()) {
-            return $this->handle->jsonSuccess($message, $data, $jumpUrl);
+        // $url 为 array 或 object 且不是 Url 对象
+        // 此时 $message 只能是字符串
+        if (!$url instanceof Url && (is_array($url) || is_object($url))) {
+            $data    = $url;
+            $url     = '';
+            $message = (string) $message;
         }
         
-        return parent::success($message, $jumpUrl);
+        $message = (string) $message;
+        if (!$url instanceof Url) {
+            $url = (string) $url;
+        }
+        
+        if (($this->isAjax() || is_array($data) || is_object($data)) && !AdminHandle::isSinglePage()) {
+            return $this->handle->success($message, $data ?: [], $url);
+        }
+        
+        return $redirect ? $this->redirect($url) : parent::success($message, $url);
     }
     
     
     /**
      * 错误提示
-     * @param string|Throwable $message 错误消息或异常对象
-     * @param string|Url|int   $jumpUrl 跳转地址或错误代码
-     * @param int              $code 错误码
+     * @param string|Url|Throwable $message 错误消息/异常对象/跳转地址
+     * @param int|string|Url       $url 错误码/跳转地址
+     * @param int                  $code 错误码
      * @return Response
      */
-    protected function error($message, $jumpUrl = '', int $code = 0) : Response
+    protected function error(string|Url|Throwable $message, int|string|Url $url = '', int $code = 0) : Response
     {
-        if ($this->isAjax()) {
-            return $this->handle->jsonError($message, $jumpUrl, $code);
+        // $message 是 Url 对象
+        $redirect = false;
+        if ($message instanceof Url) {
+            $redirect = true;
+            $url      = $message;
+            $message  = '';
         }
         
-        return parent::error($message, $jumpUrl);
+        // $url 为 int
+        if (is_int($url)) {
+            $code = $url;
+            $url  = '';
+        }
+        
+        if ($this->isAjax()) {
+            return $this->handle->error($message, $url, $code);
+        }
+        
+        return $redirect ? $this->redirect($url) : parent::error($message, $url);
     }
     
     
     /**
      * @inheritDoc
      */
-    protected function dispatchJump($message, bool $status = true, $jumpUrl = '') : Response
+    protected function dispatchJump(string $message, bool $status = true, string|Url $url = '') : Response
     {
         // 覆盖模板
         $this->app->config->set(['error_tmpl' => __DIR__ . DIRECTORY_SEPARATOR . '../view/message.html'], 'app');
         $this->app->config->set(['success_tmpl' => __DIR__ . DIRECTORY_SEPARATOR . '../view/message.html'], 'app');
         $this->pageTitle = $message;
         
-        return parent::dispatchJump($message, $status, $jumpUrl);
+        return parent::dispatchJump($message, $status, $url);
     }
     
     

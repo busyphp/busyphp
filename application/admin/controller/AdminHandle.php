@@ -247,7 +247,7 @@ class AdminHandle extends Handle implements ContainerInterface
         }
         
         if ($request->isAjax() && !self::isSinglePage()) {
-            return $this->jsonError($e);
+            return $this->error($e);
         }
         
         if ($request->isJson()) {
@@ -272,21 +272,18 @@ class AdminHandle extends Handle implements ContainerInterface
      * Rest响应
      * @param int              $code 错误码，1为成功
      * @param string|Throwable $message 消息
-     * @param array            $result 数据
+     * @param array|object     $result 数据
      * @param string|Url       $url 跳转的URL
      * @return Response
      */
-    public function json(int $code = 1, string|Throwable $message = '', array $result = [], string|Url $url = '') : Response
+    public function response(int $code = 1, string|Throwable $message = '', array|object $result = [], string|Url $url = '') : Response
     {
-        $app       = $this->app;
-        $url       = (string) $url;
-        $exception = [];
+        if ($code === 1 && is_array($result) && $result && !ArrayHelper::isAssoc($result)) {
+            return $this->response(0, '返回数据结构必须是键值对形式');
+        }
         
-        if ($code === 1) {
-            if ($result && !ArrayHelper::isAssoc($result)) {
-                return $this->json(0, '返回数据结构必须是键值对形式');
-            }
-        } elseif ($message instanceof Throwable) {
+        $exception = [];
+        if ($message instanceof Throwable) {
             $exception = $this->convertExceptionToArray($message);
             $message   = $exception['message'];
             if (!$code && $exception['code'] !== 1) {
@@ -298,19 +295,19 @@ class AdminHandle extends Handle implements ContainerInterface
             'code'    => $code,
             'message' => $message ?: ($code === 1 ? 'Succeeded' : 'Failed'),
             'result'  => $result ?: new stdClass(),
-            'url'     => $url,
+            'url'     => (string) $url,
         ];
         
-        if ($app->isDebug()) {
-            $runtime       = number_format(microtime(true) - $app->getBeginTime(), 10, '.', '');
+        if ($this->app->isDebug()) {
+            $runtime       = number_format(microtime(true) - $this->app->getBeginTime(), 10, '.', '');
             $data['debug'] = [
                 'runtime' => sprintf("%ss", number_format((float) $runtime, 6)),
                 'mbps'    => sprintf("%sreq/s", $runtime > 0 ? number_format(1 / $runtime, 2) : '∞'),
-                'memory'  => sprintf("%skb", number_format((memory_get_usage() - $app->getBeginMem()) / 1024, 2)),
-                'query'   => sprintf("%s queries", $app->db->getQueryTimes()),
-                'cache'   => sprintf("%s reads,%s writes", $app->cache->getReadTimes(), $app->cache->getWriteTimes()),
-                'cookies' => $app->request->cookie(),
-                'session' => $app->exists('session') ? $app->session->all() : [],
+                'memory'  => sprintf("%skb", number_format((memory_get_usage() - $this->app->getBeginMem()) / 1024, 2)),
+                'query'   => sprintf("%s queries", $this->app->db->getQueryTimes()),
+                'cache'   => sprintf("%s reads,%s writes", $this->app->cache->getReadTimes(), $this->app->cache->getWriteTimes()),
+                'cookies' => $this->app->request->cookie(),
+                'session' => $this->app->exists('session') ? $this->app->session->all() : [],
                 'files'   => get_included_files(),
             ];
             $data['trace'] = trace();
@@ -326,45 +323,48 @@ class AdminHandle extends Handle implements ContainerInterface
     
     /**
      * Rest响应成功
-     * @param string|array     $message 成功消息或成功的数据
-     * @param array|string|Url $result 成功数据或跳转的URL
-     * @param string|Url       $url 跳转的地址
+     * @param mixed      $message 成功消息或成功的数据
+     * @param mixed      $result 成功数据或跳转的URL
+     * @param string|Url $url 跳转的地址
      * @return Response
      */
-    public function jsonSuccess(string|array $message = '', array|string|Url $result = [], string|Url $url = '') : Response
+    public function success(mixed $message = '', mixed $result = [], string|Url $url = '') : Response
     {
-        if (is_array($message)) {
-            $url     = is_array($result) ? '' : $result;
-            $result  = $message;
+        // $message 为 Url 对象，则只保留 $message
+        if ($message instanceof Url) {
+            $url     = $message;
             $message = '';
-        } elseif (!is_array($result) && $result) {
-            $url = $result;
+            $result  = [];
         }
         
-        return $this->json(1, $message, $result, $url);
+        // $message 为 array 或 object，此时 $result 只能是 Url 对象 或 string
+        if (is_array($message) || is_object($message)) {
+            $url = '';
+            if ($result instanceof Url || is_string($result)) {
+                $url = $result;
+            }
+            $result  = $message;
+            $message = '';
+        }
+        
+        return $this->response(1, $message, $result, $url);
     }
     
     
     /**
      * Rest响应失败
-     * @param string|Throwable     $message 失败消息或异常类对象
-     * @param string|Url|int|array $url 跳转地址或错误代码或错误数据
-     * @param int                  $code 错误代码
+     * @param string|Throwable $message 失败消息或异常类对象
+     * @param string|Url|int   $url 跳转地址或错误代码或错误数据
+     * @param int              $code 错误代码
      * @return Response
      */
-    public function jsonError(mixed $message = '', string|Url|int|array $url = '', int $code = 0) : Response
+    public function error(string|Throwable $message = '', string|Url|int $url = '', int $code = 0) : Response
     {
-        $result = [];
         if (is_int($url)) {
             $code = $url;
             $url  = '';
-        } elseif (is_array($url)) {
-            if (ArrayHelper::isAssoc($url)) {
-                $result += $url;
-            }
-            $url = '';
         }
         
-        return $this->json($code === 1 ? 0 : $code, $message, $result, $url);
+        return $this->response($code === 1 ? 0 : $code, $message, [], $url);
     }
 }
