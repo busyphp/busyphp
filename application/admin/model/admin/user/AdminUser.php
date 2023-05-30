@@ -341,7 +341,7 @@ class AdminUser extends Model implements ContainerInterface
      * @throws DbException
      * @throws Throwable
      */
-    public function setLoginSuccess(AdminUserField $userInfo, int $type = SystemToken::DEFAULT_TYPE) : SystemTokenField
+    public function setLoginSuccess(AdminUserField $userInfo, int $type) : SystemTokenField
     {
         $data = AdminUserField::init();
         $data->setId($userInfo->id);
