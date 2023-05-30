@@ -63,7 +63,7 @@ class LogsController extends InsideController
         }
         
         // 操作类型
-        $typeList = $this->model::getTypes();
+        $typeList = $this->model::getTypeMap();
         $typeList = [-1 => '不限'] + $typeList;
         $this->assign('types', $typeList);
         

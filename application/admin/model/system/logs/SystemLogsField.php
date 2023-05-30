@@ -170,7 +170,7 @@ class SystemLogsField extends Field
      */
     #[Ignore]
     #[ValueBindField([self::class, 'type'])]
-    #[Filter([SystemLogs::class, 'getTypes'])]
+    #[Filter([SystemLogs::class, 'getTypeMap'])]
     public $typeName;
     
     /**
