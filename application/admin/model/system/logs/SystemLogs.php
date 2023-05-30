@@ -7,12 +7,14 @@ use BusyPHP\App;
 use BusyPHP\helper\AppHelper;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
+use BusyPHP\helper\LogHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use BusyPHP\Service;
 use Exception;
 use think\db\exception\DbException;
+use Throwable;
 
 /**
  * 系统操作记录模型
@@ -55,12 +57,12 @@ class SystemLogs extends Model implements ContainerInterface
      * 设置操作用户
      * @param int    $userId 用户ID
      * @param string $username 用户名
-     * @return $this
+     * @return static
      */
-    public function setUser(int $userId, $username = '') : self
+    public function setUser(int $userId, string $username = '') : static
     {
         $this->setOption('logs_user_id', $userId);
-        $this->setOption('logs_username', trim($username));
+        $this->setOption('logs_username', $username);
         
         return $this;
     }
@@ -70,12 +72,12 @@ class SystemLogs extends Model implements ContainerInterface
      * 设置业务类型以及业务参数
      * @param string|int $type 业务类型
      * @param string     $value 业务参数
-     * @return $this
+     * @return static
      */
-    public function setClass($type, $value = '') : self
+    public function setClass(string|int $type, string $value = '') : static
     {
         $this->setOption('logs_class_type', $type);
-        $this->setOption('logs_class_value', trim($value));
+        $this->setOption('logs_class_value', $value);
         
         return $this;
     }
@@ -84,9 +86,9 @@ class SystemLogs extends Model implements ContainerInterface
     /**
      * 设置过滤的参数键
      * @param array $keys
-     * @return $this
+     * @return static
      */
-    public function filterParams(array $keys = []) : self
+    public function filterParams(array $keys = []) : static
     {
         $this->setOption('logs_params_keys', $keys);
         
@@ -101,7 +103,7 @@ class SystemLogs extends Model implements ContainerInterface
      * @param string $result 操作结果
      * @return int|false
      */
-    public function record(int $type, string $name, string $result = '')
+    public function record(int $type, string $name, string $result = '') : false|int
     {
         try {
             $app        = App::getInstance();
@@ -139,7 +141,9 @@ class SystemLogs extends Model implements ContainerInterface
             $data->setResult($result);
             
             return $this->insert($data);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+            LogHelper::default()->tag('记录操作日志失败', __METHOD__)->error($e);
+            
             return false;
         }
     }
@@ -162,11 +166,11 @@ class SystemLogs extends Model implements ContainerInterface
      * 查询日志分类
      * @param string|int $type
      * @param string     $value
-     * @return $this
+     * @return static
      */
-    public function whereClass($type, string $value = '') : self
+    public function whereClass(string|int $type, string $value = '') : static
     {
-        $this->where(SystemLogsField::classType($type));
+        $this->where(SystemLogsField::classType((string) $type));
         if ($value !== '') {
             $this->where(SystemLogsField::classValue($value));
         }
@@ -180,7 +184,7 @@ class SystemLogs extends Model implements ContainerInterface
      * @param int $var
      * @return array|string
      */
-    public static function getTypes($var = null)
+    public static function getTypeMap($var = null) : array|string
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TYPE_', ClassHelper::ATTR_NAME), $var);
     }
