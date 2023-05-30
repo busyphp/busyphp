@@ -67,6 +67,9 @@ class AdminUser extends Model implements ContainerInterface
     /** @var string 操作场景-修改个人资料 */
     const SCENE_PROFILE = 'profile';
     
+    /** @var string 操作场景-自定义验证 */
+    const SCENE_CUSTOM = 'custom';
+    
     // +----------------------------------------------------
     // + 性别
     // +----------------------------------------------------
@@ -126,7 +129,7 @@ class AdminUser extends Model implements ContainerInterface
         return $this->transaction(function() use ($data, $prepare) {
             $this->validate($data, static::SCENE_CREATE);
             $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
-            $info = $this->getInfo($this->insert($data->setCreateTime(time())->setUpdateTime(time())));
+            $info = $this->getInfo($this->insert($data));
             $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info));
             
             return $info;
@@ -137,20 +140,24 @@ class AdminUser extends Model implements ContainerInterface
     /**
      * 修改管理员
      * @param AdminUserField $data 数据
-     * @param string         $scene 场景
+     * @param string|Closure $scene 场景或验证回调
      * @return AdminUserField
      * @throws Throwable
      */
-    public function modify(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserField
+    public function modify(AdminUserField $data, string|Closure $scene = self::SCENE_UPDATE) : AdminUserField
     {
-        $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $scene), true);
+        $sceneName = $scene;
+        if ($scene instanceof Closure) {
+            $sceneName = static::SCENE_CUSTOM;
+        }
+        $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $sceneName), true);
         
-        return $this->transaction(function() use ($data, $scene, $prepare) {
+        return $this->transaction(function() use ($data, $scene, $sceneName, $prepare) {
             $info = $this->lock(true)->getInfo($data->id);
             $this->validate($data, $scene, $info);
-            $this->trigger(new AdminUserEventUpdateBefore($this, $data, $scene, $prepare, $info));
-            $this->update($data->setUpdateTime(time()));
-            $this->trigger(new AdminUserEventUpdateAfter($this, $data, $scene, $prepare, $info, $info = $this->getInfo($info->id)));
+            $this->trigger(new AdminUserEventUpdateBefore($this, $data, $sceneName, $prepare, $info));
+            $this->update($data);
+            $this->trigger(new AdminUserEventUpdateAfter($this, $data, $sceneName, $prepare, $info, $info = $this->getInfo($info->id)));
             
             return $info;
         });

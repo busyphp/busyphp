@@ -9,6 +9,8 @@ use BusyPHP\helper\TransHelper;
 use BusyPHP\interfaces\FieldGetModelDataInterface;
 use BusyPHP\interfaces\ModelValidateInterface;
 use BusyPHP\Model;
+use BusyPHP\model\annotation\field\AutoTimestamp;
+use BusyPHP\model\annotation\field\Column;
 use BusyPHP\model\annotation\field\Filter;
 use BusyPHP\model\annotation\field\Ignore;
 use BusyPHP\model\annotation\field\Json;
@@ -101,7 +103,7 @@ use think\validate\ValidateRule;
  * @method $this setTheme(mixed $theme) 设置主题配置
  * @method $this setRemark(mixed $theme) 设置简介
  */
-#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
+#[ToArrayFormat(ToArrayFormat::TYPE_SNAKE), AutoTimestamp(type: AutoTimestamp::TYPE_INT)]
 class AdminUserField extends Field implements ModelValidateInterface, FieldGetModelDataInterface
 {
     /**
@@ -272,12 +274,14 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      * 创建时间
      * @var int
      */
+    #[Column(feature: Column::FEATURE_CREATE_TIME)]
     public $createTime;
     
     /**
      * 更新时间
      * @var int
      */
+    #[Column(feature: Column::FEATURE_UPDATE_TIME)]
     public $updateTime;
     
     /**
@@ -585,8 +589,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
                     $this::tel(),
                     $this::qq(),
                     $this::remark(),
-                    $this::createTime(),
-                    $this::updateTime(),
                 ]);
                 
                 return true;
@@ -608,7 +610,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
                         $this::tel(),
                         $this::qq(),
                         $this::remark(),
-                        $this::updateTime()
                     ]);
                 } else {
                     $this->retain($validate, [
@@ -628,7 +629,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
                         $this::tel(),
                         $this::qq(),
                         $this::remark(),
-                        $this::updateTime()
                     ]);
                 }
                 
@@ -649,7 +649,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
                     $this::tel(),
                     $this::qq(),
                     $this::remark(),
-                    $this::updateTime()
                 ]);
                 
                 return true;
@@ -661,7 +660,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
                     $this::id(),
                     $this::password(),
                     $this::confirmPassword(),
-                    $this::updateTime()
                 ]);
                 
                 return true;
