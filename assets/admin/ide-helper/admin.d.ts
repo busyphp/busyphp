@@ -1035,10 +1035,11 @@ declare namespace busyAdmin {
 
     /**
      * 添加自动实例化的方法和选择器
+     * @param {String} name
      * @param {String} selector
      * @param {Function} callback
      */
-    var autoInit: (selector: string, callback: (() => void)) => void;
+    var autoInit: (name: string, selector: string, callback: (() => void)) => void;
 
     /**
      * 添加Require模块
@@ -1105,7 +1106,7 @@ declare namespace busyAdmin {
     /**
      * 准备完成回调
      */
-    var ready: (modules: [string]|string|(() => void), callback?: (...object) => void, queue?: boolean) => void;
+    var ready: (modules: [string] | string | (() => void), callback?: (...object) => void, queue?: boolean) => void;
 
     /**
      * 获取项目跟地址
