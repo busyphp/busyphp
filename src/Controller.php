@@ -370,8 +370,8 @@ abstract class Controller
     
     /**
      * 操作错误跳转的快捷方法
-     * @param mixed  $message 错误信息
-     * @param string $jumpUrl 页面跳转地址
+     * @param mixed      $message 错误信息
+     * @param string|Url $jumpUrl 页面跳转地址
      * @return Response
      */
     protected function error($message, $jumpUrl = '') : Response
@@ -382,8 +382,8 @@ abstract class Controller
     
     /**
      * 操作成功跳转的快捷方法
-     * @param string $message 提示信息
-     * @param string $jumpUrl 页面跳转地址
+     * @param string     $message 提示信息
+     * @param string|Url $jumpUrl 页面跳转地址
      * @return Response
      */
     protected function success($message, $jumpUrl = '') : Response
@@ -395,20 +395,21 @@ abstract class Controller
     /**
      * 默认跳转操作 支持错误导向和正确跳转
      * 提示页面为可配置 支持模板标签
-     * @param mixed  $message 提示信息
-     * @param bool   $status 状态
-     * @param string $jumpUrl 页面跳转地址
+     * @param string|Throwable $message 提示信息
+     * @param bool             $status 状态
+     * @param string|Url       $jumpUrl 页面跳转地址
      * @return Response
      */
     protected function dispatchJump($message, bool $status = true, $jumpUrl = '') : Response
     {
+        $jumpUrl = (string) $jumpUrl;
         if ($message instanceof Throwable) {
             $message = $message->getMessage();
         }
         
         $this->assign('status', $status);
         $this->assign('wait_second', $status ? 1 : 3);
-        $this->assign('message', $message);
+        $this->assign('message', (string) $message);
         if ($status) {
             $this->assign('jump_url', $jumpUrl ?: $this->request->getRedirectUrl($this->request->getAppUrl()));
             $template = $this->app->config->get('app.success_tmpl') ?: __DIR__ . '/../assets/template/message.html';
