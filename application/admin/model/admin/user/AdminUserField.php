@@ -436,7 +436,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      */
     #[Ignore]
     #[ValueBindField(field: [self::class, 'sex'])]
-    #[Filter(filter: [AdminUser::class, 'getSexs'])]
+    #[Filter(filter: [AdminUser::class, 'getSexMap'])]
     public $sexName;
     
     
@@ -546,7 +546,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
         // 性别
         if ($model->getValidateConfig('sex')) {
             $validate->append($this::sex(), ValidateRule::init()->in(
-                rule: array_keys($model::getSexs()),
+                rule: array_keys($model::getSexMap()),
                 msg : '请选择:attribute'
             ));
         }

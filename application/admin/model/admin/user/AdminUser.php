@@ -99,7 +99,7 @@ class AdminUser extends Model implements ContainerInterface
      * @param int|null $sex
      * @return mixed
      */
-    public static function getSexs(int $sex = null) : mixed
+    public static function getSexMap(int $sex = null) : mixed
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'SEX_', ClassHelper::ATTR_NAME), $sex);
     }

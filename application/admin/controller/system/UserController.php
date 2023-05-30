@@ -90,7 +90,7 @@ class UserController extends InsideController
         }
         
         $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
-        $sexs = $this->model::getSexs();
+        $sexs = $this->model::getSexMap();
         $sexs = [0 => '不限'] + $sexs;
         $this->assign('sex', $sexs);
         
