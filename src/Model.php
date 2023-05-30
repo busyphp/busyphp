@@ -825,66 +825,43 @@ abstract class Model extends Query
     
     /**
      * 数据校验
-     * @param array|Field|Validate|string                                 $data 要验证的数据或验证器
-     * @param string|Validate|Field|Closure(Validate $validate):void|null $validate 验证器、验证器类名、验证场景名称、或验证器回调
-     * @param mixed                                                       $sceneName 验证场景或场景数据
-     * @param mixed                                                       $sceneData 场景数据
+     * @param array|Field                                           $data 要验证的数据
+     * @param string|Validate|Closure(Validate $validate):void|null $validate 验证器/验证器类名/或验证器回调/验证场景名称
+     * @param mixed                                                 $sceneName 验证场景/场景数据
+     * @param mixed                                                 $sceneData 场景数据
      * @return $this
      */
-    public function validate($data, $validate = null, $sceneName = null, $sceneData = null) : static
+    public function validate(array|Field $data, string|Validate|Closure $validate = null, mixed $sceneName = null, mixed $sceneData = null) : static
     {
-        $field            = null;
         $validateCallback = null;
-        if (is_array($data) && $validate) {
-            if (is_subclass_of($validate, Field::class)) {
-                $field    = $validate;
-                $validate = null;
-            } elseif (!is_a($validate, Validate::class, true)) {
-                throw new ClassNotExtendsException($validate, Validate::class);
-            }
-        } elseif (is_subclass_of($data, Field::class)) {
-            $field = $data;
-            $data  = [];
-            if ($validate instanceof Closure) {
-                $validateCallback = $validate;
-            } else {
+        
+        // 如果 $data 是 Field 对象
+        if ($data instanceof Field) {
+            // 如果 $validate 不是闭包
+            // 则 $validate 必须是场景名称, $sceneName 必须是场景数据
+            if (!$validate instanceof Closure) {
                 $sceneData = $sceneName;
                 $sceneName = $validate;
-            }
-            $validate = null;
-        } elseif (is_a($data, Validate::class, true)) {
-            $sceneData = $sceneName;
-            $sceneName = $validate;
-            $validate  = $data;
-            $data      = [];
-        } else {
-            throw new InvalidArgumentException('The $validate cannot be empty');
-        }
-        $data = array_merge($this->options['data'] ?? [], $data);
-        
-        // 如果是Field验证，则将data转为字段标准值
-        if ($field) {
-            // 将data合并到Field中
-            if ($field instanceof Field) {
-                foreach ($data as $key => $value) {
-                    $field[$key] = $value;
-                }
             } else {
-                $field = $field::init($data);
+                $validateCallback = $validate;
             }
-            $validate = $field::getValidate();
-        } elseif (is_string($validate)) {
-            $validate = new $validate();
+            
+            $validate = $data::getValidate();
+        } elseif (is_string($validate) && is_subclass_of($validate, Validate::class)) {
+            $validate = new $validate;
+        } elseif (!$validate instanceof Validate) {
+            throw new ClassNotExtendsException($validate, Validate::class);
         }
         
         // 场景验证
+        $sceneName = (string) $sceneName;
         $needCheck = true;
-        if ($field instanceof ModelValidateInterface) {
-            $result = $field->onModelValidate($this, $validate, (string) $sceneName, $sceneData);
+        if ($data instanceof ModelValidateInterface) {
+            $result = $data->onModelValidate($this, $validate, $sceneName, $sceneData);
             if ($result === false) {
                 $needCheck = false;
             } elseif (is_array($result)) {
-                $field->retain($validate, ...$result);
+                $data->retain($validate, ...$result);
             }
         } elseif ($sceneName) {
             $validate->scene($sceneName);
@@ -893,10 +870,10 @@ abstract class Model extends Query
         // 执行验证
         if ($needCheck) {
             $checkData = $data;
-            if ($field) {
+            if ($data instanceof Field) {
                 $checkData = [];
-                foreach ($field::getPropertyList() as $property) {
-                    if (null !== $value = ($field[$property] ?? null)) {
+                foreach ($data::getPropertyList() as $property) {
+                    if (null !== $value = ($data[$property] ?? null)) {
                         $checkData[$property] = $value;
                     }
                 }
@@ -911,7 +888,7 @@ abstract class Model extends Query
         }
         
         // 设置data
-        $this->data($field ?: $data);
+        $this->data($data);
         
         return $this;
     }
