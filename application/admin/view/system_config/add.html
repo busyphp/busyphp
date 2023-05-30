@@ -18,17 +18,43 @@
             </div>
         </div>
 
-        <div class="form-group no-margin-bottom">
-            <label class="col-sm-2 control-label">其它选项</label>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">全局配置</label>
             <div class="col-sm-9">
-                <div class="checkbox-group">
-                    <input type="checkbox" class="pill" title="加入全局配置" data-toggle="busy-checkbox" value="1" name="append" <?=is_checked(($info['append'] ?? 0) == 1)?>/>
-                    <input type="checkbox" class="pill" title="系统配置" data-toggle="busy-checkbox" value="1" name="system" <?=is_checked(($info['system'] ?? 0) == 1)?> <?=is_disabled(($info['system'] ?? 0) == 1)?>/>
+                <div class="btn-group"
+                     data-toggle="buttons"
+                     data-checked-class="btn-primary"
+                     data-default-class="btn-default">
+                    <label class="btn btn-default">
+                        <input name="append" type="radio" value="1" <?=is_checked(($info['append'] ?? 0) == 1)?>/>
+                        是
+                    </label>
+                    <label class="btn btn-default">
+                        <input name="append" type="radio" value="0" <?=is_checked(($info['append'] ?? 0) == 0)?>/>
+                        否
+                    </label>
                 </div>
-                <div class="help-block">
-                    <div><span class="badge">加入全局配置</span> 设置后系统会将配置生成到全局配置文件中，开发中可以使用 <code>config('user.配置标识.*')</code> 取值</div>
-                    <div><span class="badge">系统配置</span> 设置为系统配置后不可修改，系统配置无法删除</div>
+                <div class="help-block">设置后系统会将配置生成到全局配置文件中，开发中可以使用 <code>config('user.配置标识.*')</code> 取值</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label">系统配置</label>
+            <div class="col-sm-9">
+                <div class="btn-group"
+                     data-toggle="buttons"
+                     data-checked-class="btn-primary"
+                     data-default-class="btn-default">
+                    <label class="btn btn-default">
+                        <input name="system" type="radio" value="1" <?=is_checked(($info['system'] ?? 0) == 1)?> <?=is_disabled($info['system'] ?? 0)?>/>
+                        是
+                    </label>
+                    <label class="btn btn-default">
+                        <input name="system" type="radio" value="0" <?=is_checked(($info['system'] ?? 0) == 0)?> <?=is_disabled($info['system'] ?? 0)?>/>
+                        否
+                    </label>
                 </div>
+                <div class="help-block">设置为系统配置后不可修改，无法删除</div>
             </div>
         </div>
     </div>
