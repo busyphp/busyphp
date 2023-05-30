@@ -183,7 +183,7 @@ class ClassHelper
                 $type = trim($match[1]);
                 $name = trim($match[2]);
             } else {
-                $type = trim($match[1]);
+                $type = 'mixed';
             }
             $item[self::ATTR_VAR] = $type;
         } else {
