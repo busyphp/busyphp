@@ -140,7 +140,7 @@ class SystemLogs extends Model implements ContainerInterface
             $data->setParams($params);
             $data->setResult($result);
             
-            return $this->insert($data);
+            return (int) $this->insert($data);
         } catch (Throwable $e) {
             LogHelper::default()->tag('记录操作日志失败', __METHOD__)->error($e);
             
