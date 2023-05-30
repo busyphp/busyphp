@@ -3,7 +3,6 @@ declare (strict_types = 1);
 
 namespace BusyPHP;
 
-use BusyPHP\helper\StringHelper;
 use think\Exception;
 use think\exception\Handle;
 use think\exception\ValidateException;
