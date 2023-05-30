@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BusyPHP\app\admin\model\system\token;
 
+use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\StringHelper;
 use BusyPHP\helper\TransHelper;
@@ -120,6 +121,14 @@ class SystemToken extends Model implements ContainerInterface
      */
     public function updateToken(int $type, int $userType, int $userId, string $token = '') : SystemTokenField
     {
+        if (!in_array($type, array_keys(static::getTypeMap()))) {
+            throw new VerifyException('未知登录类型', 'type');
+        }
+        
+        if (!in_array($userType, array_keys(static::getUserTypeMap()))) {
+            throw new VerifyException('未知用户类型', 'user_type');
+        }
+        
         $data = SystemTokenField::init();
         $data->setId(static::createId($type, $userType, $userId));
         $data->setToken($token ?: StringHelper::random(32));
