@@ -5,6 +5,7 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
+use BusyPHP\app\admin\model\admin\user\AdminUserEventUpdateAfter;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
@@ -107,7 +108,12 @@ class UserController extends InsideController
     public function theme() : Response
     {
         if ($this->isPost()) {
-            $this->model->setTheme($this->adminUserId, $this->post('data/a'));
+            $this->model
+                ->listen(AdminUserEventUpdateAfter::class, function(AdminUserEventUpdateAfter $event) {
+                    $this->handle->saveTheme($event->finalInfo->id, $event->finalInfo->theme);
+                })
+                ->setTheme($this->adminUserId, $this->post('data/a'));
+            
             $this->log()->record(self::LOG_UPDATE, '主题设置');
             
             return $this->success('修改成功');
@@ -133,7 +139,7 @@ class UserController extends InsideController
         
         $list = ArrayHelper::listSortBy($list, 'sort', ArrayHelper::ORDER_BY_ASC);
         $this->assign('list', $list);
-        $this->assign('info', $this->model->getTheme($this->adminUser));
+        $this->assign('info', $this->handle::getTheme($this->adminUser));
         $this->setPageTitle('主题设置');
         
         return $this->insideDisplay();
@@ -146,7 +152,7 @@ class UserController extends InsideController
      * @param int    $index
      * @return array|false
      */
-    protected function parseFile(string $cssFile, int $index)
+    protected function parseFile(string $cssFile, int $index) : false|array
     {
         if (!is_file($cssFile)) {
             return false;

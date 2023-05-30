@@ -51,7 +51,6 @@ use think\validate\ValidateRule;
  * @method static Entity updateTime(mixed $op = null, mixed $condition = null) 更新时间
  * @method static Entity checked(mixed $op = null, mixed $condition = null) 是否审核
  * @method static Entity system(mixed $op = null, mixed $condition = null) 是否系统管理员
- * @method static Entity token(mixed $op = null, mixed $condition = null) 密钥
  * @method static Entity errorTotal(mixed $op = null, mixed $condition = null) 密码错误次数统计
  * @method static Entity errorTime(mixed $op = null, mixed $condition = null) 密码错误开始时间
  * @method static Entity errorRelease(mixed $op = null, mixed $condition = null) 密码错误锁定释放时间
@@ -96,7 +95,6 @@ use think\validate\ValidateRule;
  * @method $this setUpdateTime(mixed $updateTime) 设置更新时间
  * @method $this setChecked(mixed $checked) 设置是否审核
  * @method $this setSystem(mixed $system) 设置是否系统管理员
- * @method $this setToken(mixed $token) 设置密钥
  * @method $this setErrorTotal(mixed $errorTotal) 设置密码错误次数统计
  * @method $this setErrorTime(mixed $errorTime) 设置密码错误开始时间
  * @method $this setErrorRelease(mixed $errorRelease) 设置密码错误锁定释放时间
@@ -293,12 +291,6 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      * @var bool
      */
     public $system;
-    
-    /**
-     * 密钥
-     * @var string
-     */
-    public $token;
     
     /**
      * 密码错误次数统计

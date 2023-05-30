@@ -5,7 +5,7 @@ namespace BusyPHP\app\admin\model\system\file;
 
 use BusyPHP\App;
 use BusyPHP\helper\FileHelper;
-use think\facade\Filesystem;
+use think\facade\Config;
 
 /**
  * 文件图标解析器
@@ -101,7 +101,7 @@ class FileIcons
     {
         static $state;
         if (!isset($state)) {
-            static::$map = (array) Filesystem::getConfig('file_icons', []) + static::$map;
+            static::$map = (array) Config::get('admin.model.system_file.file_icons', []) + static::$map;
             $state       = 1;
         }
         

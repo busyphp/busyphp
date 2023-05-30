@@ -8,8 +8,11 @@ use BusyPHP\app\admin\component\js\Driver;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\menu\SystemMenu;
+use BusyPHP\app\admin\model\system\token\SystemToken;
+use BusyPHP\app\admin\model\system\token\SystemTokenField;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\app\admin\setting\PublicSetting;
+use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\traits\ContainerDefine;
@@ -17,9 +20,14 @@ use BusyPHP\traits\ContainerInstance;
 use Closure;
 use stdClass;
 use think\Container;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 use think\exception\Handle;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
+use think\facade\Config;
+use think\facade\Cookie;
+use think\facade\Session;
 use think\Request;
 use think\Response;
 use think\response\View;
@@ -37,6 +45,20 @@ class AdminHandle extends Handle implements ContainerInterface
     use ContainerDefine;
     use ContainerInstance;
     
+    // +----------------------------------------------------
+    // + cookie session
+    // +----------------------------------------------------
+    const COOKIE_AUTH_KEY      = 'admin_auth_key';
+    
+    const COOKIE_USER_ID       = 'admin_user_id';
+    
+    const COOKIE_USER_THEME    = 'admin_user_theme';
+    
+    const SESSION_OPERATE_TIME = 'admin_operate_time';
+    
+    // +----------------------------------------------------
+    // + 错误吗
+    // +----------------------------------------------------
     /** @var int 需要登录 */
     const CODE_NEED_LOGIN = 3020001;
     
@@ -46,7 +68,7 @@ class AdminHandle extends Handle implements ContainerInterface
     
     public static function defineContainer() : string
     {
-        return static::class;
+        return self::class;
     }
     
     
@@ -121,7 +143,7 @@ class AdminHandle extends Handle implements ContainerInterface
         
         
         // 样式路径配置
-        $theme        = AdminUser::init()->getTheme($adminUser);
+        $theme        = static::getTheme($adminUser);
         $assetsUrl    = $request->getAssetsUrl();
         $skinRoot     = $assetsUrl . 'admin/';
         $version      = $app->config->get('app.admin.version', '');
@@ -366,5 +388,121 @@ class AdminHandle extends Handle implements ContainerInterface
         }
         
         return $this->response($code === 1 ? 0 : $code, $message, [], $url);
+    }
+    
+    
+    /**
+     * 保存主题到cookie
+     * @param $id
+     * @param $theme
+     */
+    public function saveTheme($id, $theme)
+    {
+        Cookie::set(static::COOKIE_USER_THEME . $id, is_array($theme) ? json_encode($theme, JSON_UNESCAPED_UNICODE) : $theme, 86400 * 365);
+    }
+    
+    
+    /**
+     * 获取主题
+     * @param AdminUserField|null $userInfo
+     * @return array{skin: string, nav_mode: bool, nav_single_hold: bool}
+     */
+    public static function getTheme(?AdminUserField $userInfo = null) : array
+    {
+        if ($userInfo) {
+            $theme = $userInfo->theme;
+        } else {
+            $userId = Cookie::get(static::COOKIE_USER_ID);
+            $theme  = Cookie::get(static::COOKIE_USER_THEME . $userId);
+            $theme  = json_decode((string) $theme, true) ?: [];
+        }
+        
+        $theme['skin']            = trim($theme['skin'] ?? '');
+        $theme['skin']            = $theme['skin'] ?: Config::get('app.admin.theme_skin', 'default');
+        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : Config::get('app.admin.theme_nav_mode', false);
+        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : Config::get('app.admin.theme_nav_single_hold', false);
+        
+        return $theme;
+    }
+    
+    
+    /**
+     * 保存登录参数
+     * @param SystemTokenField $token
+     * @param AdminUserField   $user
+     * @param bool             $saveLogin
+     */
+    public function saveLogin(SystemTokenField $token, AdminUserField $user, bool $saveLogin = false)
+    {
+        Cookie::set(
+            static::COOKIE_AUTH_KEY,
+            AdminUser::instance()->createAuthKey(
+                $token,
+                $user,
+                $saveLogin
+            ),
+            $saveLogin ? AdminSetting::instance()->getSaveLogin() : null
+        );
+        Cookie::set(static::COOKIE_USER_ID, (string) $user->id, 86400 * 365);
+        
+        $this->saveTheme($user->id, $user->theme);
+        $this->updateOperateTime();
+    }
+    
+    
+    /**
+     * 检查登录
+     * @param bool $saveOperate 是否记录操作时间
+     * @return AdminUserField
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function checkLogin(bool $saveOperate) : AdminUserField
+    {
+        // 验证登录时常
+        $setting = AdminSetting::instance();
+        $often   = $setting->getOften();
+        if ($often > 0) {
+            $operateTime = (int) Session::get(static::SESSION_OPERATE_TIME, 0);
+            if (time() - ($often * 60) > $operateTime) {
+                throw new VerifyException('登录超时', 'timeout');
+            }
+        }
+        
+        // 获取Cookie
+        $userId  = Cookie::get(static::COOKIE_USER_ID, '0');
+        $authKey = Cookie::get(static::COOKIE_AUTH_KEY, '');
+        if (!$userId || !$authKey) {
+            throw new VerifyException('请登录', 'cookie');
+        }
+        
+        $user = AdminUser::instance()->checkLogin($authKey, SystemToken::class()::DEFAULT_TYPE);
+        
+        // 记录最后操作时间
+        if ($saveOperate) {
+            $this->updateOperateTime();
+        }
+        
+        return $user;
+    }
+    
+    
+    /**
+     * 退出登录
+     */
+    public function outLogin()
+    {
+        Cookie::delete(static::COOKIE_AUTH_KEY);
+    }
+    
+    
+    /**
+     * 更新最后一次操作时间
+     */
+    protected function updateOperateTime()
+    {
+        if (AdminSetting::instance()->getOften()) {
+            Session::set(static::SESSION_OPERATE_TIME, time());
+        }
     }
 }

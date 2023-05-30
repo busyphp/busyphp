@@ -30,14 +30,14 @@ class IndexController extends InsideController
     /**
      * @var bool 是否启用切换主题
      */
-    protected $isEnableAppInfoTheme;
+    protected bool $isEnableAppInfoTheme;
     
     
     protected function initialize($checkLogin = true)
     {
         // 不记录操作
         if (Driver::getRequestName() === 'AppMessage') {
-            $this->setSaveOperate(false);
+            $this->ignoreOperate();
         }
         
         // 读取配置获取是否启用切换主题

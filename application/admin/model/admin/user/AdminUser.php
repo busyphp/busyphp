@@ -3,25 +3,24 @@ declare (strict_types = 1);
 
 namespace BusyPHP\app\admin\model\admin\user;
 
+use BusyPHP\app\admin\model\system\token\SystemToken;
+use BusyPHP\app\admin\model\system\token\SystemTokenField;
 use BusyPHP\app\admin\setting\AdminSetting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
-use BusyPHP\helper\TripleDesHelper;
 use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
 use Closure;
+use LogicException;
 use RuntimeException;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\facade\Config;
-use think\facade\Cookie;
 use think\facade\Request;
-use think\facade\Session;
 use think\facade\Validate;
-use think\helper\Str;
 use think\validate\ValidateRule;
 use Throwable;
 
@@ -44,17 +43,6 @@ use Throwable;
  */
 class AdminUser extends Model implements ContainerInterface
 {
-    //+--------------------------------------
-    //| 登录相关常量
-    //+--------------------------------------
-    const COOKIE_AUTH_KEY      = 'admin_auth_key';
-    
-    const COOKIE_USER_ID       = 'admin_user_id';
-    
-    const COOKIE_USER_THEME    = 'admin_user_theme';
-    
-    const SESSION_OPERATE_TIME = 'admin_operate_time';
-    
     // +----------------------------------------------------
     // + 操作场景
     // +----------------------------------------------------
@@ -94,7 +82,7 @@ class AdminUser extends Model implements ContainerInterface
     
     protected string $fieldClass          = AdminUserField::class;
     
-    protected array  $validateConfig;
+    protected array  $config;
     
     
     /**
@@ -119,7 +107,7 @@ class AdminUser extends Model implements ContainerInterface
     
     public function __construct(string $connect = '', bool $force = false)
     {
-        $this->validateConfig = Config::get('admin.model.admin_user', []);
+        $this->config = (array) (Config::get('admin.model.admin_user') ?: []);
         
         parent::__construct($connect, $force);
     }
@@ -150,6 +138,7 @@ class AdminUser extends Model implements ContainerInterface
      * 修改管理员
      * @param AdminUserField $data 数据
      * @param string         $scene 场景
+     * @return AdminUserField
      * @throws Throwable
      */
     public function modify(AdminUserField $data, string $scene = self::SCENE_UPDATE) : AdminUserField
@@ -197,11 +186,11 @@ class AdminUser extends Model implements ContainerInterface
      * 执行登录
      * @param string $username 账号
      * @param string $password 密码
-     * @param bool   $saveLogin 是否记住登录
-     * @return AdminUserField
+     * @param int    $type 登录类型
+     * @return SystemTokenField
      * @throws Throwable
      */
-    public function login(string $username, string $password, bool $saveLogin = false) : AdminUserField
+    public function login(string $username, string $password, int $type) : SystemTokenField
     {
         $username = trim($username);
         $password = trim($password);
@@ -278,42 +267,41 @@ class AdminUser extends Model implements ContainerInterface
             throw new VerifyException($errorMsg, 'password_error');
         }
         
-        return $this->setLoginSuccess($info, $saveLogin);
+        return $this->setLoginSuccess($info, $type);
     }
     
     
     /**
      * 校验是否登录
-     * @param bool $saveOperateTime 是否记录操作时间
+     * @param string $authKey 通行秘钥
+     * @param int    $type 登录类型
      * @return AdminUserField
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function checkLogin($saveOperateTime = false) : AdminUserField
+    public function checkLogin(string $authKey, int $type) : AdminUserField
     {
-        $cookieUserId  = intval(Cookie::get(AdminUser::COOKIE_USER_ID, '0'));
-        $cookieAuthKey = trim(Cookie::get(AdminUser::COOKIE_AUTH_KEY, ''));
-        if (!$cookieUserId || !$cookieAuthKey) {
-            throw new VerifyException('缺少COOKIE', 'cookie');
-        }
-        
-        $user          = $this->getInfo($cookieUserId);
-        $cookieAuthKey = TripleDesHelper::decrypt($cookieAuthKey, $user->token);
-        if (!$cookieAuthKey || $cookieAuthKey != static::createAuthKey($user, $user->token)) {
-            throw new VerifyException('通行密钥错误', 'auth');
-        }
-        
-        // 验证登录时常
-        if ($often = AdminSetting::instance()->getOften()) {
-            $operateTime = Session::get(static::SESSION_OPERATE_TIME);
-            if ($operateTime > 0 && time() - ($often * 60) > $operateTime) {
-                throw new VerifyException('登录超时', 'timeout');
+        try {
+            $decode    = SystemToken::class()::check($this->getSecret(), $authKey);
+            $tokenInfo = $decode['info'];
+            $extend    = $decode['extend'];
+            if ($tokenInfo->type !== $type) {
+                throw new LogicException('登录类型不匹配');
             }
+        } catch (Throwable $e) {
+            throw new VerifyException('请登录', 'decode', 0, $e);
         }
         
-        // 记录操作时间
-        if ($saveOperateTime) {
-            $this->setOperateTime();
+        $user = $this->getInfo($tokenInfo->userId);
+        if (!$user->checked) {
+            throw new VerifyException('您的账户被禁用', 'disabled');
+        }
+        
+        $callback = ArrayHelper::get($this->config, 'login.auth_extend.check');
+        if ($callback instanceof Closure) {
+            if (false === Container::getInstance()->invokeFunction($callback, [$extend, $tokenInfo, $user])) {
+                throw new VerifyException('请登录', 'extend');
+            }
         }
         
         return $user;
@@ -321,19 +309,42 @@ class AdminUser extends Model implements ContainerInterface
     
     
     /**
+     * 生成通行秘钥
+     * @param SystemTokenField $token 系统用户通行token信息
+     * @param AdminUserField   $user 用户信息
+     * @param bool             $saveLogin 是否保存登录
+     * @return string
+     */
+    public function createAuthKey(SystemTokenField $token, AdminUserField $user, bool $saveLogin = false) : string
+    {
+        $callback = ArrayHelper::get($this->config, 'login.auth_extend.create');
+        $extend   = '';
+        if ($callback instanceof Closure) {
+            $extend = Container::getInstance()->invokeFunction($callback, [$user, $token]);
+        }
+        
+        return SystemToken::class()::encode(
+            $this->getSecret(),
+            $token,
+            $saveLogin ? AdminSetting::instance()->getSaveLogin() : 0,
+            $extend
+        );
+    }
+    
+    
+    /**
      * 设为登录成功
-     * @param AdminUserField $userInfo
-     * @param bool           $saveLogin 是否记住登录
-     * @return AdminUserField
+     * @param AdminUserField $userInfo 用户信息
+     * @param int            $type 登录类型
+     * @return SystemTokenField
+     * @throws DataNotFoundException
+     * @throws DbException
      * @throws Throwable
      */
-    public function setLoginSuccess(AdminUserField $userInfo, bool $saveLogin = false) : AdminUserField
+    public function setLoginSuccess(AdminUserField $userInfo, int $type = SystemToken::DEFAULT_TYPE) : SystemTokenField
     {
-        $setting = AdminSetting::instance();
-        $token   = $setting->isMultipleClient() ? 'BusyPHPLoginToken' : Str::random();
-        $data    = AdminUserField::init();
+        $data = AdminUserField::init();
         $data->setId($userInfo->id);
-        $data->setToken($token);
         $data->setLoginTime(time());
         $data->setLoginIp(Request::ip());
         $data->setLastTime(AdminUserField::loginTime());
@@ -342,32 +353,31 @@ class AdminUser extends Model implements ContainerInterface
         $data->setErrorRelease(0);
         $data->setErrorTotal(0);
         $data->setErrorTime(0);
-        $this->modify($data, static::SCENE_LOGIN_SUCCESS);
         
-        // 设置COOKIE
-        $expire       = null;
-        $saveLoginDay = $setting->getSaveLogin();
-        if ($saveLoginDay > 0 && $saveLogin) {
-            $expire = 86400 * $saveLoginDay;
-        }
+        $tokenInfo = null;
+        $this
+            ->listen(AdminUserEventUpdateAfter::class, function(AdminUserEventUpdateAfter $event) use ($type, &$tokenInfo) {
+                $token = '';
+                if (AdminSetting::instance()->isMultipleClient()) {
+                    $extend = ArrayHelper::get($this->config, 'login.multiple_client_token');
+                    if ($extend instanceof Closure) {
+                        $extend = (string) Container::getInstance()->invokeFunction($extend, [$event->finalInfo]);
+                    }
+                    
+                    $token = md5(implode(',', [
+                        'BusyPHP',
+                        $event->finalInfo->id,
+                        $type,
+                        $extend
+                    ]));
+                }
+                
+                $tokenInfo = SystemToken::init()
+                    ->updateToken($type, SystemToken::class()::DEFAULT_USER_TYPE, $event->finalInfo->id, $token);
+            })
+            ->modify($data, static::SCENE_LOGIN_SUCCESS);
         
-        Cookie::set(static::COOKIE_AUTH_KEY, TripleDesHelper::encrypt(static::createAuthKey($userInfo, $token), $token), $expire);
-        Cookie::set(static::COOKIE_USER_ID, (string) $userInfo->id, 86400 * 365);
-        $this->saveThemeToCookie($userInfo->id, $userInfo->theme);
-        $this->setOperateTime();
-        
-        return $this->getInfo($userInfo->id);
-    }
-    
-    
-    /**
-     * 设置操作时间
-     */
-    private function setOperateTime()
-    {
-        if (AdminSetting::instance()->getOften()) {
-            Session::set(static::SESSION_OPERATE_TIME, time());
-        }
+        return $tokenInfo;
     }
     
     
@@ -398,42 +408,6 @@ class AdminUser extends Model implements ContainerInterface
         $update->setId($id);
         $update->setTheme($theme);
         $this->modify($update, static::SCENE_THEME);
-        $this->saveThemeToCookie($id, $update->theme);
-    }
-    
-    
-    /**
-     * 保存主题到cookie
-     * @param $id
-     * @param $theme
-     */
-    protected function saveThemeToCookie($id, $theme)
-    {
-        Cookie::set(static::COOKIE_USER_THEME . $id, is_array($theme) ? json_encode($theme, JSON_UNESCAPED_UNICODE) : $theme, 86400 * 365);
-    }
-    
-    
-    /**
-     * 获取主题
-     * @param AdminUserField|null $userInfo
-     * @return array{skin: string, nav_mode: bool, nav_single_hold: bool}
-     */
-    public function getTheme(?AdminUserField $userInfo = null) : array
-    {
-        if ($userInfo) {
-            $theme = $userInfo->theme;
-        } else {
-            $userId = Cookie::get(static::COOKIE_USER_ID);
-            $theme  = Cookie::get(static::COOKIE_USER_THEME . $userId);
-            $theme  = json_decode((string) $theme, true) ?: [];
-        }
-        
-        $theme['skin']            = trim($theme['skin'] ?? '');
-        $theme['skin']            = $theme['skin'] ?: Config::get('app.admin.theme_skin', 'default');
-        $theme['nav_mode']        = isset($theme['nav_mode']) ? (intval($theme['nav_mode']) > 0) : Config::get('app.admin.theme_nav_mode', false);
-        $theme['nav_single_hold'] = isset($theme['nav_single_hold']) ? (intval($theme['nav_single_hold']) > 0) : Config::get('app.admin.theme_nav_single_hold', false);
-        
-        return $theme;
     }
     
     
@@ -455,39 +429,12 @@ class AdminUser extends Model implements ContainerInterface
     
     
     /**
-     * 执行退出登录
-     */
-    public function outLogin()
-    {
-        Cookie::delete(static::COOKIE_AUTH_KEY);
-    }
-    
-    
-    /**
-     * 清理用户登录密钥
-     * @throws DbException
-     */
-    public function clearToken()
-    {
-        $this->where(AdminUserField::id('>', 0))->setField(AdminUserField::token(), '');
-        $this->clearCache();
-    }
-    
-    
-    /**
-     * 创建COOKIE密钥
-     * @param AdminUserField $userInfo
-     * @param string         $token
+     * 获取解密秘钥
      * @return string
      */
-    public static function createAuthKey(AdminUserField $userInfo, string $token) : string
+    protected function getSecret() : string
     {
-        return md5(implode('_', [
-            $token,
-            $userInfo->id,
-            $userInfo->checked ? 1 : 0,
-            $userInfo->username
-        ]));
+        return ArrayHelper::get($this->config, 'login.auth_secret') ?: 'Pe78mUtfomfhHqSHGpQ3jAlI';
     }
     
     
@@ -533,7 +480,7 @@ class AdminUser extends Model implements ContainerInterface
      */
     public function getValidateConfig(string $name, $default = null) : mixed
     {
-        return ArrayHelper::get($this->validateConfig, $name, $default);
+        return ArrayHelper::get($this->config, 'validate.' . $name, $default);
     }
     
     

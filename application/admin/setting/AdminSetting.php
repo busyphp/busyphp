@@ -8,8 +8,6 @@ use BusyPHP\interfaces\ContainerInterface;
 use BusyPHP\model\Setting;
 use BusyPHP\helper\FilterHelper;
 use BusyPHP\helper\TransHelper;
-use BusyPHP\app\admin\model\admin\user\AdminUser;
-use think\db\exception\DbException;
 
 /**
  * 后台配置
@@ -30,7 +28,6 @@ class AdminSetting extends Setting implements ContainerInterface
     
     /**
      * @inheritDoc
-     * @throws DbException
      */
     protected function parseSet(array $data) : array
     {
@@ -42,11 +39,6 @@ class AdminSetting extends Setting implements ContainerInterface
         $data['login_error_minute']      = max(intval($data['login_error_minute']), 0);
         $data['login_error_max']         = max(intval($data['login_error_max']), 0);
         $data['login_error_lock_minute'] = max(intval($data['login_error_lock_minute']), 0);
-        
-        // 切换多设备登录，则清理
-        if ($data['multiple_client'] !== $this->get('multiple_client')) {
-            AdminUser::instance()->clearToken();
-        }
         
         return $data;
     }
@@ -143,12 +135,12 @@ class AdminSetting extends Setting implements ContainerInterface
     
     
     /**
-     * 获取记住登录的时长天数
+     * 获取记住登录的时长秒数
      * @return int
      */
     public function getSaveLogin() : int
     {
-        return (int) $this->get('save_login', 0);
+        return (int) $this->get('save_login', 0) * 86400;
     }
     
     

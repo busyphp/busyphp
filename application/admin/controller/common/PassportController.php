@@ -6,6 +6,7 @@ namespace BusyPHP\app\admin\controller\common;
 use BusyPHP\App;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\user\AdminUserEventLoginPrepare;
+use BusyPHP\app\admin\model\system\token\SystemToken;
 use BusyPHP\app\admin\setting\PublicSetting;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\app\admin\model\admin\user\AdminUser;
@@ -69,7 +70,8 @@ class PassportController extends InsideController
         $saveLogin       = $this->post('save_login/b');
         
         try {
-            $user = AdminUser::init()
+            $model     = AdminUser::init();
+            $tokenInfo = $model
                 ->listen(AdminUserEventLoginPrepare::class, function() use ($verify, $needCheckVerify) {
                     if ($needCheckVerify && AdminSetting::instance()->isVerify()) {
                         try {
@@ -79,10 +81,15 @@ class PassportController extends InsideController
                         }
                     }
                 })
-                ->login($username, $password, $saveLogin);
+                ->login($username, $password, SystemToken::class()::DEFAULT_TYPE);
             
-            $this->adminUserId   = $user['id'];
-            $this->adminUsername = $user['username'];
+            // 保存登录条件
+            $user = $model->getInfo($tokenInfo->userId);
+            $this->handle->saveLogin($tokenInfo, $user, $saveLogin);
+            
+            // 记录操作日志
+            $this->adminUserId   = $user->id;
+            $this->adminUsername = $user->username;
             $this->log()->filterParams(['password'])->record(self::LOG_DEFAULT, '登录成功');
             
             // 回跳地址
@@ -103,6 +110,7 @@ class PassportController extends InsideController
             return $this->success('登录成功', $path ? $redirectUrl : $this->request->getAppUrl());
         } catch (VerifyException $e) {
             $this->log()->setUser(0, $username)->record(self::LOG_DEFAULT, '登录错误', $e->getMessage());
+            
             Session::set(self::SESSION_VERIFY_STATUS_KEY, true);
             
             switch ($e->getField()) {
@@ -166,7 +174,7 @@ class PassportController extends InsideController
             $this->log()->record(self::LOG_DEFAULT, '退出登录');
         }
         
-        AdminUser::init()->outLogin();
+        $this->handle->outLogin();
         
         return $this->success('退出成功', url('admin_login', [$this->request->getVarRedirectUrl() => $this->request->getRedirectUrl()]));
     }

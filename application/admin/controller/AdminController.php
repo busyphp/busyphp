@@ -8,7 +8,6 @@ use BusyPHP\app\admin\component\common\Task;
 use BusyPHP\app\admin\event\panel\AdminPanelClearCacheEvent;
 use BusyPHP\app\admin\event\panel\AdminPanelUpdateCacheEvent;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
-use BusyPHP\app\admin\model\admin\user\AdminUser;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\config\SystemConfig;
 use BusyPHP\app\admin\model\system\logs\SystemLogs;
@@ -89,6 +88,12 @@ abstract class AdminController extends Controller
      */
     private bool $saveOperate = true;
     
+    /**
+     * 登录错误异常
+     * @var Throwable|null
+     */
+    private ?Throwable $loginError = null;
+    
     
     public function __construct(App $app)
     {
@@ -124,7 +129,7 @@ abstract class AdminController extends Controller
     {
         // 验证登录
         if (!$this->isLogin()) {
-            AdminUser::init()->outLogin();
+            $this->handle->outLogin();
             
             // 记录返回地址
             // POST/AJAX 记录来源操作地址为返回地址
@@ -134,11 +139,9 @@ abstract class AdminController extends Controller
                 $redirectUrl = $this->request->url();
             }
             
-            $message     = '请登录后操作';
             $redirectUrl = url('admin_login', [$this->request->getVarRedirectUrl() => $redirectUrl]);
-            
             if ($this->isAjax()) {
-                $result = $this->error($message, $redirectUrl, AdminHandle::CODE_NEED_LOGIN);
+                $result = $this->error($this->loginError->getMessage(), $redirectUrl, AdminHandle::CODE_NEED_LOGIN);
             } else {
                 $result = $this->redirect($redirectUrl);
             }
@@ -160,12 +163,14 @@ abstract class AdminController extends Controller
     protected function isLogin() : ?AdminUserField
     {
         try {
-            $this->adminUser     = AdminUser::init()->checkLogin($this->saveOperate);
+            $this->adminUser     = $this->handle->checkLogin($this->saveOperate);
             $this->adminUserId   = $this->adminUser->id;
             $this->adminUsername = $this->adminUser->username;
             
             return $this->adminUser;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            $this->loginError = $e;
+            
             return null;
         }
     }
@@ -391,11 +396,10 @@ abstract class AdminController extends Controller
     
     
     /**
-     * 设置是否记录操作，以配合保持登录功能
-     * @param bool $saveOperateTime
+     * 设置忽略本次操作，以配合保持登录功能
      */
-    protected function setSaveOperate(bool $saveOperateTime) : void
+    protected function ignoreOperate() : void
     {
-        $this->saveOperate = $saveOperateTime;
+        $this->saveOperate = false;
     }
 }

@@ -24,6 +24,7 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\Raw;
 use think\exception\FileException;
+use think\facade\Config;
 use think\facade\Filesystem;
 use think\facade\Request;
 use think\File;
@@ -117,6 +118,16 @@ class SystemFile extends Model implements ContainerInterface
     
     protected string $fieldClass          = SystemFileField::class;
     
+    protected array  $config;
+    
+    
+    public function __construct(string $connect = '', bool $force = false)
+    {
+        $this->config = (array) (Config::get('admin.model.system_file') ?: []);
+        
+        parent::__construct($connect, $force);
+    }
+    
     
     /**
      * @inheritDoc
@@ -133,7 +144,7 @@ class SystemFile extends Model implements ContainerInterface
      * @param string|null $key
      * @return array|mixed
      */
-    public static function getTypes(string $type = null, string $key = null)
+    public static function getTypes(string $type = null, string $key = null) : mixed
     {
         static $_data;
         
@@ -145,7 +156,7 @@ class SystemFile extends Model implements ContainerInterface
             }
             
             unset($vo);
-            foreach ((array) Filesystem::getConfig('file_types', []) as $index => $vo) {
+            foreach ((array) Config::get('admin.model.system_file.file_types', []) as $index => $vo) {
                 $vo['name']  = $vo['name'] ?? '';
                 $vo['types'] = $vo['types'] ?? [];
                 $vo['icon']  = $vo['icon'] ?? '';
