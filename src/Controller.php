@@ -369,51 +369,52 @@ abstract class Controller
     
     /**
      * 操作错误跳转的快捷方法
-     * @param mixed      $message 错误信息
-     * @param string|Url $jumpUrl 页面跳转地址
+     * @param string|Throwable $message 错误信息
+     * @param string|Url       $url 页面跳转地址
      * @return Response
      */
-    protected function error($message, $jumpUrl = '') : Response
+    protected function error(string|Throwable $message, string|Url $url = '') : Response
     {
-        return $this->dispatchJump($message, false, $jumpUrl);
+        if ($message instanceof Throwable) {
+            $message = $message->getMessage();
+        }
+        
+        return $this->dispatchJump($message, false, $url);
     }
     
     
     /**
      * 操作成功跳转的快捷方法
      * @param string     $message 提示信息
-     * @param string|Url $jumpUrl 页面跳转地址
+     * @param string|Url $url 页面跳转地址
      * @return Response
      */
-    protected function success($message, $jumpUrl = '') : Response
+    protected function success(string $message, string|Url $url = '') : Response
     {
-        return $this->dispatchJump($message, true, $jumpUrl);
+        return $this->dispatchJump($message, true, $url);
     }
     
     
     /**
      * 默认跳转操作 支持错误导向和正确跳转
      * 提示页面为可配置 支持模板标签
-     * @param string|Throwable $message 提示信息
-     * @param bool             $status 状态
-     * @param string|Url       $jumpUrl 页面跳转地址
+     * @param string     $message 提示信息
+     * @param bool       $status 状态
+     * @param string|Url $url 页面跳转地址
      * @return Response
      */
-    protected function dispatchJump($message, bool $status = true, $jumpUrl = '') : Response
+    protected function dispatchJump(string $message, bool $status = true, string|Url $url = '') : Response
     {
-        $jumpUrl = (string) $jumpUrl;
-        if ($message instanceof Throwable) {
-            $message = $message->getMessage();
-        }
+        $url = (string) $url;
         
         $this->assign('status', $status);
         $this->assign('wait_second', $status ? 1 : 3);
-        $this->assign('message', (string) $message);
+        $this->assign('message', $message);
         if ($status) {
-            $this->assign('jump_url', $jumpUrl ?: $this->request->getRedirectUrl($this->request->getAppUrl()));
+            $this->assign('jump_url', $url ?: $this->request->getRedirectUrl($this->request->getAppUrl()));
             $template = $this->app->config->get('app.success_tmpl') ?: __DIR__ . '/../assets/template/message.html';
         } else {
-            $this->assign('jump_url', $jumpUrl ?: 'javascript:history.back(-1);');
+            $this->assign('jump_url', $url ?: 'javascript:history.back(-1);');
             $template = $this->app->config->get('app.error_tmpl') ?: __DIR__ . '/../assets/template/message.html';
         }
         
