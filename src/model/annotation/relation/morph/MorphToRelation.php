@@ -7,6 +7,7 @@ use BusyPHP\exception\ClassNotExtendsException;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\Model;
 use BusyPHP\model\Entity;
+use BusyPHP\model\Field;
 use RuntimeException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -184,13 +185,18 @@ class MorphToRelation
     /**
      * 查询多态关联数据
      * @param array $range
+     * @param array $sceneMap
      * @return array<string,array>
      * @throws DataNotFoundException
      * @throws DbException
      */
-    public function query(array $range) : array
+    public function query(array $range, array $sceneMap = []) : array
     {
-        $data = $this->prepareModel()->where($this->getLocalKey(), 'in', $range)->extend(true)->selectList();
+        $data = $this->prepareModel()
+            ->where($this->getLocalKey(), 'in', $range)
+            ->scene(Field::getSceneByMap($sceneMap, $this->getModel()), $sceneMap)
+            ->extend(true)
+            ->selectList();
         
         return ArrayHelper::listByKey($data, $this->getDataKey());
     }

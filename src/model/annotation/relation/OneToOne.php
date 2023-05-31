@@ -142,6 +142,7 @@ class OneToOne extends Relation
         $data     = $this->prepareModel()
             ->extend(true)
             ->where($this->getForeignKey($model), 'in', $range)
+            ->scene($this->getScene($this->getModel()), $this->sceneMap)
             ->selectList();
         $data     = ArrayHelper::listByKey($data, $this->getDataKey($model));
         foreach ($list as &$vo) {

@@ -223,11 +223,12 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 解析数据集
-     * @param Model    $model 当前模型
-     * @param static[] $list 数据集
-     * @param bool     $extend 是否解析关联信息
+     * @param Model                              $model 当前模型
+     * @param static[]                           $list 数据集
+     * @param bool                               $extend 是否解析关联信息
+     * @param array<class-string<Model>, string> $sceneMap 输出场景映射 [模型类名 => 场景名称]
      */
-    public static function onParseList(Model $model, array $list, bool $extend)
+    public static function onParseList(Model $model, array $list, bool $extend, array $sceneMap = [])
     {
     }
     
@@ -1263,14 +1264,43 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 使用场景输出，以执行 {@see Field::toArray()}
-     * @param string $scene 指定场景名称输出
+     * @param string                            $name 指定场景名称
+     * @param array<class-string<Model>,string> $map 输出场景映射 [模型类名 => 场景名称]
      * @return $this
      */
-    public function scene(string $scene = '') : self
+    public function scene(string $name = '', array $map = []) : self
     {
-        $this->__private__options['scene'] = $scene;
+        $this->__private__options['scene']     = $name;
+        $this->__private__options['scene_map'] = $map;
         
         return $this;
+    }
+    
+    
+    /**
+     * 通过场景映射获取场景名称
+     * @param array<class-string<Model>,string> $map 输出场景映射 [模型类名 => 场景名称]
+     * @param Model|string                      $model 模型或完整的模型类名称
+     * @return string
+     */
+    public static function getSceneByMap(array $map, Model|string $model) : string
+    {
+        if (!is_string($model)) {
+            $model = get_class($model);
+        }
+        
+        return $map[$model] ?? '';
+    }
+    
+    
+    /**
+     * 通过模型获取场景名称
+     * @param Model|string $model 模型或完整的模型类名称
+     * @return string
+     */
+    protected function getSceneByModel(Model|string $model) : string
+    {
+        return static::getSceneByMap($this->__private__options['scene_map'] ?? [], $model);
     }
     
     

@@ -121,7 +121,7 @@ class MorphTo extends Relation
                 continue;
             }
             
-            $typeData[$type] = $relation->query($typeIds);
+            $typeData[$type] = $relation->query($typeIds, $this->sceneMap);
         }
         
         foreach ($list as &$item) {

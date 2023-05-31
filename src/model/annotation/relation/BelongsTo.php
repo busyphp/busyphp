@@ -79,6 +79,7 @@ class BelongsTo extends OneToOne
         $data       = $this->prepareModel()
             ->extend(false)
             ->where($this->getLocalKey($model), 'in', array_column($list, $foreignKey))
+            ->scene($this->getScene($this->getModel()), $this->sceneMap)
             ->selectList();
         $data       = ArrayHelper::listByKey($data, $this->getDataKey($model));
         foreach ($list as &$vo) {

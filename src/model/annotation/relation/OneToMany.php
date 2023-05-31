@@ -22,6 +22,7 @@ class OneToMany extends OneToOne
         $dataList = $this->prepareModel()
             ->extend(true)
             ->where($this->getForeignKey($model), 'in', array_column($list, $localKey))
+            ->scene($this->getScene($this->getModel()), $this->sceneMap)
             ->selectList();
         
         $data = [];

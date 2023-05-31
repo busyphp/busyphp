@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\model\annotation\relation;
 
 use BusyPHP\Model;
-use ReflectionProperty;
+use BusyPHP\model\Field;
 use RuntimeException;
 
 /**
@@ -16,6 +16,12 @@ use RuntimeException;
 abstract class Relation
 {
     protected string $propertyName;
+    
+    /**
+     * 关联场景
+     * @var array<string,string>
+     */
+    protected array $sceneMap = [];
     
     
     public function __invoke(string $propertyName) : static
@@ -40,6 +46,30 @@ abstract class Relation
         }
         
         return $name;
+    }
+    
+    
+    /**
+     * 获取输出场景
+     * @param Model $model
+     * @return string
+     */
+    protected function getScene(Model $model) : string
+    {
+        return Field::getSceneByMap($this->sceneMap, $model);
+    }
+    
+    
+    /**
+     * 设置关联场景
+     * @param array $sceneMap
+     * @return Relation
+     */
+    public function setSceneMap(array $sceneMap) : static
+    {
+        $this->sceneMap = $sceneMap;
+        
+        return $this;
     }
     
     

@@ -142,6 +142,12 @@ abstract class Model extends Query
     protected bool $autoWriteUpdateTimeSync = true;
     
     /**
+     * 输出场景
+     * @var array{name: string, relation: array<string, string>}
+     */
+    protected array $scene = [];
+    
+    /**
      * Db对象
      * @var Db
      */
@@ -497,6 +503,23 @@ abstract class Model extends Query
     
     
     /**
+     * 输出场景
+     * @param string                            $name 场景名称
+     * @param array<class-string<Model>,string> $relation 关联场景
+     * @return $this
+     */
+    public function scene(string $name, array $relation = []) : static
+    {
+        $this->scene = [
+            'name'     => $name,
+            'relation' => $relation
+        ];
+        
+        return $this;
+    }
+    
+    
+    /**
      * 将数据解析成Field对象集合
      * @param array|Collection $list 数据集
      * @param bool             $extend 是否解析关联数据
@@ -504,6 +527,11 @@ abstract class Model extends Query
      */
     public function resultSetToFields(array|Collection $list, bool $extend = false) : array
     {
+        $scene         = $this->scene;
+        $sceneName     = $scene['name'] ?? '';
+        $sceneRelation = $scene['relation'] ?? [];
+        $this->scene   = [];
+        
         if ($list instanceof Collection) {
             $list = $list->toArray();
         }
@@ -513,15 +541,15 @@ abstract class Model extends Query
         if ($extend) {
             /** @var Relation $vo */
             foreach ($fieldClass::getModelParams()['relation'] as $vo) {
-                $vo->handle($this, $list);
+                $vo->setSceneMap($sceneRelation)->handle($this, $list);
             }
         }
         
         foreach ($list as &$vo) {
-            $vo = $fieldClass::parse($vo);
+            $vo = $fieldClass::parse($vo)->scene($sceneName, $sceneRelation);
         }
         
-        $fieldClass::onParseList($this, $list, $extend);
+        $fieldClass::onParseList($this, $list, $extend, $sceneRelation);
         
         return $list;
     }
