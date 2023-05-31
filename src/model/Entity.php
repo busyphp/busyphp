@@ -12,6 +12,7 @@ use BusyPHP\model\annotation\field\Import;
 use BusyPHP\model\annotation\field\Validator;
 use ReflectionProperty;
 use think\db\Raw;
+use think\validate\ValidateRule;
 
 /**
  * 模型字段实体
@@ -347,6 +348,24 @@ class Entity
     public function __toString()
     {
         return $this->build();
+    }
+    
+    
+    /**
+     * 校验数据
+     * @param mixed          $value 数据值
+     * @param ValidateRule[] $rules 扩展规则
+     * @param bool           $failException 失败是否抛出异常
+     * @return bool
+     */
+    public function validate(mixed $value, array $rules = [], bool $failException = true) : bool
+    {
+        $validate = $this->getFieldClass()::getValidate();
+        foreach ($rules as $rule) {
+            $validate->append($this, $rule);
+        }
+        
+        return $validate->only($this)->failException($failException)->check([$this->name => $value]);
     }
     
     
