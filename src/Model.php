@@ -896,7 +896,7 @@ abstract class Model extends Query
         }
         
         // 执行验证
-        if ($needCheck) {
+        if ($needCheck || $validateCallback) {
             $checkData = $data;
             if ($data instanceof Field) {
                 $checkData = [];
