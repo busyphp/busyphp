@@ -50,7 +50,7 @@ class UserController extends InsideController
         // 管理员列表数据
         if ($table = Table::initIfRequest()) {
             $table->model($this->model)->query(function(AdminUser $model, ArrayOption $option) {
-                $option->deleteIfLt('sex', 0, true);
+                $option->deleteIfLt('sex', 0);
                 
                 switch ($option->pull('status', 0, 'intval')) {
                     // 正常
@@ -91,7 +91,7 @@ class UserController extends InsideController
         
         $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
         $sexs = $this->model::getSexMap();
-        $sexs = [0 => '不限'] + $sexs;
+        $sexs = [-1 => '不限'] + $sexs;
         $this->assign('sex', $sexs);
         
         return $this->insideDisplay();
@@ -121,6 +121,9 @@ class UserController extends InsideController
             return $this->success('添加成功');
         }
         
+        $sexMap = $this->model::getSexMap();
+        unset($sexMap[$this->model::SEX_UNKNOWN]);
+        
         $this->assign([
             'info'           => [
                 'checked' => 1,
@@ -128,6 +131,7 @@ class UserController extends InsideController
             ],
             'avatar_file_id' => SystemFile::createTmp(),
             'validate'       => $this->model->getViewValidateRule(),
+            'sex'            => $sexMap
         ]);
         
         return $this->insideDisplay();
@@ -155,11 +159,14 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
+        $sexMap = $this->model::getSexMap();
+        unset($sexMap[$this->model::SEX_UNKNOWN]);
         $info = $this->model->getInfo($this->get('id/d'));
         $this->assign([
             'info'           => $info,
             'avatar_file_id' => $info->id,
             'validate'       => $this->model->getViewValidateRule(),
+            'sex'            => $sexMap
         ]);
         
         return $this->insideDisplay('add');

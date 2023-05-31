@@ -340,8 +340,7 @@
                                 id="__SCOPED___sex"
                             <?=$validate['sex'] ? 'required' : ''?>>
                             <option value=""></option>
-                            <option value="1"<?=is_selected(($info['sex'] ?? 0) == 1)?>>男</option>
-                            <option value="2"<?=is_selected(($info['sex'] ?? 0) == 2)?>>女</option>
+                            <?=\BusyPHP\helper\TransHelper::toOptionHtml($sex, $info['sex'] ?? 0);?>
                         </select>
                         <span class="help-block">{$validate.sex ? '' : '可选，'}设置用户性别</span>
                     </div>

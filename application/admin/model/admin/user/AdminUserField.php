@@ -16,6 +16,7 @@ use BusyPHP\model\annotation\field\Ignore;
 use BusyPHP\model\annotation\field\Json;
 use BusyPHP\model\annotation\field\Separate;
 use BusyPHP\model\annotation\field\ToArrayFormat;
+use BusyPHP\model\annotation\field\ToArrayHidden;
 use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
@@ -134,6 +135,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     #[Validator(name: Validator::MIN, rule: 6)]
     #[Validator(name: Validator::MAX, rule: 20)]
     #[Filter(filter: 'trim')]
+    #[ToArrayHidden]
     public $password;
     
     /**
@@ -144,6 +146,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     #[Validator(name: Validator::CONFIRM, rule: 'password', msg: ':attribute和登录密码不一致')]
     #[Ignore]
     #[Filter(filter: 'trim')]
+    #[ToArrayHidden]
     private $confirmPassword;
     
     /**
@@ -498,20 +501,22 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
-        // 头像验证
+        // 头像必填
         if ($model->getValidateConfig('avatar')) {
             $validate->append($this::avatar(), ValidateRule::init()->isRequire(msg: '请上传:attribute'));
         }
         
-        // 昵称验证
+        // 昵称必填
         if ($model->getValidateConfig('nickname')) {
             $validate->append($this::nickname(), ValidateRule::init()->isRequire());
         }
         
-        // 添加手机号验证规则
+        // 手机号必填
         if ($model->getValidateConfig('phone.required')) {
             $validate->append($this::phone(), ValidateRule::init()->isRequire());
         }
+        
+        // 手机号规则
         $validate->append($this::phone(), ValidateRule::init()->closure(function($value) use ($model) {
             if ($value === '') {
                 return true;
@@ -520,23 +525,27 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
             return $model->checkPhone($value);
         }, '请输入有效的:attribute'));
         
-        // 邮箱
+        // 邮箱必填
         if ($model->getValidateConfig('email')) {
             $validate->append($this::email(), ValidateRule::init()->isRequire());
         }
         
-        // 姓名
+        // 姓名必填
         if ($model->getValidateConfig('name')) {
             $validate->append($this::name(), ValidateRule::init()->isRequire());
         }
         
-        // 身份证号码
+        // 身份证号必填
         if ($model->getValidateConfig('card_no.required')) {
             $validate->append($this::cardNo(), ValidateRule::init()->isRequire());
         }
+        
+        // 身份证号规则
         if ($model->getValidateConfig('card_no.identity', false)) {
             $validate->append($this::cardNo(), ValidateRule::init()->isIdCard(msg: ':attribute无效'));
         }
+        
+        // 身份证号去重
         if ($model->getValidateConfig('card_no.unique')) {
             $validate->append($this::cardNo(), ValidateRule::init()->unique(
                 rule: [
@@ -547,23 +556,28 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
             ));
         }
         
-        // 性别
+        // 性别必填
         if ($model->getValidateConfig('sex')) {
-            $validate->append($this::sex(), ValidateRule::init()->in(
-                rule: array_keys($model::getSexMap()),
-                msg : '请选择:attribute'
-            ));
+            $validate->append($this::sex(), ValidateRule::init()->gt(0, '请选择:attribute'));
         }
         
-        // 生日
+        // 性别范围
+        $validate->append($this::sex(), ValidateRule::init()->in(
+            rule: array_keys($model::getSexMap()),
+            msg : '请选择有效的:attribute'
+        ));
+        
+        // 生日必填
         if ($model->getValidateConfig('birthday')) {
             $validate->append($this::birthday(), ValidateRule::init()->isRequire());
         }
         
-        // 电话
+        // 电话必填
         if ($model->getValidateConfig('tel.required')) {
             $validate->append($this::tel(), ValidateRule::init()->isRequire());
         }
+        
+        // 电话规则
         if ($telRegex = $model->getValidateConfig('tel.regex')) {
             $validate->append($this::tel(), ValidateRule::init()->regex($telRegex, ':attribute无效'));
         }

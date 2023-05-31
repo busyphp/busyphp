@@ -53,10 +53,14 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
+        $sexMap = $this->model::getSexMap();
+        unset($sexMap[$this->model::SEX_UNKNOWN]);
+        
         $this->setPageTitle('修改个人资料');
         $this->assign([
             'info'     => $this->adminUser,
-            'validate' => $this->model->getViewValidateRule()
+            'validate' => $this->model->getViewValidateRule(),
+            'sex'      => $sexMap
         ]);
         
         return $this->insideDisplay();

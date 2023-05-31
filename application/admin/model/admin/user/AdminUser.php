@@ -67,12 +67,18 @@ class AdminUser extends Model implements ContainerInterface
     /** @var string 操作场景-修改个人资料 */
     const SCENE_PROFILE = 'profile';
     
-    /** @var string 操作场景-自定义验证 */
-    const SCENE_CUSTOM = 'custom';
+    /** @var string 操作场景-自定义更新 */
+    const SCENE_CUSTOM_UPDATE = 'custom_update';
+    
+    /** @var string 操作场景-自定义创建 */
+    const SCENE_CUSTOM_CREATE = 'custom_create';
     
     // +----------------------------------------------------
     // + 性别
     // +----------------------------------------------------
+    /** @var int 未知 */
+    const SEX_UNKNOWN = 0;
+    
     /** @var int 男 */
     const SEX_MAN = 1;
     
@@ -118,16 +124,21 @@ class AdminUser extends Model implements ContainerInterface
     
     /**
      * 添加管理员
-     * @param AdminUserField $data
+     * @param AdminUserField $data 数据
+     * @param string|Closure $scene 场景或验证回调
      * @return AdminUserField
      * @throws Throwable
      */
-    public function create(AdminUserField $data) : AdminUserField
+    public function create(AdminUserField $data, string|Closure $scene = self::SCENE_CREATE) : AdminUserField
     {
         $prepare = $this->trigger(new AdminUserEventCreatePrepare($this, $data), true);
         
-        return $this->transaction(function() use ($data, $prepare) {
-            $this->validate($data, static::SCENE_CREATE);
+        return $this->transaction(function() use ($data, $prepare, $scene) {
+            if ($scene instanceof Closure) {
+                $this->validate($data, $scene, static::SCENE_CUSTOM_CREATE);
+            } else {
+                $this->validate($data, $scene);
+            }
             $this->trigger(new AdminUserEventCreateBefore($this, $data, $prepare));
             $info = $this->getInfo($this->insert($data));
             $this->trigger(new AdminUserEventCreateAfter($this, $data, $prepare, $info));
@@ -148,13 +159,17 @@ class AdminUser extends Model implements ContainerInterface
     {
         $sceneName = $scene;
         if ($scene instanceof Closure) {
-            $sceneName = static::SCENE_CUSTOM;
+            $sceneName = static::SCENE_CUSTOM_UPDATE;
         }
         $prepare = $this->trigger(new AdminUserEventUpdatePrepare($this, $data, $sceneName), true);
         
         return $this->transaction(function() use ($data, $scene, $sceneName, $prepare) {
             $info = $this->lock(true)->getInfo($data->id);
-            $this->validate($data, $scene, $info);
+            if ($scene instanceof Closure) {
+                $this->validate($data, $scene, $sceneName, $info);
+            } else {
+                $this->validate($data, $sceneName, $info);
+            }
             $this->trigger(new AdminUserEventUpdateBefore($this, $data, $sceneName, $prepare, $info));
             $this->update($data);
             $this->trigger(new AdminUserEventUpdateAfter($this, $data, $sceneName, $prepare, $info, $info = $this->getInfo($info->id)));
