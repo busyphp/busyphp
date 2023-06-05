@@ -6,7 +6,6 @@ namespace BusyPHP\model\annotation\field;
 use Attribute;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\model\Field;
-use RuntimeException;
 
 /**
  * 字段数据切割注解类，用于 {@see Field} 中虚拟setter方法对数据按规则切割，或 {@see Field::getModelData()} 对数据按规则组合
@@ -142,10 +141,6 @@ class Separate extends Format
     {
         if (!is_array($data)) {
             return (string) $data;
-        }
-        
-        if (ArrayHelper::isAssoc($data)) {
-            throw new RuntimeException('given array is not an list');
         }
         
         $data = implode($this->separator, $this->unique($this->filter($data)));
