@@ -182,7 +182,7 @@ class Local implements PartInterface
             
             // 初始化有md5值才校验
             if ($config['md5'] && $config['md5'] != $md5) {
-                throw new FileException('文件校验失败: %s', $config['uploadId']);
+                throw new FileException(sprintf('文件校验失败: %s', $config['uploadId']));
             }
             
             // 移动文件至上传目录
