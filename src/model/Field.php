@@ -1220,14 +1220,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 排除属性，执行 {@see Field::getModelData()} {@see Field::toArray()} 时有效，与 {@see Field::retain()} 互斥
-     * @param Validate|Entity|string          $property 传入数据校验对象或要排除的属性
+     * @param Validate|Entity|string|array    $property 传入数据校验对象或要排除的属性
      * @param Entity[]|Entity|string[]|string ...$propertyList 要排除的属性，注意非字段
      * @return $this
      */
     public function exclude($property, ...$propertyList) : self
     {
         if (!$property instanceof Validate) {
-            $propertyList = array_merge($propertyList, [$property]);
+            if (!is_array($property)) {
+                $property = [$property];
+            }
+            
+            $propertyList = array_merge($propertyList, $property);
         }
         
         $list = $this->setLimitProperty(true, ...$propertyList);
@@ -1243,14 +1247,18 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 保留属性，执行 {@see Field::getModelData()} {@see Field::toArray()} 时有效，与 {@see Field::exclude()} 互斥
-     * @param Validate|Entity|string          $property 传入数据校验对象或要排除的属性
+     * @param Validate|Entity|string|array    $property 传入数据校验对象或要排除的属性
      * @param Entity[]|Entity|string[]|string ...$propertyList 要保留的属性，注意非字段
      * @return $this
      */
     public function retain($property, ...$propertyList) : self
     {
         if (!$property instanceof Validate) {
-            $propertyList = array_merge($propertyList, [$property]);
+            if (!is_array($property)) {
+                $property = [$property];
+            }
+            
+            $propertyList = array_merge($propertyList, $property);
         }
         
         $list = $this->setLimitProperty(false, ...$propertyList);
