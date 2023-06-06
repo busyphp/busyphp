@@ -504,12 +504,17 @@ abstract class Model extends Query
     
     /**
      * 输出场景
-     * @param string                            $name 场景名称
-     * @param array<class-string<Model>,string> $relation 关联场景
+     * @param string|array<class-string<Model>,string> $name 场景名称
+     * @param array<class-string<Model>,string>        $relation 关联场景
      * @return $this
      */
-    public function scene(string $name, array $relation = []) : static
+    public function scene(string|array $name, array $relation = []) : static
     {
+        if (is_array($name)) {
+            $relation = $name;
+            $name     = $relation[static::class] ?? '';
+        }
+        
         $this->scene = [
             'name'     => $name,
             'relation' => $relation
