@@ -45,6 +45,12 @@ class Table extends Driver implements ContainerInterface
     protected string $orderType;
     
     /**
+     * 默认排序方式
+     * @var string
+     */
+    protected mixed $defaultOrder = ['id' => 'desc'];
+    
+    /**
      * 偏移量
      * @var int
      */
@@ -184,9 +190,6 @@ class Table extends Driver implements ContainerInterface
         $this->orderType  = $this->request->param('order/s', '', 'trim');
         $this->orderField = $this->request->param('sort/s', '', 'trim');
         $this->searchable = $this->request->param('searchable/a', []);
-        
-        $this->orderType  = $this->orderType ?: 'desc';
-        $this->orderField = $this->orderField ?: 'id';
         
         $this->action               = $this->request->param('action/s', '', 'trim');
         $this->treeParentField      = $this->request->param('tree_parent_field/s', '', 'trim');
@@ -421,6 +424,25 @@ class Table extends Driver implements ContainerInterface
     public function getOrderType() : string
     {
         return $this->orderType;
+    }
+    
+    
+    /**
+     * 设置默认排序方式
+     * @param string|Entity|array $field 排序字段
+     * @param string              $order 排序方式
+     */
+    public function defaultOrder(string|Entity|array $field, string $order = '') : static
+    {
+        $field = Entity::parse($field);
+        
+        if (!is_array($field)) {
+            $field = [$field => $order];
+        }
+        
+        $this->defaultOrder = $field;
+        
+        return $this;
     }
     
     
@@ -799,9 +821,14 @@ class Table extends Driver implements ContainerInterface
         }
         
         // 排序
-        if ($this->orderField && $this->orderType && !$this->model->getOptions('order')) {
-            $this->model->order($this->orderField, $this->orderType);
+        if (!$this->model->getOptions('order')) {
+            if ($this->orderField && $this->orderType) {
+                $this->model->order($this->orderField, $this->orderType);
+            } else {
+                $this->model->order($this->defaultOrder);
+            }
         }
+        
         
         return $this;
     }
