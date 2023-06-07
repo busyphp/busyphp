@@ -39,6 +39,7 @@ use think\validate\ValidateRule;
  * @method static Entity url();
  * @method static Entity hides();
  * @method static Entity routePath();
+ * @method static Entity source();
  * @method $this setId(mixed $id) 设置ID
  * @method $this setName(mixed $name) 设置名称
  * @method $this setPath(mixed $path) 设置路由地址
@@ -218,6 +219,13 @@ class SystemMenuField extends Field implements ModelValidateInterface
     #[Ignore]
     public $operateDisable;
     
+    /**
+     * 菜单源
+     * @var string
+     */
+    #[Ignore]
+    public $source;
+    
     
     protected function onParseAfter()
     {
@@ -247,7 +255,9 @@ class SystemMenuField extends Field implements ModelValidateInterface
             if ($menu) {
                 $this->system     = true;
                 $this->canDisable = $menu->canDisable;
+                $this->source     = $menu->source;
             } else {
+                $this->source     = $this->routePath;
                 $this->canDisable = true;
             }
             $this->operateDisable = $this->canDisable;
