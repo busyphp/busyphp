@@ -16,6 +16,8 @@ use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\app\admin\model\system\file\SystemFile;
 use BusyPHP\model\ArrayOption;
 use RuntimeException;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
 use think\exception\HttpException;
 use think\Response;
 use Throwable;
@@ -62,6 +64,18 @@ class UserController extends InsideController
         $this->groupModel = AdminGroup::init();
         $this->field      = $this->model->getFieldClass();
         $this->groupField = $this->groupModel->getFieldClass();
+    }
+    
+    
+    /**
+     * 赋值列表模板参数
+     */
+    protected function assignListData()
+    {
+        $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
+        $sexMap = $this->model::getSexMap();
+        $sexMap = [-1 => '不限'] + $sexMap;
+        $this->assign('sex', $sexMap);
     }
     
     
@@ -114,12 +128,38 @@ class UserController extends InsideController
             return $table->response();
         }
         
-        $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
-        $sexs = $this->model::getSexMap();
-        $sexs = [-1 => '不限'] + $sexs;
-        $this->assign('sex', $sexs);
+        $this->assignListData();
         
         return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值添加/更新时的模版参数
+     * @param bool  $edit 是否更新
+     * @param array $defaultInfo 新增时默认值
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function assignSaveData(bool $edit = false, array $defaultInfo = [])
+    {
+        $sexMap = $this->model::getSexMap();
+        unset($sexMap[$this->model::SEX_UNKNOWN]);
+        
+        if ($edit) {
+            $info         = $this->model->getInfo($this->get('id/d'));
+            $avatarFileId = $info->id;
+        } else {
+            $info         = $defaultInfo + ['checked' => 1, 'system' => 0];
+            $avatarFileId = SystemFile::class()::createTmp();
+        }
+        
+        $this->assign([
+            'info'           => $info,
+            'avatar_file_id' => $avatarFileId,
+            'validate'       => $this->model->getViewValidateRule(),
+            'sex'            => $sexMap
+        ]);
     }
     
     
@@ -146,18 +186,7 @@ class UserController extends InsideController
             return $this->success('添加成功');
         }
         
-        $sexMap = $this->model::getSexMap();
-        unset($sexMap[$this->model::SEX_UNKNOWN]);
-        
-        $this->assign([
-            'info'           => [
-                'checked' => 1,
-                'system'  => 0,
-            ],
-            'avatar_file_id' => SystemFile::class()::createTmp(),
-            'validate'       => $this->model->getViewValidateRule(),
-            'sex'            => $sexMap
-        ]);
+        $this->assignSaveData();
         
         return $this->insideDisplay();
     }
@@ -184,15 +213,7 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
-        $sexMap = $this->model::getSexMap();
-        unset($sexMap[$this->model::SEX_UNKNOWN]);
-        $info = $this->model->getInfo($this->get('id/d'));
-        $this->assign([
-            'info'           => $info,
-            'avatar_file_id' => $info->id,
-            'validate'       => $this->model->getViewValidateRule(),
-            'sex'            => $sexMap
-        ]);
+        $this->assignSaveData(true);
         
         return $this->insideDisplay('add');
     }
