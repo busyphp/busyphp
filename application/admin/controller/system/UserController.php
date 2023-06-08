@@ -70,12 +70,22 @@ class UserController extends InsideController
     /**
      * 赋值列表模板参数
      */
-    protected function assignListData()
+    protected function assignIndexData()
     {
         $this->assign('status', ['不限', '正常', '禁用', '临时禁用']);
         $sexMap = $this->model::getSexMap();
         $sexMap = [-1 => '不限'] + $sexMap;
         $this->assign('sex', $sexMap);
+    }
+    
+    
+    /**
+     * 自定义列表查询条件
+     * @param AdminUser   $model
+     * @param ArrayOption $option
+     */
+    protected function indexTableQuery(AdminUser $model, ArrayOption $option)
+    {
     }
     
     
@@ -123,12 +133,14 @@ class UserController extends InsideController
                         });
                     }
                 }
+                
+                $this->indexTableQuery($model, $option);
             });
             
             return $table->response();
         }
         
-        $this->assignListData();
+        $this->assignIndexData();
         
         return $this->insideDisplay();
     }
