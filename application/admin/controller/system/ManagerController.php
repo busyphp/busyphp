@@ -349,6 +349,7 @@ class ManagerController extends InsideController
     
     /**
      * 删除图片样式
+     * @throws DbException
      */
     #[MenuNode(menu: false, parent: '/image_style', sort: -80)]
     public function image_style_delete() : Response

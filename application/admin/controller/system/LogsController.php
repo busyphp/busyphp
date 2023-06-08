@@ -24,7 +24,17 @@ use think\Response;
 #[MenuRoute(path: 'system_logs', class: true)]
 class LogsController extends InsideController
 {
+    /**
+     * 日志模型
+     * @var SystemLogs
+     */
     protected SystemLogs $model;
+    
+    /**
+     * 日志模型字段
+     * @var SystemLogsField|string
+     */
+    protected mixed $field;
     
     
     protected function initialize($checkLogin = true)
@@ -32,6 +42,7 @@ class LogsController extends InsideController
         parent::initialize($checkLogin);
         
         $this->model = SystemLogs::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
@@ -45,8 +56,8 @@ class LogsController extends InsideController
         $timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
         if ($table = Table::initIfRequest()) {
             if (!$this->adminUser->groupHasSystem) {
-                $this->model->where(SystemLogsField::client(), 'admin');
-                $this->model->where(SystemLogsField::userId(), $this->adminUserId);
+                $this->model->where($this->field::client(), 'admin');
+                $this->model->where($this->field::userId(), $this->adminUserId);
             }
             
             return $table
@@ -56,7 +67,7 @@ class LogsController extends InsideController
                     $option->deleteIfEmpty('client');
                     
                     if ($time = $option->pull('time', $timeRange)) {
-                        $model->whereTimeIntervalRange(SystemLogsField::createTime(), $time, ' - ', true);
+                        $model->whereTimeIntervalRange($this->field::createTime(), $time, ' - ', true);
                     }
                 })
                 ->response();

@@ -27,17 +27,25 @@ use Throwable;
 #[MenuRoute(path: 'system_file', class: true)]
 class FileController extends InsideController
 {
-    protected SystemFile      $model;
+    /**
+     * 文件模型
+     * @var SystemFile
+     */
+    protected SystemFile $model;
     
-    protected SystemFileClass $fileClassModel;
+    /**
+     * 文件模型字段类
+     * @var string|SystemFileField
+     */
+    protected mixed $field;
     
     
     protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
-        $this->model          = SystemFile::init();
-        $this->fileClassModel = SystemFileClass::init();
+        $this->model = SystemFile::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
@@ -63,16 +71,16 @@ class FileController extends InsideController
                     
                     // 时间
                     if ($time = $option->pull('time')) {
-                        $model->whereTimeIntervalRange(SystemFileField::createTime(), $time, ' - ', true);
+                        $model->whereTimeIntervalRange($this->field::createTime(), $time, ' - ', true);
                     }
                     
                     if ($uploadType = $option->pull('upload_type', 0, 'intval')) {
                         switch ($uploadType) {
                             case 1:
-                                $model->whereComplete()->where(SystemFileField::fast(0));
+                                $model->whereComplete()->where($this->field::fast(0));
                             break;
                             case 2:
-                                $model->whereComplete()->where(SystemFileField::fast(1));
+                                $model->whereComplete()->where($this->field::fast(1));
                             break;
                             case 3:
                                 $model->whereComplete(false);
@@ -96,7 +104,7 @@ class FileController extends InsideController
         $this->assign('client_options', $clientOptions);
         
         // 分类选项
-        $cateOptions = $this->fileClassModel->getList();
+        $cateOptions = SystemFileClass::init()->getList();
         array_unshift($cateOptions, [
             'name' => '不限',
             'var'  => ''

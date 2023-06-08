@@ -33,9 +33,16 @@ use Throwable;
 class FileController extends InsideController
 {
     /**
+     * 文件模型
      * @var SystemFile
      */
     protected SystemFile $model;
+    
+    /**
+     * 文件模型字段类
+     * @var string|SystemFileField
+     */
+    protected mixed $field;
     
     
     protected function initialize($checkLogin = true)
@@ -188,19 +195,19 @@ class FileController extends InsideController
             
             // 类型搜索
             if ($type) {
-                $this->model->where(SystemFileField::type($type));
+                $this->model->where($this->field::type($type));
             }
             
             // 按当前信息查询
             if (!$category) {
                 // 按分类搜索
                 if ($classType) {
-                    $this->model->where(SystemFileField::classType($classType));
+                    $this->model->where($this->field::classType($classType));
                 }
                 
-                $this->model->where(SystemFileField::classValue($classValue));
+                $this->model->where($this->field::classValue($classValue));
             } elseif ($category !== ':all') {
-                $this->model->where(SystemFileField::classType($category));
+                $this->model->where($this->field::classType($category));
             }
             
             // 按扩展名搜索
@@ -208,16 +215,16 @@ class FileController extends InsideController
                 $extensions = StorageSetting::instance()->getAllowExtensions($classType);
             }
             if ($extensions) {
-                $this->model->where(SystemFileField::extension('in', array_map('strtolower', $extensions)));
+                $this->model->where($this->field::extension('in', array_map('strtolower', $extensions)));
             }
             
             // 关键词搜索
             if ($word) {
                 $word = FilterHelper::searchWord($word);
-                $this->model->where(SystemFileField::name('like', '%' . $word . '%'));
+                $this->model->where($this->field::name('like', '%' . $word . '%'));
             }
             
-            $result = SimpleQuery::init($this->model->whereComplete()->order(SystemFileField::id(), 'desc'))->build();
+            $result = SimpleQuery::init($this->model->whereComplete()->order($this->field::id(), 'desc'))->build();
             
             return $this->success([
                 'list'       => $result->list,
@@ -230,7 +237,7 @@ class FileController extends InsideController
         
         $this->assign('info', [
             'type_map'     => SystemFile::class()::getTypes() ?: new stdClass(),
-            'category_map' => SystemFileClass::instance()->getList() ?: new stdClass()
+            'category_map' => SystemFileClass::init()->getList() ?: new stdClass()
         ]);
         
         return $this->insideDisplay();

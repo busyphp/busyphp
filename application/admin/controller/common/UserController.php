@@ -23,9 +23,16 @@ use Throwable;
 class UserController extends InsideController
 {
     /**
+     * 用户模型
      * @var AdminUser
      */
     protected AdminUser $model;
+    
+    /**
+     * 用户模型字段类
+     * @var string|AdminUserField
+     */
+    protected mixed $field;
     
     
     protected function initialize($checkLogin = true)
@@ -33,6 +40,7 @@ class UserController extends InsideController
         parent::initialize($checkLogin);
         
         $this->model = AdminUser::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
@@ -45,7 +53,7 @@ class UserController extends InsideController
     {
         if ($this->isPost()) {
             $this->model->modify(
-                AdminUserField::init($this->post())->setId($this->adminUserId),
+                $this->field::init($this->post())->setId($this->adminUserId),
                 $this->model::SCENE_PROFILE
             );
             $this->log()->record(self::LOG_UPDATE, '修改个人资料');
@@ -85,7 +93,7 @@ class UserController extends InsideController
             }
             
             $this->model->modify(
-                AdminUserField::init($this->post())->setId($this->adminUserId),
+                $this->field::init($this->post())->setId($this->adminUserId),
                 $this->model::SCENE_PASSWORD
             );
             $this->log()

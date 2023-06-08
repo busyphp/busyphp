@@ -13,7 +13,6 @@ use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
-use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpException;
@@ -29,7 +28,17 @@ use Throwable;
 #[MenuRoute(path: 'system_group', class: true)]
 class GroupController extends InsideController
 {
+    /**
+     * 角色模型
+     * @var AdminGroup
+     */
     protected AdminGroup $model;
+    
+    /**
+     * 角色模型字段
+     * @var AdminGroupField|string
+     */
+    protected mixed $field;
     
     
     protected function initialize($checkLogin = true)
@@ -37,6 +46,7 @@ class GroupController extends InsideController
         parent::initialize($checkLogin);
         
         $this->model = AdminGroup::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
@@ -49,7 +59,7 @@ class GroupController extends InsideController
     {
         // 系统角色列表数据
         if ($table = Table::initIfRequest()) {
-            $this->model->order(AdminGroupField::sort(), 'asc')->order(AdminGroupField::id(), 'asc');
+            $this->model->order($this->field::sort(), 'asc')->order($this->field::id(), 'asc');
             $table->model($this->model);
             
             return $table->response();
@@ -71,7 +81,7 @@ class GroupController extends InsideController
     {
         // 添加
         if ($this->isPost()) {
-            $this->model->create(AdminGroupField::init($this->parseData()));
+            $this->model->create($this->field::init($this->parseData()));
             $this->log()->record(self::LOG_INSERT, '添加系统角色');
             
             return $this->success('添加成功');
@@ -102,7 +112,7 @@ class GroupController extends InsideController
     {
         // 修改
         if ($this->isPost()) {
-            $this->model->modify(AdminGroupField::init($this->parseData()));
+            $this->model->modify($this->field::init($this->parseData()));
             $this->log()->record(self::LOG_UPDATE, '修改系统角色');
             
             return $this->success('修改成功');
@@ -199,7 +209,7 @@ class GroupController extends InsideController
     #[MenuNode(menu: false, parent: '/index', sort: -60)]
     public function sort() : Response
     {
-        SimpleForm::init($this->model)->sort('sort', AdminGroupField::sort());
+        SimpleForm::init($this->model)->sort('sort', $this->field::sort());
         $this->log()->record(self::LOG_UPDATE, '排序系统角色');
         $this->updateCache();
         
@@ -219,10 +229,10 @@ class GroupController extends InsideController
             $groupIds = $this->param('id/s', 'trim');
             $groupIds = array_map('intval', explode(',', $groupIds));
             
-            return $tree->model(AdminGroup::init())
+            return $tree->model($this->model)
                 ->defaultOrder([
-                    (string) AdminGroupField::sort() => 'asc',
-                    (string) AdminGroupField::id()   => 'asc',
+                    (string) $this->field::sort() => 'asc',
+                    (string) $this->field::id()   => 'asc',
                 ])
                 ->list(function(TreeFlatNode $node, AdminGroupField $item, int $index) use ($groupIds) {
                     $node->setText($item->name);
@@ -244,12 +254,12 @@ class GroupController extends InsideController
             
             return $linkage->model($this->model)
                 ->defaultOrder([
-                    (string) AdminGroupField::sort() => 'asc',
-                    (string) AdminGroupField::id()   => 'asc',
+                    (string) $this->field::sort() => 'asc',
+                    (string) $this->field::id()   => 'asc',
                 ])
                 ->query(function(AdminGroup $model) use ($id) {
                     if ($id > 0) {
-                        $model->where(AdminGroupField::id('<>', $id));
+                        $model->where($this->field::id('<>', $id));
                     }
                 })
                 ->response();

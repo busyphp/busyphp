@@ -29,14 +29,39 @@ use Throwable;
 #[MenuRoute(path: 'system_user', class: true)]
 class UserController extends InsideController
 {
+    /**
+     * 用户模型
+     * @var AdminUser
+     */
     protected AdminUser $model;
+    
+    /**
+     * 模型字段类
+     * @var AdminUserField|string
+     */
+    protected mixed $field;
+    
+    /**
+     * 角色模型
+     * @var AdminGroup
+     */
+    protected AdminGroup $groupModel;
+    
+    /**
+     * 角色字段类
+     * @var AdminGroupField|string
+     */
+    protected mixed $groupField;
     
     
     protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
-        $this->model = AdminUser::init();
+        $this->model      = AdminUser::init();
+        $this->groupModel = AdminGroup::init();
+        $this->field      = $this->model->getFieldClass();
+        $this->groupField = $this->groupModel->getFieldClass();
     }
     
     
@@ -55,15 +80,15 @@ class UserController extends InsideController
                 switch ($option->pull('status', 0, 'intval')) {
                     // 正常
                     case 1:
-                        $model->where(AdminUserField::checked(1));
+                        $model->where($this->field::checked(1));
                     break;
                     // 禁用
                     case 2:
-                        $model->where(AdminUserField::checked(0));
+                        $model->where($this->field::checked(0));
                     break;
                     // 临时锁定
                     case 3:
-                        $model->where(AdminUserField::errorRelease('>', time()));
+                        $model->where($this->field::errorRelease('>', time()));
                     break;
                 }
                 
@@ -73,13 +98,13 @@ class UserController extends InsideController
                     
                     if ($groupId) {
                         $childIds = array_column(
-                            AdminGroup::instance()->getAllSubRoles($groupId, true),
-                            AdminGroupField::id()->name()
+                            $this->groupModel->getAllSubRoles($groupId, true),
+                            $this->groupField::id()->name()
                         );
                         
                         $model->where(function(AdminUser $model) use ($childIds) {
                             foreach ($childIds as $childId) {
-                                $model->whereOr(AdminUserField::groupIds(), 'like', "%,$childId,%");
+                                $model->whereOr($this->field::groupIds(), 'like', "%,$childId,%");
                             }
                         });
                     }
@@ -114,7 +139,7 @@ class UserController extends InsideController
                         SystemFile::init()->updateValue($fileId, "{$event->info->id}");
                     }
                 })
-                ->create(AdminUserField::init($this->post()));
+                ->create($this->field::init($this->post()));
             
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_INSERT, '添加系统用户');
             
@@ -129,7 +154,7 @@ class UserController extends InsideController
                 'checked' => 1,
                 'system'  => 0,
             ],
-            'avatar_file_id' => SystemFile::createTmp(),
+            'avatar_file_id' => SystemFile::class()::createTmp(),
             'validate'       => $this->model->getViewValidateRule(),
             'sex'            => $sexMap
         ]);
@@ -153,7 +178,7 @@ class UserController extends InsideController
                 throw new RuntimeException('不能禁用自己');
             }
             
-            $this->model->modify(AdminUserField::init($this->post()));
+            $this->model->modify($this->field::init($this->post()));
             $this->log()->record(self::LOG_UPDATE, '修改系统用户');
             
             return $this->success('修改成功');
@@ -199,7 +224,7 @@ class UserController extends InsideController
     public function password() : Response
     {
         if ($this->isPost()) {
-            $this->model->modify(AdminUserField::init($this->post()), AdminUser::SCENE_PASSWORD);
+            $this->model->modify($this->field::init($this->post()), $this->model::SCENE_PASSWORD);
             $this->log()->filterParams(['password', 'confirm_password'])->record(self::LOG_UPDATE, '修改系统用户密码');
             
             return $this->success('修改成功');

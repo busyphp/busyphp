@@ -26,14 +26,25 @@ use Throwable;
 #[MenuRoute(path: 'system_task', class: true)]
 class TaskController extends InsideController
 {
+    /**
+     * 任务模型
+     * @var SystemTask
+     */
     protected SystemTask $model;
+    
+    /**
+     * 任务模型字段类
+     * @var string|SystemTaskField
+     */
+    protected mixed $field;
     
     
     protected function initialize(bool $checkLogin = true)
     {
-        $this->model = SystemTask::init();
-        
         parent::initialize($checkLogin);
+        
+        $this->model = SystemTask::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
@@ -50,10 +61,10 @@ class TaskController extends InsideController
                 $option->deleteIfLt('success', 0);
                 
                 if ($time = $option->pull('time')) {
-                    $model->whereTimeIntervalRange(SystemTaskField::planTime(), $time, ' - ', true);
+                    $model->whereTimeIntervalRange($this->field::planTime(), $time, ' - ', true);
                 }
                 
-                $model->order(SystemTaskField::planTime(), 'desc');
+                $model->order($this->field::planTime(), 'desc');
             });
             
             return $table->model($this->model)->response();
@@ -156,24 +167,24 @@ class TaskController extends InsideController
             'status'        => $status,
             'wait_total'    => $this
                 ->model
-                ->where(SystemTaskField::status('in', [
-                    SystemTask::STATUS_WAIT,
-                    SystemTask::STATUS_AGAIN
+                ->where($this->field::status('in', [
+                    $this->model::STATUS_WAIT,
+                    $this->model::STATUS_AGAIN
                 ]))
                 ->count(),
             'start_total'   => $this
                 ->model
-                ->where(SystemTaskField::status(SystemTask::STATUS_STARTED))
+                ->where($this->field::status($this->model::STATUS_STARTED))
                 ->count(),
             'success_total' => $this
                 ->model
-                ->where(SystemTaskField::status(SystemTask::STATUS_COMPLETE))
-                ->where(SystemTaskField::success(true))
+                ->where($this->field::status($this->model::STATUS_COMPLETE))
+                ->where($this->field::success(true))
                 ->count(),
             'error_total'   => $this
                 ->model
-                ->where(SystemTaskField::status(SystemTask::STATUS_COMPLETE))
-                ->where(SystemTaskField::success(false))
+                ->where($this->field::status($this->model::STATUS_COMPLETE))
+                ->where($this->field::success(false))
                 ->count()
         ]);
     }
