@@ -16,6 +16,7 @@ use BusyPHP\helper\ArrayHelper;
 use Closure;
 use RuntimeException;
 use stdClass;
+use think\db\exception\DbException;
 use think\Response;
 use Throwable;
 
@@ -340,6 +341,18 @@ class IndexController extends InsideController
      */
     protected function renderIndex() : Response
     {
+        $this->assignIndexData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值首页模版数据
+     * @throws DbException
+     */
+    protected function assignIndexData()
+    {
         $this->setPageTitle('首页');
         $this->assign([
             'mysql_version'   => AdminUser::instance()->query("select VERSION()")[0]['VERSION()'] ?? 'Unknown',
@@ -348,7 +361,5 @@ class IndexController extends InsideController
             'soft_name'       => $_SERVER['SERVER_SOFTWARE'] ?? '',
             'framework_name'  => $this->app->getFrameworkName() . ' V' . $this->app->getFrameworkVersion(),
         ]);
-        
-        return $this->insideDisplay();
     }
 }

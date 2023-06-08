@@ -13,6 +13,7 @@ use BusyPHP\app\admin\component\js\driver\tree\TreeFlatNode;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
 use BusyPHP\app\admin\model\admin\group\AdminGroupField;
+use BusyPHP\model\ArrayOption;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\exception\HttpException;
@@ -59,13 +60,38 @@ class GroupController extends InsideController
     {
         // 系统角色列表数据
         if ($table = Table::initIfRequest()) {
-            $this->model->order($this->field::sort(), 'asc')->order($this->field::id(), 'asc');
-            $table->model($this->model);
-            
-            return $table->response();
+            return $table
+                ->defaultOrder([
+                    (string) $this->field::sort() => 'asc',
+                    (string) $this->field::id()   => 'asc',
+                ])
+                ->model($this->model)->query(function(AdminGroup $model, ArrayOption $option) {
+                    $this->indexTableQuery($model, $option);
+                })
+                ->response();
         }
         
+        $this->assignIndexData();
+        
         return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 自定义列表查询条件
+     * @param AdminGroup  $model
+     * @param ArrayOption $option
+     */
+    protected function indexTableQuery(AdminGroup $model, ArrayOption $option)
+    {
+    }
+    
+    
+    /**
+     * 赋值列表模版数据
+     */
+    protected function assignIndexData()
+    {
     }
     
     
@@ -87,14 +113,7 @@ class GroupController extends InsideController
             return $this->success('添加成功');
         }
         
-        $id = $this->get('id/d');
-        $this->assign([
-            'info' => [
-                'status'    => true,
-                'system'    => false,
-                'parent_id' => $id > 0 ? $this->parseParentId($this->model->getInfo($id), true) : ''
-            ],
-        ]);
+        $this->assignSaveData();
         
         return $this->insideDisplay();
     }
@@ -118,13 +137,37 @@ class GroupController extends InsideController
             return $this->success('修改成功');
         }
         
-        $info           = $this->model->getInfo($this->get('id/d'));
-        $info->parentId = $this->parseParentId($info);
-        $this->assign([
-            'info' => $info,
-        ]);
+        $this->assignSaveData(true);
         
         return $this->insideDisplay('add');
+    }
+    
+    
+    /**
+     * 赋值新增/修改模版数据
+     * @param bool  $edit 是否修改
+     * @param array $defaultInfo 新增默认信息
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function assignSaveData(bool $edit = false, array $defaultInfo = [])
+    {
+        if ($edit) {
+            $info           = $this->model->getInfo($this->get('id/d'));
+            $info->parentId = $this->parseParentId($info);
+            $this->assign([
+                'info' => $info,
+            ]);
+        } else {
+            $id = $this->get('id/d');
+            $this->assign([
+                'info' => $defaultInfo + [
+                        'status'    => true,
+                        'system'    => false,
+                        'parent_id' => $id > 0 ? $this->parseParentId($this->model->getInfo($id), true) : ''
+                    ],
+            ]);
+        }
     }
     
     

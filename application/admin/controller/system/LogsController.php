@@ -36,13 +36,20 @@ class LogsController extends InsideController
      */
     protected mixed $field;
     
+    /**
+     * 查询时间范围
+     * @var string
+     */
+    protected string $timeRange;
+    
     
     protected function initialize($checkLogin = true)
     {
         parent::initialize($checkLogin);
         
-        $this->model = SystemLogs::init();
-        $this->field = $this->model->getFieldClass();
+        $this->model     = SystemLogs::init();
+        $this->field     = $this->model->getFieldClass();
+        $this->timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
     }
     
     
@@ -53,7 +60,6 @@ class LogsController extends InsideController
     #[MenuNode(menu: true, parent: '#system_manager', icon: 'fa fa-file-text-o', sort: -80)]
     public function index() : Response
     {
-        $timeRange = date('Y-m-d 00:00:00', strtotime('-6 month')) . ' - ' . date('Y-m-d 23:59:59');
         if ($table = Table::initIfRequest()) {
             if (!$this->adminUser->groupHasSystem) {
                 $this->model->where($this->field::client(), 'admin');
@@ -62,17 +68,40 @@ class LogsController extends InsideController
             
             return $table
                 ->model($this->model)
-                ->query(function(SystemLogs $model, ArrayOption $option) use ($timeRange) {
+                ->query(function(SystemLogs $model, ArrayOption $option) {
                     $option->deleteIfLt('type', 0);
                     $option->deleteIfEmpty('client');
                     
-                    if ($time = $option->pull('time', $timeRange)) {
+                    if ($time = $option->pull('time', $this->timeRange)) {
                         $model->whereTimeIntervalRange($this->field::createTime(), $time, ' - ', true);
                     }
+                    
+                    $this->indexTableQuery($model, $option);
                 })
                 ->response();
         }
         
+        $this->assignIndexData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 自定义列表查询条件
+     * @param SystemLogs  $model
+     * @param ArrayOption $option
+     */
+    protected function indexTableQuery(SystemLogs $model, ArrayOption $option)
+    {
+    }
+    
+    
+    /**
+     * 赋值列表模版数据
+     */
+    protected function assignIndexData()
+    {
         // 操作类型
         $typeList = $this->model::getTypeMap();
         $typeList = [-1 => '不限'] + $typeList;
@@ -91,9 +120,7 @@ class LogsController extends InsideController
         $this->assign('clients', $clientList);
         
         // 默认时间
-        $this->assign('time', $timeRange);
-        
-        return $this->insideDisplay();
+        $this->assign('time', $this->timeRange);
     }
     
     
@@ -120,8 +147,19 @@ class LogsController extends InsideController
     #[MenuNode(menu: false, parent: '/index', sort: -90)]
     public function detail() : Response
     {
-        $this->assign('info', $this->model->getInfo($this->get('id/d')));
+        $this->assignDetailData();
         
         return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值查看操作记录模版数据
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    public function assignDetailData()
+    {
+        $this->assign('info', $this->model->getInfo($this->get('id/d')));
     }
 }

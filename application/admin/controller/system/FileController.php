@@ -87,10 +87,33 @@ class FileController extends InsideController
                             break;
                         }
                     }
+                    
+                    $this->indexTableQuery($model, $option);
                 })
                 ->response();
         }
         
+        $this->assignIndexData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 自定义列表查询条件
+     * @param SystemFile  $model
+     * @param ArrayOption $option
+     */
+    protected function indexTableQuery(SystemFile $model, ArrayOption $option)
+    {
+    }
+    
+    
+    /**
+     * 赋值列表模版数据
+     */
+    protected function assignIndexData()
+    {
         // 客户端选项
         $clientOptions = AppHelper::getList();
         array_unshift($clientOptions, ['name' => '不限', 'dir' => '']);
@@ -131,8 +154,6 @@ class FileController extends InsideController
         ]);
         $this->assign('disks', $disks);
         $this->assign('upload_types', ['不限', '普通', '秒传', '上传中']);
-        
-        return $this->insideDisplay();
     }
     
     

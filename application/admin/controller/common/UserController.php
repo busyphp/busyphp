@@ -61,6 +61,17 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
+        $this->assignProfileData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值个人资料模版参数
+     */
+    protected function assignProfileData()
+    {
         $sexMap = $this->model::getSexMap();
         unset($sexMap[$this->model::SEX_UNKNOWN]);
         
@@ -70,8 +81,6 @@ class UserController extends InsideController
             'validate' => $this->model->getViewValidateRule(),
             'sex'      => $sexMap
         ]);
-        
-        return $this->insideDisplay();
     }
     
     
@@ -103,12 +112,21 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
+        $this->assignPasswordData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值修改密码模版参数
+     */
+    protected function assignPasswordData()
+    {
         $this->setPageTitle('修改个人密码');
         $this->assign([
             'info' => $this->adminUser
         ]);
-        
-        return $this->insideDisplay();
     }
     
     
@@ -131,6 +149,17 @@ class UserController extends InsideController
             return $this->success('修改成功');
         }
         
+        $this->assignThemeData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值切换主题模版参数
+     */
+    protected function assignThemeData()
+    {
         $list = [];
         $i    = 0;
         foreach (glob(__DIR__ . '/../../../../assets/admin/themes/*.*') as $i => $cssFile) {
@@ -153,8 +182,6 @@ class UserController extends InsideController
         $this->assign('list', $list);
         $this->assign('info', $this->handle::getTheme($this->adminUser));
         $this->setPageTitle('主题设置');
-        
-        return $this->insideDisplay();
     }
     
     
@@ -193,11 +220,22 @@ class UserController extends InsideController
      */
     public function detail() : Response
     {
+        $this->assignDetailData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值用户资料模版参数
+     * @throws DataNotFoundException
+     * @throws DbException
+     */
+    protected function assignDetailData()
+    {
         $this->setPageTitle($this->param('title/s', 'trim') ?: '用户资料');
         $this->assign([
             'info' => $this->model->getInfo($this->param('id/d'))
         ]);
-        
-        return $this->insideDisplay();
     }
 }

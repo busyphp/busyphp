@@ -87,12 +87,22 @@ class ManagerController extends InsideController
             return $this->success('设置成功');
         }
         
+        $this->assignIndexData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值系统设置模版数据
+     * @throws Throwable
+     */
+    protected function assignIndexData()
+    {
         $this->assign([
             'info' => PublicSetting::instance()->get(),
             'nav'  => $this->assignNav()
         ]);
-        
-        return $this->insideDisplay();
     }
     
     
@@ -115,12 +125,22 @@ class ManagerController extends InsideController
             return $this->success('设置成功');
         }
         
+        $this->assignAdminData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值管理面板设置模版数据
+     * @throws Throwable
+     */
+    protected function assignAdminData()
+    {
         $info                     = AdminSetting::instance()->get();
         $info['watermark']['txt'] = ($info['watermark']['txt'] ?? '') ?: "登录人：{username}\r\n内部系统，严禁拍照，截图\r\n{time}";
         $this->assign('info', $info);
         $this->assignNav();
-        
-        return $this->insideDisplay();
     }
     
     
@@ -134,21 +154,32 @@ class ManagerController extends InsideController
     #[MenuNode(menu: false, parent: '/index', sort: -80)]
     public function storage() : Response
     {
-        $setting = StorageSetting::instance();
         if ($this->isPost()) {
-            $setting->set($this->post('data/a'));
+            StorageSetting::instance()->set($this->post('data/a'));
             $this->log()->record(self::LOG_UPDATE, '存储设置');
             $this->updateCache();
             
             return $this->success('设置成功');
         }
         
-        $this->assign('clients', AppHelper::getList());
-        $this->assign('disks', $setting::getDisks());
-        $this->assign('info', $setting->get());
-        $this->assignNav();
+        $this->assignStorageData();
         
         return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值存储设置模版数据
+     * @throws Throwable
+     */
+    protected function assignStorageData()
+    {
+        $storageSetting = StorageSetting::instance();
+        
+        $this->assign('clients', AppHelper::getList());
+        $this->assign('disks', $storageSetting::getDisks());
+        $this->assign('info', $storageSetting->get());
+        $this->assignNav();
     }
     
     

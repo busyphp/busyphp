@@ -130,6 +130,17 @@ class PassportController extends InsideController
      */
     protected function renderLogin() : Response
     {
+        $this->assignLoginData();
+        
+        return $this->insideDisplay();
+    }
+    
+    
+    /**
+     * 赋值登录页面模版参数
+     */
+    protected function assignLoginData()
+    {
         $needCheckVerify = Session::get(self::SESSION_VERIFY_STATUS_KEY) ?: false;
         $adminSetting    = AdminSetting::instance();
         $publicSetting   = PublicSetting::instance();
@@ -160,8 +171,6 @@ class PassportController extends InsideController
         $this->assign('icp_no', $publicSetting->getIcpNo());
         $this->assign('police_no', $publicSetting->getPoliceNo());
         $this->setPageTitle('登录');
-        
-        return $this->insideDisplay();
     }
     
     
