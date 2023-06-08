@@ -50,6 +50,7 @@ class FileController extends InsideController
         parent::initialize($checkLogin);
         
         $this->model = SystemFile::init();
+        $this->field = $this->model->getFieldClass();
     }
     
     
