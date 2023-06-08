@@ -147,7 +147,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     #[Ignore]
     #[Filter(filter: 'trim')]
     #[ToArrayHidden]
-    private $confirmPassword;
+    protected $confirmPassword;
     
     /**
      * 手机号
@@ -495,6 +495,121 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
     
     
     /**
+     * 添加场景保留字段
+     * @param AdminUser $model 用户模型
+     * @return array
+     */
+    protected function createRetain(AdminUser $model) : array
+    {
+        return [
+            $this::avatar(),
+            $this::checked(),
+            $this::username(),
+            $this::nickname(),
+            $this::password(),
+            $this::confirmPassword(),
+            $this::phone(),
+            $this::email(),
+            $this::groupIds(),
+            $this::defaultGroupId(),
+            $this::name(),
+            $this::cardNo(),
+            $this::sex(),
+            $this::birthday(),
+            $this::tel(),
+            $this::qq(),
+            $this::remark()
+        ];
+    }
+    
+    
+    /**
+     * 修改场景保留字段
+     * @param AdminUser      $model 用户模型
+     * @param AdminUserField $data 更新前用户数据
+     * @param bool           $system 是否系统用户
+     * @return array
+     */
+    protected function updateRetain(AdminUser $model, AdminUserField $data, bool $system) : array
+    {
+        if ($system) {
+            return [
+                $this::id(),
+                $this::avatar(),
+                $this::username(),
+                $this::nickname(),
+                $this::phone(),
+                $this::email(),
+                $this::name(),
+                $this::cardNo(),
+                $this::sex(),
+                $this::birthday(),
+                $this::tel(),
+                $this::qq(),
+                $this::remark(),
+            ];
+        } else {
+            return [
+                $this::id(),
+                $this::avatar(),
+                $this::checked(),
+                $this::username(),
+                $this::nickname(),
+                $this::phone(),
+                $this::email(),
+                $this::groupIds(),
+                $this::defaultGroupId(),
+                $this::name(),
+                $this::cardNo(),
+                $this::sex(),
+                $this::birthday(),
+                $this::tel(),
+                $this::qq(),
+                $this::remark(),
+            ];
+        }
+    }
+    
+    
+    /**
+     * 修改个人资料保留字段
+     * @param AdminUser      $model 用户模型
+     * @param AdminUserField $data 更新前的用户数据
+     * @return array
+     */
+    protected function updateProfileRetain(AdminUser $model, AdminUserField $data) : array
+    {
+        return [
+            $this::id(),
+            $this::avatar(),
+            $this::nickname(),
+            $this::phone(),
+            $this::email(),
+            $this::name(),
+            $this::cardNo(),
+            $this::sex(),
+            $this::birthday(),
+            $this::tel(),
+            $this::qq(),
+            $this::remark(),
+        ];
+    }
+    
+    
+    /**
+     * 通用保留字段
+     * @param AdminUser           $model 用户模型
+     * @param string              $scene 场景值
+     * @param AdminUserField|null $data 更新前的用户数据
+     * @return array
+     */
+    protected function commonRetain(AdminUser $model, string $scene, ?AdminUserField $data) : array
+    {
+        return [];
+    }
+    
+    
+    /**
      * @inheritDoc
      * @param AdminUser      $model
      * @param AdminUserField $data
@@ -582,88 +697,23 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
             $validate->append($this::tel(), ValidateRule::init()->regex($telRegex, ':attribute无效'));
         }
         
+        $commonRetain = $this->commonRetain($model, $scene, $data);
         switch ($scene) {
             // 添加
             case $model::SCENE_CREATE:
-                $this->retain($validate, [
-                    $this::avatar(),
-                    $this::checked(),
-                    $this::username(),
-                    $this::nickname(),
-                    $this::password(),
-                    $this::confirmPassword(),
-                    $this::phone(),
-                    $this::email(),
-                    $this::groupIds(),
-                    $this::defaultGroupId(),
-                    $this::name(),
-                    $this::cardNo(),
-                    $this::sex(),
-                    $this::birthday(),
-                    $this::tel(),
-                    $this::qq(),
-                    $this::remark(),
-                ]);
+                $this->retain($validate, $this->createRetain($model), $commonRetain);
                 
                 return true;
             
             // 修改
             case $model::SCENE_UPDATE:
-                if ($data->system) {
-                    $this->retain($validate, [
-                        $this::id(),
-                        $this::avatar(),
-                        $this::username(),
-                        $this::nickname(),
-                        $this::phone(),
-                        $this::email(),
-                        $this::name(),
-                        $this::cardNo(),
-                        $this::sex(),
-                        $this::birthday(),
-                        $this::tel(),
-                        $this::qq(),
-                        $this::remark(),
-                    ]);
-                } else {
-                    $this->retain($validate, [
-                        $this::id(),
-                        $this::avatar(),
-                        $this::checked(),
-                        $this::username(),
-                        $this::nickname(),
-                        $this::phone(),
-                        $this::email(),
-                        $this::groupIds(),
-                        $this::defaultGroupId(),
-                        $this::name(),
-                        $this::cardNo(),
-                        $this::sex(),
-                        $this::birthday(),
-                        $this::tel(),
-                        $this::qq(),
-                        $this::remark(),
-                    ]);
-                }
+                $this->retain($validate, $this->updateRetain($model, $data, $data->system), $commonRetain);
                 
                 return true;
             
             // 修改个人资料
             case $model::SCENE_PROFILE:
-                $this->retain($validate, [
-                    $this::id(),
-                    $this::avatar(),
-                    $this::nickname(),
-                    $this::phone(),
-                    $this::email(),
-                    $this::name(),
-                    $this::cardNo(),
-                    $this::sex(),
-                    $this::birthday(),
-                    $this::tel(),
-                    $this::qq(),
-                    $this::remark(),
-                ]);
+                $this->retain($validate, $this->updateProfileRetain($model, $data), $commonRetain);
                 
                 return true;
             
