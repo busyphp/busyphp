@@ -52,7 +52,7 @@ class MenuController extends InsideController
     /**
      * @var bool 开发模式
      */
-    const DEVELOP = true;
+    const DEVELOP = false;
     
     
     protected function initialize($checkLogin = true)
