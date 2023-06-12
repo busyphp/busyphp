@@ -9,6 +9,7 @@ use BusyPHP\model\annotation\field\Ignore;
 use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
+use think\validate\ValidateRule;
 
 /**
  * 系统用户通行秘钥模型字段
@@ -26,17 +27,17 @@ use BusyPHP\model\Field;
  * @method static Entity lastTime(mixed $op = null, mixed $condition = null) 上次登录时间
  * @method static Entity lastIp(mixed $op = null, mixed $condition = null) 上次登录IP
  * @method static Entity loginTotal(mixed $op = null, mixed $condition = null) 登录次数
- * @method $this setId(mixed $id) 设置id
- * @method $this setUserType(mixed $userType) 设置用户类型
- * @method $this setUserId(mixed $userId) 设置用户ID
- * @method $this setToken(mixed $token) 设置密钥
- * @method $this setType(mixed $type) 设置登录类型
- * @method $this setCreateTime(mixed $createTime) 设置创建时间
- * @method $this setLoginTime(mixed $loginTime) 设置本次登录时间
- * @method $this setLoginIp(mixed $loginIp) 设置本次登录IP
- * @method $this setLastTime(mixed $lastTime) 设置上次登录时间
- * @method $this setLastIp(mixed $lastIp) 设置上次登录IP
- * @method $this setLoginTotal(mixed $loginTotal) 设置登录次数
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置id
+ * @method $this setUserType(mixed $userType, bool|ValidateRule[] $validate = false) 设置用户类型
+ * @method $this setUserId(mixed $userId, bool|ValidateRule[] $validate = false) 设置用户ID
+ * @method $this setToken(mixed $token, bool|ValidateRule[] $validate = false) 设置密钥
+ * @method $this setType(mixed $type, bool|ValidateRule[] $validate = false) 设置登录类型
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置创建时间
+ * @method $this setLoginTime(mixed $loginTime, bool|ValidateRule[] $validate = false) 设置本次登录时间
+ * @method $this setLoginIp(mixed $loginIp, bool|ValidateRule[] $validate = false) 设置本次登录IP
+ * @method $this setLastTime(mixed $lastTime, bool|ValidateRule[] $validate = false) 设置上次登录时间
+ * @method $this setLastIp(mixed $lastIp, bool|ValidateRule[] $validate = false) 设置上次登录IP
+ * @method $this setLoginTotal(mixed $loginTotal, bool|ValidateRule[] $validate = false) 设置登录次数
  */
 class SystemTokenField extends Field
 {

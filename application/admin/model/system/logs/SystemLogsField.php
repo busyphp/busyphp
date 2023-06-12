@@ -12,6 +12,7 @@ use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
+use think\validate\ValidateRule;
 
 /**
  * 系统操作日志字段
@@ -37,22 +38,22 @@ use BusyPHP\model\Field;
  * @method static Entity formatCreateTime();
  * @method static Entity typeName();
  * @method static Entity clientName();
- * @method $this setId(mixed $id) 设置ID
- * @method $this setCreateTime(mixed $createTime) 设置操作时间
- * @method $this setType(mixed $type) 设置操作类型
- * @method $this setLevel(mixed $level) 设置日志级别
- * @method $this setName(mixed $name) 设置操作名称
- * @method $this setUserId(mixed $userId) 设置操作用户ID
- * @method $this setUsername(mixed $username) 设置操作用户名
- * @method $this setClassType(mixed $classType) 设置日志分类
- * @method $this setClassValue(mixed $classValue) 设置日志分类业务参数
- * @method $this setClient(mixed $client) 设置操作客户端
- * @method $this setIp(mixed $ip) 设置客户端IP
- * @method $this setMethod(mixed $method) 设置请求方式
- * @method $this setUrl(mixed $url) 设置请求URL
- * @method $this setParams(mixed $params) 设置请求参数
- * @method $this setHeaders(mixed $headers) 设置请求头
- * @method $this setResult(mixed $result) 设置操作结果
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置操作时间
+ * @method $this setType(mixed $type, bool|ValidateRule[] $validate = false) 设置操作类型
+ * @method $this setLevel(mixed $level, bool|ValidateRule[] $validate = false) 设置日志级别
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置操作名称
+ * @method $this setUserId(mixed $userId, bool|ValidateRule[] $validate = false) 设置操作用户ID
+ * @method $this setUsername(mixed $username, bool|ValidateRule[] $validate = false) 设置操作用户名
+ * @method $this setClassType(mixed $classType, bool|ValidateRule[] $validate = false) 设置日志分类
+ * @method $this setClassValue(mixed $classValue, bool|ValidateRule[] $validate = false) 设置日志分类业务参数
+ * @method $this setClient(mixed $client, bool|ValidateRule[] $validate = false) 设置操作客户端
+ * @method $this setIp(mixed $ip, bool|ValidateRule[] $validate = false) 设置客户端IP
+ * @method $this setMethod(mixed $method, bool|ValidateRule[] $validate = false) 设置请求方式
+ * @method $this setUrl(mixed $url, bool|ValidateRule[] $validate = false) 设置请求URL
+ * @method $this setParams(mixed $params, bool|ValidateRule[] $validate = false) 设置请求参数
+ * @method $this setHeaders(mixed $headers, bool|ValidateRule[] $validate = false) 设置请求头
+ * @method $this setResult(mixed $result, bool|ValidateRule[] $validate = false) 设置操作结果
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemLogsField extends Field

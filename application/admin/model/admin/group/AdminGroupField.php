@@ -16,6 +16,7 @@ use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * 用户组模型字段
@@ -37,15 +38,15 @@ use think\Validate;
  * @method static Entity rulePaths() 权限地址集合
  * @method static Entity defaultMenuName() 默认菜单名称
  * @method static Entity defaultMenu() 默认菜单信息
- * @method $this setId(mixed $id) 设置ID
- * @method $this setParentId(mixed $parentId) 设置上级权限ID
- * @method $this setName(mixed $name) 设置权限名称
- * @method $this setDefaultMenuId(mixed $defaultMenuId) 设置默认菜单
- * @method $this setSystem(mixed $system) 设置是否系统权限
- * @method $this setRule(mixed $rule) 设置权限规则集合，英文逗号分割，左右要有逗号
- * @method $this setStatus(mixed $status) 设置是否启用
- * @method $this setSort(mixed $sort) 设置排序
- * @method $this setRemark(mixed $sort) 设置描述
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setParentId(mixed $parentId, bool|ValidateRule[] $validate = false) 设置上级权限ID
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置权限名称
+ * @method $this setDefaultMenuId(mixed $defaultMenuId, bool|ValidateRule[] $validate = false) 设置默认菜单
+ * @method $this setSystem(mixed $system, bool|ValidateRule[] $validate = false) 设置是否系统权限
+ * @method $this setRule(mixed $rule, bool|ValidateRule[] $validate = false) 设置权限规则集合，英文逗号分割，左右要有逗号
+ * @method $this setStatus(mixed $status, bool|ValidateRule[] $validate = false) 设置是否启用
+ * @method $this setSort(mixed $sort, bool|ValidateRule[] $validate = false) 设置排序
+ * @method $this setRemark(mixed $sort, bool|ValidateRule[] $validate = false) 设置描述
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class AdminGroupField extends Field implements ModelValidateInterface, FieldGetModelDataInterface

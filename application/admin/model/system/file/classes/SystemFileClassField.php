@@ -38,15 +38,15 @@ use think\validate\ValidateRule;
  * @method static Entity isImage() 是否图片
  * @method static Entity isVideo() 是否视频
  * @method static Entity isAudio() 是否音频
- * @method $this setId(mixed $id) 设置ID
- * @method $this setName(mixed $name) 设置分类名称
- * @method $this setVar(mixed $var) 设置分类标识
- * @method $this setType(mixed $type) 设置附件类型
- * @method $this setSort(mixed $sort) 设置自定义排序
- * @method $this setExtensions(mixed $extensions) 设置限制文件格式
- * @method $this setMaxSize(mixed $maxSize) 设置限制文件大小
- * @method $this setMimetype(mixed $mimetype) 设置限制文件mimetype
- * @method $this setStyle(mixed $style) 设置样式
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置分类名称
+ * @method $this setVar(mixed $var, bool|ValidateRule[] $validate = false) 设置分类标识
+ * @method $this setType(mixed $type, bool|ValidateRule[] $validate = false) 设置附件类型
+ * @method $this setSort(mixed $sort, bool|ValidateRule[] $validate = false) 设置自定义排序
+ * @method $this setExtensions(mixed $extensions, bool|ValidateRule[] $validate = false) 设置限制文件格式
+ * @method $this setMaxSize(mixed $maxSize, bool|ValidateRule[] $validate = false) 设置限制文件大小
+ * @method $this setMimetype(mixed $mimetype, bool|ValidateRule[] $validate = false) 设置限制文件mimetype
+ * @method $this setStyle(mixed $style, bool|ValidateRule[] $validate = false) 设置样式
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileClassField extends Field implements ModelValidateInterface, FieldGetModelDataInterface

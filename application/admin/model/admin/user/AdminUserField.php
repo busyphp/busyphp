@@ -73,36 +73,36 @@ use think\validate\ValidateRule;
  * @method static Entity defaultGroup($op = null, $value = null) 默认角色组信息
  * @method static Entity defaultMenu($op = null, $value = null) 默认菜单
  * @method static Entity skin($op = null, $value = null) 皮肤
- * @method $this setId(mixed $id) 设置ID
- * @method $this setUsername(mixed $username) 设置帐号
- * @method $this setPassword(mixed $password) 设置密码
- * @method $this setConfirmPassword(string $confirmPassword) 设置确认密码
- * @method $this setEmail(mixed $email) 设置邮箱
- * @method $this setPhone(mixed $phone) 设置手机号
- * @method $this setTel(mixed $phone) 设置电话号
- * @method $this setQq(mixed $qq) 设置QQ号码
- * @method $this setNickname(mixed $name) 设置昵称
- * @method $this setName(mixed $name) 设置姓名
- * @method $this setSex(mixed $sex) 设置性别
- * @method $this setBirthday(mixed $sex) 设置生日
- * @method $this setCardNo(mixed $sex) 设置身份证号
- * @method $this setAvatar(mixed $sex) 设置头像
- * @method $this setGroupIds(mixed $groupIds) 设置权限组ID集合，英文逗号分割，左右要有逗号
- * @method $this setDefaultGroupId(mixed $defaultGroupId) 设置默认角色组
- * @method $this setLastIp(mixed $lastIp) 设置最后一次登录IP地址
- * @method $this setLastTime(mixed $lastTime) 设置最后一次登录时间
- * @method $this setLoginIp(mixed $loginIp) 设置本次登录IP
- * @method $this setLoginTime(mixed $loginTime) 设置本次登录时间
- * @method $this setLoginTotal(mixed $loginTotal) 设置登录次数
- * @method $this setCreateTime(mixed $createTime) 设置创建时间
- * @method $this setUpdateTime(mixed $updateTime) 设置更新时间
- * @method $this setChecked(mixed $checked) 设置是否审核
- * @method $this setSystem(mixed $system) 设置是否系统管理员
- * @method $this setErrorTotal(mixed $errorTotal) 设置密码错误次数统计
- * @method $this setErrorTime(mixed $errorTime) 设置密码错误开始时间
- * @method $this setErrorRelease(mixed $errorRelease) 设置密码错误锁定释放时间
- * @method $this setTheme(mixed $theme) 设置主题配置
- * @method $this setRemark(mixed $theme) 设置简介
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setUsername(mixed $username, bool|ValidateRule[] $validate = false) 设置帐号
+ * @method $this setPassword(mixed $password, bool|ValidateRule[] $validate = false) 设置密码
+ * @method $this setConfirmPassword(string $confirmPassword, bool|ValidateRule[] $validate = false) 设置确认密码
+ * @method $this setEmail(mixed $email, bool|ValidateRule[] $validate = false) 设置邮箱
+ * @method $this setPhone(mixed $phone, bool|ValidateRule[] $validate = false) 设置手机号
+ * @method $this setTel(mixed $phone, bool|ValidateRule[] $validate = false) 设置电话号
+ * @method $this setQq(mixed $qq, bool|ValidateRule[] $validate = false) 设置QQ号码
+ * @method $this setNickname(mixed $name, bool|ValidateRule[] $validate = false) 设置昵称
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置姓名
+ * @method $this setSex(mixed $sex, bool|ValidateRule[] $validate = false) 设置性别
+ * @method $this setBirthday(mixed $birthday, bool|ValidateRule[] $validate = false) 设置生日
+ * @method $this setCardNo(mixed $cardNo, bool|ValidateRule[] $validate = false) 设置身份证号
+ * @method $this setAvatar(mixed $avatar, bool|ValidateRule[] $validate = false) 设置头像
+ * @method $this setGroupIds(mixed $groupIds, bool|ValidateRule[] $validate = false) 设置权限组ID集合，英文逗号分割，左右要有逗号
+ * @method $this setDefaultGroupId(mixed $defaultGroupId, bool|ValidateRule[] $validate = false) 设置默认角色组
+ * @method $this setLastIp(mixed $lastIp, bool|ValidateRule[] $validate = false) 设置最后一次登录IP地址
+ * @method $this setLastTime(mixed $lastTime, bool|ValidateRule[] $validate = false) 设置最后一次登录时间
+ * @method $this setLoginIp(mixed $loginIp, bool|ValidateRule[] $validate = false) 设置本次登录IP
+ * @method $this setLoginTime(mixed $loginTime, bool|ValidateRule[] $validate = false) 设置本次登录时间
+ * @method $this setLoginTotal(mixed $loginTotal, bool|ValidateRule[] $validate = false) 设置登录次数
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置创建时间
+ * @method $this setUpdateTime(mixed $updateTime, bool|ValidateRule[] $validate = false) 设置更新时间
+ * @method $this setChecked(mixed $checked, bool|ValidateRule[] $validate = false) 设置是否审核
+ * @method $this setSystem(mixed $system, bool|ValidateRule[] $validate = false) 设置是否系统管理员
+ * @method $this setErrorTotal(mixed $errorTotal, bool|ValidateRule[] $validate = false) 设置密码错误次数统计
+ * @method $this setErrorTime(mixed $errorTime, bool|ValidateRule[] $validate = false) 设置密码错误开始时间
+ * @method $this setErrorRelease(mixed $errorRelease, bool|ValidateRule[] $validate = false) 设置密码错误锁定释放时间
+ * @method $this setTheme(mixed $theme, bool|ValidateRule[] $validate = false) 设置主题配置
+ * @method $this setRemark(mixed $theme, bool|ValidateRule[] $validate = false) 设置简介
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE), AutoTimestamp(type: AutoTimestamp::TYPE_INT)]
 class AdminUserField extends Field implements ModelValidateInterface, FieldGetModelDataInterface

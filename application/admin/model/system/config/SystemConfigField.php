@@ -14,6 +14,7 @@ use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
 use think\Validate;
+use think\validate\ValidateRule;
 
 /**
  * 系统键值对配置数据模型字段
@@ -28,14 +29,14 @@ use think\Validate;
  * @method static Entity append(mixed $op = null, mixed $condition = null) 是否加入全局配置
  * @method static Entity createTime(mixed $op = null, mixed $condition = null) 创建时间
  * @method static Entity updateTime(mixed $op = null, mixed $condition = null) 更新时间
- * @method $this setId(mixed $id) 设置ID
- * @method $this setContent(mixed $content) 设置content
- * @method $this setName(mixed $name) 设置备注
- * @method $this setType(mixed $type) 设置类型
- * @method $this setSystem(mixed $system) 设置系统配置
- * @method $this setAppend(mixed $append) 设置是否加入全局配置
- * @method $this setCreateTime(mixed $createTime) 设置创建时间
- * @method $this setUpdateTime(mixed $updateTime) 设置更新时间
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setContent(mixed $content, bool|ValidateRule[] $validate = false) 设置content
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置备注
+ * @method $this setType(mixed $type, bool|ValidateRule[] $validate = false) 设置类型
+ * @method $this setSystem(mixed $system, bool|ValidateRule[] $validate = false) 设置系统配置
+ * @method $this setAppend(mixed $append, bool|ValidateRule[] $validate = false) 设置是否加入全局配置
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置创建时间
+ * @method $this setUpdateTime(mixed $updateTime, bool|ValidateRule[] $validate = false) 设置更新时间
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 #[AutoTimestamp(type: AutoTimestamp::TYPE_INT)]

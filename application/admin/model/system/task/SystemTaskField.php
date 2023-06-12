@@ -12,6 +12,7 @@ use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\ValueBindField;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
+use think\validate\ValidateRule;
 
 /**
  * 系统任务字段
@@ -35,23 +36,23 @@ use BusyPHP\model\Field;
  * @method static Entity result(mixed $op = null, mixed $condition = null) 执行结果
  * @method static Entity operate(mixed $op = null, mixed $condition = null) 任务操作
  * @method static Entity remark(mixed $op = null, mixed $condition = null) 完成说明
- * @method $this setId(mixed $id) 设置ID
- * @method $this setTitle(mixed $title) 设置任务名称
- * @method $this setRepeated(mixed $repeated) 设置是否可重复执行
- * @method $this setLoops(mixed $loops) 设置重复间隔秒数
- * @method $this setCommand(mixed $command) 设置执行指令
- * @method $this setPid(mixed $pid) 设置进程ID
- * @method $this setAttempts(mixed $attempts) 设置累计执行次数
- * @method $this setStatus(mixed $status) 设置任务状态:0待执行, 1执行中, 2已完成, 3待重执
- * @method $this setPlanTime(mixed $planTime) 设置计划执行时间
- * @method $this setStartTime(mixed $startTime) 设置开始执行时间
- * @method $this setEndTime(mixed $endTime) 设置结束执行时间
- * @method $this setCreateTime(mixed $createTime) 设置创建时间
- * @method $this setData(mixed $data) 设置执行数据
- * @method $this setSuccess(mixed $result) 设置是否执行成功
- * @method $this setResult(mixed $result) 设置执行结果
- * @method $this setOperate(mixed $result) 设置任务操作
- * @method $this setRemark(mixed $result) 设置完成说明
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setTitle(mixed $title, bool|ValidateRule[] $validate = false) 设置任务名称
+ * @method $this setRepeated(mixed $repeated, bool|ValidateRule[] $validate = false) 设置是否可重复执行
+ * @method $this setLoops(mixed $loops, bool|ValidateRule[] $validate = false) 设置重复间隔秒数
+ * @method $this setCommand(mixed $command, bool|ValidateRule[] $validate = false) 设置执行指令
+ * @method $this setPid(mixed $pid, bool|ValidateRule[] $validate = false) 设置进程ID
+ * @method $this setAttempts(mixed $attempts, bool|ValidateRule[] $validate = false) 设置累计执行次数
+ * @method $this setStatus(mixed $status, bool|ValidateRule[] $validate = false) 设置任务状态:0待执行, 1执行中, 2已完成, 3待重执
+ * @method $this setPlanTime(mixed $planTime, bool|ValidateRule[] $validate = false) 设置计划执行时间
+ * @method $this setStartTime(mixed $startTime, bool|ValidateRule[] $validate = false) 设置开始执行时间
+ * @method $this setEndTime(mixed $endTime, bool|ValidateRule[] $validate = false) 设置结束执行时间
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置创建时间
+ * @method $this setData(mixed $data, bool|ValidateRule[] $validate = false) 设置执行数据
+ * @method $this setSuccess(mixed $result, bool|ValidateRule[] $validate = false) 设置是否执行成功
+ * @method $this setResult(mixed $result, bool|ValidateRule[] $validate = false) 设置执行结果
+ * @method $this setOperate(mixed $result, bool|ValidateRule[] $validate = false) 设置任务操作
+ * @method $this setRemark(mixed $result, bool|ValidateRule[] $validate = false) 设置完成说明
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemTaskField extends Field

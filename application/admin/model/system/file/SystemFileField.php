@@ -58,27 +58,27 @@ use think\validate\ValidateRule;
  * @method static Entity filename($op = null, $value = null) 附件名称;
  * @method static Entity classInfo($op = null, $value = null) 分类信息;
  * @method static Entity className($op = null, $value = null) 分类名称;
- * @method $this setId(mixed $id) 设置ID
- * @method $this setCreateTime(mixed $createTime) 设置上传时间
- * @method $this setUserId(mixed $userId) 设置会员ID
- * @method $this setPending(mixed $pending) 设置是否上传中
- * @method $this setFast(mixed $fast) 设置是否秒传
- * @method $this setType(mixed $type) 设置文件类型
- * @method $this setClassType(mixed $classType) 设置文件分类
- * @method $this setClassValue(mixed $classValue) 设置文件分类对应的业务值
- * @method $this setClient(mixed $client) 设置所属客户端
- * @method $this setUrl(mixed $url) 设置文件地址
- * @method $this setUrlHash(mixed $urlHash) 设置URL HASH
- * @method $this setPath(mixed $path) 设置文件路径
- * @method $this setDisk(mixed $disk) 设置磁盘名称
- * @method $this setSize(mixed $size) 设置文件大小[字节]
- * @method $this setMimeType(mixed $mimeType) 设置文件MimeType
- * @method $this setExtension(mixed $extension) 设置文件扩展名
- * @method $this setName(mixed $name) 设置文件名
- * @method $this setHash(mixed $hash) 设置文件的哈希值
- * @method $this setUniqueId(mixed $uniqueId) 设置文件的唯一码
- * @method $this setWidth(mixed $width) 设置文件宽度[像素]
- * @method $this setHeight(mixed $height) 设置文件高度[像素]
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置上传时间
+ * @method $this setUserId(mixed $userId, bool|ValidateRule[] $validate = false) 设置会员ID
+ * @method $this setPending(mixed $pending, bool|ValidateRule[] $validate = false) 设置是否上传中
+ * @method $this setFast(mixed $fast, bool|ValidateRule[] $validate = false) 设置是否秒传
+ * @method $this setType(mixed $type, bool|ValidateRule[] $validate = false) 设置文件类型
+ * @method $this setClassType(mixed $classType, bool|ValidateRule[] $validate = false) 设置文件分类
+ * @method $this setClassValue(mixed $classValue, bool|ValidateRule[] $validate = false) 设置文件分类对应的业务值
+ * @method $this setClient(mixed $client, bool|ValidateRule[] $validate = false) 设置所属客户端
+ * @method $this setUrl(mixed $url, bool|ValidateRule[] $validate = false) 设置文件地址
+ * @method $this setUrlHash(mixed $urlHash, bool|ValidateRule[] $validate = false) 设置URL HASH
+ * @method $this setPath(mixed $path, bool|ValidateRule[] $validate = false) 设置文件路径
+ * @method $this setDisk(mixed $disk, bool|ValidateRule[] $validate = false) 设置磁盘名称
+ * @method $this setSize(mixed $size, bool|ValidateRule[] $validate = false) 设置文件大小[字节]
+ * @method $this setMimeType(mixed $mimeType, bool|ValidateRule[] $validate = false) 设置文件MimeType
+ * @method $this setExtension(mixed $extension, bool|ValidateRule[] $validate = false) 设置文件扩展名
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置文件名
+ * @method $this setHash(mixed $hash, bool|ValidateRule[] $validate = false) 设置文件的哈希值
+ * @method $this setUniqueId(mixed $uniqueId, bool|ValidateRule[] $validate = false) 设置文件的唯一码
+ * @method $this setWidth(mixed $width, bool|ValidateRule[] $validate = false) 设置文件宽度[像素]
+ * @method $this setHeight(mixed $height, bool|ValidateRule[] $validate = false) 设置文件高度[像素]
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileField extends Field implements ModelValidateInterface

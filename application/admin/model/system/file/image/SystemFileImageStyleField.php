@@ -22,8 +22,8 @@ use think\validate\ValidateRule;
  * @version $Id: 2022/9/15 11:33 AM SystemFileImageStyleField.php $
  * @method static Entity id(mixed $op = null, mixed $condition = null) 样式名
  * @method static Entity content(mixed $op = null, mixed $condition = null) 样式内容
- * @method $this setId(mixed $id) 设置样式名
- * @method $this setContent(mixed $content) 设置样式内容
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置样式名
+ * @method $this setContent(mixed $content, bool|ValidateRule[] $validate = false) 设置样式内容
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemFileImageStyleField extends Field implements ModelValidateInterface

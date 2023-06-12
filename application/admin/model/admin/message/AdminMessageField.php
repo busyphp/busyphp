@@ -9,6 +9,7 @@ use BusyPHP\model\annotation\field\ToArrayFormat;
 use BusyPHP\model\annotation\field\Validator;
 use BusyPHP\model\Entity;
 use BusyPHP\model\Field;
+use think\validate\ValidateRule;
 
 /**
  * 后台消息模型字段
@@ -26,16 +27,16 @@ use BusyPHP\model\Field;
  * @method static Entity icon(mixed $op = null, mixed $condition = null) 图标
  * @method static Entity attrs(mixed $op = null, mixed $condition = null) 自定义标签属性
  * @method static Entity iconColor() 图标颜色
- * @method $this setId(mixed $id) 设置id
- * @method $this setUserId(mixed $userId) 设置管理员ID
- * @method $this setCreateTime(mixed $createTime) 设置创建时间
- * @method $this setRead(mixed $read) 设置是否已读
- * @method $this setReadTime(mixed $readTime) 设置阅读时间
- * @method $this setContent(mixed $content) 设置消息内容
- * @method $this setDescription(mixed $description) 设置消息备注
- * @method $this setUrl(mixed $url) 设置操作链接
- * @method $this setIcon(mixed $icon) 设置图标
- * @method $this setAttrs(mixed $attrs) 设置自定义标签属性
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置id
+ * @method $this setUserId(mixed $userId, bool|ValidateRule[] $validate = false) 设置管理员ID
+ * @method $this setCreateTime(mixed $createTime, bool|ValidateRule[] $validate = false) 设置创建时间
+ * @method $this setRead(mixed $read, bool|ValidateRule[] $validate = false) 设置是否已读
+ * @method $this setReadTime(mixed $readTime, bool|ValidateRule[] $validate = false) 设置阅读时间
+ * @method $this setContent(mixed $content, bool|ValidateRule[] $validate = false) 设置消息内容
+ * @method $this setDescription(mixed $description, bool|ValidateRule[] $validate = false) 设置消息备注
+ * @method $this setUrl(mixed $url, bool|ValidateRule[] $validate = false) 设置操作链接
+ * @method $this setIcon(mixed $icon, bool|ValidateRule[] $validate = false) 设置图标
+ * @method $this setAttrs(mixed $attrs, bool|ValidateRule[] $validate = false) 设置自定义标签属性
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class AdminMessageField extends Field

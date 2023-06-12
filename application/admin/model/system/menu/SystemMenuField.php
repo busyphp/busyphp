@@ -40,18 +40,18 @@ use think\validate\ValidateRule;
  * @method static Entity hides();
  * @method static Entity routePath();
  * @method static Entity source();
- * @method $this setId(mixed $id) 设置ID
- * @method $this setName(mixed $name) 设置名称
- * @method $this setPath(mixed $path) 设置路由地址
- * @method $this setParentPath(mixed $parentPath) 设置上级路由
- * @method $this setTopPath(mixed $topPath) 设置顶级菜单默认访问路由地址
- * @method $this setParams(mixed $params) 设置附加参数
- * @method $this setIcon(mixed $icon) 设置图标
- * @method $this setTarget(mixed $target) 设置打开方式
- * @method $this setHide(mixed $hide) 设置是否隐藏
- * @method $this setDisabled(mixed $disabled) 设置是否禁用
- * @method $this setSystem(mixed $system) 设置是否系统菜单
- * @method $this setSort(mixed $sort) 设置自定义排序
+ * @method $this setId(mixed $id, bool|ValidateRule[] $validate = false) 设置ID
+ * @method $this setName(mixed $name, bool|ValidateRule[] $validate = false) 设置名称
+ * @method $this setPath(mixed $path, bool|ValidateRule[] $validate = false) 设置路由地址
+ * @method $this setParentPath(mixed $parentPath, bool|ValidateRule[] $validate = false) 设置上级路由
+ * @method $this setTopPath(mixed $topPath, bool|ValidateRule[] $validate = false) 设置顶级菜单默认访问路由地址
+ * @method $this setParams(mixed $params, bool|ValidateRule[] $validate = false) 设置附加参数
+ * @method $this setIcon(mixed $icon, bool|ValidateRule[] $validate = false) 设置图标
+ * @method $this setTarget(mixed $target, bool|ValidateRule[] $validate = false) 设置打开方式
+ * @method $this setHide(mixed $hide, bool|ValidateRule[] $validate = false) 设置是否隐藏
+ * @method $this setDisabled(mixed $disabled, bool|ValidateRule[] $validate = false) 设置是否禁用
+ * @method $this setSystem(mixed $system, bool|ValidateRule[] $validate = false) 设置是否系统菜单
+ * @method $this setSort(mixed $sort, bool|ValidateRule[] $validate = false) 设置自定义排序
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class SystemMenuField extends Field implements ModelValidateInterface
