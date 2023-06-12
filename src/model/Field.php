@@ -88,6 +88,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 导入字段 */
     public const ATTR_IMPORT = 'import';
     
+    /** @var string 私有变量前缀 */
+    public const PRIVATE_VAR_PREFIX = '__private__';
+    
     /** @var string 输出属性格式注解 */
     private const MAP_TO_ARRAY_FORMAT = 'to_array_format';
     
@@ -114,9 +117,6 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /** @var string 模型相关参数 */
     private const MAP_MODEL_PARAMS = 'model_params';
-    
-    /** @var string 私有变量前缀 */
-    private const PRIVATE_VAR_PREFIX = '__private__';
     
     /**
      * 服务注入
