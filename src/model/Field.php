@@ -264,12 +264,13 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     
     /**
      * 通过属性名称强制转换值
-     * @param Field  $field Field对象
-     * @param string $property 属性
-     * @param mixed  $value 值
+     * @param Field               $field Field对象
+     * @param string              $property 属性
+     * @param mixed               $value 值
+     * @param bool|ValidateRule[] $validate 是否使用validate校验
      * @return mixed
      */
-    protected static function setPropertyValue(Field $field, string $property, mixed $value) : mixed
+    protected static function setPropertyValue(Field $field, string $property, mixed $value, bool|array $validate = false) : mixed
     {
         if (!isset(self::$propertyMap[static::class])) {
             self::getPropertyAttrs();
@@ -348,8 +349,16 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
         
         // 设置值
         end:
+        
+        // 校验
+        if ($validate) {
+            /** @var Entity $entity */
+            $entity = static::$property();
+            $entity->validate($value, is_array($validate) ? $validate : []);
+        }
+        
         if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
-            ClassHelper::setPropertyValue($field, $attrs[self::ATTR_NAME], $value);
+            ClassHelper::setPropertyValue($field, $property, $value);
         } else {
             $field->{$property} = $value;
         }
@@ -1154,7 +1163,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             // setField
             if ('set' === $prefix) {
                 // 设置值
-                self::setPropertyValue($this, $property, $arguments[0] ?? null);
+                self::setPropertyValue($this, $property, $arguments[0] ?? null, $arguments[1] ?? false);
                 
                 return $this;
             }
