@@ -16,6 +16,7 @@ use think\response\View;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/10/2 9:11 AM ModelHelper.php $
+ * @deprecated 未来会删除，请使用 busyphp/ide-model
  */
 class ModelHelper
 {
