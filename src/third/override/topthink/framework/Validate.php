@@ -755,6 +755,10 @@ class Validate
                     
                     if (is_string($message) && false !== strpos($message, ':attribute')) {
                         $message = str_replace(':attribute', $title, $message);
+    
+                        if (strpos($message, ':rule') && is_scalar($rule)) {
+                            $message = str_replace(':rule', (string) $rule, $message);
+                        }
                     }
                 } else {
                     $message = $this->getRuleMsg($field, $title, $info, $rule);
