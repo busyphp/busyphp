@@ -70,7 +70,7 @@ class TaskController extends InsideController
             return $table->model($this->model)->response();
         }
         
-        $this->assign('status_options', $this->model::getStatus());
+        $this->assign('status_options', $this->model::getStatusMap());
         
         return $this->insideDisplay();
     }

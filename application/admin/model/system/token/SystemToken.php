@@ -65,9 +65,9 @@ class SystemToken extends Model implements ContainerInterface
     /**
      * 获取登录类型
      * @param int|null $type
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getTypeMap(int $type = null) : array|string
+    public static function getTypeMap(int $type = null) : array|string|null
     {
         static $map;
         if (!isset($map)) {
@@ -82,9 +82,9 @@ class SystemToken extends Model implements ContainerInterface
     /**
      * 获取用户类型
      * @param int|null $userType
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getUserTypeMap(int $userType = null) : array|string
+    public static function getUserTypeMap(int $userType = null) : array|string|null
     {
         static $map;
         if (!isset($map)) {

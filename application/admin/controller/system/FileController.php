@@ -144,7 +144,7 @@ class FileController extends InsideController
             ] + $types;
         
         $this->assign('types', $types);
-        $this->assign('type', $type);
+        $this->assign('type', $this->param('type/s', 'trim'));
         
         // 磁盘选项
         $disks = StorageSetting::class()::getDisks();

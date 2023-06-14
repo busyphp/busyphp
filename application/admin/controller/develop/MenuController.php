@@ -124,7 +124,7 @@ class MenuController extends InsideController
         }
         
         $this->assign('parent_path', $parentPath);
-        $this->assign('target_list', SystemMenu::class()::getTargets());
+        $this->assign('target_list', SystemMenu::class()::getTargetMap());
         $this->assign('info', [
             'target'          => '',
             'hide'            => 0,
@@ -162,7 +162,7 @@ class MenuController extends InsideController
             }
             
             $this->assign('parent_path', $this->parseParentPath($info));
-            $this->assign('target_list', SystemMenu::class()::getTargets());
+            $this->assign('target_list', SystemMenu::class()::getTargetMap());
             $this->assign('info', $info);
             
             return $this->insideDisplay('add');

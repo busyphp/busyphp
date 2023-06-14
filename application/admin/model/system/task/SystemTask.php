@@ -91,9 +91,9 @@ class SystemTask extends Model implements ContainerInterface
     /**
      * 获取状态
      * @param int|null $status
-     * @return mixed
+     * @return string|array|null
      */
-    public static function getStatus(?int $status = null) : mixed
+    public static function getStatusMap(int $status = null) : string|array|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'STATUS_', ClassHelper::ATTR_NAME), $status);
     }

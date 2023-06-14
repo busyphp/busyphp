@@ -93,10 +93,10 @@ class FormatParameter extends BaseParameter
     
     /**
      * 获取支持的格式集合
-     * @param $format
-     * @return array|string
+     * @param string|null $format
+     * @return array|string|null
      */
-    public static function getFormats($format = null)
+    public static function getFormatMap(string $format = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FORMAT_', ClassHelper::ATTR_NAME), $format);
     }

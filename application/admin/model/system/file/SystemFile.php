@@ -486,7 +486,7 @@ class SystemFile extends Model implements ContainerInterface
             $extension  = strtolower(pathinfo($result->getPath(), PATHINFO_EXTENSION));
             $imageStyle = $storage->getImageStyle($uploadData->getClassType(), $diskName);
             $styleRule  = '';
-            if (array_key_exists($extension, FormatParameter::getFormats()) && $imageStyle !== '') {
+            if (array_key_exists($extension, FormatParameter::getFormatMap()) && $imageStyle !== '') {
                 $imageResult = Image::path($result->getPath())->style($imageStyle)->disk($filesystem)->save();
                 $result->setFilesize($imageResult->getSize());
                 $result->setWidth($imageResult->getWidth());
@@ -567,7 +567,7 @@ class SystemFile extends Model implements ContainerInterface
         $extension  = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         $imageStyle = $setting->getImageStyle($classType, $disk);
         $styleRule  = '';
-        if (array_key_exists($extension, FormatParameter::getFormats()) && $imageStyle !== '') {
+        if (array_key_exists($extension, FormatParameter::getFormatMap()) && $imageStyle !== '') {
             $styleRule = $filesystem->image()->getStyleByCache($imageStyle)->rule;
         }
         
@@ -662,7 +662,7 @@ class SystemFile extends Model implements ContainerInterface
             
             // 处理图片
             $imageStyle = $setting->getImageStyle($info->classType, $info->disk);
-            if (array_key_exists($info->extension, FormatParameter::getFormats()) && $imageStyle !== '') {
+            if (array_key_exists($info->extension, FormatParameter::getFormatMap()) && $imageStyle !== '') {
                 $imageResult = Image::path($info->path)->disk($filesystem)->style($imageStyle)->save();
                 $data->setWidth($imageResult->getWidth());
                 $data->setHeight($imageResult->getHeight());

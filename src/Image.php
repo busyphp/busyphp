@@ -304,7 +304,7 @@ class Image
     public function format(string $format) : static
     {
         $format = strtolower($format);
-        if (in_array($format, array_keys(FormatParameter::getFormats()))) {
+        if (in_array($format, array_keys(FormatParameter::getFormatMap()))) {
             return $this->add(new FormatParameter($format));
         }
         
@@ -401,7 +401,7 @@ class Image
      */
     public function flip(string $flip) : static
     {
-        if (in_array($flip, array_keys(FlipParameter::getFlips()))) {
+        if (in_array($flip, array_keys(FlipParameter::getFlipMap()))) {
             return $this->add(new FlipParameter($flip));
         }
         

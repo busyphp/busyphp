@@ -182,9 +182,9 @@ class SystemLogs extends Model implements ContainerInterface
     /**
      * 获取操作类型
      * @param int $var
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getTypeMap($var = null) : array|string
+    public static function getTypeMap($var = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TYPE_', ClassHelper::ATTR_NAME), $var);
     }

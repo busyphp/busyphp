@@ -199,7 +199,7 @@ class Todo implements ContainerInterface
      * @param int|null $val
      * @return array|null
      */
-    public static function getLevels(int $val = null) : ?array
+    public static function getLevelMap(int $val = null) : ?array
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'LEVEL_', [
             'style' => 'string'

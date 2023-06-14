@@ -67,10 +67,10 @@ class FlipParameter extends BaseParameter
     
     /**
      * 获取反转方式集合
-     * @param $format
-     * @return array|string
+     * @param string|null $format
+     * @return array|string|null
      */
-    public static function getFlips($format = null)
+    public static function getFlipMap(string $format = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'FLIP_', ClassHelper::ATTR_NAME), $format);
     }

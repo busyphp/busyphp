@@ -277,7 +277,7 @@ class SystemMenuField extends Field implements ModelValidateInterface
         $validate
             ->append(
                 $this::target(),
-                ValidateRule::init()->in(array_keys($model::getTargets()), '请选择有效的:attribute')
+                ValidateRule::init()->in(array_keys($model::getTargetMap()), '请选择有效的:attribute')
             )
             ->append(
                 $this::topPath(),

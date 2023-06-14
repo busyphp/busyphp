@@ -101,10 +101,10 @@ abstract class BaseParameter
     
     /**
      * 获取支持的位置集合
-     * @param $format
-     * @return array|string
+     * @param string|null $format
+     * @return array|string|null
      */
-    public static function getGravitys($format = null)
+    public static function getGravityMap(string $format = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'GRAVITY_', ClassHelper::ATTR_NAME), $format);
     }

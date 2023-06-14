@@ -77,9 +77,9 @@ class SystemMenu extends Model implements ContainerInterface
     /**
      * 获取打开方式
      * @param string|null $var
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getTargets(string $var = null)
+    public static function getTargetMap(string $var = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TARGET_', ClassHelper::ATTR_NAME), $var);
     }

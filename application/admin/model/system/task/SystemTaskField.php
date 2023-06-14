@@ -190,7 +190,7 @@ class SystemTaskField extends Field
     
     #[Ignore]
     #[ValueBindField([self::class, 'status'])]
-    #[Filter([SystemTask::class, 'getStatus'])]
+    #[Filter([SystemTask::class, 'getStatusMap'])]
     public $statusName;
     
     /**

@@ -259,7 +259,7 @@ class TodoNode extends ObjectOption
             $this->level_name  = '';
             $this->level_style = '';
         } else {
-            $config            = Todo::getLevels($level) ?? [];
+            $config            = Todo::getLevelMap($level) ?? [];
             $this->level_name  = $config['name'] ?? '';
             $this->level_style = $config['style'] ?? '';
         }

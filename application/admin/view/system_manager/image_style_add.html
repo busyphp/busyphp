@@ -66,7 +66,7 @@
                                 <label class="col-sm-2 control-label">缩放方式</label>
                                 <div class="col-sm-9">
                                     <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
-                                        <?=TransHelper::toOptionHtml(ZoomParameter::getTypes());?>
+                                        <?=TransHelper::toOptionHtml(ZoomParameter::getTypeMap());?>
                                     </select>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@
                                 <label class="col-sm-2 control-label">裁剪方式</label>
                                 <div class="col-sm-9">
                                     <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
-                                        <?=TransHelper::toOptionHtml(CropParameter::getTypes())?>
+                                        <?=TransHelper::toOptionHtml(CropParameter::getTypeMap())?>
                                     </select>
                                 </div>
                             </div>
@@ -201,7 +201,7 @@
                                 <div class="col-sm-9">
                                     <select class="form-control" :name="'content['+ key +'][attr][flip]'" v-model="item.attr.flip">
                                         <option value="">不翻转</option>
-                                        <?=TransHelper::toOptionHtml(FlipParameter::getFlips())?>
+                                        <?=TransHelper::toOptionHtml(FlipParameter::getFlipMap())?>
                                     </select>
                                 </div>
                             </div>
@@ -316,7 +316,7 @@
                                 <div class="col-sm-9">
                                     <select class="form-control" :name="'content['+ key +'][attr][format]'" v-model="item.attr.format">
                                         <option value="">原图格式</option>
-                                        <?=TransHelper::toOptionHtml(FormatParameter::getFormats())?>
+                                        <?=TransHelper::toOptionHtml(FormatParameter::getFormatMap())?>
                                     </select>
                                 </div>
                             </div>
@@ -350,7 +350,7 @@
                                 <label class="col-sm-2 control-label">质量类型</label>
                                 <div class="col-sm-9">
                                     <select class="form-control" :name="'content['+ key +'][attr][type]'" v-model="item.attr.type">
-                                        <?=TransHelper::toOptionHtml(QualityParameter::getTypes())?>
+                                        <?=TransHelper::toOptionHtml(QualityParameter::getTypeMap())?>
                                     </select>
 
                                     <p class="help-block" v-if="item.attr.type == <?=QualityParameter::TYPE_ABSOLUTE?>">

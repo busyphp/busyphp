@@ -92,9 +92,9 @@ class QualityParameter extends BaseParameter
     /**
      * 获取支持的质量类型
      * @param int|null $type
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getTypes(?int $type = null)
+    public static function getTypeMap(int $type = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TYPE_', ClassHelper::ATTR_NAME), $type);
     }

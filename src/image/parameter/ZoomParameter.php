@@ -117,9 +117,9 @@ class ZoomParameter extends BaseParameter
     /**
      * 获取缩放方式集合
      * @param int|null $type
-     * @return array|string
+     * @return array|string|null
      */
-    public static function getTypes(?int $type = null)
+    public static function getTypeMap(int $type = null) : array|string|null
     {
         return ArrayHelper::getValueOrSelf(ClassHelper::getConstAttrs(self::class, 'TYPE_', [], ClassHelper::ATTR_NAME), $type);
     }
