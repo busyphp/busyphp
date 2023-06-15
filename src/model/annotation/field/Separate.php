@@ -186,7 +186,7 @@ class Separate extends Format
     {
         if ($this->filter === true) {
             $data = array_filter($data, function($item) {
-                $item = trim($item);
+                $item = trim((string) $item);
                 if ($item === '') {
                     return false;
                 }
