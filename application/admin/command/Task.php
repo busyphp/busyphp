@@ -203,8 +203,11 @@ class Task extends Command
         $this->app->db->setLog(new NullLogger());
         while (true) {
             try {
-                if (!$info = SystemTask::init()->getWait()) {
-                    ConsoleHelper::sleep(1);
+                $systemTask = SystemTask::init();
+                $systemTask::setRunningServer(getmypid(), $this->getName());
+                
+                if (!$info = $systemTask->getWait()) {
+                    ConsoleHelper::sleep(3);
                     continue;
                 }
             } catch (Throwable $e) {

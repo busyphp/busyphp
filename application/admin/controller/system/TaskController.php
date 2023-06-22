@@ -157,14 +157,15 @@ class TaskController extends InsideController
      */
     public function status() : Response
     {
-        $message = $this->app->console->call('bp:task', ['status'])->fetch();
-        $status  = false;
-        if (preg_match('/with pid (\d+)/is', $message, $match)) {
-            $status = $match[1];
-        }
+        $this->ignoreOperate();
+        $server = $this->model::getRunningServer(3);
+        $status = false !== $server;
+        $server = $server ?: [];
         
         return $this->success([
             'status'        => $status,
+            'server_pid'    => (int) ($server['pid'] ?? 0),
+            'server_name'   => ($server['name'] ?? ''),
             'wait_total'    => $this
                 ->model
                 ->where($this->field::status('in', [

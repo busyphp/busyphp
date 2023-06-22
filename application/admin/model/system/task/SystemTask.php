@@ -8,6 +8,7 @@ use BusyPHP\app\admin\component\common\ConsoleLog;
 use BusyPHP\exception\ClassNotImplementsException;
 use BusyPHP\exception\VerifyException;
 use BusyPHP\helper\ArrayHelper;
+use BusyPHP\helper\CacheHelper;
 use BusyPHP\helper\ClassHelper;
 use BusyPHP\helper\LogHelper;
 use BusyPHP\interfaces\ContainerInterface;
@@ -51,9 +52,11 @@ class SystemTask extends Model implements ContainerInterface
     /** @var int 待重执 */
     public const STATUS_AGAIN = 3;
     
-    protected string $fieldClass          = SystemTaskField::class;
+    protected string     $fieldClass          = SystemTaskField::class;
     
-    protected string $dataNotFoundMessage = '任务不存在';
+    protected string     $dataNotFoundMessage = '任务不存在';
+    
+    protected static int $runningServerTime;
     
     
     /**
@@ -427,5 +430,47 @@ class SystemTask extends Model implements ContainerInterface
         $file->expire(0);
         
         return $file;
+    }
+    
+    
+    /**
+     * 设置运行的服务程序
+     * @param int    $pid 进程ID
+     * @param string $name 服务名称
+     */
+    public static function setRunningServer(int $pid, string $name)
+    {
+        if (isset(self::$runningServerTime) && time() - self::$runningServerTime < 3) {
+            self::$runningServerTime = time();
+            
+            return;
+        }
+        
+        self::$runningServerTime = time();
+        CacheHelper::set(self::class, 'server', [
+            'runtime' => time(),
+            'name'    => $name,
+            'pid'     => $pid
+        ]);
+    }
+    
+    
+    /**
+     * 获取运行的服务程序
+     * @param int $timeout 判断未运行的超时秒数
+     * @return array{runtime:string,name:string,pid:int}|false 返回false则服务未运行，返回int则为进程ID
+     */
+    public static function getRunningServer(int $timeout = 5) : array|false
+    {
+        $config = CacheHelper::get(self::class, 'server');
+        if (!$config || !isset($config['runtime']) || !isset($config['pid'])) {
+            return false;
+        }
+        
+        if (time() - $config['runtime'] <= max($timeout, 3)) {
+            return $config;
+        }
+        
+        return false;
     }
 }

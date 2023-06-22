@@ -323,7 +323,7 @@
                         if (response.result.status) {
                             $statusIcon.addClass('text-success fa-clock-o');
                             $status.text('运行中').addClass('text-success');
-                            statusTitle = '服务已启动，进程ID ' + response.result.status;
+                            statusTitle = 'Running ' + response.result.server_name +', PID: '+ response.result.server_pid;
                         } else {
                             $statusIcon.addClass('text-danger fa-warning');
                             $status.text('未运行').addClass('text-danger');
