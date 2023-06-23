@@ -465,44 +465,37 @@ class SystemMenu extends Model implements ContainerInterface
             }
             
             if (!$data) {
-                $classList = [];
+                $classMap = [];
                 foreach (static::$annotationList as $annotation) {
-                    if (str_contains($annotation, '/')) {
-                        if (!is_dir($annotation)) {
+                    if (is_file($annotation)) {
+                        $constructs = Constructs::fromSource(file_get_contents($annotation));
+                    } else {
+                        $constructs = Constructs::fromDirectory($annotation);
+                    }
+                    
+                    foreach ($constructs as $construct) {
+                        if (!is_subclass_of($construct->name(), AdminController::class)) {
                             continue;
                         }
-                        $constructs = Constructs::fromDirectory($annotation);
-                        foreach ($constructs as $construct) {
-                            if (!is_subclass_of($construct->name(), AdminController::class)) {
-                                continue;
-                            }
-                            $classList[] = $construct->name();
-                        }
-                    } elseif (class_exists($annotation) && is_subclass_of($annotation, AdminController::class)) {
-                        $classList[] = $annotation;
+                        
+                        $time                         = filemtime($construct->fileNames()[0]);
+                        $classMap[$construct->name()] = $time;
                     }
                 }
                 
-                $list         = [];
-                $routes       = [];
-                $excludeLogin = [];
-                $id           = 0;
-                foreach (array_unique($classList) as $classname) {
-                    try {
-                        $methods   = [];
-                        $reflect   = new ReflectionClass($classname);
-                        $classname = $reflect->getName();
-                        $classKey  = md5($classname . filemtime($reflect->getFileName()));
-                        $classData = CacheHelper::get(self::class, $classKey);
-                        if (!$classData) {
-                            $classData = [
-                                'excludeLogin' => [],
-                                'routes'       => [],
-                                'list'         => []
-                            ];
-                            
+                $cacheKey = md5(implode('.', $classMap));
+                $data     = CacheHelper::get(self::class, $cacheKey);
+                if (!$data) {
+                    $list         = [];
+                    $routes       = [];
+                    $excludeLogin = [];
+                    $id           = 0;
+                    foreach (array_keys($classMap) as $classname) {
+                        try {
+                            $methods = [];
+                            $reflect = new ReflectionClass($classname);
                             if ($reflect->getAttributes(IgnoreLogin::class)) {
-                                $classData['excludeLogin'][] = $classname;
+                                $excludeLogin[] = $classname;
                             }
                             
                             foreach ($reflect->getMethods() as $method) {
@@ -557,7 +550,7 @@ class SystemMenu extends Model implements ContainerInterface
                                 $controller       = AppHelper::trimController($controller === '' ? $reflect->getShortName() : $controller);
                                 $sourceController = AppHelper::trimController($reflect->getShortName());
                                 if ($menuRoutes) {
-                                    $classData['routes'][$controller] = [
+                                    $routes[$controller] = [
                                         'classname'  => $reflect->name,
                                         'controller' => $sourceController,
                                         'class'      => $routeToClass
@@ -600,8 +593,8 @@ class SystemMenu extends Model implements ContainerInterface
                                         $item             = SystemMenuField::parse($item);
                                         $item->canDisable = $menuGroup->isCanDisable();
                                         
-                                        $classData['list'][] = $item;
-                                        $parent              = $item->path;
+                                        $list[] = $item;
+                                        $parent = $item->path;
                                         
                                         if ($menuGroup->isDefault()) {
                                             $defaultGroup = $item;
@@ -644,26 +637,22 @@ class SystemMenu extends Model implements ContainerInterface
                                     $item->canDisable = $vo['can_disable'];
                                     
                                     if ($item->parentPath) {
-                                        $classData['list'][] = $item;
+                                        $list[] = $item;
                                     }
                                 }
                             }
-                            
-                            CacheHelper::set(self::class, $classKey, $classData, 0);
+                        } catch (ReflectionException) {
                         }
-                        
-                        $list         = array_merge($list, $classData['list']);
-                        $routes       = array_merge($routes, $classData['routes']);
-                        $excludeLogin = array_merge($excludeLogin, $classData['excludeLogin']);
-                    } catch (ReflectionException $e) {
                     }
+                    
+                    $data = [
+                        'list'          => $list,
+                        'route'         => $routes,
+                        'exclude_login' => $excludeLogin
+                    ];
+                    CacheHelper::set(self::class, $cacheKey, $data, 0);
                 }
                 
-                $data = [
-                    'list'          => $list,
-                    'route'         => $routes,
-                    'exclude_login' => $excludeLogin
-                ];
                 CacheHelper::set(self::class, $key, $data, 0);
             }
         }
