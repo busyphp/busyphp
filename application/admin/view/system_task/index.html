@@ -107,9 +107,6 @@
          data-toolbar="@"
          data-route="true"
          data-url="__URL__"
-         data-fixed-columns="true"
-         data-fixed-right-number="1"
-         data-fixed-number="1"
          data-height="true">
 
         <!--toolbar-->
@@ -132,7 +129,8 @@
         <table class="table table-hover table-striped table-bordered">
             <thead class="thead-light">
                 <tr>
-                    <th data-checkbox="true"></th>
+                    <th data-checkbox="true"
+                        data-fixed="true"></th>
 
                     <th class="text-center"
                         data-min-width="300"
@@ -245,6 +243,7 @@
 
                     <th class="text-center"
                         width="130"
+                        data-fixed-right="true"
                         data-print-ignore="true"
                         data-title="操作"
                         data-formatter="@">

@@ -5,10 +5,9 @@
         <div class="panel-body">
             <div data-toggle="busy-table"
                  data-pagination="false"
-                 data-fixed-right-number="1"
-                 data-fixed-number="1"
                  data-toolbar="@"
                  data-bordered="true"
+                 data-show-columns="true"
                  data-url="__URL__">
 
                 <template data-template="toolbar" class="hide">
@@ -46,7 +45,7 @@
                 <table class="table table-hover table-striped">
                     <thead>
                         <tr>
-                            <th data-checkbox="true"></th>
+                            <th data-checkbox="true" data-fixed="true"></th>
 
                             <th class="text-center"
                                 width="60"
@@ -118,6 +117,7 @@
                             <th data-title="操作"
                                 data-align="center"
                                 data-formatter="@"
+                                data-fixed-right="true"
                                 width="80">
                                 <script type="text/html">
                                     <a class="btn btn-success btn-xs"

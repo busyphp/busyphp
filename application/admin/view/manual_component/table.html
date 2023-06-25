@@ -70,10 +70,10 @@
 | data-sticky-header-offset-y | number | 否 | 0 | 滚动固定表头的上偏移 |
 | data-sticky-header-offset-left | number,string | 否 | 0 | 滚动固定表头的左偏移，可以携带单位 |
 | data-sticky-header-offset-right | number,string | 否 | 0 | 滚动固定表头的右偏移，可以携带单位 |
-| 固定列:title |  |  |  |  |
-| data-fixed-columns | boolean | 否 | `false` | 是否启用固定列功能 |
-| data-fixed-number | number | 否 | 0 | 设置固定左侧的多少列 |
-| data-fixed-right-number | number | 否 | 0 | 设置固定右侧的多少列 |
+| <del>固定列</del> 已废弃，参考列属性固定选项:title |  |  |  |  |
+| <del>data-fixed-columns</del> | boolean | 否 | `false` | 是否启用固定列功能 |
+| <del>data-fixed-number</del> | number | 否 | 0 | 设置固定左侧的多少列 |
+| <del>data-fixed-right-number</del> | number | 否 | 0 | 设置固定右侧的多少列 |
 | 打印:title |  |  |  |  |
 | data-show-print | boolean | 否 | `false` | 是否显示打印选项 |
 | data-print-as-filtered-and-sorted-on-ui | boolean | 否 | `true` | 当为true时，在UI上按排序和筛选的方式打印表格 |
@@ -116,6 +116,9 @@
 | data-visible | boolean | 否 | `true` | 设置是否显示该列 |
 | data-show-columns | boolean | 否 | `true` | 是否允许列隐藏显示控制 |
 | data-switchable | boolean | 否 | `true` | 是否允许该列被用户自定义显示隐藏 |
+| 固定列:title |  |  |  |  |
+| data-fixed | boolean | 否 | `false` | 设置该列之前的所有列固定 |
+| data-fixed-right | boolean | 否 | `false` | 设置该列之后的所有列固定 |
 | 排序:title |  |  |  |  |
 | data-sortable | boolean | 否 | `false` | 指定是否启用列排序 |
 | data-sort-order | string | 否 | `asc` | 指定列排序的默认排序方式，支持：`asc`, `desc` |
@@ -476,17 +479,17 @@
 </div>
     </template>
     <template class="hide" id="demo4">
-<div data-toggle="busy-table" data-fixed-number="1" data-fixed-right-number="1">
+<div data-toggle="busy-table">
     <table class="table-hover table-striped">
         <thead>
             <tr>
-                <th width="60">ID</th>
+                <th width="60" data-fixed="true">ID</th>
                 <th width="180">日期</th>
                 <th width="180">姓名</th>
                 <th width="100">性别</th>
                 <th width="100">爱好</th>
                 <th width="600">地址</th>
-                <th width="100">操作</th>
+                <th width="100" data-fixed-right="true">操作</th>
             </tr>
         </thead>
         <tbody>
@@ -506,17 +509,17 @@
 </div>
     </template>
     <template class="hide" id="demo5">
-<div data-toggle="busy-table" data-height="240" data-fixed-number="1" data-fixed-right-number="1">
+<div data-toggle="busy-table" data-height="240">
     <table class="table-hover table-striped">
         <thead>
             <tr>
-                <th width="60">ID</th>
+                <th width="60" data-fixed="true">ID</th>
                 <th width="180">日期</th>
                 <th width="180">姓名</th>
                 <th width="100">性别</th>
                 <th width="100">爱好</th>
                 <th width="600">地址</th>
-                <th width="100">操作</th>
+                <th width="100" data-fixed-right="true">操作</th>
             </tr>
         </thead>
         <tbody>
@@ -536,14 +539,14 @@
 </div>
     </template>
     <template class="hide" id="demo6">
-<div data-toggle="busy-table" data-height="240" data-fixed-number="1" data-fixed-right-number="1">
+<div data-toggle="busy-table" data-height="240">
     <table class="table-hover table-striped table-bordered">
         <thead class="thead-light">
             <tr>
-                <th width="60" rowspan="2">ID</th>
+                <th width="60" rowspan="2" data-fixed="true">ID</th>
                 <th width="180" rowspan="2">日期</th>
                 <th width="980" colspan="4">个人信息</th>
-                <th width="100" rowspan="2">操作</th>
+                <th width="100" rowspan="2" data-fixed-right="true">操作</th>
             </tr>
             <tr>
                 <th width="180">姓名</th>
@@ -791,8 +794,6 @@
     </template>
     <template class="hide" id="demo12">
 <div data-toggle="busy-table"
-     data-fixed-number="2"
-     data-fixed-right-number="1"
      data-tree-show-field="date"
      data-tree-state="true"
      data-id-field="id"
@@ -804,11 +805,11 @@
         <thead class="thead-light">
             <tr>
                 <th data-checkbox="true"></th>
-                <th width="60" data-field="id">ID</th>
+                <th width="60" data-field="id" data-fixed="true">ID</th>
                 <th width="300" data-field="date">日期</th>
                 <th width="180" data-field="name" data-sortable="true">姓名</th>
                 <th width="600" data-field="address">地址</th>
-                <th width="100">操作</th>
+                <th width="100" data-fixed-right="true">操作</th>
             </tr>
         </thead>
     </table>
@@ -850,8 +851,6 @@
     </template>
     <template class="hide" id="demo13">
 <div data-toggle="busy-table"
-     data-fixed-number="2"
-     data-fixed-right-number="1"
      data-tree-show-field="date"
      data-tree-lazy="true"
      data-tree-load="demo13Load"
@@ -865,11 +864,11 @@
         <thead class="thead-light">
             <tr>
                 <th data-checkbox="true"></th>
-                <th width="60" data-field="id">ID</th>
+                <th width="60" data-field="id" data-fixed="true">ID</th>
                 <th width="300" data-field="date">日期</th>
                 <th width="180" data-field="name" data-sortable="true">姓名</th>
                 <th width="600" data-field="address">地址</th>
-                <th width="100">操作</th>
+                <th width="100" data-fixed-right="true">操作</th>
             </tr>
         </thead>
     </table>
@@ -1219,8 +1218,6 @@
 <div data-toggle="busy-table"
      data-height="600"
      data-search="@"
-     data-fixed-columns="true"
-     data-fixed-right-number="1"
      data-url="{:url('system_logs/index')}">
     <table class="table table-hover table-bordered table-striped">
         <thead>
@@ -1235,7 +1232,7 @@
                 <th class="text-center" width="120" data-field="username" data-title="用户" data-sortable="true"></th>
                 <th class="text-center" width="120" data-field="user_id" data-title="用户ID" data-sortable="true"></th>
                 <th class="text-center" width="150" data-field="format_create_time" data-title="操作时间" data-sortable="true"></th>
-                <th data-field="operate" data-title="操作" data-align="center" data-formatter="@">
+                <th data-field="operate" data-title="操作" data-align="center" data-formatter="@" data-fixed-right="true">
                     <template>
                         <a class="btn btn-success btn-xs" data-toggle="busy-modal" data-url="{:url('modal?action=demo2')}" data-form-on-success="@table.reload|@modal.close"><i class="fa fa-plus"></i></a>
                     </template>

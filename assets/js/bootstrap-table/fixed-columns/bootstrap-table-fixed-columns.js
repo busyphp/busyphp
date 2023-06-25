@@ -1261,20 +1261,26 @@
       value: function initContainer() {
         _get(_getPrototypeOf(_class.prototype), "initContainer", this).call(this);
 
-        if (!this.fixedColumnsSupported()) {
-          return;
-        }
-
         this.$tableContainer.addClass('ba--scroll-left'); // busyAdmin: 增加 .ba--scroll-left 样式以配合固定列样式优化
-        if (this.options.fixedNumber) {
-          this.$tableContainer.append('<div class="fixed-columns"></div>');
-          this.$fixedColumns = this.$tableContainer.find('.fixed-columns');
-        }
+        this.$tableContainer.append('<div class="fixed-columns"></div>');
+        this.$fixedColumns = this.$tableContainer.find('.fixed-columns');
 
-        if (this.options.fixedRightNumber) {
-          this.$tableContainer.append('<div class="fixed-columns-right"></div>');
-          this.$fixedColumnsRight = this.$tableContainer.find('.fixed-columns-right');
-        }
+        this.$tableContainer.append('<div class="fixed-columns-right"></div>');
+        this.$fixedColumnsRight = this.$tableContainer.find('.fixed-columns-right');
+      }
+    }, {
+      // busyAdmin: 增加固定栏位计算
+      key: "initTable",
+      value: function initTable() {
+        var _this = this;
+        _get(_getPrototypeOf(_class.prototype), "initTable", this).call(this);
+
+        _this.columns.forEach(function (item) {
+            if ((item.fixed || item.fixedRight) && !_this.fixedField) {
+              _this.fixedField = true;
+              _this.options.fixedColumns = true;
+            }
+        });
       }
     }, {
       key: "initBody",
@@ -1413,6 +1419,34 @@
       key: "initFixedColumnsHeader",
       value: function initFixedColumnsHeader() {
         var _this2 = this;
+
+        // busyAdmin: 增加固定栏位，隐藏则不固定
+        if (_this2.fixedField) {
+          _this2.options.fixedNumber = 0;
+          _this2.options.fixedRightNumber = 0;
+          _this2.columns.forEach(function (item) {
+
+            if (!_this2.options.fixedNumber && item.fixed) {
+              var length = 0;
+              _this2.columns.forEach(function (item2) {
+                if (item2.visible && item2.fieldIndex <= item.fieldIndex) {
+                  length++;
+                }
+              });
+              _this2.options.fixedNumber = length;
+            }
+
+            if (!_this2.options.fixedRightNumber && item.fixedRight) {
+              var length = 0;
+              _this2.columns.forEach(function (item2) {
+                if (item2.visible && item2.fieldIndex >= item.fieldIndex) {
+                  length++;
+                }
+              });
+              _this2.options.fixedRightNumber = length;
+            }
+          });
+        }
 
         if (this.options.height) {
           // busyAdmin 修复存在 sticky-header 时，存在无法冻结列的情况

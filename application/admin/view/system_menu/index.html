@@ -16,9 +16,6 @@
          data-pagination="false"
          data-toolbar="@"
          data-url="__URL__"
-         data-fixed-columns="true"
-         data-fixed-right-number="1"
-         data-fixed-number="2"
          data-bordered="true"
          data-route="true">
 
@@ -85,6 +82,7 @@
                         data-field="id"
                         data-show-overflow="true"
                         data-formatter="@"
+                        data-fixed="true"
                         data-title="ID">
                         <script type="text/html">
                             <ba-if value="item.annotation">
@@ -197,6 +195,7 @@
                         data-title="操作"
                         data-print-ignore="true"
                         data-tableexport-display="false"
+                        data-fixed-right="true"
                         data-formatter="@">
                         <script type="text/html">
                             <ba-if value="item.annotation">

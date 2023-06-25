@@ -67,8 +67,6 @@
                         <div v-if="list_type === 'table' && reload_html">
                             <div ref="table"
                                  data-toggle="busy-table"
-                                 data-fixed-columns="true"
-                                 data-fixed-number="1"
                                  data-checkbox-header="false"
                                  data-height="parent.ba--body"
                                  :data-no-data-text="empty_text"
@@ -77,7 +75,7 @@
                                 <table class="table table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th data-field="checked" data-checkbox="true"></th>
+                                            <th data-field="checked" data-checkbox="true" data-fixed="true"></th>
                                             <th data-field="name" data-min-width="200" data-show-overflow="true">
                                                 文件名
                                             </th>
