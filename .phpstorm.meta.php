@@ -305,4 +305,12 @@ namespace PHPSTORM_META {
     expectedArguments(\think\Log::log(), 0, argumentsSet('log_level'));
     expectedArguments(\think\Log::write(), 1, argumentsSet('log_level'));
     expectedArguments(\think\Log::record(), 1, argumentsSet('log_level'));
+    
+    registerArgumentsSet(
+        'menu_target',
+        \BusyPHP\app\admin\model\system\menu\SystemMenu::TARGET_SELF |
+        \BusyPHP\app\admin\model\system\menu\SystemMenu::TARGET_BLANK |
+        \BusyPHP\app\admin\model\system\menu\SystemMenu::TARGET_IFRAME
+    );
+    expectedArguments(\BusyPHP\app\admin\annotation\MenuNode::__construct(), 7, argumentsSet('menu_target'));
 }

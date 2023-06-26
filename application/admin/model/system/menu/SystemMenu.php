@@ -530,6 +530,7 @@ class SystemMenu extends Model implements ContainerInterface
                                         'parent'      => trim($nodeNode->getParent()),
                                         'sort'        => $nodeNode->getSort(),
                                         'can_disable' => $nodeNode->isCanDisable(),
+                                        'target'      => $nodeNode->getTarget(),
                                         'method'      => $classname . '::' . $methodName
                                     ];
                                 }
@@ -636,7 +637,7 @@ class SystemMenu extends Model implements ContainerInterface
                                 $item->setDisabled(false);
                                 $item->setSystem(false);
                                 $item->setTopPath('');
-                                $item->setTarget('');
+                                $item->setTarget($vo['target']);
                                 $item->source = $vo['method'];
                                 
                                 $item             = SystemMenuField::parse($item);

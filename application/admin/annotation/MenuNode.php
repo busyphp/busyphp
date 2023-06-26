@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BusyPHP\app\admin\annotation;
 
 use Attribute;
+use BusyPHP\app\admin\model\system\menu\SystemMenu;
 
 /**
  * 菜单/权限节点定义注解类
@@ -28,6 +29,8 @@ class MenuNode
     
     private bool      $canDisable;
     
+    private string    $target;
+    
     
     /**
      * 构造函数
@@ -39,7 +42,7 @@ class MenuNode
      * @param string          $params 如果是菜单节点，定义该菜单URL支持的参数名，多个用英文逗号分割，便于系统自动获取参数
      * @param bool            $canDisable 定义该菜单是否可以被禁用，默认允许禁用
      */
-    public function __construct(bool $menu = true, string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, string $params = '', bool $canDisable = true)
+    public function __construct(bool $menu = true, string $name = '', string|callable $parent = '', string $icon = '', int|false $sort = false, string $params = '', bool $canDisable = true, string $target = SystemMenu::TARGET_SELF)
     {
         $this->menu       = $menu;
         $this->icon       = $icon;
@@ -48,6 +51,7 @@ class MenuNode
         $this->name       = $name;
         $this->parent     = $parent;
         $this->canDisable = $canDisable;
+        $this->target     = $target;
     }
     
     
@@ -106,6 +110,15 @@ class MenuNode
         }
         
         return $this->parent;
+    }
+    
+    
+    /**
+     * @return string
+     */
+    public function getTarget() : string
+    {
+        return $this->target;
     }
     
     
