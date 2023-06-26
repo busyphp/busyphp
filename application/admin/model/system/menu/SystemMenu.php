@@ -535,110 +535,115 @@ class SystemMenu extends Model implements ContainerInterface
                                 }
                             }
                             
-                            if ($methods) {
-                                $controller   = '';
-                                $routeToClass = false;
-                                $parent       = '';
-                                if ($menuRoutes = $reflect->getAttributes(MenuRoute::class)) {
-                                    /** @var MenuRoute $menuRoute */
-                                    $menuRoute    = $menuRoutes[0]->newInstance();
-                                    $controller   = $menuRoute->getPath();
-                                    $routeToClass = $menuRoute->isClass();
-                                }
-                                
-                                // 路由转发
-                                $controller       = AppHelper::trimController($controller === '' ? $reflect->getShortName() : $controller);
-                                $sourceController = AppHelper::trimController($reflect->getShortName());
-                                if ($menuRoutes) {
-                                    $routes[$controller] = [
-                                        'classname'  => $reflect->name,
-                                        'controller' => $sourceController,
-                                        'class'      => $routeToClass
-                                    ];
-                                }
-                                
-                                // 分组节点
-                                $defaultGroup = null;
-                                if ($menuGroups = $reflect->getAttributes(MenuGroup::class)) {
-                                    foreach ($menuGroups as $attribute) {
-                                        /** @var MenuGroup $menuGroup */
-                                        $menuGroup = $attribute->newInstance();
-                                        $sort      = $menuGroup->getSort();
-                                        $icon      = trim($menuGroup->getIcon());
-                                        $path      = trim($menuGroup->getPath());
-                                        
-                                        // 分组名称
-                                        $menuName = trim($menuGroup->getName());
-                                        if ($menuName === '') {
-                                            $res      = ClassHelper::extractDocAttrs($reflect, $reflect->getShortName(), '', $reflect->getDocComment());
-                                            $menuName = $res[ClassHelper::ATTR_NAME] ?: ucfirst(StringHelper::snake($reflect->getShortName(), ' '));
-                                        }
-                                        
-                                        $id--;
-                                        $item = SystemMenuField::init();
-                                        $item->setId($id);
-                                        $item->setName($menuName);
-                                        $item->setPath('#' . ltrim($path === '' ? $controller : $path, '#'));
-                                        $item->setParentPath(trim($menuGroup->getParent()));
-                                        $item->setIcon($icon ?: 'fa fa-folder');
-                                        $item->setSort($sort === false ? abs($id) : $sort);
-                                        $item->setParams('');
-                                        $item->setHide(false);
-                                        $item->setDisabled(false);
-                                        $item->setSystem(false);
-                                        $item->setTopPath('');
-                                        $item->setTarget('');
-                                        $item->source = $item->path;
-                                        
-                                        $item             = SystemMenuField::parse($item);
-                                        $item->canDisable = $menuGroup->isCanDisable();
-                                        
-                                        $list[] = $item;
-                                        $parent = $item->path;
-                                        
-                                        if ($menuGroup->isDefault()) {
-                                            $defaultGroup = $item;
-                                        }
+                            // 路由注解
+                            $controller   = '';
+                            $routeToClass = false;
+                            $parent       = '';
+                            if ($menuRoutes = $reflect->getAttributes(MenuRoute::class)) {
+                                /** @var MenuRoute $menuRoute */
+                                $menuRoute    = $menuRoutes[0]->newInstance();
+                                $controller   = $menuRoute->getPath();
+                                $routeToClass = $menuRoute->isClass();
+                            }
+                            
+                            // 路由转发
+                            $controller       = AppHelper::trimController($controller === '' ? $reflect->getShortName() : $controller);
+                            $sourceController = AppHelper::trimController($reflect->getShortName());
+                            if ($menuRoutes) {
+                                $routes[$controller] = [
+                                    'classname'  => $reflect->name,
+                                    'controller' => $sourceController,
+                                    'class'      => $routeToClass
+                                ];
+                            }
+                            
+                            // 分组节点
+                            $defaultGroup = null;
+                            if ($menuGroups = $reflect->getAttributes(MenuGroup::class)) {
+                                foreach ($menuGroups as $attribute) {
+                                    /** @var MenuGroup $menuGroup */
+                                    $menuGroup = $attribute->newInstance();
+                                    $sort      = $menuGroup->getSort();
+                                    $icon      = trim($menuGroup->getIcon());
+                                    $path      = trim($menuGroup->getPath());
+                                    
+                                    // 分组名称
+                                    $menuName = trim($menuGroup->getName());
+                                    if ($menuName === '') {
+                                        $res      = ClassHelper::extractDocAttrs($reflect, $reflect->getShortName(), '', $reflect->getDocComment());
+                                        $menuName = $res[ClassHelper::ATTR_NAME] ?: ucfirst(StringHelper::snake($reflect->getShortName(), ' '));
                                     }
-                                }
-                                if ($defaultGroup) {
-                                    $parent = $defaultGroup->path;
-                                }
-                                
-                                // 叶子节点
-                                foreach ($methods as $vo) {
+                                    
+                                    $topPath = $path;
+                                    if (!str_contains($path, '/')) {
+                                        $path    = '#' . ltrim($path === '' ? $controller : $path, '#');
+                                        $topPath = '';
+                                    }
+                                    
                                     $id--;
-                                    
-                                    // 上级节点名称
-                                    $parentPath = $vo['parent'];
-                                    if ($parentPath && str_starts_with($parentPath, '/') && strlen($parentPath) > 1) {
-                                        $parentPath = $controller . $parentPath;
-                                    }
-                                    if (!$parentPath) {
-                                        $parentPath = $parent;
-                                    }
-                                    
                                     $item = SystemMenuField::init();
                                     $item->setId($id);
-                                    $item->setName($vo['name']);
-                                    $item->setPath($controller . '/' . $vo['action']);
-                                    $item->setHide(!$vo['node']);
-                                    $item->setParentPath($parentPath);
-                                    $item->setParams($vo['params']);
-                                    $item->setIcon($vo['icon'] ?: 'fa fa-file');
-                                    $item->setSort($vo['sort'] === false ? abs($id) : $vo['sort']);
+                                    $item->setName($menuName);
+                                    $item->setPath($path);
+                                    $item->setParentPath(trim($menuGroup->getParent()));
+                                    $item->setIcon($icon ?: 'fa fa-folder');
+                                    $item->setSort($sort === false ? abs($id) : $sort);
+                                    $item->setParams('');
+                                    $item->setHide(false);
                                     $item->setDisabled(false);
                                     $item->setSystem(false);
-                                    $item->setTopPath('');
+                                    $item->setTopPath($topPath);
                                     $item->setTarget('');
-                                    $item->source = $vo['method'];
+                                    $item->source = $item->path;
                                     
                                     $item             = SystemMenuField::parse($item);
-                                    $item->canDisable = $vo['can_disable'];
+                                    $item->canDisable = $menuGroup->isCanDisable();
                                     
-                                    if ($item->parentPath) {
-                                        $list[] = $item;
+                                    $list[] = $item;
+                                    $parent = $item->path;
+                                    
+                                    if ($menuGroup->isDefault()) {
+                                        $defaultGroup = $item;
                                     }
+                                }
+                            }
+                            if ($defaultGroup) {
+                                $parent = $defaultGroup->path;
+                            }
+                            
+                            // 叶子节点
+                            foreach ($methods as $vo) {
+                                $id--;
+                                
+                                // 上级节点名称
+                                $parentPath = $vo['parent'];
+                                if ($parentPath && str_starts_with($parentPath, '/') && strlen($parentPath) > 1) {
+                                    $parentPath = $controller . $parentPath;
+                                }
+                                if (!$parentPath) {
+                                    $parentPath = $parent;
+                                }
+                                
+                                $item = SystemMenuField::init();
+                                $item->setId($id);
+                                $item->setName($vo['name']);
+                                $item->setPath($controller . '/' . $vo['action']);
+                                $item->setHide(!$vo['node']);
+                                $item->setParentPath($parentPath);
+                                $item->setParams($vo['params']);
+                                $item->setIcon($vo['icon'] ?: 'fa fa-file');
+                                $item->setSort($vo['sort'] === false ? abs($id) : $vo['sort']);
+                                $item->setDisabled(false);
+                                $item->setSystem(false);
+                                $item->setTopPath('');
+                                $item->setTarget('');
+                                $item->source = $vo['method'];
+                                
+                                $item             = SystemMenuField::parse($item);
+                                $item->canDisable = $vo['can_disable'];
+                                
+                                if ($item->parentPath) {
+                                    $list[] = $item;
                                 }
                             }
                         } catch (ReflectionException) {
