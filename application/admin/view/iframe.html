@@ -5,13 +5,14 @@
 </head>
 <body class="ba-page-root">
 <div data-busy-id="app">
+    <script type="text/html" data-busy-id="content-header">
+        <include file="@admin:breadcrumb" />
+    </script>
     <div class="container-fluid ba-page" data-busy-id="content-body">
         <block name="head"></block>
         <block name="content"></block>
         <block name="foot"></block>
     </div>
-    <div class="ba-content-mask" data-busy-id="content-mask"></div>
-    <div class="ba-loader" data-busy-id="loader"><div></div></div>
 </div>
 </body>
 </html>
