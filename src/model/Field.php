@@ -88,6 +88,9 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
     /** @var string 导入字段 */
     public const ATTR_IMPORT = 'import';
     
+    /** @var string SETTER方法 */
+    public const ATTR_SETTER = 'setter';
+    
     /** @var string 私有变量前缀 */
     public const PRIVATE_VAR_PREFIX = '__private__';
     
@@ -357,7 +360,10 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
             $entity->validate($value, is_array($validate) ? $validate : []);
         }
         
-        if (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
+        $setter = $attrs[self::ATTR_SETTER] ?? '';
+        if ($setter && method_exists($field, $setter)) {
+            $field->$setter($value);
+        } elseif (ReflectionProperty::IS_PRIVATE === $attrs[self::ATTR_ACCESS]) {
             ClassHelper::setPropertyValue($field, $property, $value);
         } else {
             $field->{$property} = $value;
@@ -690,6 +696,7 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                         self::ATTR_ACCESS     => $access,
                         self::ATTR_EXPORT     => $export,
                         self::ATTR_IMPORT     => $import,
+                        self::ATTR_SETTER     => StringHelper::camel('set_' . $name),
                     ];
                 }
                 
