@@ -101,7 +101,7 @@ class FileIcons
     {
         static $state;
         if (!isset($state)) {
-            static::$map = (array) Config::get('admin.model.system_file.file_icons', []) + static::$map;
+            static::$map = (array) Config::get('admin.model.system_file.file_icon_map', []) + static::$map;
             $state       = 1;
         }
         
