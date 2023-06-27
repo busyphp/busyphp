@@ -156,7 +156,7 @@ class SystemFile extends Model implements ContainerInterface
             }
             
             unset($vo);
-            foreach ((array) Config::get('admin.model.system_file.file_types', []) as $index => $vo) {
+            foreach ((array) Config::get('admin.model.system_file.file_type_map', []) as $index => $vo) {
                 $vo['name']  = $vo['name'] ?? '';
                 $vo['types'] = $vo['types'] ?? [];
                 $vo['icon']  = $vo['icon'] ?? '';
