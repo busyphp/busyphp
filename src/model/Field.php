@@ -347,6 +347,8 @@ class Field implements Arrayable, Jsonable, ArrayAccess, JsonSerializable, Itera
                     } elseif ($format instanceof Format) {
                         $value = $format->decode($value);
                     }
+                } elseif (is_scalar($value)) {
+                    $value = (string) $value;
                 }
         }
         
