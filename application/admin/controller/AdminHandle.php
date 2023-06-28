@@ -176,8 +176,19 @@ class AdminHandle extends Handle implements ContainerInterface
             $printStyle = Container::getInstance()->invokeFunction($printStyle);
         }
         
-        $elementUi      = $app->config->get('app.admin.element_ui', false);
-        $vue            = $elementUi || $app->config->get('app.admin.vue', false);
+        $elementUi = $app->config->get('app.admin.element_ui', false);
+        $vue       = $elementUi || $app->config->get('app.admin.vue', false);
+        $bell      = $app->config->get('app.admin.bell');
+        $ws        = $app->config->get('app.admin.ws', []);
+        $wsUrl     = $ws['url'] ?? '';
+        if ($wsUrl instanceof Closure) {
+            $wsUrl = Container::getInstance()->invokeFunction($wsUrl, [$adminUser]);
+        }
+        $wsPingData = $ws['ping_data'] ?? null;
+        if ($wsPingData instanceof Closure) {
+            $wsPingData = Container::getInstance()->invokeFunction($wsPingData, [$adminUser]);
+        }
+        
         $data['system'] = [
             'title'             => $adminSetting->getTitle(),
             'page_title'        => $pageTitle,
@@ -209,6 +220,12 @@ class AdminHandle extends Handle implements ContainerInterface
                         'pageTitleSuffix'   => $pageTitleSuffix,
                         'operateTipStyle'   => $app->config->get('app.admin.operate_tip_style') ?: 'toast',
                         'login'             => !!$adminUser,
+                        'bell'              => $bell === false ? '' : ($bell ?: $assetsUrl . 'system/media/bell.mp3'),
+                        'wsEnable'          => $ws['enable'] ?? false,
+                        'wsPingInterval'    => $ws['ping_interval'] ?? 0,
+                        'wsReconnectDelay'  => $ws['reconnect_delay'] ?? 0,
+                        'wsUrl'             => $wsUrl,
+                        'wsPingData'        => $wsPingData,
                     ],
                     'upload'        => [
                         'configUrl' => (string) url('common.file/config?noext')->suffix(false),
@@ -221,8 +238,8 @@ class AdminHandle extends Handle implements ContainerInterface
                     ],
                     'notice'        => [
                         'message_url' => (string) url('common.notice/message'),
-                        'todo_url'   => (string) url('common.notice/todo'),
-                        'total_url'  => (string) url('common.notice/total'),
+                        'todo_url'    => (string) url('common.notice/todo'),
+                        'total_url'   => (string) url('common.notice/total'),
                     ],
                     'tree'          => [
                         'url' => $data['url']['app']

@@ -138,6 +138,7 @@ return [
 use BusyPHP\app\admin\component\notice\data\AdminOperate;
 use BusyPHP\app\admin\component\notice\todo\TodoInterface;
 use BusyPHP\app\admin\model\admin\message\AdminMessageField;
+use BusyPHP\app\admin\model\admin\user\AdminUserField;
 
 return [
     // 管理面板配置
@@ -168,6 +169,37 @@ return [
         
         // 模态框的取消按钮是否在右边
         'modal_cancel_right'    => false,
+                
+        // 打印css
+        'print_css'             => '',
+        
+        // 通用打印样式
+        'print_style'           => '',
+        
+        // 通知铃声URL
+        'bell'                  => '',
+        
+        // 全局websocket
+        'ws'                    => [
+            // 是否启用
+            'enable'          => false,
+            
+            // websocket 地址
+            'url'             => function(AdminUserField $user) : string {
+                return 'ws://127.0.0.1?id=' . $user->id;
+            },
+            
+            // 发送ping包间隔毫秒，0为不发送
+            'ping_interval'   => 5000,
+            
+            // 发送ping包的数据
+            'ping_data'       => function() : string {
+                return json_encode(['ping' => '']);
+            },
+            
+            // 断线重连间隔毫秒
+            'reconnect_delay' => 3000,
+        ],
         
         // 系统消息
         'message'               => [

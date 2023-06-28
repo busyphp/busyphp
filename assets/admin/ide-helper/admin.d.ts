@@ -1425,6 +1425,209 @@ declare namespace busyAdmin {
          * 隐藏框架全屏加载器
          */
         hideLoader(): void;
+
+        /**
+         * 清理缓存
+         */
+        clearCache(): void;
+
+        /**
+         * 重载页面
+         */
+        reload(): void;
+
+        /**
+         * 创建header右侧按钮
+         */
+        createBarButton(icon: string): BusyAdminBarButton;
+
+        /**
+         * 启动浏览器标题闪烁提示
+         * @param msg
+         */
+        startTitleFlicker(msg: string): void;
+
+        /**
+         * 停止浏览器标题闪烁提示
+         */
+        stopTitleFlicker();
+
+        /**
+         * 播放铃声
+         * @param src
+         */
+        playBell(src: string);
+
+        /**
+         * 停止播放铃声
+         */
+        pauseBell();
+
+        /**
+         * 通知
+         */
+        notification(options: {
+            /**
+             * 标题
+             */
+            title: string,
+            /**
+             * 描述
+             */
+            desc: string,
+            /**
+             * 闪烁
+             */
+            flicker: string | boolean,
+            /**
+             * 图标
+             */
+            icon: string,
+            /**
+             * 通知ID
+             */
+            id: string,
+            /**
+             * 铃声
+             */
+            bell: string | boolean,
+            onClick: (() => void),
+            onShow: (() => void),
+            onClose: (() => void),
+            onError: (() => void),
+        });
+
+        /**
+         * WebSocket客户端
+         * @param options
+         */
+        ws(options?: BusyAdminWsClientOptions): BusyAdminWsClient;
+    }
+
+    interface BusyAdminWsClientOptions {
+        /**
+         * ws连接
+         */
+        url: string,
+        /**
+         * ping间隔毫秒
+         */
+        pingInterval: number,
+        /**
+         * ping包
+         */
+        pingData: string | null,
+        /**
+         * 重连延时毫秒
+         */
+        reconnectDelay: number,
+    }
+
+    interface BusyAdminWsClient {
+        /**
+         * 连接
+         */
+        connect(),
+
+        /**
+         * 重连
+         */
+        reconnect(),
+
+        /**
+         * 关闭连接
+         */
+        close(),
+
+        /**
+         * 触发事件
+         * @param event
+         * @param data
+         */
+        trigger(event: string, data: any),
+
+        /**
+         * 监听事件
+         * @param name
+         * @param callback
+         * @param once
+         */
+        on(name: string, callback: ((data: any) => void), once?: boolean),
+
+        /**
+         * 监听一次事件
+         * @param name
+         * @param callback
+         */
+        once(name: string, callback: ((data: any) => void)),
+
+        /**
+         * 卸载事件
+         * @param name
+         */
+        off(name?: string),
+
+        /**
+         * 监听消息事件
+         * @param name
+         * @param callback
+         * @param once
+         */
+        onMessage(name: string, callback: ((data: any) => void), once?: boolean),
+
+        /**
+         * 监听一次消息事件
+         * @param name
+         * @param callback
+         */
+        onceMessage(name: string, callback: ((data: any) => void)),
+
+        /**
+         * 卸载消息事件
+         * @param name
+         */
+        offMessage(name: string),
+
+        /**
+         * 发送数据
+         * @param data
+         * @param raw
+         */
+        send(data: any, raw?: boolean)
+
+        /**
+         * 发送事件数据
+         * @param name
+         * @param data
+         */
+        sendEvent(name: string, data: any)
+    }
+
+    interface BusyAdminBarButton {
+        $li: jQuery,
+        $a: jQuery,
+        $badge: jQuery,
+
+        /**
+         * 激活按钮状态
+         * @param status
+         */
+        toggle(status: boolean);
+
+        /**
+         * 删除按钮
+         */
+        remove();
+
+        /**
+         * 设置按钮数字
+         * @param value
+         */
+        setBadge(value: number);
+
+        insertBefore(el: jQuery);
+
+        insertAfter(el: jQuery);
     }
 
     interface BusyAdminAppData {
