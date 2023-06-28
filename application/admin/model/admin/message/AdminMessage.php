@@ -74,8 +74,8 @@ class AdminMessage extends Model implements ContainerInterface
         
         if (!isset($map)) {
             $map = [];
-            foreach (static::getTypeMap() as $type => $item) {
-                $map[$type] = (string) $item['name'];
+            foreach (static::getTypeMap() as $key => $item) {
+                $map[$key] = (string) $item['name'];
             }
         }
         
