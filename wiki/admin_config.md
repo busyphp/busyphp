@@ -101,21 +101,29 @@ return [
         // 文件模型
         'system_file' => [
             // 文件类型扩展
-            'file_types' => [
+            'file_type_map' => [
                 // 类型 => [
                 //     'name' => '类型名称',
                 //     'icon' => 'fa fa-file-o',
                 //     'types' => ['文件扩展名1', '文件扩展名2', '文件扩展名...']
                 // ]
-                'code' => [
-                    'name'  => '代码',
-                    'types' => ['html', 'js', 'php']
-                ]
             ],
     
             // 文件图标映射
-            'file_icons' => [
+            'file_icon_map' => [
                 // 格式 => '图标名称或图标路径'
+            ]
+        ],
+        
+        // 系统消息模型
+        'admin_message' => [
+            // 消息类型映射
+            'type_map' => [
+                // 类型 => [
+                //     'name' => '类型名称'
+                //     '自定义1' => ...
+                //     '自定义2' => ...
+                // ]
             ]
         ]
     ]
@@ -127,7 +135,9 @@ return [
 配置文件 `app/admin/config/app.php`
 
 ```php
-use BusyPHP\app\admin\component\message\todo\TodoInterface;
+use BusyPHP\app\admin\component\notice\data\AdminOperate;
+use BusyPHP\app\admin\component\notice\todo\TodoInterface;
+use BusyPHP\app\admin\model\admin\message\AdminMessageField;
 
 return [
     // 管理面板配置
@@ -159,15 +169,23 @@ return [
         // 模态框的取消按钮是否在右边
         'modal_cancel_right'    => false,
         
-        // 通知
-        'notice'                => false,
+        // 系统消息
+        'message'               => [
+            // 是否启用
+            'enable'  => true,
+            
+            // 操作解析回调
+            'operate' => function(AdminMessageField $message, AdminOperate $operate) {
+               
+            }
+        ],
         
         // 待办
         'todo'                  => [
             // 是否启用
             'enable' => false,
             
-            // 注册待办类，必须集成 \BusyPHP\app\admin\component\message\todo\TodoInterface} 接口
+            // 注册待办类，必须集成 \BusyPHP\app\admin\component\notice\todo\TodoInterface} 接口
             'class'  => [
             ]
         ]

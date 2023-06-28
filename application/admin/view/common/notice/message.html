@@ -1,0 +1,519 @@
+<extend name="layout"/>
+<block name="head">
+    <?php
+    
+    use BusyPHP\app\admin\component\notice\data\Operate;
+    use BusyPHP\app\admin\model\admin\message\AdminMessageContent;
+    
+    ?>
+    <style type="text/scss">
+        .__SCOPED___modal {
+            .item {
+                display: block;
+                margin-bottom: 10px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                &--head {
+                    padding: 8px 10px;
+
+                    .badge-dot {
+                        margin-right: 5px;
+                    }
+
+                    .item--trash {
+                        margin-left: 8px;
+                    }
+                }
+
+                &--body {
+                    border-top: 1px #DDDDDD solid;
+                    border-top: 1px var(--ba-border-color) solid;
+                    padding: 10px;
+                }
+
+                &--style-left-image {
+                    .img-thumbnail {
+                        width: 48px;
+                        height: 48px;
+                    }
+
+                    .item--content {
+                        padding-left: 8px;
+                    }
+                }
+
+                &--style-cover-image {
+                    .item--image {
+                        padding-bottom: 10px;
+                    }
+
+                    img {
+                        width: 100%;
+                        height: auto;
+                        max-height: 120px;
+                    }
+                }
+
+                &--style-number {
+                    .item--icon {
+                        text-align: center;
+
+                        img {
+                            width: 36px;
+                            height: 36px;
+                        }
+                    }
+                }
+
+                &--attrs {
+                    margin: 8px 0 0 0;
+
+                    th {
+                        width: 50px;
+                        white-space: nowrap;
+                        font-weight: normal;
+                    }
+
+
+                    td, th {
+                        padding: 0;
+                        border: 0;
+                        font-size: 12px;
+                        vertical-align: top;
+                    }
+
+
+                    td {
+                        padding-left: 10px;
+                    }
+                }
+
+                &--action {
+                    padding: 8px 10px;
+                    border-top: 1px #DDDDDD solid;
+                    border-top: 1px var(--ba-border-color) solid;
+                    text-decoration: none;
+                    color: #454545;
+                    color: var(--ba-text-color);
+
+                    &.active {
+                        cursor: pointer;
+
+                        &:hover {
+                            background: var(--ba-bg-color);
+                        }
+                    }
+                }
+
+                &--read {
+                    opacity: .8;
+                }
+            }
+        }
+    </style>
+</block>
+<block name="content">
+    <div class="modal-content __SCOPED___modal" id=":modal_id_app">
+        <template>
+            <div class="modal-header padding-10 flex flex-align-center">
+                <h4 class="modal-title flex-grow-1 width-0">{$system.page_title}</h4>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn"
+                            @click="changeTabs(index)"
+                            :class="{'btn-default' : !item.active, 'btn-primary': item.active}"
+                            v-for="(item, index) in tabs">{{item.name}}
+                    </button>
+                </div>
+                <div class="width-5 height-5"></div>
+                <button class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-close"></i></button>
+            </div>
+            <div class="modal-body bg-common padding-10" v-on:scroll="scroll">
+                <template v-if="list.length > 0">
+                    <div class="item border radius bg-white"
+                         :class="{'item--read': item.read}"
+                         v-for="(item, index) in list"
+                         @click="itemClick(index)"
+                         v-bind="item.operate">
+
+                        <!--head-->
+                        <div class="item--head flex flex-align-baseline">
+                            <div class="badge-dot badge-danger" v-if="!item.read"></div>
+                            <div class="flex-grow-1 width-0 text-line-1">{{item.type_name}}</div>
+                            <div class="size-12 text-gray">{{item.format_create_time}}</div>
+                            <div class="item--trash cursor-pointer" @click="remove(index)">
+                                <i class="fa fa-trash text-gray"></i></div>
+                        </div>
+
+                        <!--body-->
+                        <div class="item--body">
+                            <!--左图片右内容样式-->
+                            <div class="item--style-left-image flex flex-align-center" v-if="item.content.style == '<?=AdminMessageContent::STYLE_LEFT_IMAGE?>'">
+                                <img class="img-thumbnail object-fit-cover padding-2 flex-self-start" :src="item.content.image || ''" data-toggle="busy-image-viewer">
+                                <div class="flex-grow-1 width-0 item--content">
+                                    <div class="item--title text-bold" v-html="item.content.title"></div>
+                                    <div class="space-2"></div>
+                                    <div class="item--desc text-gray size-12" v-html="item.content.desc"></div>
+                                </div>
+                            </div>
+
+                            <!--封面图样式-->
+                            <div class="item--style-cover-image" v-else-if="item.content.style == '<?=AdminMessageContent::STYLE_COVER_IMAGE?>'">
+                                <div class="item--image">
+                                    <img class="object-fit-cover" :src="item.content.image || ''" data-toggle="busy-image-viewer">
+                                </div>
+                                <div class="item--title text-bold" v-html="item.content.title"></div>
+                                <div class="space-2"></div>
+                                <div class="item--desc text-gray size-12" v-html="item.content.desc"></div>
+                            </div>
+
+                            <!--数字样式-->
+                            <div class="item--style-number" v-else-if="item.content.style == '<?=AdminMessageContent::STYLE_NUMBER?>'">
+                                <div class="item--icon">
+                                    <img class="object-fit-contain" :src="item.content.image || ''">
+                                </div>
+                                <div class="space-10"></div>
+                                <div class="item--desc text-gray size-12 text-center" v-html="item.content.desc"></div>
+                                <div class="space-2"></div>
+                                <div class="item--title flex flex-align-center flex-justify-center">
+                                    <span class="item--unit size-14 text-bold" v-html="item.content.number_prefix"></span>
+                                    <span class="item--number size-24 text-bold" v-html="item.content.title"></span>
+                                </div>
+                            </div>
+
+                            <!--默认样式-->
+                            <div class="item--style-default" v-else>
+                                <div class="item--title text-bold" v-html="item.content.title"></div>
+                                <div class="space-2"></div>
+                                <div class="item--desc text-gray size-12" v-html="item.content.desc"></div>
+                            </div>
+
+                            <!--属性-->
+                            <table class="table item--attrs" v-if="item.content.attrs.length > 0">
+                                <tbody>
+                                    <tr v-for="attr in item.content.attrs">
+                                        <th class="text-gray" v-html="attr.name"></th>
+                                        <td :style="{color: attr.color}" v-html="attr.value"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!--操作-->
+                        <template v-for="(action, actionIndex) in item.content.actions">
+                            <div class="item--action flex flex-align-center"
+                                 :class="{active: !!action.operate.admin.type}"
+                                 @click="clickAction(index, actionIndex)"
+                                 v-bind="action.operate.admin.attrs">
+                                <span class="flex-grow-1 width-0 text-line-1" v-html="action.name"></span>
+                                <span v-if="action.operate.admin.type"><i class="fa fa-angle-right"></i></span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="text-gray text-center size-12" v-if="loading">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        加载中...
+                    </div>
+                    <div class="text-gray text-center size-12" v-else-if="!more">没有消息了</div>
+                </template>
+                <template v-else>
+                    <div class="empty-info" v-if="loading">
+                        <i class="fa fa-spinner fa-spin size-30"></i>
+                        <br/><br/>
+                        加载中...
+                    </div>
+                    <div class="empty-info" v-else v-html="error || '暂无通知'"></div>
+                </template>
+            </div>
+            <div class="modal-footer padding-10 flex">
+                <div class="btn-group flex flex-grow-1 width-0">
+                    <button type="button" class="btn btn-warning flex-grow-1 width-0" @click="setAllRead" :disabled="list.length === 0">
+                        <i class="fa fa-check"></i>
+                        全部已读
+                    </button>
+                    <button type="button" class="btn btn-danger flex-grow-1 width-0" @click="clear" :disabled="list.length === 0">
+                        <i class="fa fa-trash"></i>
+                        清空
+                    </button>
+                    <button type="button" class="btn btn-default flex-grow-1 width-0" data-dismiss="modal">
+                        <i class="fa fa-close"></i>
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</block>
+<script src="/vue.js"></script>
+<block name="foot">
+    <script>
+        busyAdmin.ready([busyAdmin.lib.vue], function () {
+            new Vue({
+                el            : '#:modal_id_app',
+                data          : {
+                    list    : [],
+                    body    : null,
+                    page    : 1,
+                    error   : '',
+                    more    : true,
+                    loading : false,
+                    type    : 0,
+                    tabs    : [{
+                        name   : '全部',
+                        type   : 0,
+                        active : true
+                    }, {
+                        name   : '未读',
+                        type   : 1,
+                        active : false
+                    }, {
+                        name   : '已读',
+                        type   : 2,
+                        active : false
+                    }]
+                },
+                mounted       : function () {
+                    var me    = this;
+                    me.$modal = $(me.$el).closestBaModal();
+
+                    me.$modal.noticeRefreshPanelList = function () {
+                        me.load(true);
+                    };
+
+                    me.$api = me.$modal.options.api;
+                    me.load(true);
+                },
+                beforeDestroy : function () {
+                    this.abort();
+                },
+                methods       : {
+                    /**
+                     * 中断请求
+                     */
+                    abort : function () {
+                        var me = this;
+                        if (me.loadTask) {
+                            me.loadTask.abort();
+                            me.loadTask = null;
+                        }
+                    },
+
+                    /**
+                     * 加载数据
+                     */
+                    load : function (refresh) {
+                        var me = this;
+
+                        if (refresh) {
+                            me.page = 1;
+                            me.list = [];
+                        }
+
+                        me.abort();
+                        me.loading  = true;
+                        me.loadTask = busyAdmin
+                            .request('__URL__')
+                            .method('post')
+                            .params({
+                                page : me.page,
+                                type : me.type
+                            })
+                            .pending(false)
+                            .complete(function () {
+                                me.loading = false;
+                            })
+                            .success(function (json) {
+                                me.error = '';
+                                var list = json.result.list || [];
+                                list.forEach(function (item) {
+                                    item.content.actions.forEach(function (action) {
+                                        if (action.operate.admin.type != <?=Operate::TYPE_ROUTE?>) {
+                                            action.operate.admin.attrs = {};
+                                        }
+                                    });
+                                });
+
+                                if (list.length > 0) {
+                                    me.page++;
+                                    me.list = me.list.concat(list);
+                                    me.more = true;
+                                } else {
+                                    if (me.list.length > 0) {
+                                        me.more = false;
+                                    }
+                                }
+
+                                return false;
+                            })
+                            .error(function (response) {
+                                me.error = response.message;
+
+                                return false;
+                            })
+                            .exec();
+                    },
+
+                    /**
+                     * 监听滚动
+                     * @param e
+                     */
+                    scroll : function (e) {
+                        var me = this;
+                        clearTimeout(me.scroll_timer);
+
+                        var $body = $(e.target);
+                        if ($body.scrollTop() + $body[0].offsetHeight + 10 >= $body[0].scrollHeight) {
+                            this.scroll_timer = setTimeout(function () {
+                                me.load();
+                            }, 300);
+                        }
+                    },
+
+                    /**
+                     * 切换选项卡
+                     * @param index
+                     */
+                    changeTabs : function (index) {
+                        this.tabs.forEach(function (item, voIndex) {
+                            item.active = index === voIndex;
+                        });
+                        this.type = this.tabs[index].type;
+                        this.load(true);
+                    },
+
+                    /**
+                     * 清空消息
+                     */
+                    clear : function () {
+                        var me = this;
+                        busyAdmin.dialog.confirm('确认要清空消息吗？', function () {
+                            busyAdmin
+                                .request('__URL__')
+                                .method('post')
+                                .params({
+                                    action : 'clear'
+                                })
+                                .success(function () {
+                                    me.list = [];
+                                    me.$api.getTotal();
+                                })
+                                .exec();
+                        });
+                    },
+
+                    /**
+                     * 删除消息
+                     * @param index
+                     */
+                    remove : function (index) {
+                        var me = this;
+                        busyAdmin.dialog.confirm('确认要删除该消息吗？', function () {
+                            busyAdmin
+                                .request('__URL__')
+                                .method('post')
+                                .params({
+                                    action : 'delete',
+                                    id     : me.list[index].id
+                                })
+                                .success(function () {
+                                    me.list.splice(index, 1);
+                                    me.$api.getTotal();
+                                })
+                                .exec();
+                        });
+                    },
+
+                    /**
+                     * 全部已读
+                     */
+                    setAllRead : function () {
+                        var me = this;
+                        busyAdmin.dialog.confirm('确认要将消息标记为已读吗？', function () {
+                            busyAdmin
+                                .request('__URL__')
+                                .method('post')
+                                .params({
+                                    action : 'all_read'
+                                })
+                                .success(function () {
+                                    me.list.map(function (item) {
+                                        item.read = true;
+                                    });
+                                    me.$api.getTotal();
+                                })
+                                .exec();
+                        });
+                    },
+
+                    /**
+                     * item点击
+                     * @param index
+                     */
+                    itemClick : function (index) {
+                        var me   = this;
+                        var item = this.list[index];
+                        if (!item.read) {
+                            busyAdmin
+                                .request('__URL__')
+                                .method('post')
+                                .pending(false)
+                                .params({
+                                    action : 'read',
+                                    id     : item.id
+                                })
+                                .success(function () {
+                                    me.$api.getTotal();
+                                    return false;
+                                })
+                                .exec();
+
+                            me.list[index].read = true;
+                        }
+                    },
+
+                    /**
+                     * 操作项点击
+                     * @param index
+                     * @param actionIndex
+                     */
+                    clickAction : function (index, actionIndex) {
+                        var me     = this;
+                        var item   = me.list[index];
+                        var action = item.content.actions[actionIndex];
+                        me.operate(action.operate.admin);
+                    },
+
+                    /**
+                     * 执行操作
+                     * @param {{type: number, value: string}} operate
+                     */
+                    operate : function (operate) {
+                        var me = this;
+
+                        // 打开URL
+                        if (operate.type == <?=Operate::TYPE_WEBVIEW?>) {
+                            var valueParse = busyAdmin.helper.parseURL(operate.value);
+                            var urlParse   = busyAdmin.helper.parseURL(document.URL);
+                            if (0 === valueParse.path.indexOf(busyAdmin.root())) {
+                                if ((valueParse.host && urlParse.host == valueParse.host) || !valueParse.host) {
+                                    busyAdmin.route.show(operate.value);
+                                    me.$api.close();
+                                    return;
+                                }
+                            }
+
+                            self.location.href = operate.value;
+                        }
+
+                        // 新建窗口打开URL
+                        else if (operate.type == <?=Operate::TYPE_BROWSER?>) {
+                            window.open(operate.value);
+                        }
+                    },
+                }
+            });
+        });
+    </script>
+</block>

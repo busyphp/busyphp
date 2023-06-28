@@ -5,8 +5,8 @@ namespace BusyPHP\app\admin\controller\common;
 
 use BusyPHP\app\admin\component\common\ConsoleLog;
 use BusyPHP\app\admin\component\js\Driver;
-use BusyPHP\app\admin\component\message\Notice;
-use BusyPHP\app\admin\component\message\Todo;
+use BusyPHP\app\admin\component\notice\Message;
+use BusyPHP\app\admin\component\notice\Todo;
 use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\app\admin\controller\InsideController;
 use BusyPHP\app\admin\model\admin\group\AdminGroup;
@@ -36,11 +36,6 @@ class IndexController extends InsideController
     
     protected function initialize($checkLogin = true)
     {
-        // 不记录操作
-        if (Driver::getRequestName() === 'AppMessage') {
-            $this->ignoreOperate();
-        }
-        
         // 读取配置获取是否启用切换主题
         if (!isset($this->isEnableAppInfoTheme)) {
             $this->isEnableAppInfoTheme = $this->app->config->get('app.admin.theme', true);
@@ -62,7 +57,6 @@ class IndexController extends InsideController
         
         return match (Driver::getRequestName()) {
             'AppInfo'    => $this->buildAppInfo(),
-            'AppMessage' => $this->buildAppMessage($this->get('type/s', 'trim'), $this->get('action/s', 'trim')),
             'ConsoleLog' => $this->buildConsoleLog($this->param('id/s', 'trim')),
             default      => $this->renderIndex(),
         };
@@ -195,9 +189,11 @@ class IndexController extends InsideController
             ],
             'data'           => $data ?: new stdClass(),
             
-            // 消息启用状态
-            'message_notice' => Notice::instance()->isEnable(),
-            'message_todo'   => Todo::instance()->isEnable(),
+            // 通知启用状态
+            'notice'         => [
+                'message' => Message::instance()->isEnable(),
+                'todo'    => Todo::instance()->isEnable(),
+            ]
         ]);
     }
     
@@ -219,100 +215,6 @@ class IndexController extends InsideController
     protected function buildAppInfoData() : array
     {
         return [];
-    }
-    
-    
-    /**
-     * 构建 AppMessage
-     * @param string $type 业务类型
-     * @param string $action 操作类型
-     * @return Response
-     * @throws Throwable
-     */
-    protected function buildAppMessage(string $type, string $action) : Response
-    {
-        $notice = Notice::instance();
-        $todo   = Todo::instance();
-        switch ($type) {
-            // 待办
-            case 'todo':
-                switch ($action) {
-                    // 读取
-                    case 'read':
-                        $todo->setRead($this->adminUser, $this->get('id/s', 'trim'));
-                        $this->log()->record(self::LOG_UPDATE, '处理待办');
-                        
-                        return $this->success();
-                    
-                    // 获取列表
-                    default:
-                        $list   = $todo->getList($this->adminUser);
-                        $levels = array_column($list, 'level');
-                        $sorts  = array_column($list, 'sort');
-                        array_multisort($levels, SORT_ASC, $sorts, SORT_ASC, $list);
-                        
-                        return $this->success([
-                            'list' => $list
-                        ]);
-                }
-            
-            // 通知
-            case 'notice':
-                switch ($action) {
-                    // 读取
-                    case 'read':
-                        $notice->setRead($this->adminUser, $this->get('id/s', 'trim'));
-                        $this->log()->record(self::LOG_UPDATE, '处理通知');
-                        
-                        return $this->success();
-                    
-                    // 全部已读
-                    case 'all_read':
-                        $notice->setAllRead($this->adminUser);
-                        $this->log()->record(self::LOG_UPDATE, '全部已读');
-                        
-                        return $this->success('操作成功');
-                    
-                    // 删除通知
-                    case 'delete':
-                        $notice->delete($this->adminUser, $this->get('id/s', 'trim'));
-                        $this->log()->record(self::LOG_DELETE, '删除通知');
-                        
-                        return $this->success('删除成功');
-                    
-                    // 清空通知
-                    case 'clear':
-                        $notice->clear($this->adminUser);
-                        $this->log()->record(self::LOG_DELETE, '清空通知');
-                        
-                        return $this->success('清空完成');
-                    
-                    // 通知列表
-                    default:
-                        return $this->success([
-                            'list' => $notice->getList($this->adminUser, $this->get('page/d'))
-                        ]);
-                }
-            
-            default:
-                $todoTotal   = 0;
-                $noticeTotal = 0;
-                $todo        = Todo::instance();
-                $notice      = Notice::instance();
-                if ($todo->isEnable()) {
-                    $todoTotal = $todo->getTotal($this->adminUser);
-                }
-                
-                if ($notice->isEnable()) {
-                    $noticeTotal = $notice->getUnreadTotal($this->adminUser);
-                }
-                
-                return $this->success([
-                    'notice_total' => $noticeTotal,
-                    'todo_total'   => $todoTotal,
-                    'total'        => $noticeTotal + $todoTotal
-                ]);
-        }
     }
     
     

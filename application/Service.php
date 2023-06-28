@@ -9,6 +9,7 @@ use BusyPHP\app\admin\controller\AdminHandle;
 use BusyPHP\app\admin\controller\common\ErrorController;
 use BusyPHP\app\admin\controller\common\FileController;
 use BusyPHP\app\admin\controller\common\IndexController;
+use BusyPHP\app\admin\controller\common\NoticeController;
 use BusyPHP\app\admin\controller\common\PassportController;
 use BusyPHP\app\admin\controller\common\UeditorController;
 use BusyPHP\app\admin\controller\common\UserController;
@@ -178,7 +179,8 @@ class Service extends ThinkService
                         'Index'    => $this->app->getAlias(IndexController::class),
                         'Passport' => $this->app->getAlias(PassportController::class),
                         'Ueditor'  => $this->app->getAlias(UeditorController::class),
-                        'User'     => $this->app->getAlias(UserController::class)
+                        'User'     => $this->app->getAlias(UserController::class),
+                        'Notice'   => $this->app->getAlias(NoticeController::class),
                     ];
                     foreach ($map as $controller => $class) {
                         $route->rule("common.$controller/$actionPattern", "$class@$actionPattern")->append([

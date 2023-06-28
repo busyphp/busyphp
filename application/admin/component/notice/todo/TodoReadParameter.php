@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace BusyPHP\app\admin\component\message\todo;
+namespace BusyPHP\app\admin\component\notice\todo;
 
 /**
  * TodoReadParameter

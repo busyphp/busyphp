@@ -1,14 +1,14 @@
 <?php
 declare (strict_types = 1);
 
-namespace BusyPHP\app\admin\component\message;
+namespace BusyPHP\app\admin\component\notice;
 
 use BusyPHP\App;
-use BusyPHP\app\admin\component\message\todo\TodoInterface;
-use BusyPHP\app\admin\component\message\todo\TodoListParameter;
-use BusyPHP\app\admin\component\message\todo\TodoNode;
-use BusyPHP\app\admin\component\message\todo\TodoReadParameter;
-use BusyPHP\app\admin\component\message\todo\TodoTotalParameter;
+use BusyPHP\app\admin\component\notice\todo\TodoInterface;
+use BusyPHP\app\admin\component\notice\todo\TodoListParameter;
+use BusyPHP\app\admin\component\notice\todo\TodoNode;
+use BusyPHP\app\admin\component\notice\todo\TodoReadParameter;
+use BusyPHP\app\admin\component\notice\todo\TodoTotalParameter;
 use BusyPHP\app\admin\model\admin\user\AdminUserField;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\helper\ClassHelper;
@@ -29,37 +29,27 @@ class Todo implements ContainerInterface
     use ContainerInstance;
     
     /**
-     * 非常紧急
+     * 紧急
      * @var int
      * @style danger
      */
     public const LEVEL_MUST = 1;
     
     /**
-     * 紧急
-     * @var int
-     * @style warning
-     */
-    public const LEVEL_URGENT = 2;
-    
-    /**
      * 重要
      * @var int
      * @style primary
      */
-    public const LEVEL_IMPORTANT = 3;
+    public const LEVEL_IMPORTANT = 2;
     
     /**
-     * 默认
+     * 一般
      * @var int
      * @style default
      */
     public const LEVEL_DEFAULT = 99;
     
-    /**
-     * @var App
-     */
-    protected $app;
+    protected App $app;
     
     
     /**
@@ -84,15 +74,15 @@ class Todo implements ContainerInterface
     
     /**
      * 获取待办总数
-     * @param AdminUserField $AdminUserField
+     * @param AdminUserField $user
      * @return int
      */
-    public function getTotal(AdminUserField $AdminUserField) : int
+    public function getTotal(AdminUserField $user) : int
     {
         $total = 0;
         foreach ($this->getInterfaces() as $item) {
             $parameter = new TodoTotalParameter();
-            $parameter->setUser($AdminUserField);
+            $parameter->setUser($user);
             $total += $item->getAdminTodoTotal($parameter);
         }
         
@@ -102,27 +92,28 @@ class Todo implements ContainerInterface
     
     /**
      * 获取待办数据
-     * @param AdminUserField $AdminUserField
+     * @param AdminUserField $user
      * @return TodoNode[]
      */
-    public function getList(AdminUserField $AdminUserField) : array
+    public function getList(AdminUserField $user) : array
     {
         $list  = [];
         $index = 0;
         foreach ($this->getInterfaces() as $item) {
             $interface = TransHelper::base64encodeUrl(get_class($item));
             $parameter = new TodoListParameter();
-            $parameter->setUser($AdminUserField);
+            $parameter->setUser($user);
             foreach ($item->getAdminTodoList($parameter) as $todo) {
                 if (!$todo instanceof TodoNode) {
                     continue;
                 }
                 
-                $todo->setId(TransHelper::base64encodeUrl($interface . ',' . TransHelper::base64encodeUrl($todo->getId())));
-                if ($todo->getSort() < 0) {
+                $todo->setId(TransHelper::base64encodeUrl($interface . ',' . TransHelper::base64encodeUrl($todo->id)));
+                if ($todo->sort < 0) {
                     $todo->setSort($index);
                 }
-                $list[] = $todo;
+                
+                $list[] = TodoNode::parse($todo);
                 $index++;
             }
         }
@@ -133,10 +124,10 @@ class Todo implements ContainerInterface
     
     /**
      * 用户点击待办项目的时候反馈已读
-     * @param AdminUserField $AdminUserField
-     * @param string        $id
+     * @param AdminUserField $user
+     * @param string         $id
      */
-    public function setRead(AdminUserField $AdminUserField, string $id)
+    public function setRead(AdminUserField $user, string $id)
     {
         [$class, $id] = explode(',', TransHelper::base64decodeUrl($id));
         $class = TransHelper::base64decodeUrl($class);
@@ -146,7 +137,7 @@ class Todo implements ContainerInterface
         }
         
         $parameter = new TodoReadParameter();
-        $parameter->setUser($AdminUserField);
+        $parameter->setUser($user);
         $parameter->setId($id);
         $interface->setAdminTodoRead($parameter);
     }
@@ -197,7 +188,7 @@ class Todo implements ContainerInterface
     /**
      * 获取级别
      * @param int|null $val
-     * @return array|null
+     * @return array{name:string,style:string}|array<int,array{name:string,style:string}>|null
      */
     public static function getLevelMap(int $val = null) : ?array
     {

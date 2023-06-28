@@ -219,8 +219,10 @@ class AdminHandle extends Handle implements ContainerInterface
                     'modal'         => [
                         'cancel_right' => $app->config->get('app.admin.modal_cancel_right', false),
                     ],
-                    'topBar'        => [
-                        'url' => $data['url']['app'],
+                    'notice'        => [
+                        'message_url' => (string) url('common.notice/message'),
+                        'todo_url'   => (string) url('common.notice/todo'),
+                        'total_url'  => (string) url('common.notice/total'),
                     ],
                     'tree'          => [
                         'url' => $data['url']['app']

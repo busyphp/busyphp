@@ -1,0 +1,232 @@
+<extend name="layout"/>
+<block name="head">
+    <?php
+    
+    use BusyPHP\app\admin\component\notice\data\Operate;
+    use BusyPHP\app\admin\component\notice\Todo;
+    
+    ?>
+    <style type="text/scss">
+        .__SCOPED___modal {
+            .item {
+                border-bottom: 1px #dddddd solid;
+                border-bottom: 1px var(--ba-border-color) solid;
+                margin: 0;
+                padding: 10px;
+                cursor: pointer;
+                display: block;
+                text-decoration: none;
+                color: #454545;
+                color: var(--ba-text-color);
+
+                &:hover {
+                    background-color: #F6F6F6;
+                    background-color: var(--ba-bg-color);
+                }
+
+                &--badge {
+                    margin-right: 5px;
+                    min-width: unset;
+                    padding: 2px 5px;
+                }
+
+                &--level {
+                    margin-left: 10px;
+                }
+
+                &--desc {
+                    margin-top: 5px;
+                }
+            }
+        }
+    </style>
+</block>
+<block name="content">
+    <div class="modal-content __SCOPED___modal" id=":modal_id_app">
+        <template>
+            <div class="modal-header padding-10 flex flex-align-center">
+                <h4 class="modal-title flex-grow-1 width-0">{$system.page_title}</h4>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn"
+                            @click="changeTabs(index)"
+                            :class="{'btn-default' : !item.active, 'btn-primary': item.active}"
+                            v-for="(item, index) in tabs">{{item.name}}
+                    </button>
+                </div>
+                <div class="width-5 height-5"></div>
+                <button class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-close"></i></button>
+            </div>
+            <div class="modal-body no-padding">
+                <div>
+                    <template v-if="list.length > 0">
+                        <div class="item" v-for="(vo, index) in list" @click="itemClick(index)" v-bind="vo.operate.attrs">
+                            <div class="item--head flex flex-align-center">
+                                <span class="item--badge badge badge-pill badge-danger flex-self-start" v-if="vo.total > 0">{{vo.total}}</span>
+                                <span class="item--title text-bold flex-grow-1 width-0" v-html="vo.title"></span>
+                                <span class="item--level badge flex-self-start" :class="'badge-outline-' + vo.level_style" v-if="vo.level != <?=Todo::LEVEL_DEFAULT?>">{{vo.level_name}}</span>
+                            </div>
+                            <div class="item--desc size-12 text-gray" v-if="vo.desc" v-html="vo.desc"></div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="empty-info" v-if="loading">
+                            <i class="fa fa-spinner fa-spin size-30"></i>
+                            <br/><br/>
+                            加载中...
+                        </div>
+                        <div class="empty-info" v-else v-html="error || '暂无待办项'"></div>
+                    </template>
+                    <div class="space-10"></div>
+                </div>
+            </div>
+            <div class="modal-footer padding-10">
+                <button type="button" class="btn btn-default btn-block" data-dismiss="modal">关闭</button>
+            </div>
+        </template>
+    </div>
+</block>
+<script src="/vue.js"></script>
+<block name="foot">
+    <script>
+        busyAdmin.ready([busyAdmin.lib.vue], function () {
+            new Vue({
+                el            : '#:modal_id_app',
+                data          : {
+                    list    : [],
+                    loading : false,
+                    error   : '',
+                    level   : 0,
+                    tabs    : <?=json_encode($level_map ?? [])?>
+                },
+                mounted       : function () {
+                    var me    = this;
+                    me.$modal = $(me.$el).closestBaModal();
+
+                    me.$modal.noticeRefreshPanelList = function () {
+                        me.load();
+                    };
+
+                    me.$api = this.$modal.options.api;
+                    me.load();
+                },
+                beforeDestroy : function () {
+                    this.abort();
+                },
+                methods       : {
+                    /**
+                     * 中断请求
+                     */
+                    abort : function () {
+                        var me = this;
+                        if (me.loadTask) {
+                            me.loadTask.abort();
+                            me.loadTask = null;
+                        }
+                    },
+
+                    /**
+                     * 加载数据
+                     */
+                    load : function () {
+                        var me = this;
+
+                        me.abort();
+                        me.loading  = true;
+                        me.loadTask = busyAdmin
+                            .request('__URL__')
+                            .pending(false)
+                            .method('post')
+                            .params({level : me.level})
+                            .complete(function () {
+                                me.loading = false;
+                            })
+                            .success(function (json) {
+                                var list = json.result.list || [];
+                                list.forEach(function (item) {
+                                    if (item.operate.type != <?=Operate::TYPE_ROUTE;?>) {
+                                        item.operate.attrs = {};
+                                    }
+                                });
+
+                                me.error = '';
+                                me.list  = list;
+                                return false;
+                            })
+                            .error(function (response) {
+                                me.error = response.message;
+                                return false;
+                            })
+                            .exec();
+                    },
+
+                    /**
+                     * 切换选项卡
+                     * @param index
+                     */
+                    changeTabs : function (index) {
+                        this.tabs.forEach(function (item, voIndex) {
+                            item.active = index === voIndex;
+                        });
+
+                        this.list  = [];
+                        this.level = this.tabs[index].level;
+                        this.load(true);
+                    },
+
+                    /**
+                     * 列表点击
+                     * @param index
+                     */
+                    itemClick : function (index) {
+                        var me   = this;
+                        var item = me.list[index];
+                        busyAdmin
+                            .request('__URL__')
+                            .method('post')
+                            .params({
+                                action : 'read',
+                                id     : item.id
+                            })
+                            .pending(false)
+                            .success(function () {
+                                me.$api.getTotal();
+
+                                return false;
+                            })
+                            .exec();
+
+                        me.operate(item.operate);
+                    },
+
+                    /**
+                     * 执行操作
+                     * @param {{type: number, value: string}} operate
+                     */
+                    operate : function (operate) {
+                        var me = this;
+
+                        // 打开URL
+                        if (operate.type == <?=Operate::TYPE_WEBVIEW?>) {
+                            var valueParse = busyAdmin.helper.parseURL(operate.value);
+                            var urlParse   = busyAdmin.helper.parseURL(document.URL);
+                            if (0 === valueParse.path.indexOf(busyAdmin.root())) {
+                                if ((valueParse.host && urlParse.host == valueParse.host) || !valueParse.host) {
+                                    busyAdmin.route.show(operate.value);
+                                    me.$api.close();
+                                    return;
+                                }
+                            }
+
+                            self.location.href = operate.value;
+                        }
+
+                        // 新建窗口打开URL
+                        else if (operate.type == <?=Operate::TYPE_BROWSER?>) {
+                            window.open(operate.value);
+                        }
+                    },
+                }
+            });
+        });
+    </script>
+</block>

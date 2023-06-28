@@ -313,4 +313,26 @@ namespace PHPSTORM_META {
         \BusyPHP\app\admin\model\system\menu\SystemMenu::TARGET_IFRAME
     );
     expectedArguments(\BusyPHP\app\admin\annotation\MenuNode::__construct(), 7, argumentsSet('menu_target'));
+    
+    registerArgumentsSet(
+        'todo_level',
+        \BusyPHP\app\admin\component\notice\Todo::LEVEL_DEFAULT |
+        \BusyPHP\app\admin\component\notice\Todo::LEVEL_IMPORTANT |
+        \BusyPHP\app\admin\component\notice\Todo::LEVEL_MUST
+    );
+    expectedArguments(\BusyPHP\app\admin\component\notice\todo\TodoNode::setLevel(), 0, argumentsSet('todo_level'));
+    
+    registerArgumentsSet(
+        'operate_type',
+        \BusyPHP\app\admin\component\notice\data\Operate::TYPE_NONE |
+        \BusyPHP\app\admin\component\notice\data\Operate::TYPE_ROUTE |
+        \BusyPHP\app\admin\component\notice\data\Operate::TYPE_WEBVIEW |
+        \BusyPHP\app\admin\component\notice\data\Operate::TYPE_BROWSER
+    );
+    expectedArguments(\BusyPHP\app\admin\component\notice\data\Operate::build(), 0, argumentsSet('operate_type'));
+    expectedArguments(\BusyPHP\app\admin\component\notice\data\Operate::setType(), 0, argumentsSet('operate_type'));
+    expectedArguments(\BusyPHP\app\admin\component\notice\data\Operate::getTypeMap(), 0, argumentsSet('operate_type'));
+    expectedArguments(\BusyPHP\app\admin\component\notice\data\AdminOperate::build(), 0, argumentsSet('operate_type'));
+    expectedArguments(\BusyPHP\app\admin\component\notice\data\AdminOperate::setType(), 0, argumentsSet('operate_type'));
+    expectedArguments(\BusyPHP\app\admin\model\admin\message\AdminMessageContent::addAction(), 1, argumentsSet('operate_type'));
 }

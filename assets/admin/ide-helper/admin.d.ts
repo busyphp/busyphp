@@ -1004,7 +1004,7 @@ declare namespace busyAdmin {
         tabsShown: "ba:tabs-shown"
         templateDone: "ba:template-done"
         templateInitialized: "ba:template-initialized"
-        topBarInitialized: "ba:top-bar-initialized"
+        appNoticeInitialized: "ba:notice-initialized"
         treeActivateNode: "ba:tree-activate-node"
         treeDehoverNode: "ba:tree-dehover-node"
         treeDeselectAll: "ba:tree-deselect-all"
@@ -2216,15 +2216,6 @@ declare namespace busyAdmin {
         iframe(url: string | [string], size: [number] | LayerOptions | BusyAdminDialogIframeCloseCallback, close?: BusyAdminDialogIframeCloseCallback): BusyAdminDialogIframe;
 
         /**
-         * 打开一个右侧边栏对话框
-         * @param content 页面内容
-         * @param className 对话框类名或配置
-         * @param success 对话框显示回调
-         * @param close 对话框关闭回调
-         */
-        fullRight(content: string, className: string | LayerOptions, success?: BusyAdminDialogCallback, close?: BusyAdminDialogCloseCallback): BusyAdminDialogPage;
-
-        /**
          * 成功通知
          * @param title 消息标题或消息内容
          * @param message 消息内容或配置或关闭回调
@@ -2290,18 +2281,6 @@ declare namespace busyAdmin {
          * 关闭按钮点击回调
          */
         onCloseClick: () => void,
-    }
-
-    interface BusyAdminDialogPage {
-        /**
-         * 关闭对话框
-         */
-        close(): void;
-
-        /**
-         * 获取对话框下标
-         */
-        getIndex(): number;
     }
 
     /**
