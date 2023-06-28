@@ -20,6 +20,7 @@ use BusyPHP\Model;
 use BusyPHP\helper\ArrayHelper;
 use BusyPHP\model\Entity;
 use BusyPHP\Service;
+use Ergebnis\Classy\Construct;
 use Ergebnis\Classy\Constructs;
 use ReflectionClass;
 use ReflectionException;
@@ -467,7 +468,10 @@ class SystemMenu extends Model implements ContainerInterface
             if (!$data) {
                 $classMap = [];
                 foreach (static::$annotationList as $annotation) {
-                    if (is_file($annotation)) {
+                    if (str_contains($annotation, '\\') && class_exists($annotation)) {
+                        $reflect    = new ReflectionClass($annotation);
+                        $constructs = [Construct::fromName($annotation)->definedIn($reflect->getFileName())];
+                    } elseif (is_file($annotation)) {
                         $constructs = Constructs::fromSource(file_get_contents($annotation));
                     } else {
                         $constructs = Constructs::fromDirectory($annotation);
