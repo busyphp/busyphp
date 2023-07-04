@@ -98,6 +98,11 @@ class UserController extends InsideController
     {
         // 管理员列表数据
         if ($table = Table::initIfRequest()) {
+            // 非系统管理员且设置了隐藏系统管理员的情况下
+            if (!$this->adminUser->system && $this->app->config->get('app.admin.hide_system_user')) {
+                $this->model->where(AdminUserField::system(0));
+            }
+            
             $table->model($this->model)->query(function(AdminUser $model, ArrayOption $option) {
                 $option->deleteIfLt('sex', 0);
                 

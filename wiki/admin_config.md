@@ -220,7 +220,10 @@ return [
             // 注册待办类，必须集成 \BusyPHP\app\admin\component\notice\todo\TodoInterface} 接口
             'class'  => [
             ]
-        ]
+        ],
+        
+        // 是否隐藏系统管理员
+        'hide_system_user'      => false,
     ]
 ];
 ```
