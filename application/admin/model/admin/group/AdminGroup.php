@@ -272,20 +272,20 @@ class AdminGroup extends Model implements ContainerInterface
     
     /**
      * 检测权限
-     * @param AdminUserField|null $AdminUserField 用户数据
+     * @param AdminUserField|null $user 用户数据
      * @param string              ...$paths 检测的路由路径
      * @return bool
      */
-    public static function checkPermission(?AdminUserField $AdminUserField, ?string ...$paths) : bool
+    public static function checkPermission(?AdminUserField $user, ?string ...$paths) : bool
     {
         static $allPaths;
         
-        if (!$AdminUserField) {
+        if (!$user) {
             return false;
         }
         
         // 拥有超级管理员权限，放行所有请求
-        if ($AdminUserField->groupHasSystem) {
+        if ($user->groupHasSystem) {
             return true;
         }
         
@@ -320,7 +320,7 @@ class AdminGroup extends Model implements ContainerInterface
             }
             
             // 是否在规则内
-            return in_array($currentPath, $AdminUserField->groupRulePaths);
+            return in_array($currentPath, $user->groupRulePaths);
         }
         
         return false;
