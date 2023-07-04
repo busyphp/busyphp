@@ -52,6 +52,8 @@ class AdminHandle extends Handle implements ContainerInterface
     
     const COOKIE_USER_ID       = 'admin_user_id';
     
+    const COOKIE_USERNAME      = 'admin_username';
+    
     const COOKIE_USER_THEME    = 'admin_user_theme';
     
     const SESSION_OPERATE_TIME = 'admin_operate_time';
@@ -212,6 +214,8 @@ class AdminHandle extends Handle implements ContainerInterface
                 'requires'   => $requires,
                 'configs'    => [
                     'app'           => [
+                        'cookieUserIdKey'   => self::COOKIE_USER_ID,
+                        'cookieUsernameKey' => self::COOKIE_USERNAME,
                         'imagePlaceholder'  => $publicSetting->getImagePlaceholder(false) . "?v={$data['skin']['version']}",
                         'avatarPlaceholder' => $publicSetting->getAvatarPlaceholder(false) . "?v={$data['skin']['version']}",
                         'url'               => $data['url']['app'],
@@ -463,6 +467,7 @@ class AdminHandle extends Handle implements ContainerInterface
             $saveLogin ? AdminSetting::instance()->getSaveLogin() : null
         );
         Cookie::set(static::COOKIE_USER_ID, (string) $user->id, 86400 * 365);
+        Cookie::set(static::COOKIE_USERNAME, $user->username, 86400 * 365);
         
         $this->saveTheme($user->id, $user->theme);
         $this->updateOperateTime();
