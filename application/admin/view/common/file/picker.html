@@ -119,7 +119,7 @@
                                                 <a class="preview cursor-zoom-in" href="javascript:void(0)" @click.prevent.stop="preview($event, item)">
                                                     <i class="fa fa-search-plus"></i>
                                                 </a>
-                                                <ba:access value="delete">
+                                                <ba:access value="system_file/delete">
                                                     <a class="delete"
                                                        href="javascript:void(0)"
                                                        :data-url="'{:url('system_file/delete')}?id=' + item.id"
@@ -177,7 +177,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <ba:access value="delete">
+                <ba:access value="system_file/delete">
                     <button v-if="selected_list.length > 0" type="button" class="btn btn-danger pull-left" @click="batchDelete">
                         <i class="fa fa-trash"></i>
                         {{options.locale.delete}}
