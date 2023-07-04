@@ -231,8 +231,13 @@
                     <th class="text-center"
                         width="120"
                         data-field="group_names"
+                        data-formatter="@"
                         data-title="所属角色"
-                        data-show-overflow="true"></th>
+                        data-show-overflow="true">
+                        <script type="text/html">
+                            {{value.length ? value.join(', ') : '-'}}
+                        </script>
+                    </th>
 
                     <th class="text-center"
                         width="80"

@@ -230,9 +230,7 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
      * @var array
      */
     #[Separate(separator: ',', full: true)]
-    #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
     #[Validator(name: Validator::IS_ARRAY)]
-    #[Validator(name: Validator::MIN, rule: 1, msg: '请至少选择:rule个:attribute')]
     public $groupIds;
     
     /**
@@ -707,6 +705,10 @@ class AdminUserField extends Field implements ModelValidateInterface, FieldGetMo
             
             // 修改
             case $model::SCENE_UPDATE:
+                if (!$this->groupIds) {
+                    $this->groupIds = [];
+                }
+                
                 $this->retain($validate, $this->updateRetain($model, $data, $data->system), $commonRetain);
                 
                 return true;

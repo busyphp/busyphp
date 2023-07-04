@@ -11,10 +11,12 @@
                     <tr>
                         <td colspan="2">
                             您好，<a class="label label-primary" data-toggle="busy-modal" data-url="{:url('common.user/profile')}">{$system.user.username}</a>
-                            &nbsp;&nbsp;&nbsp;用户组：
-                            <foreach name="system.user.group_names" item="vo">
-                                <label class="label label-warning">{$vo}</label>
-                            </foreach>
+                            <notempty name="system.user.group_names">
+                                &nbsp;&nbsp;&nbsp;角色：
+                                <foreach name="system.user.group_names" item="vo">
+                                    <label class="label label-warning">{$vo}</label>
+                                </foreach>
+                            </notempty>
                         </td>
                     </tr>
                     <tr>

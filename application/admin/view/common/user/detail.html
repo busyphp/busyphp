@@ -48,9 +48,13 @@
                         <tr>
                             <td colspan="3" class="text-vcenter">
                                 用户角色：
-                                <foreach name="info.group_names" item="vo">
-                                    <span class="badge badge-primary">{$vo}</span>
-                                </foreach>
+                                <notempty name="info.group_names">
+                                    <foreach name="info.group_names" item="vo">
+                                        <span class="badge badge-primary">{$vo}</span>
+                                    </foreach>
+                                    <else />
+                                    -
+                                </notempty>
                             </td>
                         </tr>
 

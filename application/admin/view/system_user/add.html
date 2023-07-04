@@ -237,14 +237,14 @@
 
         <eq name="info.system" value="0">
             <fieldset class="fieldset default no-padding-bottom">
-                <legend>权限设置</legend>
+                <legend>角色设置</legend>
 
                 <div class="row row-gutters-5">
                     <div class="col-xs-12">
                         <div class="form-group">
                             <div class="row row-gutters-5">
                                 <div class="col-xs-4">
-                                    <label class="required">访问权限</label>
+                                    <label>所属角色</label>
                                 </div>
                                 <div class="col-xs-8">
                                     <div class="row row-gutters-5">
@@ -256,7 +256,7 @@
                                                      data-placement="top"
                                                      data-container="#:modal_id_app"
                                                      data-content="用户登录后将打开该角色组的默认菜单">
-                                                    默认权限
+                                                    默认角色
                                                     <a><i class="fa fa-question-circle"></i></a>
                                                 </div>
                                                 <select class="form-control" name="default_group_id" id="__SCOPED___default_group_id">
@@ -273,9 +273,9 @@
                                  data-checkbox="true"
                                  data-checkbox-relation="false"
                                  data-icons="false">
-                                <select name="group_ids[]" required data-msg="请选择访问权限"></select>
+                                <select name="group_ids[]"></select>
                             </div>
-                            <span class="help-block">为该用户指定一个合适的权限，支持多选</span>
+                            <span class="help-block">为该用户指定一个合适的角色，支持多选</span>
                         </div>
                     </div>
                 </div>
