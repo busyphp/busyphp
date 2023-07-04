@@ -369,10 +369,10 @@ class SystemMenu extends Model implements ContainerInterface
     
     /**
      * 获取后台菜单
-     * @param AdminUserField $AdminUserField 用户信息
+     * @param AdminUserField $user 用户信息
      * @return SystemMenuField[]
      */
-    public function getNav(AdminUserField $AdminUserField) : array
+    public function getNav(AdminUserField $user) : array
     {
         $hashParentMap = $this->getHashParentMap();
         $hashMap       = $this->getHashMap();
@@ -383,7 +383,7 @@ class SystemMenu extends Model implements ContainerInterface
             SystemMenuField::parentPath()->name(),
             SystemMenuField::child()->name(),
             "",
-            function(SystemMenuField $info) use ($AdminUserField, $hashParentMap, $hashMap) {
+            function(SystemMenuField $info) use ($user, $hashParentMap, $hashMap) {
                 if ($info->hide && isset($hashParentMap[$info->hash])) {
                     $parentHash = array_shift($hashParentMap[$info->hash]);
                     if (isset($hashMap[$parentHash])) {
@@ -396,16 +396,16 @@ class SystemMenu extends Model implements ContainerInterface
                     return false;
                 }
                 
-                // 系统管理员
-                if ($AdminUserField->groupHasSystem) {
+                // 超级管理员
+                if ($user->groupHasSystem) {
                     // 系统菜单在非开发模式下不输出
-                    if (!App::getInstance()->isDebug() && $info->path == static::DEVELOPER_PATH) {
+                    if ($info->path == static::DEVELOPER_PATH && (!App::getInstance()->isDebug() || !$user->system)) {
                         return false;
                     }
                 } else {
                     // 不在规则内
                     // 不是系统菜单
-                    if (!in_array($info->hash, $AdminUserField->groupRuleIds) || $info->path == static::DEVELOPER_PATH) {
+                    if (!in_array($info->hash, $user->groupRuleIds) || $info->path == static::DEVELOPER_PATH) {
                         return false;
                     }
                 }
