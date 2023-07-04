@@ -94,7 +94,7 @@
                                             <td>
                                                 <img v-if="item.is_image" :data-src="item.url" class="hidden" :alt="item.name"/>
                                                 <a class="btn btn-default btn-xs cursor-zoom-in" href="javascript:void(0)"><i class="fa fa-search-plus"></i></a>
-                                                <ba:access value="delete">
+                                                <ba:access value="system_file/delete">
                                                     <a class="btn btn-danger btn-xs"
                                                        href="javascript:void(0)"
                                                        :data-url="'{:url('system_file/delete')}?id=' + item.id"
