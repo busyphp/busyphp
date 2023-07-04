@@ -78,7 +78,6 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * 默认菜单
      * @var string
      */
-    #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
     #[Filter(filter: 'trim')]
     public $defaultMenuId;
     
@@ -93,8 +92,6 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
      * @var array
      */
     #[Separate(separator: ',', full: true)]
-    #[Validator(name: Validator::REQUIRE, msg: '请选择:attribute')]
-    #[Validator(name: Validator::MIN, rule: 1, msg: '请至少选择:rule个:attribute')]
     public $rule;
     
     /**
@@ -160,43 +157,85 @@ class AdminGroupField extends Field implements ModelValidateInterface, FieldGetM
     
     
     /**
+     * 添加场景保留字段
+     * @param AdminGroup $model 角色组模型
+     * @return array
+     */
+    protected function createRetain(AdminGroup $model) : array
+    {
+        return [
+            $this::parentId(),
+            $this::name(),
+            $this::rule(),
+            $this::defaultMenuId(),
+            $this::remark(),
+            $this::status()
+        ];
+    }
+    
+    
+    /**
+     * 修改场景保留字段
+     * @param AdminGroup      $model 角色模型
+     * @param AdminGroupField $data 更新前角色组数据
+     * @param bool            $system 是否系统角色组
+     * @return array
+     */
+    protected function updateRetain(AdminGroup $model, AdminGroupField $data, bool $system) : array
+    {
+        if ($system) {
+            return [
+                $this::id(),
+                $this::name(),
+                $this::remark(),
+            ];
+        } else {
+            return [
+                $this::id(),
+                $this::parentId(),
+                $this::name(),
+                $this::rule(),
+                $this::remark(),
+                $this::defaultMenuId(),
+                $this::status()
+            ];
+        }
+    }
+    
+    
+    /**
+     * 通用保留字段
+     * @param AdminGroup           $model 角色模型
+     * @param string               $scene 场景值
+     * @param AdminGroupField|null $data 更新前的角色组数据
+     * @return array
+     */
+    protected function commonRetain(AdminGroup $model, string $scene, ?AdminGroupField $data) : array
+    {
+        return [];
+    }
+    
+    
+    /**
      * @inheritDoc
      * @param AdminGroup      $model
      * @param AdminGroupField $data
      */
     public function onModelValidate(Model $model, Validate $validate, string $scene, $data = null)
     {
+        $commonRetain = $this->commonRetain($model, $scene, $data);
+        
         switch ($scene) {
             case $model::SCENE_CREATE:
-                $this->setId(0);
-                $this->retain($validate, [
-                    $this::parentId(),
-                    $this::name(),
-                    $this::rule(),
-                    $this::defaultMenuId(),
-                    $this::remark(),
-                    $this::status()
-                ]);
+                $this->retain($validate, $this->createRetain($model), $commonRetain);
                 
                 return true;
             case $model::SCENE_UPDATE:
-                if ($data->system) {
-                    $this->retain($validate, [
-                        $this::id(),
-                        $this::name(),
-                        $this::remark(),
-                    ]);
-                } else {
-                    $this->retain($validate, [
-                        $this::id(),
-                        $this::parentId(),
-                        $this::name(),
-                        $this::rule(),
-                        $this::remark(),
-                        $this::defaultMenuId(),
-                        $this::status()
-                    ]);
+                if (!$this->rule) {
+                    $this->rule = [];
                 }
+                
+                $this->retain($validate, $this->updateRetain($model, $data, $data->system), $commonRetain);
                 
                 return true;
         }
