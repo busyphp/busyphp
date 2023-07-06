@@ -46,6 +46,7 @@ class AdminOperate extends Field
      */
     public function setToggleAttrs(string $name, array $attrs) : static
     {
+        $this->setType(Operate::TYPE_ROUTE);
         $this->attrs = array_merge($attrs, [
             'data-toggle' => $name
         ]);
@@ -61,6 +62,7 @@ class AdminOperate extends Field
      */
     public function setModalAttrs(array $attrs = []) : static
     {
+        $this->setType(Operate::TYPE_ROUTE);
         $this->attrs = array_merge($attrs, [
             'data-toggle' => 'busy-modal',
             'data-url'    => $this->value
