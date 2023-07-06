@@ -13,8 +13,8 @@ use stdClass;
  * @copyright (c) 2015--2023 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2023/6/27 17:43 AdminOperate.php $
  * @method $this setType(int $type) 设置操作类型
- * @method $this setValue(string $type) 设置操作值
- * @method $this setAttrs(array $type) 设置操作属性
+ * @method $this setValue(string $value) 设置操作值
+ * @method $this setAttrs(array $attrs) 设置操作属性
  */
 #[ToArrayFormat(ToArrayFormat::TYPE_SNAKE)]
 class AdminOperate extends Field
