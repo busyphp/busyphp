@@ -247,8 +247,8 @@
                         data-sortable="true"
                         data-formatter="@">
                         <script type="text/html">
-                            <ba-if value="item.system">
-                                -
+                            <ba-if value="item.system || item.id == `{$system.user.id}`">
+                                {{value ? '正常' : '禁用'}}
                                 <ba-else/>
                                 <input type="checkbox"
                                        class="switch input-xs primary"
@@ -320,7 +320,7 @@
                                    data-form-on-success="@table.reload|@modal.close"><i class="fa fa-pencil"></i></a>
                             </ba:access>
                             <ba:access value="delete">
-                                <ba-if value="!item.system">
+                                <ba-if value="!item.system && item.id != `{$system.user.id}`">
                                     <a class="btn btn-danger btn-xs"
                                        href="{:url('delete?id=')}{{item.id}}"
                                        data-toggle="busy-request"
@@ -338,7 +338,7 @@
 <block name="foot">
     <script>
         busyAdmin.data.checkboxState = function (value, item, index) {
-            if (item.system) {
+            if (item.system || item.id == '{$system.user.id}') {
                 return {disabled : true}
             }
 

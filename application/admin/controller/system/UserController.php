@@ -244,6 +244,10 @@ class UserController extends InsideController
     public function delete() : Response
     {
         SimpleForm::init()->batch($this->param('id/a', 'intval'), '请选择要删除的用户', function(int $id) {
+            if ($id == $this->adminUserId) {
+                throw new RuntimeException('不能删除自己');
+            }
+            
             $this->model->remove($id);
         });
         
