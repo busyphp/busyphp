@@ -85,6 +85,16 @@ class AdminHandle extends Handle implements ContainerInterface
     
     
     /**
+     * 是否modal请求
+     * @return bool
+     */
+    public static function isModal() : bool
+    {
+        return Driver::getRequestName() === 'Modal';
+    }
+    
+    
+    /**
      * 模板基础数据
      * @param string              $pageTitle
      * @param AdminUserField|null $adminUser
