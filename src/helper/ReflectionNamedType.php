@@ -19,19 +19,19 @@ class ReflectionNamedType extends \ReflectionNamedType
     }
     
     
-    public function isBuiltin()
+    public function isBuiltin() : bool
     {
         return $this->setBuiltin;
     }
     
     
-    public function getName()
+    public function getName() : string
     {
         return $this->setName;
     }
     
     
-    public function allowsNull()
+    public function allowsNull() : bool
     {
         return $this->allowsNull;
     }
