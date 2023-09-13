@@ -211,6 +211,7 @@
                     type            : '',
                     type_list       : [],
                     category        : '',
+                    def_category    : '',
                     category_list   : [],
                     word            : '',
                     list            : [],
@@ -276,6 +277,7 @@
                         } else {
                             me.category = ':all';
                         }
+                        me.def_category = me.category;
 
                         // 监听分页事件
                         $(me.$refs.foot).on('click', 'a', function () {
@@ -465,7 +467,7 @@
                     // 重置
                     reset : function () {
                         this.type     = '';
-                        this.category = '';
+                        this.category = this.def_category;
                         this.word     = '';
                         this.page     = 1;
                         this.load();
