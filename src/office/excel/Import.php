@@ -486,14 +486,14 @@ class Import
             $result = $this->api->saveExcelImport(new ImportSaveParameter($this, $list));
         } elseif ($this->model) {
             $result = new ImportResult(0, 0);
-            foreach ($list as $item) {
+            foreach ($list as $index => $item) {
                 try {
                     $this->model->validate($item, $this->model::SCENE_CREATE)->insert();
                     $result->successTotal++;
-                    $this->triggerSaved(true, $item);
+                    $this->triggerSaved(true, ['index' => $index, 'item' => $item]);
                 } catch (Throwable $e) {
                     $result->errorTotal++;
-                    $this->triggerSaved(false, $item, $e);
+                    $this->triggerSaved(false, ['index' => $index, 'item' => $item], $e);
                 }
             }
         } else {
