@@ -451,9 +451,10 @@ class Import
                     
                     // 转为对象
                     if ($class && !$item instanceof $class) {
-                        if ($class instanceof Field) {
+                        if (is_subclass_of($class, Field::class)) {
                             $item = $class::init($item);
-                        } elseif ($class instanceof ImportFetchClassInterface) {
+                        } elseif (is_subclass_of($class, ImportFetchClassInterface::class)) {
+                            /** @var ImportFetchClassInterface $class */
                             $item = $class::onExcelImportFetchRowToThis($item);
                         }
                     }
